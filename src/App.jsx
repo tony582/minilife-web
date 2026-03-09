@@ -170,7 +170,14 @@ export default function App() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(authForm)
             });
-            const data = await res.json();
+
+            let data;
+            try {
+                data = await res.json();
+            } catch (jsonErr) {
+                return notify(`服务器错误 (${res.status}): ${res.statusText}`, 'error');
+            }
+
             if (!res.ok) return notify(data.error || "登录失败", 'error');
 
             localStorage.setItem('minilife_token', data.token);
@@ -178,7 +185,7 @@ export default function App() {
             setUser(data.user);
             notify(authMode === 'login' ? '欢迎回来' : '注册成功！赠送3天免费体验', 'success');
         } catch (err) {
-            notify("网络错误", "error");
+            notify("网络连接失败，请检查服务是否运行", "error");
         }
     };
 
@@ -460,7 +467,14 @@ export default function App() {
     const [planForm, setPlanForm] = useState({
         targetKid: 'all', category: '技能', title: '', desc: '',
         startDate: new Date().toISOString().split('T')[0],
-        repeatType: '仅当天', // '仅当天' | '每天' | '工作日' | '周末'
+        endDate: '',
+        repeatType: 'today', // 'today' | 'daily' | 'weekly_custom' | 'biweekly_custom' | 'ebbinghaus' | 'weekly_1' | 'biweekly_1' | 'monthly_1' | 'every_week_1' | 'every_biweek_1' | 'every_month_1'
+        weeklyDays: [1, 2, 3, 4, 5], // 1=Mon, 7=Sun
+        ebbStrength: 'normal',
+        periodDaysType: 'any', // 'any' | 'workdays' | 'weekends' | 'custom'
+        periodCustomDays: [1, 2, 3, 4, 5],
+        periodTargetCount: 1,
+        periodMaxPerDay: 1,
         timeSetting: 'none', // 'none' | 'range' | 'duration'
         startTime: '', endTime: '', durationPreset: 25,
         pointRule: 'default', // 'default' | 'custom'
@@ -471,45 +485,228 @@ export default function App() {
     });
 
     // 核心日期匹配逻辑
+    // 核心日期匹配逻辑
     const isTaskDueOnDate = (task, dateStr) => {
         if (!task) return false;
 
-        // 行为习惯暂时不过滤日期
+        // 行为习惯暂时不过滤日期，除非未来专门改造
         if (task.type === 'habit') return true;
 
-        // 学习计划频率过滤
+        const currentDt = new Date(dateStr);
+        let jsDay = currentDt.getDay(); // 0 is Sunday, 1 is Monday...
+        const d = jsDay === 0 ? 7 : jsDay; // Convert to 1=Mon ... 7=Sun
+
+        // ================= V2: Advanced repeatConfig Algorithm =================
+        if (task.repeatConfig) {
+            const rc = task.repeatConfig;
+
+            // 1. Boundary Checks
+            if (task.startDate && dateStr < task.startDate) return false;
+            if (rc.endDate && dateStr > rc.endDate) return false;
+
+            // 2. Type-specific Resolution
+            if (rc.type === 'today') {
+                return task.dates?.includes(dateStr);
+            }
+
+            if (rc.type === 'daily') {
+                return true;
+            }
+
+            if (rc.type === 'weekly_custom') {
+                return rc.weeklyDays?.includes(d);
+            }
+
+            if (rc.type === 'biweekly_custom') {
+                if (!rc.weeklyDays?.includes(d)) return false;
+                const msPerDay = 24 * 60 * 60 * 1000;
+                const startDt = new Date(task.startDate);
+                // Calculate weeks elapsed since start date
+                // Align startDt to the same day-of-week it started on, then find weeks diff
+                const diffDays = Math.floor((currentDt - startDt) / msPerDay);
+                const elapsedWeeks = Math.floor((diffDays + (startDt.getDay() === 0 ? 6 : startDt.getDay() - 1)) / 7);
+                return elapsedWeeks % 2 === 0; // Only match even weeks matching start week
+            }
+
+            if (rc.type === 'ebbinghaus') {
+                const msPerDay = 24 * 60 * 60 * 1000;
+                const startDt = new Date(task.startDate);
+                const diffDays = Math.floor((currentDt - startDt) / msPerDay);
+
+                let sequence = [];
+                if (rc.ebbStrength === 'normal') sequence = [0, 1, 2, 4, 7, 15, 30];
+                else if (rc.ebbStrength === 'gentle') sequence = [0, 2, 6, 13, 29];
+                else if (rc.ebbStrength === 'exam') sequence = [0, 1, 2, 4, 6, 9, 13];
+                else if (rc.ebbStrength === 'enhanced') sequence = [0, 1, 2, 3, 4, 6, 9, 14, 29];
+
+                return sequence.includes(diffDays);
+            }
+
+            // --- N-times per Period (N次等区间任务) ---
+            // N次任务的核心在于：只要在被允许的日子（periodDaysType），并且当前周期的完成量没达标，就应该显示。
+            // 目前 UI 上为了不造成混乱，把 "N次任务" 直接视作为每天在 "allowedDays" 内都显示
+            // 我们将在组件内部计算这周是否已完成上限。此处 isTaskDueOnDate 仅返回“这一天是否合法候选日”。
+            if (rc.type.includes('_1') || rc.type.includes('_n')) {
+                // Determine if today is an allowed day for the period
+                if (rc.periodDaysType === 'any') return true;
+                if (rc.periodDaysType === 'workdays') return d >= 1 && d <= 5;
+                if (rc.periodDaysType === 'weekends') return d === 6 || d === 7;
+                if (rc.periodDaysType === 'custom') return rc.periodCustomDays?.includes(d);
+                return true;
+            }
+
+            return false;
+        }
+
+        // ================= V1: Legacy Fallback =================
         if (task.frequency === '每天') return true;
         if (task.frequency === '仅当天') return task.dates?.includes(dateStr);
-
-        // 每周固定日子判断
-        const d = new Date(dateStr).getDay(); // 0 is Sunday, 6 is Saturday
         if (task.frequency === '每周一至周五') return d >= 1 && d <= 5;
-        if (task.frequency === '每周六、周日') return d === 0 || d === 6;
+        if (task.frequency === '每周六、周日') return d === 6 || d === 7;
 
-        // 复杂的自定制算法 (基于 StartDate 的间隔天数计算)
         if (task.startDate && dateStr >= task.startDate) {
             const msPerDay = 24 * 60 * 60 * 1000;
-            const start = new Date(task.startDate);
-            const current = new Date(dateStr);
-            const diffDays = Math.floor((current - start) / msPerDay);
+            const startDt = new Date(task.startDate);
+            const diffDays = Math.floor((currentDt - startDt) / msPerDay);
 
             if (task.frequency === '每周一次') return diffDays % 7 === 0;
             if (task.frequency === '每双周') return diffDays % 14 === 0;
-
-            // 艾宾浩斯记忆遗忘曲线: 第0天, 第1天, 第2天, 第4天, 第7天, 第15天, 第30天
-            if (task.frequency === '艾宾浩斯记忆法') {
-                const ebbinghausDays = [0, 1, 2, 4, 7, 15, 30];
-                return ebbinghausDays.includes(diffDays);
-            }
+            if (task.frequency === '艾宾浩斯记忆法') return [0, 1, 2, 4, 7, 15, 30].includes(diffDays);
         }
 
-        // Fallback
         return task.dates?.includes(dateStr) || false;
     };
 
     // 预览弹窗状态 (Kid App)
     const [showPreviewModal, setShowPreviewModal] = useState(false);
     const [previewTask, setPreviewTask] = useState(null);
+
+    // === 额外约束检查: N次任务防刷限制 ===
+    const checkPeriodLimits = (task, kidId, selectedDStr) => {
+        if (!task) return { canSubmit: true };
+
+        // Ensure habits are always checked for daily limits
+        if (task.type === 'habit') {
+            const hist = task.history || {};
+            const entry = task.kidId === 'all' ? hist[selectedDStr]?.[kidId] : hist[selectedDStr];
+            const todayCount = entry?.count || (entry?.status === 'completed' ? 1 : 0);
+
+            if (task.habitType === 'daily_once' && todayCount >= 1) {
+                return { canSubmit: false, reason: '今天已经完整打过卡啦！' };
+            }
+            if (task.habitType === 'multiple' && task.periodMaxPerDay && todayCount >= task.periodMaxPerDay) {
+                return { canSubmit: false, reason: `今天已达上限(${task.periodMaxPerDay}次)啦！` };
+            }
+        }
+
+        if (!task.repeatConfig) return { canSubmit: true };
+        const rc = task.repeatConfig;
+        if (!rc.type.includes('_1') && !rc.type.includes('_n')) return { canSubmit: true };
+
+        const currentDt = new Date(selectedDStr);
+        let periodStartDt, periodEndDt;
+
+        if (rc.type.includes('week')) {
+            const day = currentDt.getDay() || 7;
+            periodStartDt = new Date(currentDt);
+            periodStartDt.setDate(currentDt.getDate() - day + 1);
+            periodStartDt.setHours(0, 0, 0, 0);
+
+            periodEndDt = new Date(periodStartDt);
+            periodEndDt.setDate(periodStartDt.getDate() + 6);
+            periodEndDt.setHours(23, 59, 59, 999);
+        } else if (rc.type.includes('month')) {
+            periodStartDt = new Date(currentDt.getFullYear(), currentDt.getMonth(), 1);
+            periodEndDt = new Date(currentDt.getFullYear(), currentDt.getMonth() + 1, 0, 23, 59, 59, 999);
+        }
+
+        if (!periodStartDt) {
+            return { canSubmit: true };
+        }
+
+        let periodCompletions = 0;
+        let todayCompletions = 0;
+
+        const hist = task.history || {};
+        Object.keys(hist).forEach(dStr => {
+            const histDt = new Date(dStr);
+            if (histDt >= periodStartDt && histDt <= periodEndDt) {
+                const entry = task.kidId === 'all' ? hist[dStr]?.[kidId] : hist[dStr];
+                if (entry && (entry.status === 'completed' || entry.status === 'pending_approval' || entry.status === 'in_progress')) {
+                    const count = entry.count || 1;
+                    periodCompletions += count;
+                    if (dStr === selectedDStr) todayCompletions += count;
+                }
+            }
+        });
+
+        if (periodCompletions >= rc.periodTargetCount) {
+            return { canSubmit: false, reason: `本周期已达成目标(${rc.periodTargetCount}次)啦！` };
+        }
+        if (todayCompletions >= rc.periodMaxPerDay) {
+            return { canSubmit: false, reason: `今天已达上限(${rc.periodMaxPerDay}次)啦，改天再做吧～` };
+        }
+
+        return { canSubmit: true };
+    };
+
+    const handleAttemptSubmit = async (task) => {
+        const limits = checkPeriodLimits(task, activeKidId, selectedDate);
+        if (!limits.canSubmit) return notify(limits.reason, 'error');
+
+        if (task.type === 'habit') {
+            try {
+                const hist = task.history || {};
+                const entry = task.kidId === 'all' ? hist[selectedDate]?.[activeKidId] : hist[selectedDate];
+                const newCount = (entry?.count || 0) + 1;
+
+                const histUpdate = { status: 'completed', count: newCount, timeSpent: 0 };
+                let newHistory = { ...hist };
+
+                if (task.kidId === 'all') {
+                    newHistory[selectedDate] = { ...(newHistory[selectedDate] || {}), [activeKidId]: histUpdate };
+                } else {
+                    newHistory[selectedDate] = histUpdate;
+                }
+
+                await apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHistory }) });
+                setTasks(tasks.map(t => t.id === task.id ? { ...t, history: newHistory } : t));
+
+                // Instantly create transaction if kidId matches
+                const newTrans = {
+                    id: `trans_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                    kidId: activeKidId,
+                    type: task.reward > 0 ? 'income' : 'expense',
+                    amount: Math.abs(task.reward || 0),
+                    title: `记录成长: ${task.title}`,
+                    date: new Date().toISOString(),
+                    category: 'habit'
+                };
+
+                if (task.reward !== 0) {
+                    await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newTrans) });
+                    setTransactions(prev => [newTrans, ...prev]);
+                }
+
+                // Actually update kid EXP locally and backend
+                const targetKid = kids.find(k => k.id === activeKidId);
+                if (targetKid) {
+                    const newExp = Math.max(0, targetKid.exp + (task.reward || 0));
+                    await updateActiveKid({ exp: newExp });
+                }
+
+                playSuccessSound();
+                if (task.reward > 0) notify(`打卡成功！获得 ${task.reward} 经验值！`, "success");
+                else if (task.reward < 0) notify(`打卡成功！扣除 ${Math.abs(task.reward)} 经验值。`, "error");
+                else notify("打卡成功！", "success");
+
+            } catch (e) {
+                notify("网络请求失败", "error");
+            }
+        } else {
+            setTaskToSubmit(task);
+        }
+    };
 
     // === 全局方法 ===
     const getTaskStatusOnDate = (t, date, kidId) => {
@@ -561,8 +758,13 @@ export default function App() {
     const getLevelReq = (level) => level * 100;
 
     const handleStartTask = (id) => {
-        setTimerTargetId(id);
         const task = tasks.find(t => t.id === id);
+        if (!task) return;
+
+        const limits = checkPeriodLimits(task, activeKidId, selectedDate);
+        if (!limits.canSubmit) return notify(limits.reason, 'error');
+
+        setTimerTargetId(id);
 
         let secs = 900;
         if (task && task.timeStr && task.timeStr.includes('分钟')) {
@@ -618,6 +820,9 @@ export default function App() {
     };
 
     const openQuickComplete = (task) => {
+        const limits = checkPeriodLimits(task, activeKidId, selectedDate);
+        if (!limits.canSubmit) return notify(limits.reason, 'error');
+
         setQuickCompleteTask(task);
         setQcTimeMode('duration');
         setQcHours(0);
@@ -860,13 +1065,21 @@ export default function App() {
             // Study Plan Logistics
             color = getCategoryGradient(planForm.category);
 
-            if (planForm.repeatType === '仅当天') frequency = '仅当天';
-            else if (planForm.repeatType === '每天') frequency = '每天';
-            else if (planForm.repeatType === '工作日') frequency = '每周一至周五';
-            else if (planForm.repeatType === '周末') frequency = '每周六、周日';
-            else if (planForm.repeatType === 'weekly_1') frequency = '每周一次';
-            else if (planForm.repeatType === 'biweekly_1') frequency = '每双周';
-            else if (planForm.repeatType === 'ebbinghaus') frequency = '艾宾浩斯记忆法';
+            const freqMap = {
+                'today': '仅当天',
+                'daily': '每天',
+                'weekly_custom': '每周',
+                'biweekly_custom': '每双周',
+                'ebbinghaus': '艾宾浩斯',
+                'weekly_1': '本周1次',
+                'biweekly_1': '本双周1次',
+                'monthly_1': '本月1次',
+                'every_week_1': '每周1次',
+                'every_biweek_1': '每双周1次',
+                'every_month_1': '每月1次'
+            };
+            if (freqMap[planForm.repeatType]) frequency = freqMap[planForm.repeatType];
+            else frequency = planForm.repeatType;
 
             if (planForm.timeSetting === 'range' && planForm.startTime && planForm.endTime) {
                 timeStr = `${planForm.startTime}-${planForm.endTime}`;
@@ -886,7 +1099,17 @@ export default function App() {
                 reward: planType === 'habit' && rewardNum < 0 ? rewardNum : Math.abs(rewardNum),
                 category: planType === 'study' ? planForm.category : "行为",
                 catColor: color,
-                frequency: frequency,
+                frequency: frequency, // V1 fallback
+                repeatConfig: planType === 'study' ? {
+                    type: planForm.repeatType,
+                    endDate: planForm.endDate || null,
+                    weeklyDays: planForm.weeklyDays,
+                    ebbStrength: planForm.ebbStrength,
+                    periodDaysType: planForm.periodDaysType,
+                    periodCustomDays: planForm.periodCustomDays,
+                    periodTargetCount: Number(planForm.periodTargetCount),
+                    periodMaxPerDay: Number(planForm.periodMaxPerDay)
+                } : null, // V2 explicit config
                 timeStr: timeStr,
                 standards: planForm.desc || "按要求完成",
                 iconEmoji: planForm.iconEmoji,
@@ -922,7 +1145,17 @@ export default function App() {
             pointRule: planForm.pointRule,
             habitType: planForm.habitType,
             attachments: planForm.attachments || [],
-            dates: planForm.repeatType === '仅当天' ? [planForm.startDate] : [],
+            dates: planForm.repeatType === 'today' || planForm.repeatType === '仅当天' ? [planForm.startDate] : [],
+            repeatConfig: planType === 'study' ? {
+                type: planForm.repeatType,
+                endDate: planForm.endDate || null,
+                weeklyDays: planForm.weeklyDays,
+                ebbStrength: planForm.ebbStrength,
+                periodDaysType: planForm.periodDaysType,
+                periodCustomDays: planForm.periodCustomDays,
+                periodTargetCount: Number(planForm.periodTargetCount),
+                periodMaxPerDay: Number(planForm.periodMaxPerDay)
+            } : null,
             history: {} // History will now store { date: { kidId: { status } } }
         };
 
@@ -943,7 +1176,11 @@ export default function App() {
             setPlanForm({
                 targetKid: 'all', category: '技能', title: '', desc: '',
                 startDate: new Date().toISOString().split('T')[0],
-                repeatType: '仅当天', timeSetting: 'none',
+                endDate: '',
+                repeatType: 'today', timeSetting: 'none',
+                weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal',
+                periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5],
+                periodTargetCount: 1, periodMaxPerDay: 1,
                 startTime: '', endTime: '', durationPreset: 25,
                 pointRule: 'default', reward: '', iconEmoji: '📚',
                 habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once',
@@ -1052,9 +1289,22 @@ export default function App() {
                     spentStr = `${spentMins} 分钟(倒数)`;
                 }
 
-                const payload = { date: selectedDate, status: 'in_progress', timeSpent: spentStr };
-                await apiFetch(`/ api / tasks / ${task.id} /history`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                setTasks(tasks.map(t => t.id === task.id ? { ...t, history: { ...t.history, [selectedDate]: { ...t.history?.[selectedDate], status: 'in_progress', timeSpent: spentStr } } } : t));
+                const histUpdate = { status: 'in_progress', timeSpent: spentStr };
+                let newHistory = { ...(task.history || {}) };
+
+                if (task.kidId === 'all') {
+                    newHistory[selectedDate] = { ...(newHistory[selectedDate] || {}), [activeKidId]: histUpdate };
+                } else {
+                    newHistory[selectedDate] = histUpdate;
+                }
+
+                await apiFetch(`/api/tasks/${task.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ history: newHistory })
+                });
+
+                setTasks(tasks.map(t => t.id === task.id ? { ...t, history: newHistory } : t));
                 setShowTimerModal(false);
                 setIsTimerRunning(false);
                 playSuccessSound();
@@ -1062,7 +1312,7 @@ export default function App() {
             } catch (e) {
                 notify("网络请求失败", "error");
             }
-        }
+        };
 
         return (
             <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-fade-in z-[110]">
@@ -1400,7 +1650,7 @@ export default function App() {
                         <button onClick={() => setQuickCompleteTask(null)} className="flex-1 py-3.5 text-slate-600 font-bold bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2">
                             <Icons.X size={16} /> 取消
                         </button>
-                        <button onClick={confirmQuickComplete} className="flex-[2] py-3.5 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-black rounded-xl shadow-lg shadow-emerald-200 hover:from-emerald-600 hover:to-green-600 transition-all flex items-center justify-center gap-2">
+                        <button onClick={handleQuickComplete} className="flex-[2] py-3.5 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-black rounded-xl shadow-lg shadow-emerald-200 hover:from-emerald-600 hover:to-green-600 transition-all flex items-center justify-center gap-2">
                             <Icons.CheckCircle size={18} /> 确认完成
                         </button>
                     </div>
@@ -1710,9 +1960,9 @@ export default function App() {
                         </div>
                     </div>
 
-                    <div className="relative z-10 shrink-0">
+                    <div className="relative z-10 shrink-0 mt-4">
                         {(() => {
-                            const pStatus = getTaskStatusOnDate(previewTask, selectedDate);
+                            const pStatus = getTaskStatusOnDate(previewTask, selectedDate, activeKidId);
                             return (
                                 <>
                                     {pStatus === 'todo' && (
@@ -1726,9 +1976,19 @@ export default function App() {
                                         </div>
                                     )}
                                     {pStatus === 'in_progress' && (
-                                        <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); setTaskToSubmit(previewTask); }} className="w-full bg-indigo-100 text-indigo-700 rounded-2xl py-4 font-black flex items-center justify-center gap-2 hover:bg-indigo-200 transition-colors">
-                                            <Icons.CheckSquare size={18} /> 去提交验收
+                                        <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleAttemptSubmit(previewTask); }} className="w-full bg-indigo-100 text-indigo-700 rounded-2xl py-4 font-black flex items-center justify-center gap-2 hover:bg-indigo-200 transition-colors">
+                                            <Icons.CheckSquare size={20} /> 提交验收
                                         </button>
+                                    )}
+                                    {pStatus === 'pending_approval' && (
+                                        <div className="w-full bg-orange-50 text-orange-600 border border-orange-200 rounded-2xl py-4 font-black flex items-center justify-center gap-2 cursor-not-allowed">
+                                            <Icons.Clock size={20} /> 待家长审核发放奖励...
+                                        </div>
+                                    )}
+                                    {pStatus === 'completed' && (
+                                        <div className="w-full bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-2xl py-4 font-black flex items-center justify-center gap-2 cursor-not-allowed">
+                                            <Icons.CheckCircle size={20} /> 此任务已完成
+                                        </div>
                                     )}
                                 </>
                             );
@@ -1874,10 +2134,10 @@ export default function App() {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-black text-slate-800 mb-3">主题颜色</label>
-                                        <div className="bg-slate-50 rounded-2xl p-4 grid grid-cols-4 gap-3 border border-slate-100 h-[170px] content-start overflow-y-auto custom-scrollbar">
+                                        <div className="bg-slate-50 rounded-2xl p-4 flex flex-wrap gap-4 border border-slate-100 h-[170px] content-start overflow-y-auto custom-scrollbar">
                                             {habitColors.map(color => (
                                                 <button key={color} onClick={() => setPlanForm({ ...planForm, habitColor: color })}
-                                                    className={`w-full aspect-square rounded-xl bg-gradient-to-br ${color} transition-all relative overflow-hidden group 
+                                                    className={`w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br ${color} transition-all relative overflow-hidden group 
                                                     ${planForm.habitColor === color ? 'ring-4 ring-offset-2 ring-slate-800 scale-95 shadow-inner' : 'hover:scale-105 shadow-sm'}`}>
                                                     {planForm.habitColor === color && <div className="absolute inset-0 flex items-center justify-center bg-black/20 text-white"><Icons.Check size={20} className="font-black" /></div>}
                                                 </button>
@@ -1889,72 +2149,174 @@ export default function App() {
                         )}
 
                         {/* Section 2: Repeat & Time */}
-                        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
-                            <div>
-                                <label className="flex items-center gap-2 text-sm font-black text-slate-800 mb-3">
-                                    <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center"><Icons.RefreshCw size={18} /></div>
-                                    任务类型 <span className="text-red-500">*</span>
-                                </label>
-                                <select value={planForm.repeatType} onChange={e => setPlanForm({ ...planForm, repeatType: e.target.value })} className="w-full border-2 border-slate-100 rounded-2xl p-4 outline-none focus:border-blue-500 font-bold text-slate-700 hover:border-slate-300 transition-colors appearance-none bg-white">
-                                    <option value="today">仅当天 ({planForm.startDate})</option>
-                                    <option value="daily">每天</option>
-                                    <option value="weekly_custom">每周(自定义)</option>
-                                    <option value="biweekly_custom">每双周(自定义)</option>
-                                    <option value="ebbinghaus">艾宾浩斯</option>
-                                    <option value="weekly_1">本周1次 🗓️ 跨日任务</option>
-                                    <option value="biweekly_1">本双周1次 🗓️ 跨日任务</option>
-                                    <option value="monthly_1">本月1次 🗓️ 跨日任务</option>
-                                    <option value="every_week_1">每周1次 🗓️ 跨日任务</option>
-                                    <option value="every_biweek_1">每双周1次 🗓️ 跨日任务</option>
-                                    <option value="every_month_1">每月1次 🗓️ 跨日任务</option>
-                                </select>
-                                <div className="mt-3 bg-blue-50 text-blue-600 p-3 rounded-xl text-sm font-medium flex items-center gap-2 border border-blue-100">
-                                    <Icons.Info size={16} /> 选择任务的重复周期和类型。
-                                </div>
-                            </div>
+                        {planType === 'study' && (
+                            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+                                <div>
+                                    <label className="flex items-center gap-2 text-sm font-black text-slate-800 mb-3">
+                                        <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center"><Icons.RefreshCw size={18} /></div>
+                                        任务类型 <span className="text-red-500">*</span>
+                                    </label>
+                                    <select value={planForm.repeatType} onChange={e => setPlanForm({ ...planForm, repeatType: e.target.value })} className="w-full border-2 border-slate-100 rounded-2xl p-4 outline-none focus:border-blue-500 font-bold text-slate-700 hover:border-slate-300 transition-colors appearance-none bg-white">
+                                        <option value="today">仅当天 ({planForm.startDate})</option>
+                                        <option value="daily">每天</option>
+                                        <option value="weekly_custom">每周(自定义)</option>
+                                        <option value="biweekly_custom">每双周(自定义)</option>
+                                        <option value="ebbinghaus">艾宾浩斯</option>
+                                        <option value="weekly_1">本周1次 🗓️ 跨日任务</option>
+                                        <option value="biweekly_1">本双周1次 🗓️ 跨日任务</option>
+                                        <option value="monthly_1">本月1次 🗓️ 跨日任务</option>
+                                        <option value="every_week_1">每周1次 🗓️ 跨日任务</option>
+                                        <option value="every_biweek_1">每双周1次 🗓️ 跨日任务</option>
+                                        <option value="every_month_1">每月1次 🗓️ 跨日任务</option>
+                                    </select>
+                                    <div className="mt-3 bg-blue-50 text-blue-600 p-3 rounded-xl text-sm font-medium flex items-center gap-2 border border-blue-100">
+                                        <Icons.Info size={16} /> 选择任务的重复周期和类型。
+                                    </div>
 
-                            <div>
-                                <label className="flex items-center gap-2 text-sm font-black text-slate-800 mb-3">
-                                    <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><Icons.Clock size={18} /></div>
-                                    任务时间配置 <span className="text-slate-400 font-normal text-xs">(可选)</span>
-                                </label>
-                                <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-100 w-full mb-4">
-                                    <button onClick={() => setPlanForm({ ...planForm, timeSetting: planForm.timeSetting === 'range' ? 'none' : 'range' })} className={`flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${planForm.timeSetting === 'range' ? 'bg-white shadow text-blue-600 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}>
-                                        <Icons.Clock size={16} /> 指定时间段
-                                    </button>
-                                    <button onClick={() => setPlanForm({ ...planForm, timeSetting: planForm.timeSetting === 'duration' ? 'none' : 'duration' })} className={`flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${planForm.timeSetting === 'duration' ? 'bg-white shadow text-blue-600 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}>
-                                        <Icons.Settings size={16} /> 要求时长
-                                    </button>
-                                </div>
-
-                                {planForm.timeSetting === 'range' && (
-                                    <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-5 animate-fade-in">
+                                    {/* Dynamic Sub-configs based on Repeat Type */}
+                                    <div className="mt-4 space-y-4 border-t border-slate-100 pt-4">
+                                        {/* Date range for all Except Today where it's just StartDate */}
                                         <div className="flex gap-4">
                                             <div className="flex-1">
-                                                <label className="block text-xs font-bold text-slate-600 mb-2">开始时间</label>
-                                                <input type="time" value={planForm.startTime} onChange={e => setPlanForm({ ...planForm, startTime: e.target.value })} className="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white" />
+                                                <label className="block text-xs font-bold text-slate-600 mb-2">开始日期</label>
+                                                <input type="date" value={planForm.startDate} onChange={e => setPlanForm({ ...planForm, startDate: e.target.value })} className="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white text-slate-700" />
                                             </div>
-                                            <div className="flex-1">
-                                                <label className="block text-xs font-bold text-slate-600 mb-2">结束时间</label>
-                                                <input type="time" value={planForm.endTime} onChange={e => setPlanForm({ ...planForm, endTime: e.target.value })} className="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white" />
-                                            </div>
+                                            {planForm.repeatType !== 'today' && (
+                                                <div className="flex-1">
+                                                    <label className="block text-xs font-bold text-slate-600 mb-2">结束日期 <span className="text-slate-400 font-normal">(可选)</span></label>
+                                                    <input type="date" value={planForm.endDate} onChange={e => setPlanForm({ ...planForm, endDate: e.target.value })} className="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white text-slate-700" />
+                                                </div>
+                                            )}
                                         </div>
-                                    </div>
-                                )}
 
-                                {planForm.timeSetting === 'duration' && (
-                                    <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-5 animate-fade-in border-2 border-emerald-200">
-                                        <div className="grid grid-cols-4 gap-2">
-                                            {[5, 10, 15, 20, 30, 45, 60, 90].map(m => (
-                                                <button key={m} onClick={() => setPlanForm({ ...planForm, durationPreset: m })} className={`py-2 rounded-xl text-sm font-bold transition-all ${planForm.durationPreset === m ? 'bg-emerald-500 text-white shadow-md shadow-emerald-200' : 'bg-white border border-emerald-100 text-emerald-700 hover:bg-emerald-100'}`}>
-                                                    {m}分钟
-                                                </button>
-                                            ))}
-                                        </div>
+                                        {/* Weekly & Bi-weekly Literal Days selector */}
+                                        {(planForm.repeatType === 'weekly_custom' || planForm.repeatType === 'biweekly_custom') && (
+                                            <div className="animate-fade-in bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                                <div className="flex justify-between items-center mb-3">
+                                                    <label className="text-xs font-bold text-slate-600">在以下星期几重复？</label>
+                                                    <div className="flex gap-2 text-xs">
+                                                        <button onClick={() => setPlanForm({ ...planForm, weeklyDays: [1, 2, 3, 4, 5] })} className="text-blue-600 bg-blue-100/50 px-2 py-1 rounded hover:bg-blue-100">工作日</button>
+                                                        <button onClick={() => setPlanForm({ ...planForm, weeklyDays: [6, 7] })} className="text-orange-600 bg-orange-100/50 px-2 py-1 rounded hover:bg-orange-100">周末</button>
+                                                        <button onClick={() => setPlanForm({ ...planForm, weeklyDays: [1, 2, 3, 4, 5, 6, 7] })} className="text-emerald-600 bg-emerald-100/50 px-2 py-1 rounded hover:bg-emerald-100">每天</button>
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    {[{ d: 1, l: '一' }, { d: 2, l: '二' }, { d: 3, l: '三' }, { d: 4, l: '四' }, { d: 5, l: '五' }, { d: 6, l: '六' }, { d: 7, l: '日' }].map(w => {
+                                                        const isSelected = planForm.weeklyDays?.includes(w.d);
+                                                        return (
+                                                            <button key={w.d} onClick={() => {
+                                                                const newDays = isSelected ? planForm.weeklyDays.filter(d => d !== w.d) : [...(planForm.weeklyDays || []), w.d];
+                                                                setPlanForm({ ...planForm, weeklyDays: newDays });
+                                                            }} className={`w-10 h-10 rounded-full font-bold transition-all shadow-sm flex items-center justify-center text-sm ${isSelected ? 'bg-blue-600 text-white shadow-blue-600/30' : 'bg-white text-slate-500 hover:border-blue-400 border border-slate-200'}`}>
+                                                                {w.l}
+                                                            </button>
+                                                        )
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Ebbinghaus Config */}
+                                        {planForm.repeatType === 'ebbinghaus' && (
+                                            <div className="animate-fade-in bg-purple-50 p-4 rounded-2xl border border-purple-100">
+                                                <label className="block text-xs font-bold text-purple-800 mb-3">复习强度</label>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {[{ v: 'gentle', l: '温柔强度', d: '第1,3,7,14,30天' }, { v: 'normal', l: '一般强度', d: '第1,2,4,7,15,30天' }, { v: 'exam', l: '考前强度', d: '第1,2,3,5,7,10,14天' }, { v: 'enhanced', l: '增强模式', d: '密集的9次复习' }].map(eb => (
+                                                        <button key={eb.v} onClick={() => setPlanForm({ ...planForm, ebbStrength: eb.v })} className={`p-3 rounded-xl border-2 text-left transition-all ${planForm.ebbStrength === eb.v ? 'border-purple-500 bg-white shadow-sm ring-2 ring-purple-500/20' : 'border-transparent bg-white/50 hover:bg-white text-slate-500'}`}>
+                                                            <div className={`font-bold text-sm mb-1 ${planForm.ebbStrength === eb.v ? 'text-purple-700' : 'text-slate-600'}`}>{eb.l}</div>
+                                                            <div className="text-[10px] leading-tight opacity-70">{eb.d}</div>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* N-times Period Goals */}
+                                        {(planForm.repeatType.includes('_1') || planForm.repeatType.includes('_n')) && (
+                                            <div className="animate-fade-in bg-orange-50/50 p-4 rounded-2xl border border-orange-100 space-y-4">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-slate-600 mb-2">该周期内需完成几次？</label>
+                                                        <input type="number" min="1" max="99" value={planForm.periodTargetCount} onChange={e => setPlanForm({ ...planForm, periodTargetCount: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold bg-white text-orange-700" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-slate-600 mb-2">每次奖励上限次数 <span className="opacity-50">(防刷)</span></label>
+                                                        <input type="number" min="1" max="10" value={planForm.periodMaxPerDay} onChange={e => setPlanForm({ ...planForm, periodMaxPerDay: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold bg-white text-orange-700" />
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-xs font-bold text-slate-600 mb-2">允许执行的日期限制</label>
+                                                    <select value={planForm.periodDaysType} onChange={e => setPlanForm({ ...planForm, periodDaysType: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold text-slate-700 appearance-none">
+                                                        <option value="any">⏳ 任意时间都可以完成</option>
+                                                        <option value="workdays">💼 仅限工作日完成</option>
+                                                        <option value="weekends">🎉 仅限周末完成</option>
+                                                        <option value="custom">⚙️ 自定义每周哪几天</option>
+                                                    </select>
+                                                    {planForm.periodDaysType === 'custom' && (
+                                                        <div className="flex justify-between mt-3 bg-white p-2 rounded-xl border border-slate-100">
+                                                            {[{ d: 1, l: '一' }, { d: 2, l: '二' }, { d: 3, l: '三' }, { d: 4, l: '四' }, { d: 5, l: '五' }, { d: 6, l: '六' }, { d: 7, l: '日' }].map(w => {
+                                                                const isSelected = planForm.periodCustomDays?.includes(w.d);
+                                                                return (
+                                                                    <button key={w.d} onClick={() => {
+                                                                        const newDays = isSelected ? planForm.periodCustomDays.filter(d => d !== w.d) : [...(planForm.periodCustomDays || []), w.d];
+                                                                        setPlanForm({ ...planForm, periodCustomDays: newDays });
+                                                                    }} className={`w-8 h-8 rounded-full font-bold transition-all flex items-center justify-center text-xs ${isSelected ? 'bg-orange-500 text-white shadow-md' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>
+                                                                        {w.l}
+                                                                    </button>
+                                                                )
+                                                            })}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
+                                </div>
+
+                                <div>
+                                    <label className="flex items-center gap-2 text-sm font-black text-slate-800 mb-3">
+                                        <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><Icons.Clock size={18} /></div>
+                                        任务时间配置 <span className="text-slate-400 font-normal text-xs">(可选)</span>
+                                    </label>
+                                    <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-100 w-full mb-4">
+                                        <button onClick={() => setPlanForm({ ...planForm, timeSetting: planForm.timeSetting === 'range' ? 'none' : 'range' })} className={`flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${planForm.timeSetting === 'range' ? 'bg-white shadow text-blue-600 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}>
+                                            <Icons.Clock size={16} /> 指定时间段
+                                        </button>
+                                        <button onClick={() => setPlanForm({ ...planForm, timeSetting: planForm.timeSetting === 'duration' ? 'none' : 'duration' })} className={`flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${planForm.timeSetting === 'duration' ? 'bg-white shadow text-blue-600 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}>
+                                            <Icons.Settings size={16} /> 要求时长
+                                        </button>
+                                    </div>
+
+                                    {planForm.timeSetting === 'range' && (
+                                        <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-5 animate-fade-in">
+                                            <div className="flex gap-4">
+                                                <div className="flex-1">
+                                                    <label className="block text-xs font-bold text-slate-600 mb-2">开始时间</label>
+                                                    <input type="time" value={planForm.startTime} onChange={e => setPlanForm({ ...planForm, startTime: e.target.value })} className="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <label className="block text-xs font-bold text-slate-600 mb-2">结束时间</label>
+                                                    <input type="time" value={planForm.endTime} onChange={e => setPlanForm({ ...planForm, endTime: e.target.value })} className="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {planForm.timeSetting === 'duration' && (
+                                        <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-5 animate-fade-in border-2 border-emerald-200">
+                                            <div className="grid grid-cols-4 gap-2">
+                                                {[5, 10, 15, 20, 30, 45, 60, 90].map(m => (
+                                                    <button key={m} onClick={() => setPlanForm({ ...planForm, durationPreset: m })} className={`py-2 rounded-xl text-sm font-bold transition-all ${planForm.durationPreset === m ? 'bg-emerald-500 text-white shadow-md shadow-emerald-200' : 'bg-white border border-emerald-100 text-emerald-700 hover:bg-emerald-100'}`}>
+                                                        {m}分钟
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Conditional Section: Frequency (Habits only, as repetition is handled globally above) */}
                         {planType === 'habit' && (
@@ -1970,6 +2332,12 @@ export default function App() {
                                         <div className="text-xs font-medium opacity-80 leading-relaxed">适合喝水、控制脾气等多发情况，可累计奖惩。</div>
                                     </button>
                                 </div>
+                                {planForm.habitType === 'multiple' && (
+                                    <div className="mt-4 pt-4 border-t border-slate-100 animate-fade-in">
+                                        <label className="block text-xs font-bold text-slate-600 mb-2">每日最高允许记录次数 <span className="text-slate-400 font-normal">(防过度打卡)</span></label>
+                                        <input type="number" min="1" max="99" value={planForm.periodMaxPerDay || 3} onChange={e => setPlanForm({ ...planForm, periodMaxPerDay: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border-2 border-slate-100 rounded-xl p-3 outline-none focus:border-emerald-500 font-bold bg-slate-50 text-emerald-700" />
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -2082,7 +2450,7 @@ export default function App() {
             myTasks = myTasks.filter(t => taskFilter.includes(t.category));
         }
 
-        const getDailyStatus = (t) => t?.history?.[selectedDate]?.status || 'todo';
+        const getDailyStatus = (t) => getTaskStatusOnDate(t, selectedDate, activeKidId);
 
         if (taskStatusFilter === 'completed') {
             myTasks = myTasks.filter(t => getDailyStatus(t) === 'completed');
@@ -2251,8 +2619,8 @@ export default function App() {
                                     </>
                                 )}
                                 {getDailyStatus(t) === 'in_progress' && (
-                                    <button onClick={() => setTaskToSubmit(t)} className="w-full bg-indigo-100 text-indigo-700 rounded-full py-2 text-xs font-bold flex items-center justify-center gap-1">
-                                        <Icons.CheckSquare size={14} /> 提交验收
+                                    <button onClick={() => handleAttemptSubmit(t)} className="w-full bg-indigo-100 text-indigo-700 rounded-full py-2 text-xs font-bold flex items-center justify-center gap-1">
+                                        <Icons.Check size={14} /> 第一步：确认达标
                                     </button>
                                 )}
                                 {getDailyStatus(t) === 'pending_approval' && (
@@ -2402,12 +2770,12 @@ export default function App() {
                             </div>
                             <div className="space-y-4">
                                 {myTasks.filter(t => t.type === 'habit').map(t => (
-                                    <div key={t.id} className={`p-4 bg-slate-50 border border-slate-100 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors ${t.reward < 0 ? 'hover:border-red-200' : 'hover:border-yellow-200'}`}>
+                                    <div key={t.id} className={`p-4 bg-slate-50 border border-slate-100 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors ${t.reward < 0 ? 'hover:border-red-200' : 'hover:border-emerald-200'}`}>
                                         <div className="flex items-center gap-4">
                                             <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-3xl shadow-sm border border-slate-100">{t.iconEmoji || renderIcon(t.iconName, 24)}</div>
                                             <div>
                                                 <div className="font-bold text-slate-800 text-lg">{t.title}</div>
-                                                <div className={`text-xs font-black flex items-center gap-1 mt-1 w-fit px-2 py-0.5 rounded ${t.reward < 0 ? 'text-red-600 bg-red-50' : 'text-yellow-600 bg-yellow-50'}`}>
+                                                <div className={`text-xs font-black flex items-center gap-1 mt-1 w-fit px-2 py-0.5 rounded ${t.reward < 0 ? 'text-red-600 bg-red-50' : 'text-emerald-600 bg-emerald-50'}`}>
                                                     {t.reward > 0 ? `+${t.reward} 经验值` : `扣 ${Math.abs(t.reward)} 经验值`}
                                                 </div>
                                             </div>
@@ -2418,22 +2786,47 @@ export default function App() {
                                             ) : (
                                                 <>
                                                     {(() => {
-                                                        const getDailyStatus = (task) => task?.history?.[selectedDate]?.status || 'todo';
-                                                        const status = getDailyStatus(t);
-                                                        return (
-                                                            <>
-                                                                {status === 'todo' && <button onClick={() => setTaskToSubmit(t)} className="w-full md:w-auto px-6 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:bg-slate-100">去打卡</button>}
-                                                                {status === 'in_progress' && <button onClick={() => setTaskToSubmit(t)} className="w-full md:w-auto px-6 py-3 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl text-sm font-bold">提交验收</button>}
-                                                                {status === 'pending_approval' && <span className="text-sm font-bold text-orange-500 bg-orange-50 px-4 py-2.5 rounded-xl flex items-center gap-1 justify-center"><Icons.Clock size={16} /> 待审核</span>}
-                                                                {status === 'completed' && <span className="text-sm font-bold text-emerald-500 bg-emerald-50 px-4 py-2.5 rounded-xl flex items-center gap-1 justify-center"><Icons.CheckCircle size={16} /> 已记录</span>}
-                                                            </>
-                                                        );
+                                                        const entry = t.kidId === 'all' ? t.history?.[selectedDate]?.[activeKidId] : t.history?.[selectedDate];
+                                                        const count = entry?.count || (entry?.status === 'completed' ? 1 : 0);
+                                                        const isDailyOnce = t.habitType === 'daily_once';
+                                                        const isMaxedOut = t.habitType === 'multiple' && t.periodMaxPerDay && count >= t.periodMaxPerDay;
+
+                                                        if ((isDailyOnce && count >= 1) || isMaxedOut) {
+                                                            return <span className="text-sm font-bold text-slate-400 bg-slate-100 px-4 py-2.5 rounded-xl flex items-center gap-1 justify-center overflow-hidden"><Icons.CheckCircle size={16} /> 已记录 {count > 1 ? `(${count})` : ''}</span>;
+                                                        } else {
+                                                            return (
+                                                                <button onClick={() => handleAttemptSubmit(t)} className="w-full md:w-auto px-6 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 flex items-center gap-2 justify-center transition-all">
+                                                                    去打卡 {count > 0 && <span className="bg-emerald-100 text-emerald-600 font-black text-[11px] px-2 py-0.5 rounded-full">{count}次</span>}
+                                                                </button>
+                                                            );
+                                                        }
                                                     })()}
                                                 </>
                                             )}
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+
+                            {/* Habit Transaction History */}
+                            <div className="bg-slate-50 rounded-2xl border border-slate-100 mt-8 overflow-hidden">
+                                <div className="border-b border-slate-100 p-5">
+                                    <h3 className="font-black text-slate-700 text-sm flex items-center gap-2"><Icons.List size={16} className="text-slate-400" /> 近期明细记录</h3>
+                                </div>
+                                <div className="p-5">
+                                    {transactions.filter(t => t.kidId === activeKidId && t.category === 'habit').length === 0 && <div className="text-center text-slate-400 text-xs py-4">暂无打卡记录</div>}
+                                    <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">
+                                        {transactions.filter(t => t.kidId === activeKidId && t.category === 'habit').slice(0, 30).map(item => (
+                                            <div key={item.id} className={`flex items-center justify-between p-3 rounded-xl border ${item.type === 'income' ? 'bg-emerald-50/50 border-emerald-100/50' : 'bg-red-50/50 border-red-100/50'}`}>
+                                                <div>
+                                                    <div className="font-bold text-slate-700 text-sm">{item.title}</div>
+                                                    <div className="text-xs text-slate-400 mt-0.5">{new Date(item.date).toLocaleString([], { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</div>
+                                                </div>
+                                                <div className={`font-black tracking-wide ${item.type === 'income' ? 'text-emerald-500' : 'text-red-500'}`}>{item.type === 'income' ? '+' : '-'}{item.amount} EXP</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -2493,9 +2886,9 @@ export default function App() {
                                     {/* Income List */}
                                     <div className="p-6 md:border-r border-slate-100">
                                         <h4 className="font-black text-slate-700 mb-4 flex items-center gap-2 text-sm"><Icons.TrendingUp size={16} className="text-emerald-500" /> 赚取金币</h4>
-                                        {transactions.filter(t => t.kidId === activeKidId && t.type === 'income').length === 0 && <div className="text-center text-slate-400 text-sm py-8">暂无收入记录</div>}
+                                        {transactions.filter(t => t.kidId === activeKidId && t.type === 'income' && t.category !== 'habit').length === 0 && <div className="text-center text-slate-400 text-sm py-8">暂无收入记录</div>}
                                         <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
-                                            {transactions.filter(t => t.kidId === activeKidId && t.type === 'income').slice(0, 20).map(item => (
+                                            {transactions.filter(t => t.kidId === activeKidId && t.type === 'income' && t.category !== 'habit').slice(0, 20).map(item => (
                                                 <div key={item.id} className="flex items-center justify-between p-3 bg-emerald-50/50 rounded-xl">
                                                     <div>
                                                         <div className="font-bold text-slate-700 text-sm">{item.title}</div>
@@ -2510,9 +2903,9 @@ export default function App() {
                                     {/* Expense List */}
                                     <div className="p-6 border-t md:border-t-0 border-slate-100">
                                         <h4 className="font-black text-slate-700 mb-4 flex items-center gap-2 text-sm"><Icons.ShoppingBag size={16} className="text-red-500" /> 超市消费</h4>
-                                        {transactions.filter(t => t.kidId === activeKidId && t.type === 'expense').length === 0 && <div className="text-center text-slate-400 text-sm py-8">暂无消费记录</div>}
+                                        {transactions.filter(t => t.kidId === activeKidId && t.type === 'expense' && t.category !== 'habit').length === 0 && <div className="text-center text-slate-400 text-sm py-8">暂无消费记录</div>}
                                         <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
-                                            {transactions.filter(t => t.kidId === activeKidId && t.type === 'expense').slice(0, 20).map(item => (
+                                            {transactions.filter(t => t.kidId === activeKidId && t.type === 'expense' && t.category !== 'habit').slice(0, 20).map(item => (
                                                 <div key={item.id} className="flex items-center justify-between p-3 bg-red-50/50 rounded-xl">
                                                     <div>
                                                         <div className="font-bold text-slate-700 text-sm">{item.title}</div>
@@ -2667,7 +3060,12 @@ export default function App() {
                                     ))}
                                 </div>
                             </div>
-                            <button onClick={() => { setPlanType('study'); setShowAddPlanModal(true); }} className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all hover:scale-105">
+                            <button onClick={() => {
+                                setEditingTask(null);
+                                setPlanType('study');
+                                setPlanForm({ targetKid: parentKidFilter === 'all' ? 'all' : parentKidFilter, category: '技能', title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, timeSetting: 'none', startTime: '', endTime: '', durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
+                                setShowAddPlanModal(true);
+                            }} className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all hover:scale-105">
                                 <Icons.Plus size={18} /> 新建计划
                             </button>
                         </div>
@@ -2735,7 +3133,7 @@ export default function App() {
                             if (parentKidFilter !== 'all') {
                                 parentTasks = parentTasks.filter(t => t.kidId === parentKidFilter || t.kidId === 'all');
                             }
-                            const getDailyStatus = (t) => t?.history?.[selectedDate]?.status || 'todo';
+                            const getDailyStatus = (t) => getTaskStatusOnDate(t, selectedDate, activeKidId);
 
                             if (parentTasks.length === 0) {
                                 return <div className="text-center py-16 text-slate-400 font-bold bg-white rounded-2xl border border-slate-100 shadow-sm">这一天没有安排学习计划哦~</div>;
@@ -2746,10 +3144,10 @@ export default function App() {
                                     {parentTasks.map(t => {
                                         // For Parent view UI display trick: if KidId === 'all', randomly select the first active kid to show avatar or generic '全部孩子'
                                         let displayKidId = t.kidId;
-                                        if (t.kidId === 'all') displayKidId = parentKidFilter === 'all' ? kids[0]?.id : parentKidFilter;
+                                        if (t.kidId === 'all') displayKidId = parentKidFilter === 'all' ? 'all' : parentKidFilter;
 
-                                        const kidInfo = kids.find(k => k.id === displayKidId);
-                                        const status = getTaskStatusOnDate(t, selectedDate, displayKidId);
+                                        const kidInfo = displayKidId === 'all' ? { name: '全部孩子', avatar: '👥' } : kids.find(k => k.id === displayKidId);
+                                        const status = getTaskStatusOnDate(t, selectedDate, displayKidId === 'all' ? kids[0]?.id : displayKidId);
                                         return (
                                             <div key={t.id} className="flex bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow h-28 group relative">
                                                 <div className={`w-20 bg-gradient-to-b ${getCategoryGradient(t.category || '计划')} flex flex-col items-center justify-center text-white p-2`}>
@@ -2781,7 +3179,14 @@ export default function App() {
                                                                     title: t.title,
                                                                     desc: t.standards || t.desc || '',
                                                                     startDate: t.startDate || new Date().toISOString().split('T')[0],
-                                                                    repeatType: t.frequency === '仅当天' ? '仅当天' : (t.frequency === '每天' ? '每天' : (t.frequency === '每周一至周五' ? '工作日' : '每天')),
+                                                                    endDate: t.repeatConfig?.endDate || '',
+                                                                    repeatType: t.repeatConfig?.type || (t.frequency === '仅当天' ? 'today' : (t.frequency === '每周一至周五' ? 'weekly_custom' : 'daily')),
+                                                                    weeklyDays: t.repeatConfig?.weeklyDays || [1, 2, 3, 4, 5],
+                                                                    ebbStrength: t.repeatConfig?.ebbStrength || 'normal',
+                                                                    periodDaysType: t.repeatConfig?.periodDaysType || 'any',
+                                                                    periodCustomDays: t.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5],
+                                                                    periodTargetCount: t.repeatConfig?.periodTargetCount || 1,
+                                                                    periodMaxPerDay: t.repeatConfig?.periodMaxPerDay || 1,
                                                                     timeSetting: t.timeStr && t.timeStr !== '--:--' ? (t.timeStr.includes('-') ? 'range' : 'duration') : 'none',
                                                                     startTime: t.timeStr && t.timeStr.includes('-') ? t.timeStr.split('-')[0] : '',
                                                                     endTime: t.timeStr && t.timeStr.includes('-') ? t.timeStr.split('-')[1] : '',
@@ -2833,7 +3238,12 @@ export default function App() {
                                 <h2 className="font-black text-slate-800 text-xl">🌿 记录成长管理</h2>
                                 <p className="text-sm text-slate-500 mt-1">设置正向行为奖励或惩罚规则，引导孩子长期成长</p>
                             </div>
-                            <button onClick={() => { setPlanType('habit'); setShowAddPlanModal(true); }} className="w-full sm:w-auto bg-emerald-600 text-white px-6 py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 shadow-lg shadow-emerald-200 hover:bg-emerald-700">
+                            <button onClick={() => {
+                                setEditingTask(null);
+                                setPlanType('habit');
+                                setPlanForm({ targetKid: 'all', category: '技能', title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, timeSetting: 'none', startTime: '', endTime: '', durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
+                                setShowAddPlanModal(true);
+                            }} className="w-full sm:w-auto bg-emerald-600 text-white px-6 py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 shadow-lg shadow-emerald-200 hover:bg-emerald-700">
                                 <Icons.Plus size={18} /> 新建习惯
                             </button>
                         </div>
@@ -2842,7 +3252,7 @@ export default function App() {
                             <h3 className="font-bold text-slate-800 mb-4 text-lg">当前生效的习惯规则</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {tasks.filter(t => t.type === 'habit').map(t => {
-                                    const kName = kids.find(k => k.id === t.kidId)?.name || '未知';
+                                    const kName = t.kidId === 'all' ? '全部孩子' : (kids.find(k => k.id === t.kidId)?.name || '未知');
                                     return (
                                         <div key={t.id} className="p-4 border border-slate-100 rounded-2xl flex flex-col justify-between hover:shadow-md transition-shadow">
                                             <div className="flex items-start gap-3 mb-4">
@@ -2864,7 +3274,26 @@ export default function App() {
                                                         handleExpChange(t.kidId, t.reward);
                                                         notify(`已记录惩罚，扣除 ${kName} ${Math.abs(t.reward)} 经验值！`, "error");
                                                     }} className="bg-red-50 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors">记录扣分</button>}
-                                                    <button onClick={() => handleDeleteTask(t.id)} className="text-slate-400 hover:text-red-500 p-2 transition-colors"><Icons.Trash2 size={16} /></button>
+                                                    <button onClick={() => {
+                                                        setPlanType(t.type || 'habit');
+                                                        setPlanForm({
+                                                            targetKid: t.kidId,
+                                                            category: t.category || '记录成长',
+                                                            title: t.title,
+                                                            desc: t.standards || t.desc || '',
+                                                            startDate: t.startDate || new Date().toISOString().split('T')[0],
+                                                            repeatType: '每天',
+                                                            pointRule: (t.pointRule && t.pointRule === 'custom') || (t.type === 'habit') ? 'custom' : 'default',
+                                                            reward: String(t.reward || ''),
+                                                            iconEmoji: t.iconEmoji || '⭐',
+                                                            habitColor: t.catColor || t.habitColor || 'from-blue-400 to-blue-500',
+                                                            habitType: t.habitType || 'daily_once',
+                                                            periodMaxPerDay: t.periodMaxPerDay || 3
+                                                        });
+                                                        setShowAddPlanModal(true);
+                                                        setEditingTask(t);
+                                                    }} className="text-slate-400 hover:text-emerald-500 p-2 transition-colors"><Icons.Edit3 size={16} /></button>
+                                                    <button onClick={() => setDeleteConfirmTask(t)} className="text-slate-400 hover:text-red-500 p-2 transition-colors"><Icons.Trash2 size={16} /></button>
                                                 </div>
                                             </div>
                                         </div>
@@ -2873,6 +3302,28 @@ export default function App() {
                                 {tasks.filter(t => t.type === 'habit').length === 0 && (
                                     <div className="md:col-span-2 text-center py-16 text-slate-400 font-bold">暂无成长记录，点击上方按钮创建一个吧~</div>
                                 )}
+                            </div>
+
+                            <div className="mt-8 pt-6 border-t border-slate-100">
+                                <h3 className="font-bold text-slate-800 mb-4 text-base flex items-center gap-2"><Icons.List size={16} className="text-slate-400" /> 近期习惯打卡明细 (Exp)</h3>
+                                {transactions.filter(t => t.category === 'habit').length === 0 && <div className="text-center text-slate-400 text-sm py-8 bg-slate-50 rounded-2xl">暂无打卡明细</div>}
+                                <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
+                                    {transactions.filter(t => t.category === 'habit').slice(0, 40).map(item => {
+                                        const kName = kids.find(k => k.id === item.kidId)?.name || '未知';
+                                        return (
+                                            <div key={item.id} className={`flex items-center justify-between p-4 rounded-xl border ${item.type === 'income' ? 'bg-emerald-50/30 border-emerald-100/50' : 'bg-red-50/30 border-red-100/50'}`}>
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="text-xs bg-white border border-slate-200 shadow-sm font-bold text-slate-600 px-2 py-0.5 rounded-md">{kName}</span>
+                                                        <div className="font-bold text-slate-700 text-sm">{item.title}</div>
+                                                    </div>
+                                                    <div className="text-xs text-slate-400">{new Date(item.date).toLocaleString([], { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</div>
+                                                </div>
+                                                <div className={`font-black text-lg tracking-wide ${item.type === 'income' ? 'text-emerald-500' : 'text-red-500'}`}>{item.type === 'income' ? '+' : '-'}{item.amount} EXP</div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2893,8 +3344,8 @@ export default function App() {
                                 const pctGive = total > 0 ? Math.round(((k.balances.give || 0) / total) * 100) : 0;
                                 const pctVault = total > 0 ? Math.round(((k.vault?.lockedAmount || 0) / total) * 100) : 0;
 
-                                // Build income/expense history from transactions
-                                const kidTrans = transactions.filter(t => t.kidId === k.id);
+                                // Build income/expense history from transactions (exclude Habit logs)
+                                const kidTrans = transactions.filter(t => t.kidId === k.id && t.category !== 'habit');
                                 const incomeHistory = kidTrans.filter(t => t.type === 'income');
                                 const expenseHistory = kidTrans.filter(t => t.type === 'expense');
 
@@ -3220,7 +3671,7 @@ export default function App() {
                     {notifications.map(n => (
                         <div key={n.id} className={`p-4 rounded-xl shadow-xl flex items-center gap-3 animate-slide-in ${n.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
                             {n.type === 'success' ? <Icons.CheckCircle size={24} /> : <Icons.AlertCircle size={24} />}
-                            <span className="font-bold">{n.message}</span>
+                            <span className="font-bold">{n.msg}</span>
                         </div>
                     ))}
                 </div>
@@ -3252,7 +3703,7 @@ export default function App() {
                     {notifications.map(n => (
                         <div key={n.id} className={`p-4 rounded-xl shadow-xl flex items-center gap-3 animate-slide-in ${n.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
                             {n.type === 'success' ? <Icons.CheckCircle size={24} /> : <Icons.AlertCircle size={24} />}
-                            <span className="font-bold">{n.message}</span>
+                            <span className="font-bold">{n.msg}</span>
                         </div>
                     ))}
                 </div>
@@ -3442,7 +3893,6 @@ export default function App() {
                                     onChange={e => setNewKidForm(f => ({ ...f, name: e.target.value }))}
                                     placeholder="例如：小明、芳芳"
                                     className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-xl font-bold text-slate-800 outline-none focus:border-indigo-500 transition-colors"
-                                    maxLength={10}
                                     autoFocus
                                 />
                             </div>
