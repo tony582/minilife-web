@@ -27,7 +27,7 @@ RUN npm ci --omit=dev
 COPY server/ ./
 
 # Expose the API and Web server port
-EXPOSE 3000
+EXPOSE 80
 
 # Run the server
 CMD ["node", "server.js"]
