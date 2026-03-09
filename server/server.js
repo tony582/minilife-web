@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const path = require('path');
 const db = require('./database');
 
 const app = express();
@@ -369,6 +370,16 @@ app.post('/api/transactions', authenticateToken, (req, res) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ id });
     });
+});
+
+// --- Serve Frontend in Production ---
+// Serve static files from the React app build directory
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 const PORT = 3000;
