@@ -7,7 +7,6 @@ RUN npm ci
 
 # Copy front-end source and build it
 COPY index.html vite.config.js ./
-COPY tailwind.config.js postcss.config.js ./
 COPY src/ ./src/
 COPY public/ ./public/
 RUN npm run build
