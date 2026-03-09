@@ -134,12 +134,14 @@ const getDaysInMonth = (year, month) => {
 };
 
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+
 const apiFetch = async (url, options = {}) => {
     const token = localStorage.getItem('minilife_token');
     if (token) {
         options.headers = { ...options.headers, 'Authorization': `Bearer ${token}` };
     }
-    const res = await fetch(url, options);
+    const res = await fetch(`${API_BASE}${url}`, options);
     if (res.status === 401 || res.status === 403) {
         localStorage.removeItem('minilife_token');
         window.location.reload();
@@ -163,7 +165,7 @@ export default function App() {
         e.preventDefault();
         try {
             const endpoint = authMode === 'login' ? '/api/login' : '/api/register';
-            const res = await fetch(endpoint, {
+            const res = await fetch(`${API_BASE}${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(authForm)
