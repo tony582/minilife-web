@@ -231,7 +231,7 @@ export default function App() {
 
     const [kids, setKids] = useState([]);
     const [activeKidId, setActiveKidId] = useState('kid_1');
-    const [parentSettings, setParentSettings] = useState({ pinEnabled: true, pinCode: '1234' });
+    const [parentSettings, setParentSettings] = useState({ pinEnabled: false, pinCode: '1234' });
 
     // 任务数据
     const [tasks, setTasks] = useState([]);
@@ -481,7 +481,8 @@ export default function App() {
         reward: '', iconEmoji: '📚',
         habitColor: 'from-blue-400 to-blue-500',
         habitType: 'daily_once', // 'daily_once' | 'multiple'
-        attachments: []
+        attachments: [],
+        requireApproval: true // True by default for tasks granting coins
     });
 
     // 核心日期匹配逻辑
@@ -874,8 +875,12 @@ export default function App() {
         const taskToSubmit = quickCompleteTask;
         if (!taskToSubmit) return;
 
+        // Auto-approve logic check
+        const isAutoApprove = taskToSubmit.requireApproval === false;
+        const finalStatus = isAutoApprove ? 'completed' : 'pending_approval';
+
         // Construct payload specifically based on whether history is 1D or 2D (unified)
-        const histUpdate = { status: 'pending_approval', timeSpent: spentStr, note: qcNote, attachments: qcAttachments };
+        const histUpdate = { status: finalStatus, timeSpent: spentStr, note: qcNote, attachments: qcAttachments };
         let newHistory = { ...(taskToSubmit.history || {}) };
 
         if (taskToSubmit.kidId === 'all') {
@@ -892,9 +897,31 @@ export default function App() {
             });
 
             setTasks(tasks.map(t => t.id === taskToSubmit.id ? { ...t, history: newHistory } : t));
-
             setQuickCompleteTask(null);
-            notify('已提交审核，等待家长发放家庭币哦！', 'success');
+
+            if (isAutoApprove && taskToSubmit.reward > 0) {
+                // Instantly generate transaction and family coins
+                const newTrans = {
+                    id: `trans_${Date.now()}`,
+                    kidId: activeKidId,
+                    type: 'income',
+                    amount: taskToSubmit.reward || 0,
+                    title: `完成: ${taskToSubmit.title}`,
+                    date: new Date().toISOString(),
+                    category: 'task'
+                };
+                await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newTrans) });
+                setTransactions(prev => [newTrans, ...prev]);
+
+                const targetKid = kids.find(k => k.id === activeKidId);
+                if (targetKid) {
+                    const newBals = { ...targetKid.balances, spend: targetKid.balances.spend + (taskToSubmit.reward || 0) };
+                    await updateActiveKid({ balances: newBals });
+                }
+                notify(`打卡成功！已自动发放 ${taskToSubmit.reward} 家庭币！`, 'success');
+            } else {
+                notify('已提交审核，等待家长发放家庭币哦！', 'success');
+            }
         } catch (e) {
             notify('提交失败', 'error');
         }
@@ -1113,6 +1140,7 @@ export default function App() {
                 timeStr: timeStr,
                 standards: planForm.desc || "按要求完成",
                 iconEmoji: planForm.iconEmoji,
+                requireApproval: planForm.requireApproval
             };
             try {
                 await apiFetch(`/api/tasks/${editingTask.id}`, {
@@ -1145,6 +1173,7 @@ export default function App() {
             pointRule: planForm.pointRule,
             habitType: planForm.habitType,
             attachments: planForm.attachments || [],
+            requireApproval: planForm.requireApproval,
             dates: planForm.repeatType === 'today' || planForm.repeatType === '仅当天' ? [planForm.startDate] : [],
             repeatConfig: planType === 'study' ? {
                 type: planForm.repeatType,
@@ -2366,6 +2395,17 @@ export default function App() {
                                             <input type="number" value={planForm.reward} onChange={e => setPlanForm({ ...planForm, reward: e.target.value })} placeholder="输入完成可获得的金币数" className="w-full bg-white border-2 border-yellow-200 rounded-2xl py-5 pl-14 pr-6 outline-none focus:border-yellow-500 font-black text-2xl text-yellow-700 shadow-inner" />
                                         </div>
                                     )}
+
+                                    {/* Require Approval Toggle */}
+                                    <div className="bg-white rounded-2xl border border-yellow-200 p-4 flex items-center justify-between shadow-sm cursor-pointer hover:bg-yellow-50 transition-colors mt-4" onClick={() => setPlanForm({ ...planForm, requireApproval: !planForm.requireApproval })}>
+                                        <div>
+                                            <div className="font-black text-slate-800">打卡需要家长审核</div>
+                                            <div className="text-xs text-slate-500 mt-0.5">关闭后，孩子打卡将跳过审核直接发放奖励</div>
+                                        </div>
+                                        <div className={`w-14 h-8 rounded-full p-1 transition-colors ${planForm.requireApproval ? 'bg-yellow-500' : 'bg-slate-300'}`}>
+                                            <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform ${planForm.requireApproval ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                                        </div>
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="space-y-4 animate-fade-in">
@@ -2400,6 +2440,92 @@ export default function App() {
         );
     };
 
+    const renderAddKidModal = () => {
+        if (!showAddKidModal) return null;
+        return (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
+                <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden animate-bounce-in">
+                    <div className="bg-slate-50 border-b border-slate-100 p-6 flex justify-between items-center relative">
+                        <h2 className="text-xl font-black text-slate-800 flex items-center gap-2"><Icons.Users size={24} className="text-indigo-500" /> {newKidForm.id ? '编辑家庭成员' : '添加家庭成员'}</h2>
+                        <button onClick={() => setShowAddKidModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors bg-white w-8 h-8 rounded-full shadow-sm flex items-center justify-center"><Icons.X size={18} /></button>
+                    </div>
+                    <div className="p-6 space-y-6">
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">宝贝的小名 / 昵称</label>
+                            <input
+                                type="text"
+                                value={newKidForm.name}
+                                onChange={e => setNewKidForm(f => ({ ...f, name: e.target.value }))}
+                                placeholder="例如：小明、芳芳"
+                                className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-xl font-bold text-slate-800 outline-none focus:border-indigo-500 transition-colors"
+                                autoFocus
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">选择性别</label>
+                            <div className="flex bg-slate-100 rounded-xl p-1 gap-1">
+                                <button
+                                    onClick={() => setNewKidForm(f => ({ ...f, gender: 'boy', avatar: '👦' }))}
+                                    className={`flex-1 py-3 font-black text-sm rounded-lg transition-all flex items-center justify-center gap-2 ${newKidForm.gender === 'boy' ? 'bg-white text-blue-500 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    👦 男孩
+                                </button>
+                                <button
+                                    onClick={() => setNewKidForm(f => ({ ...f, gender: 'girl', avatar: '👧' }))}
+                                    className={`flex-1 py-3 font-black text-sm rounded-lg transition-all flex items-center justify-center gap-2 ${newKidForm.gender === 'girl' ? 'bg-white text-pink-500 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    👧 女孩
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">挑选一个专属可爱头像</label>
+                            <div className="grid grid-cols-5 gap-3">
+                                {(newKidForm.gender === 'boy' ? ['👦', '🧑‍🚀', '🦸‍♂️', '🕵️‍♂️', '👼'] : ['👧', '👩‍🚀', '🦸‍♀️', '🧚‍♀️', '🧜‍♀️']).map(avatar => (
+                                    <button
+                                        key={avatar}
+                                        onClick={() => setNewKidForm(f => ({ ...f, avatar }))}
+                                        className={`aspect-square text-3xl flex items-center justify-center rounded-2xl transition-all ${newKidForm.avatar === avatar ? (newKidForm.gender === 'boy' ? 'bg-blue-100 border-2 border-blue-400 scale-110 shadow-sm' : 'bg-pink-100 border-2 border-pink-400 scale-110 shadow-sm') : 'bg-slate-50 border-2 border-transparent hover:bg-slate-100 grayscale hover:grayscale-0'}`}
+                                    >
+                                        {avatar}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-slate-50 p-6 border-t border-slate-100 flex gap-4">
+                        <button onClick={() => setShowAddKidModal(false)} className="flex-[1] bg-white text-slate-600 font-bold py-4 rounded-xl shadow-sm border border-slate-200 hover:bg-slate-50">取消</button>
+                        <button onClick={async () => {
+                            if (!newKidForm.name.trim()) return notify("请输入孩子名字", "error");
+                            if (!newKidForm.avatar) return notify("请选择一个头像", "error");
+
+                            if (newKidForm.id) {
+                                try {
+                                    await apiFetch(`/api/kids/${newKidForm.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newKidForm.name.trim(), avatar: newKidForm.avatar }) });
+                                    setKids(kids.map(k => k.id === newKidForm.id ? { ...k, name: newKidForm.name.trim(), avatar: newKidForm.avatar } : k));
+                                    notify("资料已保存更新！", "success");
+                                    setShowAddKidModal(false);
+                                } catch (err) { notify("保存失败", "error"); }
+                            } else {
+                                const newKid = { id: `kid_${Date.now()}`, name: newKidForm.name.trim(), avatar: newKidForm.avatar };
+                                try {
+                                    await apiFetch('/api/kids', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newKid) });
+                                    setKids([...kids, { ...newKid, level: 1, exp: 0, balances: { spend: 0, save: 0, give: 0 }, vault: { lockedAmount: 0, projectedReturn: 0 } }]);
+                                    notify("家庭新成员添加成功！", "success");
+                                    setShowAddKidModal(false);
+                                } catch (err) { notify("添加失败", "error"); }
+                            }
+                        }} className={`flex-[2] text-white font-black py-4 rounded-xl shadow-lg transition-transform hover:scale-[1.02] ${newKidForm.gender === 'boy' ? 'bg-blue-500 hover:bg-blue-600 shadow-blue-200' : 'bg-pink-500 hover:bg-pink-600 shadow-pink-200'}`}>
+                            {newKidForm.id ? '保存修改' : '确定添加'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     // === 视图页面组件 ===
     const renderProfileSelection = () => (
         <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 animate-fade-in relative">
@@ -2416,6 +2542,14 @@ export default function App() {
                         <span className="text-slate-300 mt-4 text-xl font-bold group-hover:text-white transition-colors">{k.name}</span>
                     </div>
                 ))}
+
+                {/* Add Kid Button (Netflix Style) */}
+                <div onClick={() => { setActiveKidId(null); setNewKidForm({ name: '', gender: 'boy', avatar: '👦', dob: '' }); setShowAddKidModal(true); }} className="group cursor-pointer flex flex-col items-center">
+                    <div className="w-28 h-28 md:w-36 md:h-36 rounded-[2rem] border-4 border-dashed border-slate-700 bg-slate-800/50 flex items-center justify-center text-5xl text-slate-500 shadow-xl group-hover:scale-105 group-hover:border-slate-500 group-hover:text-slate-400 transition-all">
+                        <Icons.Plus size={48} strokeWidth={3} />
+                    </div>
+                    <span className="text-slate-500 mt-4 text-xl font-bold group-hover:text-slate-400 transition-colors">添加小朋友</span>
+                </div>
             </div>
             <button onClick={() => parentSettings.pinEnabled ? setAppState('parent_pin') : setAppState('parent_app')} className="absolute bottom-10 flex items-center gap-2 text-slate-400 hover:text-white transition-colors bg-white/5 px-6 py-3 rounded-full font-bold">
                 <Icons.Settings size={18} /> 家长管理入口
@@ -3196,7 +3330,8 @@ export default function App() {
                                                                     iconEmoji: t.iconEmoji || '📚',
                                                                     habitColor: t.catColor || 'from-blue-400 to-blue-500',
                                                                     habitType: t.habitType || 'daily_once',
-                                                                    attachments: t.attachments || []
+                                                                    attachments: t.attachments || [],
+                                                                    requireApproval: t.requireApproval !== undefined ? t.requireApproval : true
                                                                 });
                                                                 setShowAddPlanModal(true);
                                                             }} className="w-full bg-blue-50 text-blue-600 border border-blue-200 rounded-full py-1.5 text-xs font-bold hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors">
@@ -3874,92 +4009,7 @@ export default function App() {
             {renderAddPlanModal()}
             {renderTimerModal()}
             {renderCalendarModal()}
-
-
-            {/* Add Kid Modal */}
-            {showAddKidModal && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
-                    <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden animate-bounce-in">
-                        <div className="bg-slate-50 border-b border-slate-100 p-6 flex justify-between items-center relative">
-                            <h2 className="text-xl font-black text-slate-800 flex items-center gap-2"><Icons.Users size={24} className="text-indigo-500" /> {newKidForm.id ? '编辑家庭成员' : '添加家庭成员'}</h2>
-                            <button onClick={() => setShowAddKidModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors bg-white w-8 h-8 rounded-full shadow-sm flex items-center justify-center"><Icons.X size={18} /></button>
-                        </div>
-                        <div className="p-6 space-y-6">
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">宝贝的小名 / 昵称</label>
-                                <input
-                                    type="text"
-                                    value={newKidForm.name}
-                                    onChange={e => setNewKidForm(f => ({ ...f, name: e.target.value }))}
-                                    placeholder="例如：小明、芳芳"
-                                    className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-xl font-bold text-slate-800 outline-none focus:border-indigo-500 transition-colors"
-                                    autoFocus
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">选择性别</label>
-                                <div className="flex bg-slate-100 rounded-xl p-1 gap-1">
-                                    <button
-                                        onClick={() => setNewKidForm(f => ({ ...f, gender: 'boy', avatar: '👦' }))}
-                                        className={`flex-1 py-3 font-black text-sm rounded-lg transition-all flex items-center justify-center gap-2 ${newKidForm.gender === 'boy' ? 'bg-white text-blue-500 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                                    >
-                                        👦 男孩
-                                    </button>
-                                    <button
-                                        onClick={() => setNewKidForm(f => ({ ...f, gender: 'girl', avatar: '👧' }))}
-                                        className={`flex-1 py-3 font-black text-sm rounded-lg transition-all flex items-center justify-center gap-2 ${newKidForm.gender === 'girl' ? 'bg-white text-pink-500 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                                    >
-                                        👧 女孩
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">挑选一个专属可爱头像</label>
-                                <div className="grid grid-cols-5 gap-3">
-                                    {(newKidForm.gender === 'boy' ? ['👦', '🧑‍🚀', '🦸‍♂️', '🕵️‍♂️', '👼'] : ['👧', '👩‍🚀', '🦸‍♀️', '🧚‍♀️', '🧜‍♀️']).map(avatar => (
-                                        <button
-                                            key={avatar}
-                                            onClick={() => setNewKidForm(f => ({ ...f, avatar }))}
-                                            className={`aspect-square text-3xl flex items-center justify-center rounded-2xl transition-all ${newKidForm.avatar === avatar ? (newKidForm.gender === 'boy' ? 'bg-blue-100 border-2 border-blue-400 scale-110 shadow-sm' : 'bg-pink-100 border-2 border-pink-400 scale-110 shadow-sm') : 'bg-slate-50 border-2 border-transparent hover:bg-slate-100 grayscale hover:grayscale-0'}`}
-                                        >
-                                            {avatar}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-slate-50 p-6 border-t border-slate-100 flex gap-4">
-                            <button onClick={() => setShowAddKidModal(false)} className="flex-[1] bg-white text-slate-600 font-bold py-4 rounded-xl shadow-sm border border-slate-200 hover:bg-slate-50">取消</button>
-                            <button onClick={async () => {
-                                if (!newKidForm.name.trim()) return notify("请输入孩子名字", "error");
-                                if (!newKidForm.avatar) return notify("请选择一个头像", "error");
-
-                                if (newKidForm.id) {
-                                    try {
-                                        await apiFetch(`/api/kids/${newKidForm.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newKidForm.name.trim(), avatar: newKidForm.avatar }) });
-                                        setKids(kids.map(k => k.id === newKidForm.id ? { ...k, name: newKidForm.name.trim(), avatar: newKidForm.avatar } : k));
-                                        notify("资料已保存更新！", "success");
-                                        setShowAddKidModal(false);
-                                    } catch (err) { notify("保存失败", "error"); }
-                                } else {
-                                    const newKid = { id: `kid_${Date.now()}`, name: newKidForm.name.trim(), avatar: newKidForm.avatar };
-                                    try {
-                                        await apiFetch('/api/kids', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newKid) });
-                                        setKids([...kids, { ...newKid, level: 1, exp: 0, balances: { spend: 0, save: 0, give: 0 }, vault: { lockedAmount: 0, projectedReturn: 0 } }]);
-                                        notify("家庭新成员添加成功！", "success");
-                                        setShowAddKidModal(false);
-                                    } catch (err) { notify("添加失败", "error"); }
-                                }
-                            }} className={`flex-[2] text-white font-black py-4 rounded-xl shadow-lg transition-transform hover:scale-[1.02] ${newKidForm.gender === 'boy' ? 'bg-blue-500 hover:bg-blue-600 shadow-blue-200' : 'bg-pink-500 hover:bg-pink-600 shadow-pink-200'}`}>
-                                {newKidForm.id ? '保存修改' : '确定添加'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
+            {renderAddKidModal()}
             {/* Delete Confirm Modal */}
             {deleteConfirmTask && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
