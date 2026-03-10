@@ -218,24 +218,31 @@ app.get('/api/tasks', authenticateToken, (req, res) => {
         const tasks = rows.map(r => ({
             ...r,
             dates: r.dates ? JSON.parse(r.dates) : [],
-            history: r.history ? JSON.parse(r.history) : {}
+            history: r.history ? JSON.parse(r.history) : {},
+            attachments: r.attachments ? JSON.parse(r.attachments) : [],
+            repeatConfig: r.repeatConfig ? JSON.parse(r.repeatConfig) : null,
+            requireApproval: r.requireApproval === 1
         }));
         res.json(tasks);
     });
 });
 
 app.post('/api/tasks', authenticateToken, (req, res) => {
-    const { id, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, dates } = req.body;
+    const { id, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, dates, startDate, pointRule, habitType, attachments, requireApproval, repeatConfig } = req.body;
     const datesStr = dates ? JSON.stringify(dates) : '[]';
-    const insert = `INSERT INTO tasks (id, userId, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, dates, history) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
-    db.run(insert, [id, req.user.id, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, datesStr, '{}'], function (err) {
+    const attachmentsStr = attachments ? JSON.stringify(attachments) : '[]';
+    const repeatConfigStr = repeatConfig ? JSON.stringify(repeatConfig) : null;
+    const requireApprovalInt = requireApproval ? 1 : 0;
+
+    const insert = `INSERT INTO tasks (id, userId, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, dates, history, startDate, pointRule, habitType, attachments, requireApproval, repeatConfig) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+    db.run(insert, [id, req.user.id, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, datesStr, '{}', startDate, pointRule, habitType, attachmentsStr, requireApprovalInt, repeatConfigStr], function (err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ id });
     });
 });
 
 app.put('/api/tasks/:id', authenticateToken, (req, res) => {
-    const { status, title, reward, timeStr, frequency, standards, category, catColor, iconEmoji, iconName, dates } = req.body;
+    const { status, title, reward, timeStr, frequency, standards, category, catColor, iconEmoji, iconName, dates, history, startDate, pointRule, habitType, attachments, requireApproval, repeatConfig } = req.body;
     let query = "UPDATE tasks SET ";
     let params = [];
     if (status !== undefined) { query += "status = ?, "; params.push(status); }
@@ -249,6 +256,13 @@ app.put('/api/tasks/:id', authenticateToken, (req, res) => {
     if (iconEmoji !== undefined) { query += "iconEmoji = ?, "; params.push(iconEmoji); }
     if (iconName !== undefined) { query += "iconName = ?, "; params.push(iconName); }
     if (dates !== undefined) { query += "dates = ?, "; params.push(JSON.stringify(dates)); }
+    if (history !== undefined) { query += "history = ?, "; params.push(JSON.stringify(history)); }
+    if (startDate !== undefined) { query += "startDate = ?, "; params.push(startDate); }
+    if (pointRule !== undefined) { query += "pointRule = ?, "; params.push(pointRule); }
+    if (habitType !== undefined) { query += "habitType = ?, "; params.push(habitType); }
+    if (attachments !== undefined) { query += "attachments = ?, "; params.push(JSON.stringify(attachments)); }
+    if (requireApproval !== undefined) { query += "requireApproval = ?, "; params.push(requireApproval ? 1 : 0); }
+    if (repeatConfig !== undefined) { query += "repeatConfig = ?, "; params.push(repeatConfig ? JSON.stringify(repeatConfig) : null); }
     if (params.length === 0) return res.status(400).json({ error: "No fields to update" });
 
     query = query.slice(0, -2) + " WHERE id = ? AND userId = ?";
@@ -382,7 +396,7 @@ app.use((req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
-const PORT = process.env.PORT || 80;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
 });

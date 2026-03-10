@@ -40,9 +40,13 @@ const db = new sqlite3.Database(dbPath, (err) => {
             )`);
 
             // Create a default Admin user (password: admin123)
-            // bcrypt hash for "admin123" ($2a$10$wKFVB.e7yR0s/8G6VdQsP.YI1LQQ3Q/M5w7lO4/bL5I6zYq7S5zOS)
+            // bcrypt hash for "admin123" ($2b$10$uekgwsW6PjiJsqlT7X807esIAvMyLIeDvfBtOZuey6F3iBG1fxGSi)
             const insertAdmin = "INSERT INTO users (id, email, password_hash, role, created_at) VALUES (?,?,?,?,?)";
-            db.run(insertAdmin, ['admin_1', 'admin@minilife.com', '$2a$10$wKFVB.e7yR0s/8G6VdQsP.YI1LQQ3Q/M5w7lO4/bL5I6zYq7S5zOS', 'admin', new Date().toISOString()]);
+            db.run(insertAdmin, ['admin_1', 'admin@minilife.com', '$2b$10$uekgwsW6PjiJsqlT7X807esIAvMyLIeDvfBtOZuey6F3iBG1fxGSi', 'admin', new Date().toISOString()], (err) => {
+                if (err) {
+                    // Ignored on restart if it already exists
+                }
+            });
 
             // Kids Table (Multi-tenant)
             db.run(`CREATE TABLE kids (
@@ -76,7 +80,13 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 timeStr TEXT,
                 standards TEXT,
                 dates TEXT,
-                history TEXT
+                history TEXT,
+                startDate TEXT,
+                pointRule TEXT,
+                habitType TEXT,
+                attachments TEXT,
+                requireApproval INTEGER,
+                repeatConfig TEXT
             )`);
 
             // Inventory Table (Multi-tenant)

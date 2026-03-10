@@ -38,7 +38,9 @@ const Icons = {
     Trash2: (p) => <IconWrapper {...p}><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></IconWrapper>,
     Settings: (p) => <IconWrapper {...p}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></IconWrapper>,
     Users: (p) => <IconWrapper {...p}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></IconWrapper>,
+    UserPlus: (p) => <IconWrapper {...p}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" /></IconWrapper>,
     LogOut: (p) => <IconWrapper {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></IconWrapper>,
+    LogIn: (p) => <IconWrapper {...p}><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" /><line x1="15" x2="3" y1="12" y2="12" /></IconWrapper>,
     Play: (p) => <IconWrapper {...p}><polygon points="5 3 19 12 5 21 5 3" /></IconWrapper>,
     Check: (p) => <IconWrapper {...p}><polyline points="20 6 9 17 4 12" /></IconWrapper>,
     Calendar: (p) => <IconWrapper {...p}><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></IconWrapper>,
@@ -58,7 +60,21 @@ const Icons = {
     Paperclip: (p) => <IconWrapper {...p}><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" /></IconWrapper>,
     List: (p) => <IconWrapper {...p}><line x1="8" x2="21" y1="6" y2="6" /><line x1="8" x2="21" y1="12" y2="12" /><line x1="8" x2="21" y1="18" y2="18" /><line x1="3" x2="3.01" y1="6" y2="6" /><line x1="3" x2="3.01" y1="12" y2="12" /><line x1="3" x2="3.01" y1="18" y2="18" /></IconWrapper>,
     Pause: (p) => <IconWrapper {...p}><rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" /></IconWrapper>,
-    Edit3: (p) => <IconWrapper {...p}><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></IconWrapper>
+    Edit3: (p) => <IconWrapper {...p}><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></IconWrapper>,
+    // Newly Added Category Icons
+    Calculator: (p) => <IconWrapper {...p}><rect width="16" height="20" x="4" y="2" rx="2" /><line x1="8" x2="16" y1="6" y2="6" /><line x1="16" x2="16" y1="14" y2="18" /><path d="M16 10h.01" /><path d="M12 10h.01" /><path d="M8 10h.01" /><path d="M12 14h.01" /><path d="M8 14h.01" /><path d="M12 18h.01" /><path d="M8 18h.01" /></IconWrapper>,
+    MessageCircle: (p) => <IconWrapper {...p}><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></IconWrapper>,
+    Zap: (p) => <IconWrapper {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></IconWrapper>,
+    FlaskConical: (p) => <IconWrapper {...p}><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2" /><path d="M8.5 2h7" /><path d="M14 16H5.3" /></IconWrapper>,
+    Leaf: (p) => <IconWrapper {...p}><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" /><path d="M2 22 12 12" /></IconWrapper>,
+    Hourglass: (p) => <IconWrapper {...p}><path d="M5 22h14" /><path d="M5 2h14" /><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></IconWrapper>,
+    Globe: (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path d="M2 12h20" /></IconWrapper>,
+    Landmark: (p) => <IconWrapper {...p}><line x1="3" x2="21" y1="22" y2="22" /><line x1="6" x2="6" y1="18" y2="11" /><line x1="10" x2="10" y1="18" y2="11" /><line x1="14" x2="14" y1="18" y2="11" /><line x1="18" x2="18" y1="18" y2="11" /><polygon points="12 2 20 7 4 7" /></IconWrapper>,
+    Scale: (p) => <IconWrapper {...p}><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" /><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" /><path d="M7 21h10" /><path d="M12 3v18" /><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" /></IconWrapper>,
+    Monitor: (p) => <IconWrapper {...p}><rect width="20" height="14" x="2" y="3" rx="2" /><line x1="8" x2="16" y1="21" y2="21" /><line x1="12" x2="12" y1="17" y2="21" /></IconWrapper>,
+    Dumbbell: (p) => <IconWrapper {...p}><path d="M14.4 14.4 9.6 9.6" /><path d="M18.65 21.35a2.12 2.12 0 0 1-2.99 0l-5.46-5.46a2.12 2.12 0 1 1 2.99-2.99l5.46 5.46a2.12 2.12 0 0 1 0 2.99z" /><path d="m2.65 9.65 5.46 5.46a2.12 2.12 0 1 1-2.99 2.99l-5.46-5.46a2.12 2.12 0 1 1 2.99-2.99z" /><path d="m9.3 5.3 5.4 5.4" /></IconWrapper>,
+    Gamepad2: (p) => <IconWrapper {...p}><line x1="6" x2="10" y1="12" y2="12" /><line x1="8" x2="8" y1="10" y2="14" /><line x1="15" x2="15.01" y1="13" y2="13" /><line x1="18" x2="18.01" y1="11" y2="11" /><rect width="20" height="12" x="2" y="6" rx="2" /></IconWrapper>,
+    Palette: (p) => <IconWrapper {...p}><circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /><circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="7.5" r=".5" fill="currentColor" /><circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" /></IconWrapper>
 };
 
 // 图标渲染辅助方法
@@ -365,15 +381,25 @@ export default function App() {
     const [taskIdToEdit, setTaskIdToEdit] = useState(null);
 
     // Dynamic Categories helper
-    const defaultCategories = ['技能', '运动', '语文', '数学', '英语', '艺术', '科学', '生活', '其他'];
+    const defaultCategories = ['语文', '数学', '英语', '物理', '化学', '生物', '历史', '地理', '政治', '道德与法治', '信息技术', '体育运动', '娱乐', '兴趣班', '其他'];
     const allCategories = Array.from(new Set([...defaultCategories, ...tasks.filter(t => t.type === 'study' && t.category).map(t => t.category)]));
 
     const getCategoryColor = (cat) => {
         const colors = {
-            '技能': 'bg-blue-50 text-blue-600 border-blue-200', '运动': 'bg-orange-50 text-orange-600 border-orange-200',
-            '语文': 'bg-emerald-50 text-emerald-600 border-emerald-200', '数学': 'bg-indigo-50 text-indigo-600 border-indigo-200',
-            '英语': 'bg-purple-50 text-purple-600 border-purple-200', '艺术': 'bg-pink-50 text-pink-600 border-pink-200',
-            '科学': 'bg-cyan-50 text-cyan-600 border-cyan-200', '生活': 'bg-amber-50 text-amber-600 border-amber-200',
+            '语文': 'bg-rose-50 text-rose-600 border-rose-200',
+            '数学': 'bg-indigo-50 text-indigo-600 border-indigo-200',
+            '英语': 'bg-sky-50 text-sky-600 border-sky-200',
+            '物理': 'bg-amber-50 text-amber-600 border-amber-200',
+            '化学': 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-200',
+            '生物': 'bg-emerald-50 text-emerald-600 border-emerald-200',
+            '历史': 'bg-stone-50 text-stone-600 border-stone-200',
+            '地理': 'bg-teal-50 text-teal-600 border-teal-200',
+            '政治': 'bg-red-50 text-red-600 border-red-200',
+            '道德与法治': 'bg-blue-50 text-blue-600 border-blue-200',
+            '信息技术': 'bg-cyan-50 text-cyan-600 border-cyan-200',
+            '体育运动': 'bg-orange-50 text-orange-600 border-orange-200',
+            '娱乐': 'bg-yellow-50 text-yellow-600 border-yellow-200',
+            '兴趣班': 'bg-pink-50 text-pink-600 border-pink-200',
             '其他': 'bg-slate-50 text-slate-600 border-slate-200'
         };
         if (colors[cat]) return colors[cat];
@@ -385,14 +411,37 @@ export default function App() {
 
     const getCategoryGradient = (cat) => {
         const gradients = {
-            '技能': 'from-blue-400 to-blue-500', '运动': 'from-orange-400 to-orange-500', '语文': 'from-emerald-400 to-emerald-500',
-            '数学': 'from-indigo-400 to-indigo-500', '英语': 'from-purple-400 to-purple-500', '艺术': 'from-pink-400 to-pink-500',
-            '科学': 'from-cyan-400 to-cyan-500', '生活': 'from-amber-400 to-amber-500', '其他': 'from-slate-400 to-slate-500'
+            '语文': 'from-rose-400 to-rose-500',
+            '数学': 'from-indigo-400 to-indigo-500',
+            '英语': 'from-sky-400 to-sky-500',
+            '物理': 'from-amber-400 to-amber-500',
+            '化学': 'from-fuchsia-400 to-fuchsia-500',
+            '生物': 'from-emerald-400 to-emerald-500',
+            '历史': 'from-stone-400 to-stone-500',
+            '地理': 'from-teal-400 to-teal-500',
+            '政治': 'from-red-400 to-red-500',
+            '道德与法治': 'from-blue-400 to-blue-500',
+            '信息技术': 'from-cyan-400 to-cyan-500',
+            '体育运动': 'from-orange-400 to-orange-500',
+            '娱乐': 'from-yellow-400 to-yellow-500',
+            '兴趣班': 'from-pink-400 to-pink-500',
+            '其他': 'from-slate-400 to-slate-500'
         };
         if (gradients[cat]) return gradients[cat];
         let hash = 0; for (let i = 0; i < (cat || '').length; i++) hash = cat.charCodeAt(i) + ((hash << 5) - hash);
         const dynamicGradients = ['from-rose-400 to-rose-500', 'from-lime-400 to-lime-500', 'from-teal-400 to-teal-500', 'from-fuchsia-400 to-fuchsia-500', 'from-sky-400 to-sky-500'];
         return dynamicGradients[Math.abs(hash) % dynamicGradients.length];
+    };
+
+    const getIconForCategory = (cat) => {
+        const iconMap = {
+            '语文': 'BookOpen', '数学': 'Calculator', '英语': 'MessageCircle',
+            '物理': 'Zap', '化学': 'FlaskConical', '生物': 'Leaf',
+            '历史': 'Hourglass', '地理': 'Globe', '政治': 'Landmark',
+            '道德与法治': 'Scale', '信息技术': 'Monitor', '体育运动': 'Dumbbell',
+            '娱乐': 'Gamepad2', '兴趣班': 'Palette'
+        };
+        return iconMap[cat] || 'Star';
     };
 
     // Derived states
@@ -1006,6 +1055,87 @@ export default function App() {
         } catch (e) { notify("网络请求失败", "error"); }
     };
 
+    const handleApproveAllTasks = async (approvalsList) => {
+        if (!approvalsList || approvalsList.length === 0) return;
+
+        try {
+            const timestamp = Date.now();
+            let newTransactions = [];
+            let kidRewardTotals = {}; // Map of kidId -> total reward
+            let taskUpdates = {}; // Map of taskId -> newHistory
+
+            // 1. Process all approvals logically
+            for (let i = 0; i < approvalsList.length; i++) {
+                const { task, date, actualKidId } = approvalsList[i];
+
+                // Track rewards per kid
+                if (task.reward > 0) {
+                    kidRewardTotals[actualKidId] = (kidRewardTotals[actualKidId] || 0) + task.reward;
+                    newTransactions.push({
+                        id: `trans_${timestamp}_${i}`,
+                        kidId: actualKidId,
+                        type: 'income',
+                        amount: task.reward || 0,
+                        title: `完成: ${task.title}`,
+                        date: new Date().toISOString(),
+                        category: 'task'
+                    });
+                }
+
+                // Compile task history updates
+                if (!taskUpdates[task.id]) {
+                    taskUpdates[task.id] = { ...(task.history || {}) };
+                }
+                const histUpdate = { status: 'completed' };
+                if (task.kidId === 'all') {
+                    taskUpdates[task.id][date] = { ...(taskUpdates[task.id][date] || {}), [actualKidId]: { ...(taskUpdates[task.id][date]?.[actualKidId] || {}), ...histUpdate } };
+                } else {
+                    taskUpdates[task.id][date] = { ...(taskUpdates[task.id][date] || {}), ...histUpdate };
+                }
+            }
+
+            // 2. Execute Backend Calls
+            const promises = [];
+            // Post transactions
+            for (const trans of newTransactions) {
+                promises.push(apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(trans) }));
+            }
+            // Update tasks
+            for (const taskId in taskUpdates) {
+                promises.push(apiFetch(`/api/tasks/${taskId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: taskUpdates[taskId] }) }));
+            }
+            // Update kids balances
+            for (const kidId in kidRewardTotals) {
+                const kid = kids.find(k => k.id === kidId);
+                if (kid) {
+                    const newBals = { ...kid.balances, spend: kid.balances.spend + kidRewardTotals[kidId] };
+                    promises.push(apiFetch(`/api/kids/${kidId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ balances: newBals }) }));
+                }
+            }
+
+            await Promise.all(promises);
+
+            // 3. Update React State Bulk
+            if (newTransactions.length > 0) {
+                setTransactions(prev => [...newTransactions, ...prev]);
+            }
+
+            setTasks(prevTasks => prevTasks.map(t => {
+                if (taskUpdates[t.id]) {
+                    return { ...t, history: taskUpdates[t.id] };
+                }
+                return t;
+            }));
+
+            fetchKids(); // Reload kids to get fresh balances across the board
+            notify(`一键审批完成！共计发放了 ${Object.values(kidRewardTotals).reduce((a, b) => a + b, 0) || 0} 家庭币。`, "success");
+
+        } catch (e) {
+            notify("批量审批网络请求部分失败，请刷新页面查看最新状态", "error");
+            console.error(e);
+        }
+    };
+
     const confirmTransfer = async () => {
         const amount = parseInt(transferForm.amount);
         const activeKid = kids.find(k => k.id === activeKidId);
@@ -1211,7 +1341,7 @@ export default function App() {
                 periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5],
                 periodTargetCount: 1, periodMaxPerDay: 1,
                 startTime: '', endTime: '', durationPreset: 25,
-                pointRule: 'default', reward: '', iconEmoji: '📚',
+                pointRule: 'default', reward: '', iconEmoji: '📚', iconName: getIconForCategory('语文'),
                 habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once',
                 attachments: []
             });
@@ -1391,6 +1521,33 @@ export default function App() {
         );
     };
 
+    const getIncompleteStudyTasksCount = (dateStr) => {
+        let count = 0;
+        let total = 0;
+        if (appState === 'kid_app') {
+            const dailyTasks = tasks.filter(t => (t.kidId === activeKidId || t.kidId === 'all') && t.type === 'study' && isTaskDueOnDate(t, dateStr));
+            count = dailyTasks.filter(t => getTaskStatusOnDate(t, dateStr, activeKidId) !== 'completed').length;
+            total = dailyTasks.length;
+        } else if (appState === 'parent_app') {
+            const dailyTasks = tasks.filter(t => {
+                if (parentKidFilter !== 'all' && t.kidId !== 'all' && t.kidId !== parentKidFilter) return false;
+                return t.type === 'study' && isTaskDueOnDate(t, dateStr);
+            });
+            total = dailyTasks.length;
+            dailyTasks.forEach(t => {
+                if (parentKidFilter === 'all') {
+                    const targetedKids = t.kidId === 'all' ? kids : [kids.find(k => k.id === t.kidId)].filter(Boolean);
+                    targetedKids.forEach(k => {
+                        if (getTaskStatusOnDate(t, dateStr, k.id) !== 'completed') count++;
+                    });
+                } else {
+                    if (getTaskStatusOnDate(t, dateStr, parentKidFilter) !== 'completed') count++;
+                }
+            });
+        }
+        return { count, total };
+    };
+
     const renderCalendarModal = () => {
         if (!showCalendarModal) return null;
 
@@ -1415,17 +1572,17 @@ export default function App() {
                             <button onClick={() => setShowCalendarModal(false)} className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-full transition-colors"><Icons.X size={20} /></button>
                         </div>
 
-                        <div className="flex items-center justify-between mb-4 sm:mb-6 px-2 sm:px-4 py-2 bg-indigo-50/50 rounded-2xl border border-indigo-100/50">
-                            <button onClick={() => changeMonth(-1)} className="p-2 text-indigo-600 hover:bg-white shadow-sm hover:shadow rounded-full transition-all"><Icons.ChevronLeft size={20} /></button>
-                            <div className="font-bold text-lg text-slate-800 tracking-wide drop-shadow-sm">
-                                {monthViewDate.getFullYear()}年 <span className="text-indigo-600">{monthViewDate.getMonth() + 1}月</span>
+                        <div className="flex items-center justify-between mb-4 sm:mb-6 px-1 sm:px-4 py-1.5 sm:py-2 bg-indigo-50/50 rounded-2xl border border-indigo-100/50">
+                            <button onClick={() => changeMonth(-1)} className="p-1 sm:p-2 text-indigo-600 hover:bg-white shadow-sm hover:shadow rounded-full transition-all"><Icons.ChevronLeft size={18} className="sm:w-[20px] sm:h-[20px]" /></button>
+                            <div className="font-black text-lg sm:text-xl text-slate-800 tracking-wide drop-shadow-sm flex items-center gap-1">
+                                {monthViewDate.getMonth() + 1} <span className="text-sm font-bold text-indigo-500">月</span>
                             </div>
-                            <button onClick={() => changeMonth(1)} className="p-2 text-indigo-600 hover:bg-white shadow-sm hover:shadow rounded-full transition-all"><Icons.ChevronRight size={20} /></button>
+                            <button onClick={() => changeMonth(1)} className="p-1 sm:p-2 text-indigo-600 hover:bg-white shadow-sm hover:shadow rounded-full transition-all"><Icons.ChevronRight size={18} className="sm:w-[20px] sm:h-[20px]" /></button>
                         </div>
 
                         <div className="grid grid-cols-7 gap-1 text-center mb-2 px-1 sm:px-2">
                             {['一', '二', '三', '四', '五', '六', '日'].map((d, idx) => (
-                                <div key={d} className={`text-xs font-bold py-2 ${idx >= 5 ? 'text-rose-400' : 'text-slate-400'}`}>{d}</div>
+                                <div key={d} className={`text-[10px] sm:text-xs font-bold py-1.5 sm:py-2 ${idx >= 5 ? 'text-rose-400' : 'text-slate-400'}`}>{d}</div>
                             ))}
                         </div>
 
@@ -1433,19 +1590,29 @@ export default function App() {
                             {getDaysInMonth(monthViewDate.getFullYear(), monthViewDate.getMonth()).map((dayObj, i) => {
                                 const isSelected = dayObj.dateStr === selectedDate;
                                 const isToday = dayObj.dateStr === formatDate(new Date());
+                                const { count, total } = getIncompleteStudyTasksCount(dayObj.dateStr);
 
                                 return (
                                     <button
                                         key={i}
                                         onClick={() => handleDayClick(dayObj.dateStr)}
                                         className={`
-                                            aspect-square flex items-center justify-center rounded-xl text-sm font-bold transition-all relative
-                                            ${!dayObj.isCurrentMonth ? 'text-slate-300 pointer-events-none scale-95 opacity-50' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 cursor-pointer hover:scale-105 active:scale-95'}
-                                            ${isSelected && dayObj.isCurrentMonth ? '!bg-indigo-600 !text-white shadow-lg shadow-indigo-600/40 scale-105 z-10' : ''}
-                                            ${isToday && !isSelected && dayObj.isCurrentMonth ? '!bg-yellow-400 !text-yellow-900 shadow-sm' : ''}
-                                        `}
+                                                aspect-square flex flex-col items-center justify-center rounded-lg sm:rounded-xl text-[11px] sm:text-sm font-bold transition-all relative pt-2
+                                                ${!dayObj.isCurrentMonth ? 'text-slate-300 pointer-events-none scale-95 opacity-50' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 cursor-pointer hover:scale-105 active:scale-95'}
+                                                ${isSelected && dayObj.isCurrentMonth ? '!bg-indigo-600 !text-white shadow-lg shadow-indigo-600/40 scale-105 z-10' : ''}
+                                                ${isToday && !isSelected && dayObj.isCurrentMonth ? '!bg-yellow-400 !text-yellow-900 shadow-sm' : ''}
+                                            `}
                                     >
-                                        {dayObj.day}
+                                        <span className="mb-0.5">{dayObj.day}</span>
+                                        <div className="h-3.5 flex items-center justify-center mb-1 w-full">
+                                            {count > 0 && dayObj.isCurrentMonth ? (
+                                                <span className={`text-[9px] font-bold px-[4px] py-[1px] leading-none rounded-full ${isSelected ? 'bg-indigo-400/50 text-white' : 'bg-red-100 text-red-600'}`}>
+                                                    {count}
+                                                </span>
+                                            ) : (total > 0 && dayObj.isCurrentMonth ? (
+                                                <span className={`text-[10px] ${isSelected ? 'text-indigo-300' : 'text-emerald-500'}`}><Icons.Check size={10} /></span>
+                                            ) : null)}
+                                        </div>
                                         {isToday && !isSelected && <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-yellow-600 animate-pulse"></div>}
                                     </button>
                                 );
@@ -1518,9 +1685,9 @@ export default function App() {
                         {/* 任务信息卡 */}
                         <div className="bg-gradient-to-r from-slate-50 to-indigo-50/30 p-4 rounded-2xl border border-slate-100">
                             <div className="flex items-center gap-2 mb-2">
-                                <span className={`text-[11px] font-black px-2.5 py-1 rounded-full text-white ${getCategoryColor(t.category || '任务')}`}>
+                                <div className={`px-4 py-1.5 rounded-full text-xs font-black shadow-inner flex items-center gap-1.5 float-right ${getCategoryColor(t.category || '计划').replace('text-', 'bg-').replace('600', '500')} text-white`}>
                                     {t.category || '任务'}
-                                </span>
+                                </div>
                                 <span className="text-xs text-slate-400 font-bold">{selectedDate}</span>
                             </div>
                             <div className="font-black text-slate-800 text-lg">{t.title}</div>
@@ -1594,7 +1761,7 @@ export default function App() {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <div>
                                         <label className="text-xs font-bold text-slate-500 mb-1 block">开始时间</label>
                                         <div className="relative">
@@ -1882,10 +2049,13 @@ export default function App() {
                     </div>
 
                     <div className="relative z-10 pt-4 flex flex-col items-center text-center shrink-0">
-                        <div className={`w-24 h-24 rounded-[2rem] bg-gradient-to-br ${getCategoryGradient(previewTask.category || '计划任务')} flex items-center justify-center text-5xl shadow-xl border-4 border-white mb-4 -rotate-3`}>
-                            {previewTask.iconEmoji || renderIcon(previewTask.iconName, 50)}
+                        <div className={`w-24 h-24 rounded-[2rem] bg-gradient-to-br ${getCategoryGradient(previewTask.category || '计划任务')} flex items-center justify-center ${previewTask.type === 'habit' ? 'text-5xl' : 'text-white'} shadow-xl border-4 border-white mb-4 -rotate-3`}>
+                            {previewTask.type === 'habit'
+                                ? (previewTask.iconEmoji || '⭐')
+                                : renderIcon(previewTask.iconName || getIconForCategory(previewTask.category), 50)
+                            }
                         </div>
-                        <div className="text-sm font-black text-indigo-500 mb-1 bg-indigo-50 px-3 py-1 rounded-full">{previewTask.category || '计划任务'}</div>
+                        <div className="text-sm font-black text-slate-500 mb-1 px-3 py-1 bg-slate-100 rounded-full tracking-wider">{previewTask.category || '计划任务'}</div>
                         <h2 className="text-2xl font-black text-slate-800 mb-6">{previewTask.title}</h2>
                     </div>
 
@@ -1990,7 +2160,8 @@ export default function App() {
                     </div>
 
                     <div className="relative z-10 shrink-0 mt-4">
-                        {(() => {
+                        {/* Kid Controls */}
+                        {appState === 'kid_app' && (() => {
                             const pStatus = getTaskStatusOnDate(previewTask, selectedDate, activeKidId);
                             return (
                                 <>
@@ -2022,6 +2193,54 @@ export default function App() {
                                 </>
                             );
                         })()}
+
+                        {/* Parent Controls */}
+                        {appState === 'parent_app' && (
+                            <div className="flex gap-2 w-full mt-3 border-t border-slate-100 pt-4">
+                                {getTaskStatusOnDate(previewTask, selectedDate, activeKidId) === 'pending_approval' && (
+                                    <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleApproveTask(previewTask, selectedDate); }} className="flex-[2] bg-emerald-500 text-white rounded-xl py-3 font-black shadow-lg shadow-emerald-200 hover:bg-emerald-600 transition-all">
+                                        <Icons.CheckCircle className="inline-block mr-1" size={16} /> 审批验收
+                                    </button>
+                                )}
+                                <button onClick={() => {
+                                    setShowPreviewModal(false);
+                                    setEditingTask(previewTask);
+                                    setPlanType(previewTask.type || 'study');
+                                    setPlanForm({
+                                        targetKid: previewTask.kidId,
+                                        category: previewTask.category || '技能',
+                                        title: previewTask.title,
+                                        desc: previewTask.standards || previewTask.desc || '',
+                                        startDate: previewTask.startDate || new Date().toISOString().split('T')[0],
+                                        endDate: previewTask.repeatConfig?.endDate || '',
+                                        repeatType: previewTask.repeatConfig?.type || (previewTask.frequency === '仅当天' ? 'today' : (previewTask.frequency === '每周一至周五' ? 'weekly_custom' : 'daily')),
+                                        weeklyDays: previewTask.repeatConfig?.weeklyDays || [1, 2, 3, 4, 5],
+                                        ebbStrength: previewTask.repeatConfig?.ebbStrength || 'normal',
+                                        periodDaysType: previewTask.repeatConfig?.periodDaysType || 'any',
+                                        periodCustomDays: previewTask.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5],
+                                        periodTargetCount: previewTask.repeatConfig?.periodTargetCount || 1,
+                                        periodMaxPerDay: previewTask.repeatConfig?.periodMaxPerDay || 1,
+                                        timeSetting: previewTask.timeStr && previewTask.timeStr !== '--:--' ? (previewTask.timeStr.includes('-') ? 'range' : 'duration') : 'none',
+                                        startTime: previewTask.timeStr && previewTask.timeStr.includes('-') ? previewTask.timeStr.split('-')[0] : '',
+                                        endTime: previewTask.timeStr && previewTask.timeStr.includes('-') ? previewTask.timeStr.split('-')[1] : '',
+                                        durationPreset: previewTask.timeStr && previewTask.timeStr.includes('分钟') ? parseInt(previewTask.timeStr) : 25,
+                                        pointRule: (previewTask.pointRule && previewTask.pointRule === 'custom') || (previewTask.type === 'habit') ? 'custom' : 'default',
+                                        reward: String(previewTask.reward || ''),
+                                        iconEmoji: previewTask.iconEmoji || '📚',
+                                        habitColor: previewTask.catColor || 'from-blue-400 to-blue-500',
+                                        habitType: previewTask.habitType || 'daily_once',
+                                        attachments: previewTask.attachments || [],
+                                        requireApproval: previewTask.requireApproval !== undefined ? previewTask.requireApproval : true
+                                    });
+                                    setShowAddPlanModal(true);
+                                }} className="flex-1 bg-blue-50 text-blue-600 rounded-xl py-3 font-bold hover:bg-blue-100 transition-colors flex justify-center items-center gap-1">
+                                    <Icons.Edit3 size={14} /> 编辑
+                                </button>
+                                <button onClick={() => { setShowPreviewModal(false); setDeleteConfirmTask(previewTask); }} className="flex-1 bg-red-50 text-red-500 rounded-xl py-3 font-bold hover:bg-red-100 transition-colors flex justify-center items-center gap-1">
+                                    <Icons.Trash2 size={14} /> 删除
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -2079,9 +2298,12 @@ export default function App() {
                                     <select value={planForm.category} onChange={e => {
                                         if (e.target.value === '__NEW__') {
                                             const custom = window.prompt("请输入新任务分类名称 (最长6个字符)：");
-                                            if (custom && custom.trim()) setPlanForm({ ...planForm, category: custom.trim().substring(0, 6) });
+                                            if (custom && custom.trim()) {
+                                                const newCat = custom.trim().substring(0, 6);
+                                                setPlanForm({ ...planForm, category: newCat, iconName: getIconForCategory(newCat) });
+                                            }
                                         } else {
-                                            setPlanForm({ ...planForm, category: e.target.value });
+                                            setPlanForm({ ...planForm, category: e.target.value, iconName: getIconForCategory(e.target.value) });
                                         }
                                     }} className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-blue-500 font-bold text-slate-700 transition-colors appearance-none">
                                         {allCategories.map(c => <option key={c} value={c}>{c}</option>)}
@@ -2100,14 +2322,6 @@ export default function App() {
                                     <textarea value={planForm.desc} onChange={e => setPlanForm({ ...planForm, desc: e.target.value })} placeholder="补充一些具体要求或鼓励的话..." className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-blue-500 text-slate-700 transition-all min-h-[100px] resize-y" />
                                 </div>
 
-                                <div className="pt-4 border-t border-slate-200">
-                                    <label className="block text-sm font-black text-slate-800 mb-3 flex items-center gap-2"><Icons.Star size={18} className="text-indigo-500" /> 选择任务图标</label>
-                                    <div className="bg-white rounded-2xl p-4 flex flex-wrap gap-2 justify-center border border-slate-200">
-                                        {studyEmojis.map(e => (
-                                            <button key={e} onClick={() => setPlanForm({ ...planForm, iconEmoji: e })} className={`text-4xl p-2 rounded-2xl transition-all ${planForm.iconEmoji === e ? 'bg-slate-50 shadow-md scale-110 ring-2 ring-blue-500' : 'hover:scale-110 opacity-60 grayscale hover:grayscale-0'}`}>{e}</button>
-                                        ))}
-                                    </div>
-                                </div>
                             </div>
                         )}
 
@@ -2319,7 +2533,7 @@ export default function App() {
 
                                     {planForm.timeSetting === 'range' && (
                                         <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-5 animate-fade-in">
-                                            <div className="flex gap-4">
+                                            <div className="flex flex-col md:flex-row gap-4">
                                                 <div className="flex-1">
                                                     <label className="block text-xs font-bold text-slate-600 mb-2">开始时间</label>
                                                     <input type="time" value={planForm.startTime} onChange={e => setPlanForm({ ...planForm, startTime: e.target.value })} className="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white" />
@@ -2395,17 +2609,6 @@ export default function App() {
                                             <input type="number" value={planForm.reward} onChange={e => setPlanForm({ ...planForm, reward: e.target.value })} placeholder="输入完成可获得的金币数" className="w-full bg-white border-2 border-yellow-200 rounded-2xl py-5 pl-14 pr-6 outline-none focus:border-yellow-500 font-black text-2xl text-yellow-700 shadow-inner" />
                                         </div>
                                     )}
-
-                                    {/* Require Approval Toggle */}
-                                    <div className="bg-white rounded-2xl border border-yellow-200 p-4 flex items-center justify-between shadow-sm cursor-pointer hover:bg-yellow-50 transition-colors mt-4" onClick={() => setPlanForm({ ...planForm, requireApproval: !planForm.requireApproval })}>
-                                        <div>
-                                            <div className="font-black text-slate-800">打卡需要家长审核</div>
-                                            <div className="text-xs text-slate-500 mt-0.5">关闭后，孩子打卡将跳过审核直接发放奖励</div>
-                                        </div>
-                                        <div className={`w-14 h-8 rounded-full p-1 transition-colors ${planForm.requireApproval ? 'bg-yellow-500' : 'bg-slate-300'}`}>
-                                            <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform ${planForm.requireApproval ? 'translate-x-6' : 'translate-x-0'}`}></div>
-                                        </div>
-                                    </div>
                                 </div>
                             ) : (
                                 <div className="space-y-4 animate-fade-in">
@@ -2417,6 +2620,21 @@ export default function App() {
                                 </div>
                             )}
                         </div>
+
+                        {/* Standalone Require Approval Toggle */}
+                        {planType === 'study' && (
+                            <div className="bg-slate-50 rounded-3xl border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between shadow-sm cursor-pointer hover:bg-slate-100 transition-colors gap-4" onClick={() => setPlanForm({ ...planForm, requireApproval: !planForm.requireApproval })}>
+                                <div>
+                                    <div className="font-black text-slate-800 flex items-center gap-2">
+                                        <Icons.ShieldCheck size={18} className="text-emerald-500" /> 打卡需要家长审核
+                                    </div>
+                                    <div className="text-sm font-medium text-slate-500 mt-1">关闭后，孩子打卡将跳过等待，系统直接发放奖励</div>
+                                </div>
+                                <div className={`w-14 h-8 rounded-full p-1 transition-colors flex-shrink-0 ${planForm.requireApproval ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                                    <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform ${planForm.requireApproval ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Attachments */}
                         <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
@@ -2603,50 +2821,63 @@ export default function App() {
         return (
             <div className="animate-fade-in">
                 <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 mb-8 mx-4">
-                    <div className="flex items-center justify-between mb-8 px-2">
-                        <div className="flex items-center gap-2 text-indigo-600 font-black text-lg">
-                            <Icons.Calendar size={20} />
-                            {getWeekNumber(currentViewDate)[0]}年{currentViewDate.getMonth() + 1}月第{getWeekNumber(currentViewDate)[1]}周
+                    <div className="flex items-center justify-between mb-6 px-1">
+                        <div className="flex items-center text-indigo-600 font-black text-sm sm:text-lg">
+                            第{getWeekNumber(currentViewDate)[1]}周
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5 sm:gap-3">
                             <button
                                 onClick={() => { const d = new Date(currentViewDate); d.setDate(d.getDate() - 7); setCurrentViewDate(d); }}
-                                className="p-2 text-indigo-500 hover:bg-indigo-50 rounded-full transition-colors bg-indigo-50/50"
+                                className="p-1 sm:p-2 text-indigo-500 hover:bg-indigo-50 rounded-full transition-colors bg-indigo-50/50"
                             >
-                                <Icons.ChevronLeft size={20} />
+                                <Icons.ChevronLeft size={16} className="sm:w-[20px] sm:h-[20px]" />
                             </button>
                             <button
                                 onClick={() => { setCurrentViewDate(new Date()); setSelectedDate(formatDate(new Date())); }}
-                                className="bg-yellow-400 text-yellow-900 px-5 py-2 rounded-full font-black text-sm hover:bg-yellow-500 transition-colors shadow-sm"
+                                className="bg-yellow-400 text-yellow-900 px-2.5 sm:px-5 py-1 sm:py-2 rounded-full font-black text-[11px] sm:text-sm hover:bg-yellow-500 transition-colors shadow-sm"
                             >
                                 今天
                             </button>
                             <button
                                 onClick={() => { const d = new Date(currentViewDate); d.setDate(d.getDate() + 7); setCurrentViewDate(d); }}
-                                className="p-2 text-indigo-500 hover:bg-indigo-50 rounded-full transition-colors bg-indigo-50/50"
+                                className="p-1 sm:p-2 text-indigo-500 hover:bg-indigo-50 rounded-full transition-colors bg-indigo-50/50"
                             >
-                                <Icons.ChevronRight size={20} />
+                                <Icons.ChevronRight size={16} className="sm:w-[20px] sm:h-[20px]" />
                             </button>
-                            <button onClick={() => setShowCalendarModal(true)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors ml-2 bg-slate-50">
-                                <Icons.Calendar size={20} />
+                            <button onClick={() => setShowCalendarModal(true)} className="p-1.5 sm:p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors bg-slate-50">
+                                <Icons.Calendar size={16} className="sm:w-[20px] sm:h-[20px]" />
                             </button>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-7 gap-2 pt-2 pb-2">
-                        {getDisplayDateArray(currentViewDate).map((day, i) => (
-                            <button
-                                key={i}
-                                onClick={() => setSelectedDate(day.dateStr)}
-                                className={`flex flex-col items-center py-4 rounded-2xl transition-all
-                                    ${selectedDate === day.dateStr ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 -translate-y-1' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}
-                                `}
-                            >
-                                <span className={`text-xs font-bold mb-2 ${selectedDate === day.dateStr ? 'text-indigo-200' : 'text-slate-400'}`}>{day.d}</span>
-                                <span className="text-xl font-black">{day.displayDate.split('/')[1]}</span>
-                                <div className={`w-1.5 h-1.5 rounded-full mt-2 ${selectedDate === day.dateStr ? 'bg-white' : (day.dateStr === formatDate(new Date()) ? 'bg-orange-500' : 'bg-transparent')}`}></div>
-                            </button>
-                        ))}
+                    <div className="grid grid-cols-7 gap-1 md:gap-2 pt-2 pb-2">
+                        {getDisplayDateArray(currentViewDate).map((day, i) => {
+                            const { count, total } = getIncompleteStudyTasksCount(day.dateStr);
+
+                            return (
+                                <button
+                                    key={i}
+                                    onClick={() => setSelectedDate(day.dateStr)}
+                                    className={`flex flex-col items-center py-2 md:py-4 px-1 rounded-xl md:rounded-2xl transition-all
+                                        ${selectedDate === day.dateStr ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 -translate-y-1' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}
+                                    `}
+                                >
+                                    <span className={`text-[9px] md:text-xs font-bold mb-1 md:mb-2 whitespace-nowrap ${selectedDate === day.dateStr ? 'text-indigo-200' : 'text-slate-400'}`}>{day.d}</span>
+                                    <span className="text-base sm:text-lg md:text-xl font-black">{day.displayDate.split('/')[1]}</span>
+                                    <div className="mt-1.5 md:mt-2 h-3.5 flex items-center justify-center">
+                                        {count > 0 ? (
+                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${selectedDate === day.dateStr ? 'bg-indigo-400/50 text-white' : 'bg-red-100 text-red-600'}`}>
+                                                {count}
+                                            </span>
+                                        ) : (total > 0 ? (
+                                            <span className={`text-[10px] ${selectedDate === day.dateStr ? 'text-indigo-300' : 'text-emerald-500'}`}><Icons.Check size={12} /></span>
+                                        ) : (
+                                            <div className={`w-1.5 h-1.5 rounded-full ${selectedDate === day.dateStr ? 'bg-white/30' : (day.dateStr === formatDate(new Date()) ? 'bg-orange-500' : 'bg-transparent')}`}></div>
+                                        ))}
+                                    </div>
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -2723,49 +2954,70 @@ export default function App() {
                     {myTasks.length === 0 ? (
                         <div className="text-center py-10 text-slate-400 font-bold bg-white rounded-2xl border border-slate-100 shadow-sm md:col-span-2">这一天没有安排任务哦~</div>
                     ) : myTasks.map(t => (
-                        <div key={t.id} className="flex bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow h-28 group relative">
-                            <div onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className={`w-20 bg-gradient-to-b ${getCategoryGradient(t.category || '计划')} flex flex-col items-center justify-center text-white p-2 cursor-pointer group-hover:brightness-110 transition-all`}>
-                                {renderIcon(t.iconName, 28)}
-                                <span className={`text-[10px] font-bold mt-2 ${getCategoryColor(t.category || '计划')}`}>{t.category || '计划'}</span>
+                        <div key={t.id} className="bg-white rounded-[2rem] p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/60 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 group flex flex-col sm:flex-row gap-4 relative overflow-hidden">
+                            <button onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className="absolute inset-0 z-0 cursor-pointer hidden sm:block" aria-label="查看任务详情"></button>
+
+                            {/* Left Section: Big Colorful Squircle Icon */}
+                            <div onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className="flex z-10 sm:w-auto items-start gap-4 flex-1 cursor-pointer">
+                                <div className={`w-16 h-16 shrink-0 rounded-[1.25rem] bg-gradient-to-br ${getCategoryGradient(t.category || '计划')} flex flex-col items-center justify-center text-white shadow-inner group-hover:scale-110 transition-transform duration-300`}>
+                                    {renderIcon(t.iconName || getIconForCategory(t.category), 26)}
+                                    <span className={`text-[11px] font-black mt-1 text-center w-full line-clamp-1 opacity-90 tracking-wide`}>{t.category || '计划'}</span>
+                                </div>
+                                <div className="flex-1 flex flex-col pt-0.5">
+                                    <h3 className="font-black text-slate-800 text-lg md:text-xl leading-tight mb-2 line-clamp-2">{t.title}</h3>
+
+                                    <div className="flex flex-wrap gap-2 items-center">
+                                        {/* Reward Pill */}
+                                        <div className="bg-amber-100/80 text-amber-600 px-3 py-1 rounded-full text-xs font-black flex items-center gap-1 border border-amber-200/50">
+                                            {t.reward} <Icons.Star size={12} fill="currentColor" />
+                                        </div>
+                                        {/* Time Pill */}
+                                        <div className="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                            <Icons.Clock size={12} /> {t.timeStr || '--:--'}
+                                        </div>
+                                        {/* Frequency Pill */}
+                                        <div className="bg-indigo-50 text-indigo-500 px-2 py-1 rounded-full text-[10px] font-black tracking-wide">
+                                            {t.frequency || '每天'}
+                                        </div>
+                                        {/* Running Timer Pill */}
+                                        {getDailyStatus(t) === 'in_progress' && t.actualStartTime && (
+                                            <div className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs font-black flex items-center gap-1 animate-pulse border border-green-200">
+                                                <Icons.Play size={12} fill="currentColor" /> 已用时: {Math.floor((new Date() - new Date(t.actualStartTime)) / 60000)} 分钟
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-                            <div className="flex-1 p-4 flex flex-col justify-center">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className="font-black text-slate-800 text-lg">{t.title}</span>
-                                    <span className="bg-blue-50 text-blue-500 text-[10px] font-black px-2 py-0.5 rounded-full">{t.frequency || '每天'}</span>
-                                </div>
-                                <div className="text-slate-400 text-xs flex items-center gap-1 font-bold mb-2">
-                                    <Icons.Clock size={12} /> {t.timeStr || '--:--'}
-                                </div>
-                                <div className="text-yellow-500 text-sm font-black flex items-center gap-1">
-                                    {t.reward} <Icons.Star size={14} fill="currentColor" />
-                                </div>
-                            </div>
-                            <div className="w-36 p-4 flex flex-col justify-center gap-2 border-l border-slate-50 bg-slate-50/50">
-                                <button onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className="absolute inset-0 opacity-0 cursor-pointer" style={{ width: 'calc(100% - 9rem)' }} aria-label="查看任务详情"></button>
+
+                            {/* Right/Bottom Section: Juicy Actions */}
+                            <div className="z-10 flex sm:flex-col justify-end sm:justify-center items-stretch gap-2 shrink-0 sm:w-36 mt-2 sm:mt-0">
                                 {getDailyStatus(t) === 'todo' && (
                                     <>
-                                        <button onClick={() => openQuickComplete(t)} className="w-full bg-blue-600 text-white rounded-full py-1.5 text-xs font-bold shadow-md hover:bg-blue-700 flex items-center justify-center gap-1">
-                                            <Icons.Check size={14} /> 快速完成
-                                        </button>
-                                        <button onClick={() => handleStartTask(t.id)} className="w-full bg-green-50 text-green-600 border border-green-200 rounded-full py-1.5 text-xs font-bold hover:bg-green-100 flex items-center justify-center gap-1">
-                                            <Icons.Play size={14} /> 开始计时
-                                        </button>
+                                        {t.durationPreset || t.timeSetting === 'range' ? (
+                                            <button onClick={() => handleStartTask(t.id)} className="flex-1 bg-gradient-to-b from-green-400 to-green-500 shadow-lg shadow-green-500/30 text-white rounded-full py-3 px-4 text-sm font-black hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1">
+                                                <Icons.Play size={16} fill="currentColor" /> START
+                                            </button>
+                                        ) : (
+                                            <button onClick={() => openQuickComplete(t)} className="flex-1 bg-gradient-to-b from-blue-500 to-blue-600 shadow-lg shadow-blue-500/30 text-white rounded-full py-3 px-4 text-sm font-black hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1">
+                                                <Icons.Check size={16} strokeWidth={3} /> 完成
+                                            </button>
+                                        )}
                                     </>
                                 )}
                                 {getDailyStatus(t) === 'in_progress' && (
-                                    <button onClick={() => handleAttemptSubmit(t)} className="w-full bg-indigo-100 text-indigo-700 rounded-full py-2 text-xs font-bold flex items-center justify-center gap-1">
-                                        <Icons.Check size={14} /> 第一步：确认达标
+                                    <button onClick={() => handleAttemptSubmit(t)} className="w-full bg-indigo-100 text-indigo-600 rounded-full py-3 px-4 text-xs font-black hover:bg-indigo-200 transition-colors flex items-center justify-center gap-1 border border-indigo-200/50">
+                                        <Icons.Check size={14} strokeWidth={3} /> 确认达标
                                     </button>
                                 )}
                                 {getDailyStatus(t) === 'pending_approval' && (
-                                    <span className="w-full text-center text-xs font-bold text-orange-500 bg-orange-50 rounded-full py-2 flex items-center justify-center gap-1">
-                                        <Icons.Clock size={14} /> 待审核
-                                    </span>
+                                    <div className="w-full text-center text-orange-500 bg-orange-50 rounded-full py-3 px-4 text-xs font-black flex items-center justify-center gap-1 border border-orange-200/50">
+                                        <Icons.Clock size={14} /> 待家长发金币
+                                    </div>
                                 )}
                                 {getDailyStatus(t) === 'completed' && (
-                                    <span className="w-full text-center text-xs font-bold text-emerald-500 bg-emerald-50 rounded-full py-2 flex items-center justify-center gap-1">
-                                        <Icons.CheckCircle size={14} /> 已完成
-                                    </span>
+                                    <div className="w-full text-center text-emerald-500 bg-emerald-50 rounded-full py-3 px-4 text-xs font-black flex items-center justify-center gap-1 border border-emerald-200/50">
+                                        <Icons.CheckCircle size={14} /> 已获奖励
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -2886,7 +3138,7 @@ export default function App() {
                             { id: 'wealth', icon: <Icons.Wallet size={18} />, label: "财富中心" },
                             { id: 'shop', icon: <Icons.ShoppingBag size={18} />, label: "家庭超市" }
                         ].map(tab => (
-                            <button key={tab.id} onClick={() => setKidTab(tab.id)} className={`flex items-center gap-2 px-6 py-3 rounded-full font-black text-sm whitespace-nowrap transition-all shadow-sm ${kidTab === tab.id ? 'bg-indigo-600 text-white shadow-indigo-200' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200'}`}>
+                            <button key={tab.id} onClick={() => setKidTab(tab.id)} className={`flex-shrink-0 flex items-center gap-2 px-6 py-3 rounded-full font-black text-sm whitespace-nowrap transition-all shadow-sm ${kidTab === tab.id ? 'bg-indigo-600 text-white shadow-indigo-200' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200'}`}>
                                 {tab.icon} {tab.label}
                             </button>
                         ))}
@@ -3147,37 +3399,52 @@ export default function App() {
                     <div className="animate-fade-in">
                         {/* Week Calendar — same style as Kid Dashboard */}
                         <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 mb-6">
-                            <div className="flex items-center justify-between mb-8 px-2">
-                                <div className="flex items-center gap-2 text-indigo-600 font-black text-lg">
-                                    <Icons.Calendar size={20} />
-                                    {getWeekNumber(currentViewDate)[0]}年{currentViewDate.getMonth() + 1}月第{getWeekNumber(currentViewDate)[1]}周
+                            <div className="flex items-center justify-between mb-6 px-1">
+                                <div className="flex items-center text-indigo-600 font-black text-sm sm:text-lg">
+                                    第{getWeekNumber(currentViewDate)[1]}周
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <button onClick={() => { const d = new Date(currentViewDate); d.setDate(d.getDate() - 7); setCurrentViewDate(d); }} className="p-2 text-indigo-500 hover:bg-indigo-50 rounded-full transition-colors bg-indigo-50/50">
-                                        <Icons.ChevronLeft size={20} />
-                                    </button>
-                                    <button onClick={() => { setCurrentViewDate(new Date()); setSelectedDate(formatDate(new Date())); }} className="bg-yellow-400 text-yellow-900 px-5 py-2 rounded-full font-black text-sm hover:bg-yellow-500 transition-colors shadow-sm">
-                                        今天
-                                    </button>
-                                    <button onClick={() => { const d = new Date(currentViewDate); d.setDate(d.getDate() + 7); setCurrentViewDate(d); }} className="p-2 text-indigo-500 hover:bg-indigo-50 rounded-full transition-colors bg-indigo-50/50">
-                                        <Icons.ChevronRight size={20} />
-                                    </button>
-                                    <button onClick={() => setShowCalendarModal(true)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors ml-2 bg-slate-50">
-                                        <Icons.Calendar size={20} />
+                                <div className="flex items-center gap-1.5 sm:gap-3">
+                                    <div className="flex items-center gap-1 sm:gap-2">
+                                        <button onClick={() => { const d = new Date(currentViewDate); d.setDate(d.getDate() - 7); setCurrentViewDate(d); }} className="p-1 sm:p-2 text-indigo-500 hover:bg-indigo-50 rounded-full transition-colors bg-indigo-50/50">
+                                            <Icons.ChevronLeft size={16} className="sm:w-[20px] sm:h-[20px]" />
+                                        </button>
+                                        <button onClick={() => { setCurrentViewDate(new Date()); setSelectedDate(formatDate(new Date())); }} className="bg-yellow-400 text-yellow-900 px-2.5 sm:px-5 py-1 sm:py-2 rounded-full font-black text-[11px] sm:text-sm hover:bg-yellow-500 transition-colors shadow-sm">
+                                            今天
+                                        </button>
+                                        <button onClick={() => { const d = new Date(currentViewDate); d.setDate(d.getDate() + 7); setCurrentViewDate(d); }} className="p-1 sm:p-2 text-indigo-500 hover:bg-indigo-50 rounded-full transition-colors bg-indigo-50/50">
+                                            <Icons.ChevronRight size={16} className="sm:w-[20px] sm:h-[20px]" />
+                                        </button>
+                                    </div>
+                                    <button onClick={() => setShowCalendarModal(true)} className="p-1.5 sm:p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors bg-slate-50">
+                                        <Icons.Calendar size={16} className="sm:w-[20px] sm:h-[20px]" />
                                     </button>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-7 gap-2 pt-2 pb-2">
-                                {getDisplayDateArray(currentViewDate).map((day, i) => (
-                                    <button key={i} onClick={() => setSelectedDate(day.dateStr)}
-                                        className={`flex flex-col items-center py-4 rounded-2xl transition-all
-                                            ${selectedDate === day.dateStr ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 -translate-y-1' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}
-                                        `}>
-                                        <span className={`text-xs font-bold mb-2 ${selectedDate === day.dateStr ? 'text-indigo-200' : 'text-slate-400'}`}>{day.d}</span>
-                                        <span className="text-xl font-black">{day.displayDate.split('/')[1]}</span>
-                                        <div className={`w-1.5 h-1.5 rounded-full mt-2 ${selectedDate === day.dateStr ? 'bg-white' : (day.dateStr === formatDate(new Date()) ? 'bg-orange-500' : 'bg-transparent')}`}></div>
-                                    </button>
-                                ))}
+                            <div className="grid grid-cols-7 gap-1 md:gap-2 pt-2 pb-2">
+                                {getDisplayDateArray(currentViewDate).map((day, i) => {
+                                    const { count, total } = getIncompleteStudyTasksCount(day.dateStr);
+
+                                    return (
+                                        <button key={i} onClick={() => setSelectedDate(day.dateStr)}
+                                            className={`flex flex-col items-center py-2 md:py-4 px-1 rounded-xl md:rounded-2xl transition-all
+                                                ${selectedDate === day.dateStr ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 -translate-y-1' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}
+                                            `}>
+                                            <span className={`text-[9px] md:text-xs font-bold mb-1 md:mb-2 whitespace-nowrap ${selectedDate === day.dateStr ? 'text-indigo-200' : 'text-slate-400'}`}>{day.d}</span>
+                                            <span className="text-base sm:text-lg md:text-xl font-black">{day.displayDate.split('/')[1]}</span>
+                                            <div className="mt-1.5 md:mt-2 h-3.5 flex items-center justify-center">
+                                                {count > 0 ? (
+                                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${selectedDate === day.dateStr ? 'bg-indigo-400/50 text-white' : 'bg-red-100 text-red-600'}`}>
+                                                        {count}
+                                                    </span>
+                                                ) : (total > 0 ? (
+                                                    <span className={`text-[10px] ${selectedDate === day.dateStr ? 'text-indigo-300' : 'text-emerald-500'}`}><Icons.Check size={12} /></span>
+                                                ) : (
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${selectedDate === day.dateStr ? 'bg-white/30' : (day.dateStr === formatDate(new Date()) ? 'bg-orange-500' : 'bg-transparent')}`}></div>
+                                                ))}
+                                            </div>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -3186,18 +3453,18 @@ export default function App() {
                             <div className="flex items-center gap-3">
                                 <div className="text-xl font-black text-slate-800 border-l-4 border-indigo-500 pl-3">当日任务总览</div>
                                 <div className="flex items-center bg-white rounded-full border border-slate-200 shadow-sm overflow-hidden">
-                                    <button onClick={() => setParentKidFilter('all')} className={`px-4 py-2 text-xs font-bold transition-all ${parentKidFilter === 'all' ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}>全部</button>
                                     {kids.map(k => (
-                                        <button key={k.id} onClick={() => setParentKidFilter(k.id)} className={`px-4 py-2 text-xs font-bold transition-all ${parentKidFilter === k.id ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}>
+                                        <button key={k.id} onClick={() => setParentKidFilter(k.id)} className={`px-4 py-2 text-xs font-bold transition-all ${parentKidFilter === k.id || (parentKidFilter === 'all' && kids[0]?.id === k.id) ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}>
                                             {k.avatar} {k.name}
                                         </button>
                                     ))}
+                                    <button onClick={() => setParentKidFilter('all')} className={`px-4 py-2 text-xs font-bold transition-all ${parentKidFilter === 'all' && kids.length === 0 ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}>全部</button>
                                 </div>
                             </div>
                             <button onClick={() => {
                                 setEditingTask(null);
                                 setPlanType('study');
-                                setPlanForm({ targetKid: parentKidFilter === 'all' ? 'all' : parentKidFilter, category: '技能', title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, timeSetting: 'none', startTime: '', endTime: '', durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
+                                setPlanForm({ targetKid: parentKidFilter === 'all' ? 'all' : parentKidFilter, category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, timeSetting: 'none', startTime: '', endTime: '', durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
                                 setShowAddPlanModal(true);
                             }} className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all hover:scale-105">
                                 <Icons.Plus size={18} /> 新建计划
@@ -3231,26 +3498,48 @@ export default function App() {
 
                             if (pendingApprovals.length === 0) return null;
                             return (
-                                <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5 mb-6">
-                                    <h3 className="font-black text-orange-700 mb-3 flex items-center gap-2">
-                                        <Icons.Bell size={18} /> 待审核验收 <span className="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full">{pendingApprovals.length}</span>
-                                    </h3>
+                                <div className="bg-[#FFF8EE] border border-orange-100 rounded-[2rem] p-4 sm:p-6 mb-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="font-extrabold text-orange-700 flex items-center gap-2 text-lg">
+                                            <Icons.Bell size={20} className="text-orange-600" /> 待审核验收
+                                            <span className="bg-orange-500 text-white text-xs px-2.5 py-1 rounded-full">{pendingApprovals.length}</span>
+                                        </h3>
+                                        <button
+                                            onClick={() => handleApproveAllTasks(pendingApprovals)}
+                                            className="text-xs font-black text-orange-600 bg-orange-100/80 hover:bg-orange-200 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1"
+                                        >
+                                            <Icons.CheckCircle size={14} /> 一键全部通过
+                                        </button>
+                                    </div>
                                     <div className="space-y-3">
                                         {pendingApprovals.map(({ task: t, date, actualKidId }) => {
                                             const kidInfo = kids.find(k => k.id === actualKidId);
                                             return (
-                                                <div key={`${t.id}-${date}`} className="flex items-center justify-between bg-white rounded-xl p-4 border border-orange-100 shadow-sm">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="text-2xl">{t.iconEmoji || '📚'}</div>
+                                                <div
+                                                    key={`${t.id}-${date}`}
+                                                    onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }}
+                                                    className="flex flex-col sm:flex-row sm:items-center justify-between bg-white rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border-transparent cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all group"
+                                                >
+                                                    <div className="flex items-center gap-4 mb-3 sm:mb-0">
+                                                        <div className={`w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br ${getCategoryGradient(t.category || '计划')} flex flex-col items-center justify-center text-white shadow-inner group-hover:scale-110 transition-transform duration-300`}>
+                                                            {renderIcon(t.iconName || getIconForCategory(t.category), 22)}
+                                                        </div>
                                                         <div>
-                                                            <div className="font-black text-slate-800">{t.title}</div>
-                                                            <div className="text-xs text-slate-500">{kidInfo?.avatar} {kidInfo?.name} · {date}</div>
+                                                            <div className="font-black text-slate-800 text-lg mb-1">{t.title}</div>
+                                                            <div className="text-[11px] text-slate-500 font-bold flex items-center gap-1.5">
+                                                                <span className="bg-slate-100 px-1.5 py-0.5 rounded flex items-center gap-1">{kidInfo?.avatar} {kidInfo?.name}</span>
+                                                                <span>·</span>
+                                                                <span>{date}</span>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="font-black text-indigo-600 text-sm">{t.reward > 0 ? '+' : ''}{t.reward} 家庭币</span>
-                                                        <button onClick={() => handleApproveTask(t, date, actualKidId)} className="px-5 py-2 bg-emerald-500 text-white rounded-xl text-xs font-black shadow-lg shadow-emerald-200 hover:bg-emerald-600 transition-transform hover:scale-105">
-                                                            ✅ 审批通过
+                                                    <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-none border-slate-50">
+                                                        <span className="font-black text-indigo-600 text-md whitespace-nowrap">{t.reward > 0 ? '+' : ''}{t.reward} 家庭币</span>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleApproveTask(t, date, actualKidId); }}
+                                                            className="shrink-0 px-4 sm:px-6 py-2.5 bg-[#00C875] text-white rounded-xl text-sm font-black shadow-lg shadow-emerald-200/50 hover:bg-[#00b065] active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                                                        >
+                                                            <Icons.Check size={16} strokeWidth={3} /> 审批通过
                                                         </button>
                                                     </div>
                                                 </div>
@@ -3263,9 +3552,10 @@ export default function App() {
 
                         {/* Task Cards Grid */}
                         {(() => {
+                            const effectiveFilter = parentKidFilter === 'all' && kids.length > 0 ? kids[0].id : parentKidFilter;
                             let parentTasks = tasks.filter(t => t.type === 'study' && isTaskDueOnDate(t, selectedDate));
-                            if (parentKidFilter !== 'all') {
-                                parentTasks = parentTasks.filter(t => t.kidId === parentKidFilter || t.kidId === 'all');
+                            if (effectiveFilter !== 'all') {
+                                parentTasks = parentTasks.filter(t => t.kidId === effectiveFilter || t.kidId === 'all');
                             }
                             const getDailyStatus = (t) => getTaskStatusOnDate(t, selectedDate, activeKidId);
 
@@ -3274,37 +3564,75 @@ export default function App() {
                             }
 
                             return (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="flex flex-col gap-4 max-w-3xl mx-auto w-full pb-10">
                                     {parentTasks.map(t => {
                                         // For Parent view UI display trick: if KidId === 'all', randomly select the first active kid to show avatar or generic '全部孩子'
                                         let displayKidId = t.kidId;
-                                        if (t.kidId === 'all') displayKidId = parentKidFilter === 'all' ? 'all' : parentKidFilter;
+                                        if (t.kidId === 'all') displayKidId = effectiveFilter === 'all' ? 'all' : effectiveFilter;
 
                                         const kidInfo = displayKidId === 'all' ? { name: '全部孩子', avatar: '👥' } : kids.find(k => k.id === displayKidId);
                                         const status = getTaskStatusOnDate(t, selectedDate, displayKidId === 'all' ? kids[0]?.id : displayKidId);
                                         return (
-                                            <div key={t.id} className="flex bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow h-28 group relative">
-                                                <div className={`w-20 bg-gradient-to-b ${getCategoryGradient(t.category || '计划')} flex flex-col items-center justify-center text-white p-2`}>
-                                                    {renderIcon(t.iconName, 28)}
-                                                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-md border ${getCategoryColor(t.category || '计划')}`}>{t.category || '计划'}</span>
+                                            <div key={t.id} className={`bg-white rounded-[2rem] p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 group flex flex-col sm:flex-row gap-4 relative overflow-hidden mb-4 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] ${status === 'completed' ? 'border-2 border-emerald-100 shadow-[0_8px_30px_rgba(16,185,129,0.06)]' : 'border border-slate-100/60'}`}>
+                                                <button onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className="absolute inset-0 z-0 cursor-pointer hidden sm:block" aria-label="查看任务详情"></button>
+
+                                                {/* Left Section: Big Colorful Squircle Icon */}
+                                                <div onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className="flex z-10 sm:w-auto items-start gap-4 flex-1 cursor-pointer relative">
+                                                    <div className={`w-16 h-16 shrink-0 rounded-[1.25rem] bg-gradient-to-br ${getCategoryGradient(t.category || '计划')} flex flex-col items-center justify-center text-white shadow-inner group-hover:scale-110 transition-transform duration-300 relative`}>
+                                                        {renderIcon(t.iconName || getIconForCategory(t.category), 26)}
+                                                        <span className={`text-[11px] font-black mt-1 text-center w-full line-clamp-1 opacity-90 tracking-wide`}>{t.category || '计划'}</span>
+                                                        {/* Premium Checkmark Badge overlay for completed status */}
+                                                        {status === 'completed' && (
+                                                            <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm">
+                                                                <div className="bg-emerald-500 rounded-full w-5 h-5 flex items-center justify-center text-white">
+                                                                    <Icons.Check size={12} strokeWidth={4} />
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex-1 flex flex-col pt-0.5">
+                                                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                                                            <h3 className={`font-black text-lg md:text-xl leading-tight line-clamp-2 ${status === 'completed' ? 'text-slate-400' : 'text-slate-800'}`}>{t.title}</h3>
+                                                            <span className="bg-slate-100 text-slate-500 text-[9px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded whitespace-nowrap">{kidInfo?.avatar} {kidInfo?.name}</span>
+                                                        </div>
+
+                                                        <div className="flex flex-wrap gap-2 items-center mt-2">
+                                                            {/* Reward Pill */}
+                                                            <div className="bg-amber-100/80 text-amber-600 px-3 py-1 rounded-full text-xs font-black flex items-center gap-1 border border-amber-200/50">
+                                                                {t.reward} <Icons.Star size={12} fill="currentColor" />
+                                                            </div>
+                                                            {/* Time Pill */}
+                                                            <div className="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                                                <Icons.Clock size={12} /> {t.timeStr || '--:--'}
+                                                            </div>
+                                                            {/* Frequency Pill */}
+                                                            <div className="bg-indigo-50 text-indigo-500 px-2 py-1 rounded-full text-[10px] font-black tracking-wide">
+                                                                {t.frequency || '每天'}
+                                                            </div>
+                                                            {status === 'completed' && (
+                                                                <div className="bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-1 rounded-full text-[10px] font-black tracking-wide flex items-center gap-1">
+                                                                    <Icons.CheckCircle size={10} /> 已完成
+                                                                </div>
+                                                            )}
+                                                            {status === 'pending_approval' && (
+                                                                <div className="bg-orange-50 text-orange-600 border border-orange-200 px-2 py-1 rounded-full text-[10px] font-black tracking-wide flex items-center gap-1">
+                                                                    <Icons.Clock size={10} /> 待审批
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div className="flex-1 p-4 flex flex-col justify-center">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <span className="font-black text-slate-800 text-lg">{t.title}</span>
-                                                        <span className="bg-slate-100 text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded">{kidInfo?.avatar} {kidInfo?.name}</span>
-                                                    </div>
-                                                    <div className="text-slate-400 text-xs flex items-center gap-1 font-bold mb-1">
-                                                        <Icons.Clock size={12} /> {t.timeStr || '--:--'}
-                                                        <span className="ml-2 bg-blue-50 text-blue-500 text-[10px] font-black px-2 py-0.5 rounded-full">{t.frequency || '每天'}</span>
-                                                    </div>
-                                                    <div className="text-yellow-500 text-sm font-black flex items-center gap-1">
-                                                        {t.reward} <Icons.Star size={14} fill="currentColor" />
-                                                    </div>
-                                                </div>
-                                                <div className="w-36 p-3 flex flex-col justify-center gap-2 border-l border-slate-50 bg-slate-50/50">
-                                                    {status === 'todo' && (
+
+                                                {/* Right/Bottom Section: Parent Actions */}
+                                                <div className="z-10 flex sm:flex-col justify-end sm:justify-center items-stretch gap-2 shrink-0 sm:w-32 mt-2 sm:mt-0 relative">
+                                                    {status === 'pending_approval' ? (
+                                                        <button onClick={(e) => { e.stopPropagation(); handleApproveTask(t, selectedDate, displayKidId === 'all' ? kids[0]?.id : displayKidId); }} className="flex-1 sm:flex-none bg-gradient-to-b from-emerald-400 to-emerald-500 shadow-lg shadow-emerald-500/30 text-white rounded-full py-3 sm:py-2 px-4 text-xs sm:text-sm font-black hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 border border-emerald-400/50">
+                                                            <Icons.CheckCircle size={16} fill="currentColor" /> 验收发放
+                                                        </button>
+                                                    ) : (
                                                         <>
-                                                            <button onClick={() => {
+                                                            <button onClick={(e) => {
+                                                                e.stopPropagation();
                                                                 setEditingTask(t);
                                                                 setPlanType(t.type || 'study');
                                                                 setPlanForm({
@@ -3334,28 +3662,13 @@ export default function App() {
                                                                     requireApproval: t.requireApproval !== undefined ? t.requireApproval : true
                                                                 });
                                                                 setShowAddPlanModal(true);
-                                                            }} className="w-full bg-blue-50 text-blue-600 border border-blue-200 rounded-full py-1.5 text-xs font-bold hover:bg-blue-100 flex items-center justify-center gap-1 transition-colors">
-                                                                <Icons.Edit3 size={14} /> 编辑
+                                                            }} className="flex-1 sm:flex-none bg-gradient-to-b from-blue-400 to-blue-500 shadow-lg shadow-blue-500/30 text-white rounded-full py-2 px-4 text-xs font-black hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 border border-blue-400/50">
+                                                                <Icons.Edit3 size={14} fill="currentColor" /> 编辑
                                                             </button>
-                                                            <button onClick={() => setDeleteConfirmTask(t)} className="w-full bg-red-50 text-red-500 border border-red-200 rounded-full py-1.5 text-xs font-bold hover:bg-red-100 flex items-center justify-center gap-1 transition-colors">
+                                                            <button onClick={(e) => { e.stopPropagation(); setDeleteConfirmTask(t); }} className="flex-1 sm:flex-none bg-gradient-to-b from-slate-100 to-slate-200 text-slate-500 rounded-full py-2 px-4 text-xs font-black hover:bg-slate-300 transition-colors flex items-center justify-center gap-1.5 border border-slate-200/50">
                                                                 <Icons.Trash2 size={14} /> 删除
                                                             </button>
                                                         </>
-                                                    )}
-                                                    {status === 'pending_approval' && (
-                                                        <button onClick={() => handleApproveTask(t, selectedDate)} className="w-full bg-emerald-500 text-white rounded-full py-2 text-xs font-bold shadow-md hover:bg-emerald-600 flex items-center justify-center gap-1 transition-all">
-                                                            <Icons.CheckCircle size={14} /> 审批通过
-                                                        </button>
-                                                    )}
-                                                    {status === 'in_progress' && (
-                                                        <span className="w-full text-center text-xs font-bold text-blue-500 bg-blue-50 rounded-full py-2 flex items-center justify-center gap-1">
-                                                            <Icons.Play size={14} /> 进行中
-                                                        </span>
-                                                    )}
-                                                    {status === 'completed' && (
-                                                        <span className="w-full text-center text-xs font-bold text-emerald-500 bg-emerald-50 rounded-full py-2 flex items-center justify-center gap-1">
-                                                            <Icons.CheckCircle size={14} /> 已完成
-                                                        </span>
                                                     )}
                                                 </div>
                                             </div>
@@ -3363,7 +3676,8 @@ export default function App() {
                                     })}
                                 </div>
                             );
-                        })()}                    </div>
+                        })()}
+                    </div>
                 )}
 
                 {parentTab === 'plans' && (
@@ -3376,7 +3690,7 @@ export default function App() {
                             <button onClick={() => {
                                 setEditingTask(null);
                                 setPlanType('habit');
-                                setPlanForm({ targetKid: 'all', category: '技能', title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, timeSetting: 'none', startTime: '', endTime: '', durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
+                                setPlanForm({ targetKid: 'all', category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, timeSetting: 'none', startTime: '', endTime: '', durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
                                 setShowAddPlanModal(true);
                             }} className="w-full sm:w-auto bg-emerald-600 text-white px-6 py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 shadow-lg shadow-emerald-200 hover:bg-emerald-700">
                                 <Icons.Plus size={18} /> 新建习惯
@@ -3772,34 +4086,63 @@ export default function App() {
     }
 
     if (!token) {
+        const themeSettings = authMode === 'login'
+            ? {
+                bgGradient: 'from-indigo-500 to-purple-600',
+                btnBg: 'bg-indigo-600 hover:bg-indigo-700',
+                btnShadow: 'shadow-indigo-200',
+                iconBox: 'from-indigo-500 to-purple-500',
+                title: '欢迎回来',
+                subtitle: '管理家庭大大小小的事迹',
+                btnText: '登 录',
+                Icon: Icons.LogIn
+            }
+            : {
+                bgGradient: 'from-emerald-400 to-teal-500',
+                btnBg: 'bg-emerald-500 hover:bg-emerald-600',
+                btnShadow: 'shadow-emerald-200',
+                iconBox: 'from-emerald-400 to-teal-400',
+                title: '开启家庭大本营',
+                subtitle: '注册即享 3 天全功能免费体验',
+                btnText: '注 册 并 试 用',
+                Icon: Icons.UserPlus
+            };
+
         return (
-            <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center p-4">
-                <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <div className={`min-h-screen bg-gradient-to-br ${themeSettings.bgGradient} flex items-center justify-center p-4 transition-colors duration-500`}>
+                <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden relative">
                     <div className="bg-slate-50 p-8 text-center border-b border-slate-100">
-                        <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-3xl mx-auto flex items-center justify-center text-white mb-4 shadow-xl">
-                            <Icons.Home size={40} />
+                        {/* 顶部胶囊切换器 */}
+                        <div className="flex bg-slate-200/60 p-1 rounded-2xl mb-8 max-w-[200px] mx-auto shadow-inner">
+                            <button
+                                onClick={() => setAuthMode('login')}
+                                className={`flex-1 py-2 rounded-xl text-sm font-black transition-all ${authMode === 'login' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                            >登录</button>
+                            <button
+                                onClick={() => setAuthMode('register')}
+                                className={`flex-1 py-2 rounded-xl text-sm font-black transition-all ${authMode === 'register' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                            >注册</button>
                         </div>
-                        <h1 className="text-3xl font-black text-slate-800">MiniLife 家庭版</h1>
-                        <p className="text-slate-500 font-bold mt-2">{authMode === 'login' ? '欢迎回来，管理大大小小的事迹' : '注册即享 3 天全功能免费体验'}</p>
+
+                        <div className={`w-20 h-20 bg-gradient-to-br ${themeSettings.iconBox} rounded-[2rem] mx-auto flex items-center justify-center text-white mb-4 shadow-xl transition-colors duration-500`}>
+                            <themeSettings.Icon size={36} strokeWidth={2.5} />
+                        </div>
+                        <h1 className="text-3xl font-black text-slate-800 tracking-tight">{themeSettings.title}</h1>
+                        <p className="text-slate-500 font-bold mt-2 text-sm">{themeSettings.subtitle}</p>
                     </div>
                     <form onSubmit={handleAuth} className="p-8 space-y-6">
                         <div>
                             <label className="block text-sm font-black text-slate-700 mb-2">邮箱</label>
-                            <input required type="email" value={authForm.email} onChange={e => setAuthForm({ ...authForm, email: e.target.value })} className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-indigo-500 font-bold text-slate-800 transition-colors" placeholder="name@example.com" />
+                            <input required type="email" value={authForm.email} onChange={e => setAuthForm({ ...authForm, email: e.target.value })} className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-slate-400 font-bold text-slate-800 transition-colors placeholder:text-slate-300" placeholder="name@example.com" />
                         </div>
                         <div>
                             <label className="block text-sm font-black text-slate-700 mb-2">密码</label>
-                            <input required type="password" value={authForm.password} onChange={e => setAuthForm({ ...authForm, password: e.target.value })} className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-indigo-500 font-bold text-slate-800 transition-colors" placeholder="••••••••" />
+                            <input required type="password" value={authForm.password} onChange={e => setAuthForm({ ...authForm, password: e.target.value })} className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-slate-400 font-bold text-slate-800 transition-colors placeholder:text-slate-300" placeholder="••••••••" />
                         </div>
-                        <button type="submit" className="w-full bg-indigo-600 text-white font-black text-lg py-4 rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors">
-                            {authMode === 'login' ? '登 录' : '注 册 并 试 用'}
+                        <button type="submit" className={`w-full text-white font-black text-lg py-4 rounded-2xl shadow-lg transition-all active:scale-[0.98] ${themeSettings.btnBg} ${themeSettings.btnShadow}`}>
+                            {themeSettings.btnText}
                         </button>
                     </form>
-                    <div className="bg-slate-50 p-6 text-center border-t border-slate-100">
-                        <button onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')} className="text-indigo-600 font-bold hover:underline">
-                            {authMode === 'login' ? '没有账号？免费注册' : '已有账号？直接登录'}
-                        </button>
-                    </div>
                 </div>
                 {/* Notifications overlay needed for auth page too */}
                 <div className="fixed top-4 right-4 z-50 space-y-2">
