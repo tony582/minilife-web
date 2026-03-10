@@ -28,6 +28,7 @@ COPY server/ ./
 
 # Expose the API and Web server port
 EXPOSE 80
+ENV PORT=80
 
 # Run the server
 CMD ["node", "server.js"]
