@@ -228,21 +228,22 @@ app.get('/api/tasks', authenticateToken, (req, res) => {
 });
 
 app.post('/api/tasks', authenticateToken, (req, res) => {
-    const { id, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, dates, startDate, pointRule, habitType, attachments, requireApproval, repeatConfig } = req.body;
+    const { id, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, dates, startDate, pointRule, habitType, attachments, requireApproval, repeatConfig, order } = req.body;
     const datesStr = dates ? JSON.stringify(dates) : '[]';
     const attachmentsStr = attachments ? JSON.stringify(attachments) : '[]';
     const repeatConfigStr = repeatConfig ? JSON.stringify(repeatConfig) : null;
     const requireApprovalInt = requireApproval ? 1 : 0;
+    const orderInt = order || 0;
 
-    const insert = `INSERT INTO tasks (id, userId, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, dates, history, startDate, pointRule, habitType, attachments, requireApproval, repeatConfig) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
-    db.run(insert, [id, req.user.id, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, datesStr, '{}', startDate, pointRule, habitType, attachmentsStr, requireApprovalInt, repeatConfigStr], function (err) {
+    const insert = `INSERT INTO tasks (id, userId, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, dates, history, startDate, pointRule, habitType, attachments, requireApproval, repeatConfig, "order") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+    db.run(insert, [id, req.user.id, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, datesStr, '{}', startDate, pointRule, habitType, attachmentsStr, requireApprovalInt, repeatConfigStr, orderInt], function (err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ id });
     });
 });
 
 app.put('/api/tasks/:id', authenticateToken, (req, res) => {
-    const { status, title, reward, timeStr, frequency, standards, category, catColor, iconEmoji, iconName, dates, history, startDate, pointRule, habitType, attachments, requireApproval, repeatConfig } = req.body;
+    const { status, title, reward, timeStr, frequency, standards, category, catColor, iconEmoji, iconName, dates, history, startDate, pointRule, habitType, attachments, requireApproval, repeatConfig, order } = req.body;
     let query = "UPDATE tasks SET ";
     let params = [];
     if (status !== undefined) { query += "status = ?, "; params.push(status); }
@@ -263,6 +264,7 @@ app.put('/api/tasks/:id', authenticateToken, (req, res) => {
     if (attachments !== undefined) { query += "attachments = ?, "; params.push(JSON.stringify(attachments)); }
     if (requireApproval !== undefined) { query += "requireApproval = ?, "; params.push(requireApproval ? 1 : 0); }
     if (repeatConfig !== undefined) { query += "repeatConfig = ?, "; params.push(repeatConfig ? JSON.stringify(repeatConfig) : null); }
+    if (order !== undefined) { query += '"order" = ?, '; params.push(order); }
     if (params.length === 0) return res.status(400).json({ error: "No fields to update" });
 
     query = query.slice(0, -2) + " WHERE id = ? AND userId = ?";

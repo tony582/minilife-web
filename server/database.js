@@ -11,16 +11,17 @@ const db = new sqlite3.Database(dbPath, (err) => {
         // Initialize Tables
         db.serialize(() => {
             // Because we are moving to multi-tenant, we wipe the old single-tenant tables.
-            db.run(`DROP TABLE IF EXISTS kids`);
-            db.run(`DROP TABLE IF EXISTS tasks`);
-            db.run(`DROP TABLE IF EXISTS inventory`);
-            db.run(`DROP TABLE IF EXISTS orders`);
-            db.run(`DROP TABLE IF EXISTS transactions`);
-            db.run(`DROP TABLE IF EXISTS users`);
-            db.run(`DROP TABLE IF EXISTS activation_codes`);
+            // DO NOT WIPE PRODUCTION DATA
+            // db.run(`DROP TABLE IF EXISTS kids`);
+            // db.run(`DROP TABLE IF EXISTS tasks`);
+            // db.run(`DROP TABLE IF EXISTS inventory`);
+            // db.run(`DROP TABLE IF EXISTS orders`);
+            // db.run(`DROP TABLE IF EXISTS transactions`);
+            // db.run(`DROP TABLE IF EXISTS users`);
+            // db.run(`DROP TABLE IF EXISTS activation_codes`);
 
             // Users Table
-            db.run(`CREATE TABLE users (
+            db.run(`CREATE TABLE IF NOT EXISTS users (
                 id TEXT PRIMARY KEY,
                 email TEXT UNIQUE NOT NULL,
                 password_hash TEXT NOT NULL,
@@ -31,7 +32,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
             )`);
 
             // Activation Codes Table
-            db.run(`CREATE TABLE activation_codes (
+            db.run(`CREATE TABLE IF NOT EXISTS activation_codes (
                 code TEXT PRIMARY KEY,
                 duration_days INTEGER NOT NULL,
                 status TEXT DEFAULT 'active',
@@ -49,7 +50,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
             });
 
             // Kids Table (Multi-tenant)
-            db.run(`CREATE TABLE kids (
+            db.run(`CREATE TABLE IF NOT EXISTS kids (
                 id TEXT PRIMARY KEY,
                 userId TEXT NOT NULL,
                 name TEXT NOT NULL,
@@ -64,7 +65,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
             )`);
 
             // Tasks Table (Multi-tenant)
-            db.run(`CREATE TABLE tasks (
+            db.run(`CREATE TABLE IF NOT EXISTS tasks (
                 id TEXT PRIMARY KEY,
                 userId TEXT NOT NULL,
                 kidId TEXT,
@@ -86,11 +87,12 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 habitType TEXT,
                 attachments TEXT,
                 requireApproval INTEGER,
-                repeatConfig TEXT
+                repeatConfig TEXT,
+                "order" INTEGER DEFAULT 0
             )`);
 
             // Inventory Table (Multi-tenant)
-            db.run(`CREATE TABLE inventory (
+            db.run(`CREATE TABLE IF NOT EXISTS inventory (
                 id TEXT PRIMARY KEY,
                 userId TEXT NOT NULL,
                 name TEXT NOT NULL,
@@ -101,7 +103,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
             )`);
 
             // Orders Table (Multi-tenant)
-            db.run(`CREATE TABLE orders (
+            db.run(`CREATE TABLE IF NOT EXISTS orders (
                 id TEXT PRIMARY KEY,
                 userId TEXT NOT NULL,
                 kidId TEXT,
@@ -114,7 +116,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
             )`);
 
             // Transactions Table (Multi-tenant)
-            db.run(`CREATE TABLE transactions (
+            db.run(`CREATE TABLE IF NOT EXISTS transactions (
                 id TEXT PRIMARY KEY,
                 userId TEXT NOT NULL,
                 kidId TEXT,

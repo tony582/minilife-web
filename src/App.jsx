@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 // === 1. 纯净内联 SVG 图标库 ===
 const IconWrapper = ({ size = 24, className = "", children }) => (
@@ -19,6 +20,8 @@ const Icons = {
     ShieldCheck: (p) => <IconWrapper {...p}><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2-1 4-2 7-2 2.5 0 4.5 1 6 2a1 1 0 0 1 1 1v7z" /><path d="m9 12 2 2 4-4" /></IconWrapper>,
     BookOpen: (p) => <IconWrapper {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></IconWrapper>,
     ArrowRight: (p) => <IconWrapper {...p}><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></IconWrapper>,
+    ArrowUp: (p) => <IconWrapper {...p}><path d="m5 12 7-7 7 7" /><path d="M12 19V5" /></IconWrapper>,
+    ArrowDown: (p) => <IconWrapper {...p}><path d="M12 5v14" /><path d="m19 12-7 7-7-7" /></IconWrapper>,
     CheckCircle: (p) => <IconWrapper {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><path d="m9 11 3 3L22 4" /></IconWrapper>,
     CheckSquare: (p) => <IconWrapper {...p}><polyline points="9 11 12 14 22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></IconWrapper>,
     Clock: (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></IconWrapper>,
@@ -44,6 +47,8 @@ const Icons = {
     Play: (p) => <IconWrapper {...p}><polygon points="5 3 19 12 5 21 5 3" /></IconWrapper>,
     Check: (p) => <IconWrapper {...p}><polyline points="20 6 9 17 4 12" /></IconWrapper>,
     Calendar: (p) => <IconWrapper {...p}><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></IconWrapper>,
+    Activity: (p) => <IconWrapper {...p}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></IconWrapper>,
+    ArrowUpRight: (p) => <IconWrapper {...p}><line x1="7" y1="17" x2="17" y2="7" /><polyline points="7 7 17 7 17 17" /></IconWrapper>,
     Eye: (p) => <IconWrapper {...p}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></IconWrapper>,
     Filter: (p) => <IconWrapper {...p}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></IconWrapper>,
     SortAsc: (p) => <IconWrapper {...p}><path d="M11 5h10M11 9h7M11 13h4M3 17l3 3 3-3M6 18V4" /></IconWrapper>,
@@ -61,6 +66,7 @@ const Icons = {
     List: (p) => <IconWrapper {...p}><line x1="8" x2="21" y1="6" y2="6" /><line x1="8" x2="21" y1="12" y2="12" /><line x1="8" x2="21" y1="18" y2="18" /><line x1="3" x2="3.01" y1="6" y2="6" /><line x1="3" x2="3.01" y1="12" y2="12" /><line x1="3" x2="3.01" y1="18" y2="18" /></IconWrapper>,
     Pause: (p) => <IconWrapper {...p}><rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" /></IconWrapper>,
     Edit3: (p) => <IconWrapper {...p}><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></IconWrapper>,
+    GripVertical: (p) => <IconWrapper {...p}><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></IconWrapper>,
     // Newly Added Category Icons
     Calculator: (p) => <IconWrapper {...p}><rect width="16" height="20" x="4" y="2" rx="2" /><line x1="8" x2="16" y1="6" y2="6" /><line x1="16" x2="16" y1="14" y2="18" /><path d="M16 10h.01" /><path d="M12 10h.01" /><path d="M8 10h.01" /><path d="M12 14h.01" /><path d="M8 14h.01" /><path d="M12 18h.01" /><path d="M8 18h.01" /></IconWrapper>,
     MessageCircle: (p) => <IconWrapper {...p}><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></IconWrapper>,
@@ -74,7 +80,9 @@ const Icons = {
     Monitor: (p) => <IconWrapper {...p}><rect width="20" height="14" x="2" y="3" rx="2" /><line x1="8" x2="16" y1="21" y2="21" /><line x1="12" x2="12" y1="17" y2="21" /></IconWrapper>,
     Dumbbell: (p) => <IconWrapper {...p}><path d="M14.4 14.4 9.6 9.6" /><path d="M18.65 21.35a2.12 2.12 0 0 1-2.99 0l-5.46-5.46a2.12 2.12 0 1 1 2.99-2.99l5.46 5.46a2.12 2.12 0 0 1 0 2.99z" /><path d="m2.65 9.65 5.46 5.46a2.12 2.12 0 1 1-2.99 2.99l-5.46-5.46a2.12 2.12 0 1 1 2.99-2.99z" /><path d="m9.3 5.3 5.4 5.4" /></IconWrapper>,
     Gamepad2: (p) => <IconWrapper {...p}><line x1="6" x2="10" y1="12" y2="12" /><line x1="8" x2="8" y1="10" y2="14" /><line x1="15" x2="15.01" y1="13" y2="13" /><line x1="18" x2="18.01" y1="11" y2="11" /><rect width="20" height="12" x="2" y="6" rx="2" /></IconWrapper>,
-    Palette: (p) => <IconWrapper {...p}><circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /><circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="7.5" r=".5" fill="currentColor" /><circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" /></IconWrapper>
+    Palette: (p) => <IconWrapper {...p}><circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /><circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="7.5" r=".5" fill="currentColor" /><circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" /></IconWrapper>,
+    ShieldAlert: (p) => <IconWrapper {...p}><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2-1 4-2 7-2 2.5 0 4.5 1 6 2a1 1 0 0 1 1 1v7z" /><path d="M12 8v4" /><path d="M12 16h.01" /></IconWrapper>,
+    User: (p) => <IconWrapper {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></IconWrapper>
 };
 
 // 图标渲染辅助方法
@@ -175,8 +183,24 @@ export default function App() {
     const [authForm, setAuthForm] = useState({ email: '', password: '' });
     const [activationCode, setActivationCode] = useState('');
 
-    const [appState, setAppState] = useState('profiles'); // 'profiles' | 'parent_pin' | 'kid_app' | 'parent_app'
+    const [appState, setAppState] = useState(localStorage.getItem('minilife_appState') || 'profiles'); // 'profiles' | 'parent_pin' | 'kid_app' | 'parent_app'
     const [notifications, setNotifications] = useState([]);
+    
+    // Level Modal State
+    const [showLevelModal, setShowLevelModal] = useState(false);
+    const [historyFilter, setHistoryFilter] = useState('all'); // 'all', 'income', 'expense'
+    const [habitCardFilter, setHabitCardFilter] = useState('all'); // 'all', 'income', 'expense', 'completed', 'pending'
+    const [celebrationData, setCelebrationData] = useState(null);
+
+    // Helper: Get Tier Title & Emoji Map based on Level
+    const getLevelTier = (level) => {
+        if (level < 10) return { title: '新手村学徒', emoji: '🌱', bg: 'from-green-400 to-emerald-500', color: 'text-emerald-500' };
+        if (level < 20) return { title: '探索达人', emoji: '🧭', bg: 'from-blue-400 to-cyan-500', color: 'text-blue-500' };
+        if (level < 30) return { title: '进阶骑士', emoji: '⚔️', bg: 'from-indigo-400 to-purple-500', color: 'text-indigo-500' };
+        if (level < 40) return { title: '白银守卫', emoji: '🛡️', bg: 'from-slate-300 to-slate-500', color: 'text-slate-600' };
+        if (level < 50) return { title: '黄金领主', emoji: '👑', bg: 'from-yellow-400 to-amber-500', color: 'text-amber-500' };
+        return { title: '传说星耀', emoji: '🌟', bg: 'from-rose-400 to-fuchsia-600', color: 'text-rose-500' };
+    };
     const handleAuth = async (e) => {
         e.preventDefault();
         try {
@@ -224,9 +248,11 @@ export default function App() {
 
     const handleLogout = () => {
         localStorage.removeItem('minilife_token');
+        localStorage.removeItem('minilife_appState');
+        localStorage.removeItem('minilife_activeKidId');
         setToken(null);
         setUser(null);
-        // setAppMode('auth'); removed, state automatically handles no token
+        changeAppState('profiles');
     };
 
     const generateCodes = async (days) => {
@@ -246,8 +272,20 @@ export default function App() {
 
 
     const [kids, setKids] = useState([]);
-    const [activeKidId, setActiveKidId] = useState('kid_1');
+    const [activeKidId, setActiveKidId] = useState(localStorage.getItem('minilife_activeKidId') || 'kid_1');
     const [parentSettings, setParentSettings] = useState({ pinEnabled: false, pinCode: '1234' });
+    
+    // --- State Persistence Wrappers ---
+    const changeAppState = (newState) => {
+        setAppState(newState);
+        localStorage.setItem('minilife_appState', newState);
+    };
+
+    const changeActiveKid = (newKidId) => {
+        setActiveKidId(newKidId);
+        if (newKidId) localStorage.setItem('minilife_activeKidId', newKidId);
+        else localStorage.removeItem('minilife_activeKidId');
+    };
 
     // 任务数据
     const [tasks, setTasks] = useState([]);
@@ -369,12 +407,20 @@ export default function App() {
     const [monthViewDate, setMonthViewDate] = useState(new Date());
 
     // 任务列表控制
-    const [taskFilter, setTaskFilter] = useState([]); // Array for multi-select
-    const [taskStatusFilter, setTaskStatusFilter] = useState('all'); // 'all' | 'completed' | 'incomplete'
+    // 任务列表控制 (Student)
+    const [taskFilter, setTaskFilter] = useState([]); 
+    const [taskStatusFilter, setTaskStatusFilter] = useState('all'); 
     const [taskSort, setTaskSort] = useState('default');
-    const [taskLayout, setTaskLayout] = useState('list');
+    
+    // 任务列表控制 (Parent)
+    const [parentTaskFilter, setParentTaskFilter] = useState([]);
+    const [parentTaskStatusFilter, setParentTaskStatusFilter] = useState('all');
+    const [parentTaskSort, setParentTaskSort] = useState('default');
+    
+    const [isReordering, setIsReordering] = useState(false);
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
     const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+    const [showSortDropdown, setShowSortDropdown] = useState(false);
 
     // 弹窗状态
     const [taskToSubmit, setTaskToSubmit] = useState(null);
@@ -513,6 +559,8 @@ export default function App() {
     const [reviewComment, setReviewComment] = useState("");
     const [newItem, setNewItem] = useState({ name: '', desc: '', price: '', iconEmoji: '🧸', type: 'single' });
     const [planType, setPlanType] = useState('study');
+    const [lastSavedEndTime, setLastSavedEndTime] = useState(''); // Record last used end time to chain tasks
+
     const [planForm, setPlanForm] = useState({
         targetKid: 'all', category: '技能', title: '', desc: '',
         startDate: new Date().toISOString().split('T')[0],
@@ -524,7 +572,7 @@ export default function App() {
         periodCustomDays: [1, 2, 3, 4, 5],
         periodTargetCount: 1,
         periodMaxPerDay: 1,
-        timeSetting: 'none', // 'none' | 'range' | 'duration'
+        timeSetting: 'range', // 'none' | 'range' | 'duration' - Default to range as requested
         startTime: '', endTime: '', durationPreset: 25,
         pointRule: 'default', // 'default' | 'custom'
         reward: '', iconEmoji: '📚',
@@ -722,33 +770,62 @@ export default function App() {
                 await apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHistory }) });
                 setTasks(tasks.map(t => t.id === task.id ? { ...t, history: newHistory } : t));
 
-                // Instantly create transaction if kidId matches
-                const newTrans = {
-                    id: `trans_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                // Instantly create transactions if kidId matches
+                const coinTrans = {
+                    id: `trans_${Date.now()}_coin`,
                     kidId: activeKidId,
                     type: task.reward > 0 ? 'income' : 'expense',
                     amount: Math.abs(task.reward || 0),
+                    title: `记录成长: ${task.title}`,
+                    date: new Date().toISOString(),
+                    category: 'task'
+                };
+                
+                const expTrans = {
+                    id: `trans_${Date.now()}_exp`,
+                    kidId: activeKidId,
+                    type: task.reward > 0 ? 'income' : 'expense',
+                    amount: Math.ceil(Math.abs(task.reward || 0) * 1.5),
                     title: `记录成长: ${task.title}`,
                     date: new Date().toISOString(),
                     category: 'habit'
                 };
 
                 if (task.reward !== 0) {
-                    await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newTrans) });
-                    setTransactions(prev => [newTrans, ...prev]);
+                    await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(coinTrans) });
+                    await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(expTrans) });
+                    setTransactions(prev => [coinTrans, expTrans, ...prev]);
                 }
 
-                // Actually update kid EXP locally and backend
+                // Actually update kid EXP and Coins locally and backend
                 const targetKid = kids.find(k => k.id === activeKidId);
                 if (targetKid) {
-                    const newExp = Math.max(0, targetKid.exp + (task.reward || 0));
-                    await updateActiveKid({ exp: newExp });
+                    const expDiff = Math.ceil((task.reward || 0) * 1.5);
+                    const newExp = Math.max(0, targetKid.exp + expDiff);
+                    const newBals = { ...targetKid.balances, spend: Math.max(0, targetKid.balances.spend + (task.reward || 0)) };
+                    await updateActiveKid({ exp: newExp, balances: newBals });
                 }
 
                 playSuccessSound();
-                if (task.reward > 0) notify(`打卡成功！获得 ${task.reward} 经验值！`, "success");
-                else if (task.reward < 0) notify(`打卡成功！扣除 ${Math.abs(task.reward)} 经验值。`, "error");
-                else notify("打卡成功！", "success");
+                if (task.reward > 0) {
+                    const messages = [
+                        "太棒了！你的坚持让家庭财富又增加啦！🌟",
+                        "自律的你，正在闪闪发光！✨",
+                        "一个小小的习惯，成就大大的未来！🚀",
+                        "付出总有回报，金币+1！💰",
+                        "保持良好的习惯，你是全家的骄傲！🏅"
+                    ];
+                    setCelebrationData({ task, message: messages[Math.floor(Math.random() * messages.length)], type: 'positive' });
+                } else if (task.reward < 0) {
+                    const messages = [
+                        "诚实是金！即使扣分，你的坦白也值得欣赏！🛡️",
+                        "知错能改，善莫大焉，下次一定能做好！💪",
+                        "勇敢承认错误，你已经赢了第一步！✨"
+                    ];
+                    setCelebrationData({ task, message: messages[Math.floor(Math.random() * messages.length)], type: 'negative' });
+                } else {
+                    notify("打卡成功！", "success");
+                }
 
             } catch (e) {
                 notify("网络请求失败", "error");
@@ -774,7 +851,7 @@ export default function App() {
     };
 
     const notify = (msg, type = 'info') => {
-        const id = Date.now();
+        const id = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
         setNotifications(p => [...p, { id, msg, type }]);
         setTimeout(() => setNotifications(p => p.filter(n => n.id !== id)), 3000);
     };
@@ -805,7 +882,17 @@ export default function App() {
         } catch (e) { console.error(e); notify("网络请求失败", "error"); }
     };
 
+    const updateKidData = async (targetKidId, updates) => {
+        try {
+            await apiFetch(`/api/kids/${targetKidId}`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updates)
+            });
+            setKids(prevKids => prevKids.map(k => k.id === targetKidId ? { ...k, ...updates } : k));
+        } catch (e) { console.error(e); notify("网络请求失败", "error"); }
+    };
+
     const getLevelReq = (level) => level * 100;
+
 
     const handleStartTask = (id) => {
         const task = tasks.find(t => t.id === id);
@@ -966,6 +1053,14 @@ export default function App() {
                 if (targetKid) {
                     const newBals = { ...targetKid.balances, spend: targetKid.balances.spend + (taskToSubmit.reward || 0) };
                     await updateActiveKid({ balances: newBals });
+                    
+                    // NEW DUAL REWARDS LOGIC: Gain EXP on task completion
+                    if (taskToSubmit.reward > 0) {
+                        const expGained = Math.ceil(taskToSubmit.reward * 1.5);
+                        await handleExpChange(activeKidId, expGained);
+                        notify(`打卡成功！获得 ${taskToSubmit.reward} 家庭币 和 ${expGained} 经验值！`, 'success');
+                        return; // Exit early to use combined notification
+                    }
                 }
                 notify(`打卡成功！已自动发放 ${taskToSubmit.reward} 家庭币！`, 'success');
             } else {
@@ -1008,11 +1103,210 @@ export default function App() {
             if (!targetKid) return;
 
             if (task.type === 'habit') {
-                await handleExpChange(task.kidId, task.reward);
-                if (task.reward > 0) notify(`已奖励 ${targetKid.name} ${task.reward} 经验！`, "success");
-                else notify(`已扣除 ${targetKid.name} ${Math.abs(task.reward)} 经验。`, "error");
+                if (task.reward > 0) {
+                    // 1. Give Family Coins & Transaction (For Wealth Center)
+                    const newTrans = {
+                        id: `trans_${Date.now()}`,
+                        kidId: task.kidId,
+                        type: 'income',
+                        amount: task.reward || 0,
+                        title: `完成记录: ${task.title}`,
+                        date: new Date().toISOString(),
+                        category: 'task'
+                    };
+                    await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newTrans) });
+
+                    const expGained = Math.ceil((task.reward || 0) * 1.5);
+                    // 2. Give EXP & Transaction (For Growth Footprints)
+                    const expTrans = {
+                        id: `trans_${Date.now()}_exp`,
+                        kidId: task.kidId,
+                        type: 'income',
+                        amount: expGained,
+                        title: `完成记录: ${task.title}`,
+                        date: new Date().toISOString(),
+                        category: 'habit'
+                    };
+                    await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(expTrans) });
+                    
+                    setTransactions([newTrans, expTrans, ...transactions]);
+
+                    const newBals = { ...targetKid.balances, spend: targetKid.balances.spend + task.reward };
+                    await updateActiveKid({ balances: newBals });
+
+                    await handleExpChange(task.kidId, expGained);
+                    
+                    notify(`打卡成功！已奖励 ${targetKid.name} ${task.reward} 家庭币 和 ${expGained} 经验！`, "success");
+                } else {
+                    // Penalty: Deduct EXP and Coins
+                    const absPenalty = Math.abs(task.reward);
+                    const newBals = { ...targetKid.balances, spend: Math.max(0, targetKid.balances.spend - absPenalty) };
+                    await updateActiveKid({ balances: newBals });
+                    
+                    const expPenalty = Math.ceil(absPenalty * 1.5);
+
+                    const refundTrans = {
+                        id: `trans_${Date.now()}_penalty`,
+                        kidId: task.kidId,
+                        type: 'expense',
+                        amount: absPenalty,
+                        title: `违规扣分: ${task.title}`,
+                        date: new Date().toISOString(),
+                        category: 'task'
+                    };
+                    const expRefundTrans = {
+                        id: `trans_${Date.now()}_penalty_exp`,
+                        kidId: task.kidId,
+                        type: 'expense',
+                        amount: expPenalty,
+                        title: `违规扣分: ${task.title}`,
+                        date: new Date().toISOString(),
+                        category: 'habit'
+                    };
+                    await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(refundTrans) });
+                    await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(expRefundTrans) });
+                    setTransactions(prev => [refundTrans, expRefundTrans, ...prev]);
+
+                    await handleExpChange(task.kidId, -expPenalty);
+                    
+                    notify(`已扣除 ${targetKid.name} ${absPenalty} 家庭币和 ${expPenalty} 经验。`, "error");
+                }
             }
         } catch (e) { notify("网络请求失败", "error"); }
+    };
+
+    const handleRejectTask = async (task, dateStr, kidId) => {
+        try {
+            const oldHistory = task.history && task.history[dateStr] && task.history[dateStr][kidId] ? task.history[dateStr][kidId] : {};
+            
+            // Revert state -> 'failed' instead of 'todo' so it stays logged but child can restart
+            const histUpdates = { ...task.history };
+            if (!histUpdates[dateStr]) histUpdates[dateStr] = {};
+            histUpdates[dateStr] = {
+                ...histUpdates[dateStr],
+                [kidId]: { ...oldHistory, status: 'failed' } // preserve timeSpent and current note
+            };
+
+            await apiFetch(`/api/tasks/${task.id}`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ history: histUpdates })
+            });
+
+            setTasks(tasks.map(t => t.id === task.id ? { ...t, history: histUpdates } : t));
+
+            // Reverse reward/penalty if was previously completed
+            if (oldHistory.status === 'completed') {
+                const isStudy = task.type === 'study';
+                let absReward = Math.abs(task.reward || 0);
+
+                if (isStudy && absReward > 0) {
+                    const targetKid = kids.find(k => String(k.id) === String(kidId));
+                    if (targetKid) {
+                        const newBal = Math.max(0, targetKid.balances.spend - absReward);
+                        
+                        await apiFetch(`/api/kids/${kidId}`, {
+                            method: 'PUT', headers: { 'Content-Type': 'application/json' }, 
+                            body: JSON.stringify({ balances: { ...targetKid.balances, spend: newBal } })
+                        });
+                        setKids(kids.map(k => String(k.id) === String(kidId) ? { ...k, balances: { ...k.balances, spend: newBal } } : k));
+                        
+                        // Create negative transaction to balance ledger
+                        const refundTrans = {
+                            id: `trans_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                            kidId: kidId,
+                            type: 'expense',
+                            amount: absReward,
+                            title: `未达标撤回: ${task.title}`,
+                            date: new Date().toISOString(),
+                            category: 'task'
+                        };
+                        await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(refundTrans) });
+                        setTransactions([refundTrans, ...transactions]);
+                    }
+                } else if (!isStudy) {
+                    const absReward = Math.abs(task.reward || 0);
+                    const targetKid = kids.find(k => String(k.id) === String(kidId));
+                    if (targetKid) {
+                        if (task.reward > 0) {
+                            // Reverse positive habit logic: Deduct Coins & EXP
+                            const newBal = Math.max(0, targetKid.balances.spend - absReward);
+                            const newExp = Math.max(0, targetKid.exp - Math.ceil(absReward * 1.5));
+                            
+                            await apiFetch(`/api/kids/${kidId}`, {
+                                method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ balances: { ...targetKid.balances, spend: newBal }, exp: newExp })
+                            });
+                            setKids(kids.map(k => String(k.id) === String(kidId) ? { ...k, balances: { ...k.balances, spend: newBal }, exp: newExp } : k));
+                            
+                            // Negative reversed transaction
+                            const refundTrans = {
+                                id: `trans_${Date.now()}_reversed_coin`,
+                                kidId: kidId,
+                                type: 'expense',
+                                amount: absReward,
+                                title: `违规撤回记录: ${task.title}`,
+                                date: new Date().toISOString(),
+                                category: 'task'
+                            };
+                            const expRefundTrans = {
+                                id: `trans_${Date.now()}_reversed_exp`,
+                                kidId: kidId,
+                                type: 'expense',
+                                amount: Math.ceil(absReward * 1.5),
+                                title: `违规撤回记录: ${task.title}`,
+                                date: new Date().toISOString(),
+                                category: 'habit'
+                            };
+                            await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(refundTrans) });
+                            await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(expRefundTrans) });
+                            setTransactions([refundTrans, expRefundTrans, ...transactions]);
+                        } else {
+                            // Reverse penalty: Refund Coins & EXP
+                            const newBal = targetKid.balances.spend + absReward;
+                            const newExp = targetKid.exp + Math.ceil(absReward * 1.5);
+                            
+                            await apiFetch(`/api/kids/${kidId}`, {
+                                method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ balances: { ...targetKid.balances, spend: newBal }, exp: newExp })
+                            });
+                            setKids(kids.map(k => String(k.id) === String(kidId) ? { ...k, balances: { ...k.balances, spend: newBal }, exp: newExp } : k));
+                            
+                            // Positive refund transaction
+                            const refundTrans = {
+                                id: `trans_${Date.now()}_refund_coin`,
+                                kidId: kidId,
+                                type: 'income',
+                                amount: absReward,
+                                title: `补偿撤销扣分: ${task.title}`,
+                                date: new Date().toISOString(),
+                                category: 'task'
+                            };
+                            const expRefundTrans = {
+                                id: `trans_${Date.now()}_refund_exp`,
+                                kidId: kidId,
+                                type: 'income',
+                                amount: Math.ceil(absReward * 1.5),
+                                title: `补偿撤销扣分: ${task.title}`,
+                                date: new Date().toISOString(),
+                                category: 'habit'
+                            };
+                            await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(refundTrans) });
+                            await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(expRefundTrans) });
+                            setTransactions([refundTrans, expRefundTrans, ...transactions]);
+                        }
+                    }
+                }
+            } // ADDED MISSING CLOSING BRACE
+
+            if (editingTask && editingTask.id === task.id) {
+                setEditingTask({ ...task, history: histUpdates });
+            }
+
+            notify(oldHistory.status === 'completed' ? "已打回为不达标状态，并撤回相关奖励！" : "已打回为不达标状态", "success");
+        } catch (e) {
+            console.error(e);
+            notify("操作失败", "error");
+        }
     };
 
     const handleApproveTask = async (task, date, actualKidId) => {
@@ -1045,12 +1339,27 @@ export default function App() {
             await apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHistory }) });
             setTasks(tasks.map(t => t.id === task.id ? { ...t, history: newHistory } : t));
 
-            // Increase Balances
+            // Increase Balances & EXP
             const kid = kids.find(k => k.id === actualKidId);
-            if (kid) {
-                const newBals = { ...kid.balances, spend: kid.balances.spend + (task.reward || 0) };
-                await updateActiveKid({ balances: newBals });
-                notify(`已审批！奖励 ${task.reward} 家庭币发放到钱包。`, "success");
+            if (kid && task.reward > 0) {
+                const newBals = { ...kid.balances, spend: kid.balances.spend + task.reward };
+                
+                // NEW DUAL REWARDS LOGIC: Parent Approval gives EXP
+                const expGained = Math.ceil(task.reward * 1.5);
+                let newExp = kid.exp + expGained;
+                let newLevel = kid.level;
+                
+                // Manual fast-forward level loop for combined backend call
+                while (newExp >= getLevelReq(newLevel)) {
+                    newExp -= getLevelReq(newLevel);
+                    newLevel++;
+                    notify(`太棒了！${kid.name} 升到了 Lv.${newLevel}！`, "success");
+                }
+                
+                await apiFetch(`/api/kids/${actualKidId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ balances: newBals, exp: newExp, level: newLevel }) });
+                setKids(prevKids => prevKids.map(k => k.id === actualKidId ? { ...k, balances: newBals, exp: newExp, level: newLevel } : k));
+                
+                notify(`已审批！奖励 ${task.reward} 家庭币和 ${expGained} 经验值！`, "success");
             }
         } catch (e) { notify("网络请求失败", "error"); }
     };
@@ -1104,12 +1413,22 @@ export default function App() {
             for (const taskId in taskUpdates) {
                 promises.push(apiFetch(`/api/tasks/${taskId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: taskUpdates[taskId] }) }));
             }
-            // Update kids balances
+            // Update kids balances and EXP
             for (const kidId in kidRewardTotals) {
                 const kid = kids.find(k => k.id === kidId);
                 if (kid) {
                     const newBals = { ...kid.balances, spend: kid.balances.spend + kidRewardTotals[kidId] };
-                    promises.push(apiFetch(`/api/kids/${kidId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ balances: newBals }) }));
+                    
+                    const totalExpGained = Math.ceil(kidRewardTotals[kidId] * 1.5);
+                    let newExp = kid.exp + totalExpGained;
+                    let newLevel = kid.level;
+                    
+                    while (newExp >= getLevelReq(newLevel)) {
+                        newExp -= getLevelReq(newLevel);
+                        newLevel++;
+                    }
+                    
+                    promises.push(apiFetch(`/api/kids/${kidId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ balances: newBals, exp: newExp, level: newLevel }) }));
                 }
             }
 
@@ -1204,6 +1523,17 @@ export default function App() {
         } catch (e) { notify("网络请求失败", "error"); }
     };
 
+    const getDefaultTimeRange = () => {
+        if (!lastSavedEndTime) return { start: "17:00", end: "18:00" };
+        const [h, m] = lastSavedEndTime.split(':').map(Number);
+        if (isNaN(h) || isNaN(m)) return { start: "17:00", end: "18:00" };
+        const endH = (h + 1) % 24;
+        return {
+            start: lastSavedEndTime,
+            end: `${endH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
+        };
+    };
+
     const handleSavePlan = async () => {
         if (!planForm.title && !planForm.targetKid) return notify("请填写完整信息", "error"); // Basic check
 
@@ -1225,9 +1555,9 @@ export default function App() {
             const freqMap = {
                 'today': '仅当天',
                 'daily': '每天',
-                'weekly_custom': '每周',
-                'biweekly_custom': '每双周',
-                'ebbinghaus': '艾宾浩斯',
+                'weekly_custom': '按周重复',
+                'biweekly_custom': '按双周重复',
+                'ebbinghaus': '记忆曲线',
                 'weekly_1': '本周1次',
                 'biweekly_1': '本双周1次',
                 'monthly_1': '本月1次',
@@ -1279,6 +1609,9 @@ export default function App() {
                     body: JSON.stringify(updates)
                 });
                 setTasks(tasks.map(t => t.id === editingTask.id ? { ...t, ...updates } : t));
+                if (planType === 'study' && planForm.timeSetting === 'range' && planForm.endTime) {
+                    setLastSavedEndTime(planForm.endTime);
+                }
                 setShowAddPlanModal(false);
                 setEditingTask(null);
                 notify('任务已更新', 'success');
@@ -1331,6 +1664,9 @@ export default function App() {
                 apiFetch('/api/tasks', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(task) })
             ));
             setTasks([...tasks, ...newTasks]);
+            if (planType === 'study' && planForm.timeSetting === 'range' && planForm.endTime) {
+                setLastSavedEndTime(planForm.endTime);
+            }
             setShowAddPlanModal(false);
             setPlanForm({
                 targetKid: 'all', category: '技能', title: '', desc: '',
@@ -1356,7 +1692,7 @@ export default function App() {
             if (newPin.length === 4) {
                 if (newPin === parentSettings.pinCode) {
                     setTimeout(() => {
-                        setAppState('parent_app');
+                        changeAppState('parent_app');
                         setPinInput('');
                         setShowParentPinModal(false);
                     }, 200);
@@ -1373,12 +1709,12 @@ export default function App() {
             setPinInput('');
             setShowParentPinModal(true);
         } else {
-            setAppState('parent_app');
+            changeAppState('parent_app');
         }
     };
 
     const switchKid = (kidId) => {
-        setActiveKidId(kidId);
+        changeActiveKid(kidId);
         setShowKidSwitcher(false);
         setKidTab('study');
     };
@@ -2087,7 +2423,7 @@ export default function App() {
                                 <div>
                                     <div className="text-xs font-bold text-slate-400 mb-0.5">奖励规则</div>
                                     <div className="text-sm font-black text-slate-700">
-                                        {previewTask.pointRule === 'custom' ? `固定得 ${previewTask.reward} ${previewTask.type === 'habit' ? '经验' : '家庭币'}` : `系统自动计算 (${previewTask.reward} ${previewTask.type === 'habit' ? '经验' : '家庭币'})`}
+                                        {previewTask.pointRule === 'custom' ? `固定得 ${previewTask.reward} ${previewTask.type === 'habit' ? '家庭币' : '家庭币'}` : `系统自动计算 (${previewTask.reward} ${previewTask.type === 'habit' ? '家庭币' : '家庭币'})`}
                                     </div>
                                 </div>
                             </div>
@@ -2220,10 +2556,10 @@ export default function App() {
                                         periodCustomDays: previewTask.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5],
                                         periodTargetCount: previewTask.repeatConfig?.periodTargetCount || 1,
                                         periodMaxPerDay: previewTask.repeatConfig?.periodMaxPerDay || 1,
-                                        timeSetting: previewTask.timeStr && previewTask.timeStr !== '--:--' ? (previewTask.timeStr.includes('-') ? 'range' : 'duration') : 'none',
-                                        startTime: previewTask.timeStr && previewTask.timeStr.includes('-') ? previewTask.timeStr.split('-')[0] : '',
-                                        endTime: previewTask.timeStr && previewTask.timeStr.includes('-') ? previewTask.timeStr.split('-')[1] : '',
-                                        durationPreset: previewTask.timeStr && previewTask.timeStr.includes('分钟') ? parseInt(previewTask.timeStr) : 25,
+                                        timeSetting: previewTask.timeStr && String(previewTask.timeStr) !== '--:--' ? (String(previewTask.timeStr).includes('-') ? 'range' : 'duration') : 'none',
+                                        startTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[0] : '',
+                                        endTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[1] : '',
+                                        durationPreset: previewTask.timeStr && String(previewTask.timeStr).includes('分钟') ? parseInt(String(previewTask.timeStr)) : 25,
                                         pointRule: (previewTask.pointRule && previewTask.pointRule === 'custom') || (previewTask.type === 'habit') ? 'custom' : 'default',
                                         reward: String(previewTask.reward || ''),
                                         iconEmoji: previewTask.iconEmoji || '📚',
@@ -2250,412 +2586,531 @@ export default function App() {
     const renderAddPlanModal = () => {
         if (!showAddPlanModal) return null;
 
-        // Define color themes for habits
-        const habitColors = [
-            'from-blue-400 to-blue-500', 'from-indigo-400 to-indigo-500', 'from-purple-400 to-purple-500',
-            'from-fuchsia-400 to-fuchsia-500', 'from-rose-400 to-rose-500', 'from-red-400 to-red-500',
-            'from-orange-400 to-orange-500', 'from-amber-400 to-amber-500', 'from-green-400 to-green-500',
-            'from-emerald-400 to-emerald-500', 'from-teal-400 to-teal-500', 'from-cyan-400 to-cyan-500'
-        ];
+        try {
+            // Define color themes for habits
+            const habitColors = [
+                'from-blue-400 to-blue-500', 'from-indigo-400 to-indigo-500', 'from-purple-400 to-purple-500',
+                'from-fuchsia-400 to-fuchsia-500', 'from-rose-400 to-rose-500', 'from-red-400 to-red-500',
+                'from-orange-400 to-orange-500', 'from-amber-400 to-amber-500', 'from-green-400 to-green-500',
+                'from-emerald-400 to-emerald-500', 'from-teal-400 to-teal-500', 'from-cyan-400 to-cyan-500'
+            ];
 
-        const studyEmojis = ['📚', '✏️', '📝', '🧮', '🔬', '💻', '🧠', '🎧', '🎨', '🎵'];
-        const habitEmojis = ['⭐', '⏰', '🛏️', '🧹', '🏃', '🍎', '🥛', '🚫', '📱', '🎮'];
+            const studyEmojis = ['📚', '✏️', '📝', '🧮', '🔬', '💻', '🧠', '🎧', '🎨', '🎵'];
+            const habitEmojis = ['⭐', '⏰', '🛏️', '🧹', '🏃', '🍎', '🥛', '🚫', '📱', '🎮'];
 
-        return (
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in overflow-y-auto pt-10 pb-20">
-                <div className="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl text-left overflow-hidden mt-auto mb-auto border border-white/20">
+            return (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in overflow-y-auto pt-10 pb-20">
+                    <div className="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl text-left overflow-hidden mt-auto mb-auto border border-white/20">
 
-                    {/* Header */}
-                    <div className="bg-white p-6 flex justify-between items-center border-b border-slate-100 relative z-30 shadow-sm">
-                        <div>
-                            <h2 className="text-2xl font-black text-slate-800 flex items-center gap-2">
-                                {editingTask ? (planType === 'study' ? '✨ 编辑任务' : '✨ 编辑成长记录') : (planType === 'study' ? '新建任务' : '记录成长')}
-                            </h2>
-                            <div className="text-slate-500 text-sm mt-1 font-medium">
-                                {editingTask ? '修改任务信息后点击保存' : (planType === 'study' ? '布置任务，让孩子赚取家庭币' : '创建成长记录，设置经验奖励')}
+                        {/* Header */}
+                        <div className="bg-white p-6 flex justify-between items-center border-b border-slate-100 relative z-30 shadow-sm">
+                            <div>
+                                <h2 className="text-2xl font-black text-slate-800 flex items-center gap-2">
+                                    {editingTask ? (planType === 'study' ? '✨ 编辑任务' : '✨ 编辑成长记录') : (planType === 'study' ? '新建任务' : '记录成长')}
+                                </h2>
+                                <div className="text-slate-500 text-sm mt-1 font-medium">
+                                    {editingTask ? '修改任务信息后点击保存' : (planType === 'study' ? '布置任务，让孩子赚取家庭币' : '创建成长记录，设置家庭币奖励')}
+                                </div>
                             </div>
+                            <button onClick={() => { setShowAddPlanModal(false); setEditingTask(null); }} className="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 p-2 rounded-xl transition-all"><Icons.X size={24} /></button>
                         </div>
-                        <button onClick={() => { setShowAddPlanModal(false); setEditingTask(null); }} className="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 p-2 rounded-xl transition-all"><Icons.X size={24} /></button>
-                    </div>
 
-                    <div className="p-6 md:p-8 space-y-6 md:space-y-8 bg-slate-50/50 h-[65vh] overflow-y-auto custom-scrollbar relative z-10">
-                        {/* --- STUDY PLAN FORM --- */}
+                        <div className="p-6 md:p-8 space-y-6 md:space-y-8 bg-slate-50/50 h-[65vh] overflow-y-auto custom-scrollbar relative z-10">
+                            {/* --- STUDY PLAN FORM --- */}
 
-                        {/* --- STUDY PLAN FORM --- */}
-                        {planType === 'study' && (
-                            <div className="space-y-6 animate-fade-in relative z-0">
-                                {/* Basic Info */}
-                                <div>
-                                    <label className="block text-sm font-black text-slate-800 mb-2">指派给谁 <span className="text-red-500">*</span></label>
-                                    <select value={planForm.targetKid} onChange={e => setPlanForm({ ...planForm, targetKid: e.target.value })} className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-blue-500 font-bold text-slate-700 transition-colors appearance-none">
-                                        <option value="all">👥 全部孩子</option>
-                                        {kids.map(k => <option key={k.id} value={k.id}>{k.avatar} {k.name}</option>)}
-                                    </select>
-                                </div>
+                            {/* --- STUDY PLAN FORM --- */}
+                            {planType === 'study' && (
+                                <div className="space-y-6 animate-fade-in relative z-0">
+                                    {/* Basic Info */}
+                                    <div>
+                                        <label className="block text-sm font-black text-slate-800 mb-2">指派给谁 <span className="text-red-500">*</span></label>
+                                        <select value={planForm.targetKid} onChange={e => setPlanForm({ ...planForm, targetKid: e.target.value })} className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-blue-500 font-bold text-slate-700 transition-colors appearance-none">
+                                            <option value="all">👥 全部孩子</option>
+                                            {kids.map(k => <option key={k.id} value={k.id}>{k.avatar} {k.name}</option>)}
+                                        </select>
+                                    </div>
 
-                                <div>
-                                    <label className="block text-sm font-black text-slate-800 mb-2">任务类型 <span className="text-red-500">*</span></label>
-                                    <select value={planForm.category} onChange={e => {
-                                        if (e.target.value === '__NEW__') {
-                                            const custom = window.prompt("请输入新任务分类名称 (最长6个字符)：");
-                                            if (custom && custom.trim()) {
-                                                const newCat = custom.trim().substring(0, 6);
-                                                setPlanForm({ ...planForm, category: newCat, iconName: getIconForCategory(newCat) });
+                                    <div>
+                                        <label className="block text-sm font-black text-slate-800 mb-2">任务类型 <span className="text-red-500">*</span></label>
+                                        <select value={planForm.category} onChange={e => {
+                                            if (e.target.value === '__NEW__') {
+                                                const custom = window.prompt("请输入新任务分类名称 (最长6个字符)：");
+                                                if (custom && custom.trim()) {
+                                                    const newCat = custom.trim().substring(0, 6);
+                                                    setPlanForm({ ...planForm, category: newCat, iconName: getIconForCategory(newCat) });
+                                                }
+                                            } else {
+                                                setPlanForm({ ...planForm, category: e.target.value, iconName: getIconForCategory(e.target.value) });
                                             }
-                                        } else {
-                                            setPlanForm({ ...planForm, category: e.target.value, iconName: getIconForCategory(e.target.value) });
-                                        }
-                                    }} className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-blue-500 font-bold text-slate-700 transition-colors appearance-none">
-                                        {allCategories.map(c => <option key={c} value={c}>{c}</option>)}
-                                        {(!allCategories.includes(planForm.category) && planForm.category && planForm.category !== '__NEW__') && <option value={planForm.category}>{planForm.category}</option>}
-                                        <option value="__NEW__">➕ 自定义新分类...</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-black text-slate-800 mb-2">任务名称 <span className="text-red-500">*</span></label>
-                                    <input value={planForm.title} onChange={e => setPlanForm({ ...planForm, title: e.target.value })} placeholder="例如：完成课后练习题、练字30分钟..." className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-blue-500 font-bold text-slate-800 transition-all text-lg" />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-black text-slate-800 mb-2">任务说明 (可选)</label>
-                                    <textarea value={planForm.desc} onChange={e => setPlanForm({ ...planForm, desc: e.target.value })} placeholder="补充一些具体要求或鼓励的话..." className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-blue-500 text-slate-700 transition-all min-h-[100px] resize-y" />
-                                </div>
-
-                            </div>
-                        )}
-
-                        {/* --- BEHAVIOR HABIT FORM --- */}
-                        {planType === 'habit' && (
-                            <div className="space-y-6 animate-fade-in relative z-0">
-                                {/* Visual Preview Row */}
-                                <div className="flex flex-col md:flex-row gap-6">
-                                    {/* Left: Fields */}
-                                    <div className="flex-[2] space-y-6">
-                                        <div>
-                                            <label className="block text-sm font-black text-slate-800 mb-2">指派给谁 <span className="text-red-500">*</span></label>
-                                            <select value={planForm.targetKid} onChange={e => setPlanForm({ ...planForm, targetKid: e.target.value })} className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-emerald-500 font-bold text-slate-700 transition-colors appearance-none">
-                                                <option value="all">👥 全部孩子</option>
-                                                {kids.map(k => <option key={k.id} value={k.id}>{k.avatar} {k.name}</option>)}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-black text-slate-800 mb-2">习惯名称 <span className="text-red-500">*</span></label>
-                                            <input value={planForm.title} onChange={e => setPlanForm({ ...planForm, title: e.target.value })} placeholder="例如：早起、不玩手机、自己整理书包" className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-emerald-500 font-bold text-slate-800 transition-all text-lg" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-black text-slate-800 mb-2">习惯说明 (可选)</label>
-                                            <textarea value={planForm.desc} onChange={e => setPlanForm({ ...planForm, desc: e.target.value })} placeholder="描述这个习惯的具体标准..." className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-emerald-500 text-slate-700 transition-all min-h-[100px] resize-y" />
-                                        </div>
+                                        }} className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-blue-500 font-bold text-slate-700 transition-colors appearance-none">
+                                            {allCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                                            {(!allCategories.includes(planForm.category) && planForm.category && planForm.category !== '__NEW__') && <option value={planForm.category}>{planForm.category}</option>}
+                                            <option value="__NEW__">➕ 自定义新分类...</option>
+                                        </select>
                                     </div>
 
-                                    {/* Right: Live Preview */}
-                                    <div className="flex-1">
-                                        <label className="block text-sm font-black text-slate-800 mb-2 invisible hidden md:block">预览</label>
-                                        <div className={`w-full h-[180px] md:h-full min-h-[220px] rounded-3xl bg-gradient-to-br ${planForm.habitColor} p-6 flex flex-col items-center justify-center text-white shadow-xl relative overflow-hidden group transition-all duration-500`}>
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl transform translate-x-10 -translate-y-10 group-hover:scale-150 transition-transform"></div>
-                                            <div className="text-6xl mb-4 transform group-hover:scale-110 transition-transform flex items-center justify-center bg-white/20 w-24 h-24 rounded-full backdrop-blur-sm shadow-inner">
-                                                {planForm.iconEmoji}
+                                    <div>
+                                        <label className="block text-sm font-black text-slate-800 mb-2">任务名称 <span className="text-red-500">*</span></label>
+                                        <input value={planForm.title} onChange={e => setPlanForm({ ...planForm, title: e.target.value })} placeholder="例如：完成课后练习题、练字30分钟..." className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-blue-500 font-bold text-slate-800 transition-all text-base placeholder:text-slate-400 placeholder:font-normal" />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-black text-slate-800 mb-2">任务说明 (可选)</label>
+                                        <textarea value={planForm.desc} onChange={e => setPlanForm({ ...planForm, desc: e.target.value })} placeholder="补充一些具体要求或鼓励的话..." className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-blue-500 text-slate-700 transition-all min-h-[100px] resize-y text-base placeholder:text-slate-400 placeholder:font-normal" />
+                                    </div>
+
+                                </div>
+                            )}
+
+                            {/* --- BEHAVIOR HABIT FORM --- */}
+                            {planType === 'habit' && (
+                                <div className="space-y-6 animate-fade-in relative z-0">
+                                    {/* Visual Preview Row */}
+                                    <div className="flex flex-col md:flex-row gap-6">
+                                        {/* Left: Fields */}
+                                        <div className="flex-[2] space-y-6">
+                                            <div>
+                                                <label className="block text-sm font-black text-slate-800 mb-2">指派给谁 <span className="text-red-500">*</span></label>
+                                                <select value={planForm.targetKid} onChange={e => setPlanForm({ ...planForm, targetKid: e.target.value })} className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-emerald-500 font-bold text-slate-700 transition-colors appearance-none">
+                                                    <option value="all">👥 全部孩子</option>
+                                                    {kids.map(k => <option key={k.id} value={k.id}>{k.avatar} {k.name}</option>)}
+                                                </select>
                                             </div>
-                                            <div className="font-black text-xl text-center leading-tight drop-shadow-md">{planForm.title || '习惯名称'}</div>
-                                            <div className="text-white/80 text-xs font-bold mt-2 bg-black/10 px-3 py-1 rounded-full backdrop-blur-md">
-                                                {planForm.habitType === 'daily_once' ? '每日一次' : '多次记录'}
+                                            <div>
+                                                <label className="block text-sm font-black text-slate-800 mb-2">习惯名称 <span className="text-red-500">*</span></label>
+                                                <input value={planForm.title} onChange={e => setPlanForm({ ...planForm, title: e.target.value })} placeholder="例如：早起、不玩手机、自己整理书包" className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-emerald-500 font-bold text-slate-800 transition-all text-base placeholder:text-slate-400 placeholder:font-normal" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-black text-slate-800 mb-2">习惯说明 (可选)</label>
+                                                <textarea value={planForm.desc} onChange={e => setPlanForm({ ...planForm, desc: e.target.value })} placeholder="描述这个习惯的具体标准..." className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-emerald-500 text-slate-700 transition-all min-h-[100px] resize-y text-base placeholder:text-slate-400 placeholder:font-normal" />
+                                            </div>
+                                        </div>
+
+                                        {/* Right: Live Preview */}
+                                        <div className="flex-1">
+                                            <label className="block text-sm font-black text-slate-800 mb-2 invisible hidden md:block">预览</label>
+                                            <div className={`w-full h-[180px] md:h-full min-h-[220px] rounded-3xl bg-gradient-to-br ${planForm.habitColor} p-6 flex flex-col items-center justify-center text-white shadow-xl relative overflow-hidden group transition-all duration-500`}>
+                                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl transform translate-x-10 -translate-y-10 group-hover:scale-150 transition-transform"></div>
+                                                <div className="text-6xl mb-4 transform group-hover:scale-110 transition-transform flex items-center justify-center bg-white/20 w-24 h-24 rounded-full backdrop-blur-sm shadow-inner">
+                                                    {planForm.iconEmoji}
+                                                </div>
+                                                <div className="font-black text-xl text-center leading-tight drop-shadow-md">{planForm.title || '习惯名称'}</div>
+                                                <div className="text-white/80 text-xs font-bold mt-2 bg-black/10 px-3 py-1 rounded-full backdrop-blur-md">
+                                                    {planForm.habitType === 'daily_once' ? '每日一次' : '多次记录'}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Icon & Color Selectors */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
-                                    <div>
-                                        <label className="block text-sm font-black text-slate-800 mb-3">选择图标</label>
-                                        <div className="bg-slate-50 rounded-2xl p-3 flex flex-wrap gap-2 border border-slate-100 h-[170px] content-start overflow-y-auto custom-scrollbar">
-                                            {habitEmojis.map(e => (
-                                                <button key={e} onClick={() => setPlanForm({ ...planForm, iconEmoji: e })} className={`text-3xl p-2 rounded-xl transition-all ${planForm.iconEmoji === e ? 'bg-white shadow-md scale-110 ring-2 ring-emerald-500' : 'hover:scale-110 opacity-60 grayscale hover:grayscale-0'}`}>{e}</button>
-                                            ))}
+                                    {/* Icon & Color Selectors */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
+                                        <div>
+                                            <label className="block text-sm font-black text-slate-800 mb-3">选择图标</label>
+                                            <div className="bg-slate-50 rounded-2xl p-3 flex flex-wrap gap-2 border border-slate-100 h-[170px] content-start overflow-y-auto custom-scrollbar">
+                                                {habitEmojis.map(e => (
+                                                    <button key={e} onClick={() => setPlanForm({ ...planForm, iconEmoji: e })} className={`text-3xl p-2 rounded-xl transition-all ${planForm.iconEmoji === e ? 'bg-white shadow-md scale-110 ring-2 ring-emerald-500' : 'hover:scale-110 opacity-60 grayscale hover:grayscale-0'}`}>{e}</button>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-black text-slate-800 mb-3">主题颜色</label>
-                                        <div className="bg-slate-50 rounded-2xl p-4 flex flex-wrap gap-4 border border-slate-100 h-[170px] content-start overflow-y-auto custom-scrollbar">
-                                            {habitColors.map(color => (
-                                                <button key={color} onClick={() => setPlanForm({ ...planForm, habitColor: color })}
-                                                    className={`w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br ${color} transition-all relative overflow-hidden group 
+                                        <div>
+                                            <label className="block text-sm font-black text-slate-800 mb-3">主题颜色</label>
+                                            <div className="bg-slate-50 rounded-2xl p-4 flex flex-wrap gap-4 border border-slate-100 h-[170px] content-start overflow-y-auto custom-scrollbar">
+                                                {habitColors.map(color => (
+                                                    <button key={color} onClick={() => setPlanForm({ ...planForm, habitColor: color })}
+                                                        className={`w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br ${color} transition-all relative overflow-hidden group 
                                                     ${planForm.habitColor === color ? 'ring-4 ring-offset-2 ring-slate-800 scale-95 shadow-inner' : 'hover:scale-105 shadow-sm'}`}>
-                                                    {planForm.habitColor === color && <div className="absolute inset-0 flex items-center justify-center bg-black/20 text-white"><Icons.Check size={20} className="font-black" /></div>}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Section 2: Repeat & Time */}
-                        {planType === 'study' && (
-                            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
-                                <div>
-                                    <label className="flex items-center gap-2 text-sm font-black text-slate-800 mb-3">
-                                        <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center"><Icons.RefreshCw size={18} /></div>
-                                        任务类型 <span className="text-red-500">*</span>
-                                    </label>
-                                    <select value={planForm.repeatType} onChange={e => setPlanForm({ ...planForm, repeatType: e.target.value })} className="w-full border-2 border-slate-100 rounded-2xl p-4 outline-none focus:border-blue-500 font-bold text-slate-700 hover:border-slate-300 transition-colors appearance-none bg-white">
-                                        <option value="today">仅当天 ({planForm.startDate})</option>
-                                        <option value="daily">每天</option>
-                                        <option value="weekly_custom">每周(自定义)</option>
-                                        <option value="biweekly_custom">每双周(自定义)</option>
-                                        <option value="ebbinghaus">艾宾浩斯</option>
-                                        <option value="weekly_1">本周1次 🗓️ 跨日任务</option>
-                                        <option value="biweekly_1">本双周1次 🗓️ 跨日任务</option>
-                                        <option value="monthly_1">本月1次 🗓️ 跨日任务</option>
-                                        <option value="every_week_1">每周1次 🗓️ 跨日任务</option>
-                                        <option value="every_biweek_1">每双周1次 🗓️ 跨日任务</option>
-                                        <option value="every_month_1">每月1次 🗓️ 跨日任务</option>
-                                    </select>
-                                    <div className="mt-3 bg-blue-50 text-blue-600 p-3 rounded-xl text-sm font-medium flex items-center gap-2 border border-blue-100">
-                                        <Icons.Info size={16} /> 选择任务的重复周期和类型。
-                                    </div>
-
-                                    {/* Dynamic Sub-configs based on Repeat Type */}
-                                    <div className="mt-4 space-y-4 border-t border-slate-100 pt-4">
-                                        {/* Date range for all Except Today where it's just StartDate */}
-                                        <div className="flex gap-4">
-                                            <div className="flex-1">
-                                                <label className="block text-xs font-bold text-slate-600 mb-2">开始日期</label>
-                                                <input type="date" value={planForm.startDate} onChange={e => setPlanForm({ ...planForm, startDate: e.target.value })} className="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white text-slate-700" />
-                                            </div>
-                                            {planForm.repeatType !== 'today' && (
-                                                <div className="flex-1">
-                                                    <label className="block text-xs font-bold text-slate-600 mb-2">结束日期 <span className="text-slate-400 font-normal">(可选)</span></label>
-                                                    <input type="date" value={planForm.endDate} onChange={e => setPlanForm({ ...planForm, endDate: e.target.value })} className="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white text-slate-700" />
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Weekly & Bi-weekly Literal Days selector */}
-                                        {(planForm.repeatType === 'weekly_custom' || planForm.repeatType === 'biweekly_custom') && (
-                                            <div className="animate-fade-in bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <label className="text-xs font-bold text-slate-600">在以下星期几重复？</label>
-                                                    <div className="flex gap-2 text-xs">
-                                                        <button onClick={() => setPlanForm({ ...planForm, weeklyDays: [1, 2, 3, 4, 5] })} className="text-blue-600 bg-blue-100/50 px-2 py-1 rounded hover:bg-blue-100">工作日</button>
-                                                        <button onClick={() => setPlanForm({ ...planForm, weeklyDays: [6, 7] })} className="text-orange-600 bg-orange-100/50 px-2 py-1 rounded hover:bg-orange-100">周末</button>
-                                                        <button onClick={() => setPlanForm({ ...planForm, weeklyDays: [1, 2, 3, 4, 5, 6, 7] })} className="text-emerald-600 bg-emerald-100/50 px-2 py-1 rounded hover:bg-emerald-100">每天</button>
-                                                    </div>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    {[{ d: 1, l: '一' }, { d: 2, l: '二' }, { d: 3, l: '三' }, { d: 4, l: '四' }, { d: 5, l: '五' }, { d: 6, l: '六' }, { d: 7, l: '日' }].map(w => {
-                                                        const isSelected = planForm.weeklyDays?.includes(w.d);
-                                                        return (
-                                                            <button key={w.d} onClick={() => {
-                                                                const newDays = isSelected ? planForm.weeklyDays.filter(d => d !== w.d) : [...(planForm.weeklyDays || []), w.d];
-                                                                setPlanForm({ ...planForm, weeklyDays: newDays });
-                                                            }} className={`w-10 h-10 rounded-full font-bold transition-all shadow-sm flex items-center justify-center text-sm ${isSelected ? 'bg-blue-600 text-white shadow-blue-600/30' : 'bg-white text-slate-500 hover:border-blue-400 border border-slate-200'}`}>
-                                                                {w.l}
-                                                            </button>
-                                                        )
-                                                    })}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Ebbinghaus Config */}
-                                        {planForm.repeatType === 'ebbinghaus' && (
-                                            <div className="animate-fade-in bg-purple-50 p-4 rounded-2xl border border-purple-100">
-                                                <label className="block text-xs font-bold text-purple-800 mb-3">复习强度</label>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    {[{ v: 'gentle', l: '温柔强度', d: '第1,3,7,14,30天' }, { v: 'normal', l: '一般强度', d: '第1,2,4,7,15,30天' }, { v: 'exam', l: '考前强度', d: '第1,2,3,5,7,10,14天' }, { v: 'enhanced', l: '增强模式', d: '密集的9次复习' }].map(eb => (
-                                                        <button key={eb.v} onClick={() => setPlanForm({ ...planForm, ebbStrength: eb.v })} className={`p-3 rounded-xl border-2 text-left transition-all ${planForm.ebbStrength === eb.v ? 'border-purple-500 bg-white shadow-sm ring-2 ring-purple-500/20' : 'border-transparent bg-white/50 hover:bg-white text-slate-500'}`}>
-                                                            <div className={`font-bold text-sm mb-1 ${planForm.ebbStrength === eb.v ? 'text-purple-700' : 'text-slate-600'}`}>{eb.l}</div>
-                                                            <div className="text-[10px] leading-tight opacity-70">{eb.d}</div>
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* N-times Period Goals */}
-                                        {(planForm.repeatType.includes('_1') || planForm.repeatType.includes('_n')) && (
-                                            <div className="animate-fade-in bg-orange-50/50 p-4 rounded-2xl border border-orange-100 space-y-4">
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div>
-                                                        <label className="block text-xs font-bold text-slate-600 mb-2">该周期内需完成几次？</label>
-                                                        <input type="number" min="1" max="99" value={planForm.periodTargetCount} onChange={e => setPlanForm({ ...planForm, periodTargetCount: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold bg-white text-orange-700" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold text-slate-600 mb-2">每次奖励上限次数 <span className="opacity-50">(防刷)</span></label>
-                                                        <input type="number" min="1" max="10" value={planForm.periodMaxPerDay} onChange={e => setPlanForm({ ...planForm, periodMaxPerDay: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold bg-white text-orange-700" />
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <label className="block text-xs font-bold text-slate-600 mb-2">允许执行的日期限制</label>
-                                                    <select value={planForm.periodDaysType} onChange={e => setPlanForm({ ...planForm, periodDaysType: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold text-slate-700 appearance-none">
-                                                        <option value="any">⏳ 任意时间都可以完成</option>
-                                                        <option value="workdays">💼 仅限工作日完成</option>
-                                                        <option value="weekends">🎉 仅限周末完成</option>
-                                                        <option value="custom">⚙️ 自定义每周哪几天</option>
-                                                    </select>
-                                                    {planForm.periodDaysType === 'custom' && (
-                                                        <div className="flex justify-between mt-3 bg-white p-2 rounded-xl border border-slate-100">
-                                                            {[{ d: 1, l: '一' }, { d: 2, l: '二' }, { d: 3, l: '三' }, { d: 4, l: '四' }, { d: 5, l: '五' }, { d: 6, l: '六' }, { d: 7, l: '日' }].map(w => {
-                                                                const isSelected = planForm.periodCustomDays?.includes(w.d);
-                                                                return (
-                                                                    <button key={w.d} onClick={() => {
-                                                                        const newDays = isSelected ? planForm.periodCustomDays.filter(d => d !== w.d) : [...(planForm.periodCustomDays || []), w.d];
-                                                                        setPlanForm({ ...planForm, periodCustomDays: newDays });
-                                                                    }} className={`w-8 h-8 rounded-full font-bold transition-all flex items-center justify-center text-xs ${isSelected ? 'bg-orange-500 text-white shadow-md' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>
-                                                                        {w.l}
-                                                                    </button>
-                                                                )
-                                                            })}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="flex items-center gap-2 text-sm font-black text-slate-800 mb-3">
-                                        <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><Icons.Clock size={18} /></div>
-                                        任务时间配置 <span className="text-slate-400 font-normal text-xs">(可选)</span>
-                                    </label>
-                                    <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-100 w-full mb-4">
-                                        <button onClick={() => setPlanForm({ ...planForm, timeSetting: planForm.timeSetting === 'range' ? 'none' : 'range' })} className={`flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${planForm.timeSetting === 'range' ? 'bg-white shadow text-blue-600 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}>
-                                            <Icons.Clock size={16} /> 指定时间段
-                                        </button>
-                                        <button onClick={() => setPlanForm({ ...planForm, timeSetting: planForm.timeSetting === 'duration' ? 'none' : 'duration' })} className={`flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${planForm.timeSetting === 'duration' ? 'bg-white shadow text-blue-600 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}>
-                                            <Icons.Settings size={16} /> 要求时长
-                                        </button>
-                                    </div>
-
-                                    {planForm.timeSetting === 'range' && (
-                                        <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-5 animate-fade-in">
-                                            <div className="flex flex-col md:flex-row gap-4">
-                                                <div className="flex-1">
-                                                    <label className="block text-xs font-bold text-slate-600 mb-2">开始时间</label>
-                                                    <input type="time" value={planForm.startTime} onChange={e => setPlanForm({ ...planForm, startTime: e.target.value })} className="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <label className="block text-xs font-bold text-slate-600 mb-2">结束时间</label>
-                                                    <input type="time" value={planForm.endTime} onChange={e => setPlanForm({ ...planForm, endTime: e.target.value })} className="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {planForm.timeSetting === 'duration' && (
-                                        <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-5 animate-fade-in border-2 border-emerald-200">
-                                            <div className="grid grid-cols-4 gap-2">
-                                                {[5, 10, 15, 20, 30, 45, 60, 90].map(m => (
-                                                    <button key={m} onClick={() => setPlanForm({ ...planForm, durationPreset: m })} className={`py-2 rounded-xl text-sm font-bold transition-all ${planForm.durationPreset === m ? 'bg-emerald-500 text-white shadow-md shadow-emerald-200' : 'bg-white border border-emerald-100 text-emerald-700 hover:bg-emerald-100'}`}>
-                                                        {m}分钟
+                                                        {planForm.habitColor === color && <div className="absolute inset-0 flex items-center justify-center bg-black/20 text-white"><Icons.Check size={20} className="font-black" /></div>}
                                                     </button>
                                                 ))}
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Section 2: Repeat & Time */}
+                            {planType === 'study' && (
+                                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+                                    <div>
+                                        <label className="flex items-center gap-2 text-sm font-black text-slate-800 mb-3">
+                                            <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center"><Icons.RefreshCw size={18} /></div>
+                                            任务类型 <span className="text-red-500">*</span>
+                                        </label>
+                                        <select value={planForm.repeatType} onChange={e => setPlanForm({ ...planForm, repeatType: e.target.value })} className="w-full border-2 border-slate-100 rounded-2xl p-4 outline-none focus:border-blue-500 font-bold text-slate-700 hover:border-slate-300 transition-colors appearance-none bg-white">
+                                            <option value="today">仅当天 ({planForm.startDate})</option>
+                                            <option value="daily">每天</option>
+                                            <option value="weekly_custom">按周重复</option>
+                                            <option value="biweekly_custom">按双周重复</option>
+                                            <option value="ebbinghaus">记忆曲线 (艾宾浩斯)</option>
+                                            <option value="weekly_1">本周完成1次</option>
+                                            <option value="biweekly_1">本双周完成1次</option>
+                                            <option value="monthly_1">本月完成1次</option>
+                                            <option value="every_week_1">每周完成1次</option>
+                                            <option value="every_biweek_1">每双周完成1次</option>
+                                            <option value="every_month_1">每月完成1次</option>
+                                        </select>
+                                        <div className="mt-3 bg-blue-50 text-blue-600 p-3 rounded-xl text-sm font-medium flex items-center gap-2 border border-blue-100">
+                                            <Icons.Info size={16} /> 选择任务的重复周期和类型。
+                                        </div>
+
+                                        {/* Dynamic Sub-configs based on Repeat Type */}
+                                        <div className="mt-4 space-y-4 border-t border-slate-100 pt-4">
+                                            {/* Date range for all Except Today where it's just StartDate */}
+                                            <div className="flex flex-col sm:flex-row gap-4">
+                                                <div className="flex-1 min-w-0">
+                                                    <label className="block text-xs font-bold text-slate-600 mb-2">开始日期</label>
+                                                    <input type="date" value={planForm.startDate} onChange={e => setPlanForm({ ...planForm, startDate: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white text-slate-700" />
+                                                </div>
+                                                {planForm.repeatType !== 'today' && (
+                                                    <div className="flex-1 min-w-0">
+                                                        <label className="block text-xs font-bold text-slate-600 mb-2">结束日期 <span className="text-slate-400 font-normal">(可选)</span></label>
+                                                        <input type="date" value={planForm.endDate} onChange={e => setPlanForm({ ...planForm, endDate: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white text-slate-700" />
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Weekly & Bi-weekly Literal Days selector */}
+                                            {(planForm.repeatType === 'weekly_custom' || planForm.repeatType === 'biweekly_custom') && (
+                                                <div className="animate-fade-in bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                                    <div className="flex justify-between items-center mb-3">
+                                                        <label className="text-xs font-bold text-slate-600">在以下星期几重复？</label>
+                                                        <div className="flex gap-2 text-xs">
+                                                            <button onClick={() => setPlanForm({ ...planForm, weeklyDays: [1, 2, 3, 4, 5] })} className="text-blue-600 bg-blue-100/50 px-2 py-1 rounded hover:bg-blue-100">工作日</button>
+                                                            <button onClick={() => setPlanForm({ ...planForm, weeklyDays: [6, 7] })} className="text-orange-600 bg-orange-100/50 px-2 py-1 rounded hover:bg-orange-100">周末</button>
+                                                            <button onClick={() => setPlanForm({ ...planForm, weeklyDays: [1, 2, 3, 4, 5, 6, 7] })} className="text-emerald-600 bg-emerald-100/50 px-2 py-1 rounded hover:bg-emerald-100">每天</button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="grid grid-cols-7 gap-1 mt-2">
+                                                        {[{ d: 1, l: '一' }, { d: 2, l: '二' }, { d: 3, l: '三' }, { d: 4, l: '四' }, { d: 5, l: '五' }, { d: 6, l: '六' }, { d: 7, l: '日' }].map(w => {
+                                                            const isSelected = planForm.weeklyDays?.includes(w.d);
+                                                            return (
+                                                                <button key={w.d} onClick={() => {
+                                                                    const newDays = isSelected ? planForm.weeklyDays.filter(d => d !== w.d) : [...(planForm.weeklyDays || []), w.d];
+                                                                    setPlanForm({ ...planForm, weeklyDays: newDays });
+                                                                }} className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full font-bold transition-all shadow-sm flex items-center justify-center text-xs sm:text-sm mx-auto ${isSelected ? 'bg-blue-600 text-white shadow-blue-600/30' : 'bg-white text-slate-500 hover:border-blue-400 border border-slate-200'}`}>
+                                                                    {w.l}
+                                                                </button>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Ebbinghaus Config */}
+                                            {planForm.repeatType === 'ebbinghaus' && (
+                                                <div className="animate-fade-in bg-purple-50 p-4 rounded-2xl border border-purple-100">
+                                                    <label className="block text-xs font-bold text-purple-800 mb-3">复习强度</label>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        {[{ v: 'gentle', l: '温柔强度', d: '第1,3,7,14,30天' }, { v: 'normal', l: '一般强度', d: '第1,2,4,7,15,30天' }, { v: 'exam', l: '考前强度', d: '第1,2,3,5,7,10,14天' }, { v: 'enhanced', l: '增强模式', d: '密集的9次复习' }].map(eb => (
+                                                            <button key={eb.v} onClick={() => setPlanForm({ ...planForm, ebbStrength: eb.v })} className={`p-3 rounded-xl border-2 text-left transition-all ${planForm.ebbStrength === eb.v ? 'border-purple-500 bg-white shadow-sm ring-2 ring-purple-500/20' : 'border-transparent bg-white/50 hover:bg-white text-slate-500'}`}>
+                                                                <div className={`font-bold text-sm mb-1 ${planForm.ebbStrength === eb.v ? 'text-purple-700' : 'text-slate-600'}`}>{eb.l}</div>
+                                                                <div className="text-[10px] leading-tight opacity-70">{eb.d}</div>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* N-times Period Goals */}
+                                            {(planForm.repeatType.includes('_1') || planForm.repeatType.includes('_n')) && (
+                                                <div className="animate-fade-in bg-orange-50/50 p-4 rounded-2xl border border-orange-100 space-y-4">
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="block text-xs font-bold text-slate-600 mb-2">该周期内需完成几次？</label>
+                                                            <input type="number" min="1" max="99" value={planForm.periodTargetCount} onChange={e => setPlanForm({ ...planForm, periodTargetCount: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold bg-white text-orange-700" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-xs font-bold text-slate-600 mb-2">每次奖励上限次数 <span className="opacity-50">(防刷)</span></label>
+                                                            <input type="number" min="1" max="10" value={planForm.periodMaxPerDay} onChange={e => setPlanForm({ ...planForm, periodMaxPerDay: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold bg-white text-orange-700" />
+                                                        </div>
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-slate-600 mb-2">允许执行的日期限制</label>
+                                                        <select value={planForm.periodDaysType} onChange={e => setPlanForm({ ...planForm, periodDaysType: e.target.value })} className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-orange-500 font-bold text-base text-slate-700 appearance-none">
+                                                            <option value="any">⏳ 任意时间都可以完成</option>
+                                                            <option value="workdays">💼 仅限工作日完成</option>
+                                                            <option value="weekends">🎉 仅限周末完成</option>
+                                                            <option value="custom">⚙️ 自定义每周哪几天</option>
+                                                        </select>
+                                                        {planForm.periodDaysType === 'custom' && (
+                                                            <div className="grid grid-cols-7 gap-1 mt-3 bg-white p-2 rounded-xl border border-slate-100">
+                                                                {[{ d: 1, l: '一' }, { d: 2, l: '二' }, { d: 3, l: '三' }, { d: 4, l: '四' }, { d: 5, l: '五' }, { d: 6, l: '六' }, { d: 7, l: '日' }].map(w => {
+                                                                    const isSelected = planForm.periodCustomDays?.includes(w.d);
+                                                                    return (
+                                                                        <button key={w.d} onClick={() => {
+                                                                            const newDays = isSelected ? planForm.periodCustomDays.filter(d => d !== w.d) : [...(planForm.periodCustomDays || []), w.d];
+                                                                            setPlanForm({ ...planForm, periodCustomDays: newDays });
+                                                                        }} className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full font-bold transition-all flex items-center justify-center text-xs sm:text-sm mx-auto ${isSelected ? 'bg-orange-500 text-white shadow-md' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>
+                                                                            {w.l}
+                                                                        </button>
+                                                                    )
+                                                                })}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="flex items-center gap-2 text-sm font-black text-slate-800 mb-3">
+                                            <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><Icons.Clock size={18} /></div>
+                                            任务时间配置 <span className="text-slate-400 font-normal text-xs">(可选)</span>
+                                        </label>
+                                        <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-100 w-full mb-4">
+                                            <button onClick={() => setPlanForm({ ...planForm, timeSetting: planForm.timeSetting === 'range' ? 'none' : 'range' })} className={`flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${planForm.timeSetting === 'range' ? 'bg-white shadow text-blue-600 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}>
+                                                <Icons.Clock size={16} /> 指定时间段
+                                            </button>
+                                            <button onClick={() => setPlanForm({ ...planForm, timeSetting: planForm.timeSetting === 'duration' ? 'none' : 'duration' })} className={`flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${planForm.timeSetting === 'duration' ? 'bg-white shadow text-blue-600 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}>
+                                                <Icons.Settings size={16} /> 要求时长
+                                            </button>
+                                        </div>
+
+                                        {planForm.timeSetting === 'range' && (
+                                            <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-5 animate-fade-in">
+                                                <div className="flex flex-col sm:flex-row gap-4">
+                                                    <div className="flex-1 min-w-0">
+                                                        <label className="block text-xs font-bold text-slate-600 mb-2">开始时间</label>
+                                                        <input type="time" value={planForm.startTime} onChange={e => setPlanForm({ ...planForm, startTime: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <label className="block text-xs font-bold text-slate-600 mb-2">结束时间</label>
+                                                        <input type="time" value={planForm.endTime} onChange={e => setPlanForm({ ...planForm, endTime: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {planForm.timeSetting === 'duration' && (
+                                            <div className="bg-emerald-50/30 border border-emerald-100 rounded-2xl p-5 animate-fade-in space-y-4">
+                                                <div>
+                                                    <span className="text-xs font-bold text-emerald-700 mb-3 block">常用时长</span>
+                                                    <div className="grid grid-cols-3 gap-2">
+                                                        {[{ label: '15分钟', val: 15 }, { label: '30分钟', val: 30 }, { label: '45分钟', val: 45 }, { label: '1小时', val: 60 }, { label: '1.5小时', val: 90 }, { label: '2小时', val: 120 }].map(opt => (
+                                                            <button key={opt.val} onClick={() => setPlanForm({ ...planForm, durationPreset: opt.val })}
+                                                                className={`py-2.5 text-sm font-bold rounded-full border-2 transition-all
+                                                                ${planForm.durationPreset === opt.val ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-emerald-100 bg-white text-emerald-700 hover:border-emerald-200 hover:bg-emerald-50'}`}
+                                                            >
+                                                                {opt.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <span className="text-xs font-bold text-emerald-700 mb-2 block">其它时长</span>
+                                                    <div className="flex items-center gap-3">
+                                                        <input
+                                                            type="number"
+                                                            min="1"
+                                                            placeholder="例如：25"
+                                                            value={planForm.durationPreset || ''}
+                                                            onChange={e => setPlanForm({ ...planForm, durationPreset: Math.max(0, parseInt(e.target.value) || 0) })}
+                                                            className="flex-1 w-full min-w-0 border-2 border-emerald-200 rounded-xl p-3 outline-none focus:border-emerald-500 font-bold bg-white text-emerald-800"
+                                                        />
+                                                        <span className="font-bold text-emerald-600 shrink-0 whitespace-nowrap">分钟</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Conditional Section: Frequency (Habits only, as repetition is handled globally above) */}
+                            {planType === 'habit' && (
+                                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                                    <label className="block text-sm font-black text-slate-800 mb-3"><Icons.RefreshCw size={16} className="inline mr-1 text-emerald-500" /> 打卡频率限制 <span className="text-red-500">*</span></label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <button onClick={() => setPlanForm({ ...planForm, habitType: 'daily_once' })} className={`p-4 rounded-2xl border-2 text-left transition-all ${planForm.habitType === 'daily_once' ? 'border-emerald-500 bg-emerald-50 shadow-md ring-2 ring-emerald-500/20' : 'border-slate-100 bg-slate-50 hover:bg-slate-100 text-slate-400'}`}>
+                                            <div className={`font-black tracking-wide text-lg mb-1 ${planForm.habitType === 'daily_once' ? 'text-emerald-700' : 'text-slate-600'}`}>每日一次</div>
+                                            <div className="text-xs font-medium opacity-80 leading-relaxed">适合阅读、早睡等每天只需达成一次的习惯。</div>
+                                        </button>
+                                        <button onClick={() => setPlanForm({ ...planForm, habitType: 'multiple' })} className={`p-4 rounded-2xl border-2 text-left transition-all ${planForm.habitType === 'multiple' ? 'border-emerald-500 bg-emerald-50 shadow-md ring-2 ring-emerald-500/20' : 'border-slate-100 bg-slate-50 hover:bg-slate-100 text-slate-400'}`}>
+                                            <div className={`font-black tracking-wide text-lg mb-1 ${planForm.habitType === 'multiple' ? 'text-emerald-700' : 'text-slate-600'}`}>多次记录</div>
+                                            <div className="text-xs font-medium opacity-80 leading-relaxed">适合喝水、控制脾气等多发情况，可累计奖惩。</div>
+                                        </button>
+                                    </div>
+                                    {planForm.habitType === 'multiple' && (
+                                        <div className="mt-4 pt-4 border-t border-slate-100 animate-fade-in">
+                                            <label className="block text-xs font-bold text-slate-600 mb-2">每日最高允许记录次数 <span className="text-slate-400 font-normal">(防过度打卡)</span></label>
+                                            <input type="number" min="1" max="99" value={planForm.periodMaxPerDay || 3} onChange={e => setPlanForm({ ...planForm, periodMaxPerDay: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border-2 border-slate-100 rounded-xl p-3 outline-none focus:border-emerald-500 font-bold bg-slate-50 text-emerald-700" />
+                                        </div>
                                     )}
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {/* Conditional Section: Frequency (Habits only, as repetition is handled globally above) */}
-                        {planType === 'habit' && (
-                            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                                <label className="block text-sm font-black text-slate-800 mb-3"><Icons.RefreshCw size={16} className="inline mr-1 text-emerald-500" /> 打卡频率限制 <span className="text-red-500">*</span></label>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <button onClick={() => setPlanForm({ ...planForm, habitType: 'daily_once' })} className={`p-4 rounded-2xl border-2 text-left transition-all ${planForm.habitType === 'daily_once' ? 'border-emerald-500 bg-emerald-50 shadow-md ring-2 ring-emerald-500/20' : 'border-slate-100 bg-slate-50 hover:bg-slate-100 text-slate-400'}`}>
-                                        <div className={`font-black tracking-wide text-lg mb-1 ${planForm.habitType === 'daily_once' ? 'text-emerald-700' : 'text-slate-600'}`}>每日一次</div>
-                                        <div className="text-xs font-medium opacity-80 leading-relaxed">适合阅读、早睡等每天只需达成一次的习惯。</div>
-                                    </button>
-                                    <button onClick={() => setPlanForm({ ...planForm, habitType: 'multiple' })} className={`p-4 rounded-2xl border-2 text-left transition-all ${planForm.habitType === 'multiple' ? 'border-emerald-500 bg-emerald-50 shadow-md ring-2 ring-emerald-500/20' : 'border-slate-100 bg-slate-50 hover:bg-slate-100 text-slate-400'}`}>
-                                        <div className={`font-black tracking-wide text-lg mb-1 ${planForm.habitType === 'multiple' ? 'text-emerald-700' : 'text-slate-600'}`}>多次记录</div>
-                                        <div className="text-xs font-medium opacity-80 leading-relaxed">适合喝水、控制脾气等多发情况，可累计奖惩。</div>
-                                    </button>
-                                </div>
-                                {planForm.habitType === 'multiple' && (
-                                    <div className="mt-4 pt-4 border-t border-slate-100 animate-fade-in">
-                                        <label className="block text-xs font-bold text-slate-600 mb-2">每日最高允许记录次数 <span className="text-slate-400 font-normal">(防过度打卡)</span></label>
-                                        <input type="number" min="1" max="99" value={planForm.periodMaxPerDay || 3} onChange={e => setPlanForm({ ...planForm, periodMaxPerDay: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border-2 border-slate-100 rounded-xl p-3 outline-none focus:border-emerald-500 font-bold bg-slate-50 text-emerald-700" />
+                            {/* Reward/Points Settings */}
+                            <div className={`p-6 rounded-3xl border shadow-sm ${planType === 'study' ? 'bg-yellow-50 border-yellow-200' : 'bg-indigo-50 border-indigo-200'}`}>
+                                <label className={`block text-sm font-black mb-3 ${planType === 'study' ? 'text-yellow-800' : 'text-indigo-800'}`}>
+                                    <Icons.Star size={18} className="inline mr-1 mb-1" />
+                                    {planType === 'study' ? '金币奖励设定' : '家庭币奖惩设定'}
+                                </label>
+
+                                {planType === 'study' ? (
+                                    <div className="space-y-4 animate-fade-in">
+                                        <div className="bg-white rounded-2xl border border-yellow-200 p-4 flex items-center justify-between shadow-sm cursor-pointer hover:bg-yellow-50 transition-colors" onClick={() => setPlanForm({ ...planForm, pointRule: planForm.pointRule === 'custom' ? 'default' : 'custom' })}>
+                                            <div>
+                                                <div className="font-black text-slate-800">自定义金币奖励</div>
+                                                <div className="text-xs text-slate-500 mt-0.5">关闭则使用系统规则自动计算奖励</div>
+                                            </div>
+                                            <div className={`w-14 h-8 rounded-full p-1 transition-colors ${planForm.pointRule === 'custom' ? 'bg-yellow-500' : 'bg-slate-300'}`}>
+                                                <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform ${planForm.pointRule === 'custom' ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                                            </div>
+                                        </div>
+
+                                        {planForm.pointRule === 'custom' && (
+                                            <div className="relative animate-fade-in mt-4">
+                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-yellow-500 font-black text-xl">⭐</div>
+                                                <input type="number" value={planForm.reward} onChange={e => setPlanForm({ ...planForm, reward: e.target.value })} placeholder="输入完成可获得的金币数" className="w-full bg-white border-2 border-yellow-200 rounded-2xl p-4 pl-12 pr-4 outline-none focus:border-yellow-500 font-black text-base text-yellow-700 shadow-inner placeholder:text-slate-400 placeholder:font-normal" />
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4 animate-fade-in">
+                                        <div className="relative">
+                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-500 font-black text-base">币</div>
+                                            <input type="number" value={planForm.reward} onChange={e => setPlanForm({ ...planForm, reward: e.target.value })} placeholder="输入家庭币 (可填负数)" className="w-full bg-white border-2 border-indigo-200 rounded-2xl p-4 pl-14 pr-4 outline-none focus:border-indigo-500 font-black text-base text-indigo-700 shadow-inner placeholder:text-slate-400 placeholder:font-normal" />
+                                        </div>
+                                        <div className="text-xs text-indigo-600/70 font-bold px-2">填写正数表示奖励家庭币，填写负数 (如 -10) 表示违反习惯的惩罚。<br/>(经验值会自动按 1.5 倍同步计算)</div>
                                     </div>
                                 )}
                             </div>
-                        )}
 
-                        {/* Reward/Points Settings */}
-                        <div className={`p-6 rounded-3xl border shadow-sm ${planType === 'study' ? 'bg-yellow-50 border-yellow-200' : 'bg-indigo-50 border-indigo-200'}`}>
-                            <label className={`block text-sm font-black mb-3 ${planType === 'study' ? 'text-yellow-800' : 'text-indigo-800'}`}>
-                                <Icons.Star size={18} className="inline mr-1 mb-1" />
-                                {planType === 'study' ? '金币奖励设定' : '经验值奖惩设定'}
-                            </label>
-
-                            {planType === 'study' ? (
-                                <div className="space-y-4 animate-fade-in">
-                                    <div className="bg-white rounded-2xl border border-yellow-200 p-4 flex items-center justify-between shadow-sm cursor-pointer hover:bg-yellow-50 transition-colors" onClick={() => setPlanForm({ ...planForm, pointRule: planForm.pointRule === 'custom' ? 'default' : 'custom' })}>
-                                        <div>
-                                            <div className="font-black text-slate-800">自定义金币奖励</div>
-                                            <div className="text-xs text-slate-500 mt-0.5">关闭则使用系统规则自动计算奖励</div>
+                            {/* Standalone Require Approval Toggle */}
+                            {planType === 'study' && (
+                                <div className="bg-slate-50 rounded-3xl border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between shadow-sm cursor-pointer hover:bg-slate-100 transition-colors gap-4" onClick={() => setPlanForm({ ...planForm, requireApproval: !planForm.requireApproval })}>
+                                    <div>
+                                        <div className="font-black text-slate-800 flex items-center gap-2">
+                                            <Icons.ShieldCheck size={18} className="text-emerald-500" /> 打卡需要家长审核
                                         </div>
-                                        <div className={`w-14 h-8 rounded-full p-1 transition-colors ${planForm.pointRule === 'custom' ? 'bg-yellow-500' : 'bg-slate-300'}`}>
-                                            <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform ${planForm.pointRule === 'custom' ? 'translate-x-6' : 'translate-x-0'}`}></div>
-                                        </div>
+                                        <div className="text-sm font-medium text-slate-500 mt-1">关闭后，孩子打卡将跳过等待，系统直接发放奖励</div>
                                     </div>
-
-                                    {planForm.pointRule === 'custom' && (
-                                        <div className="relative animate-fade-in mt-4">
-                                            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-yellow-500 font-black text-xl">⭐</div>
-                                            <input type="number" value={planForm.reward} onChange={e => setPlanForm({ ...planForm, reward: e.target.value })} placeholder="输入完成可获得的金币数" className="w-full bg-white border-2 border-yellow-200 rounded-2xl py-5 pl-14 pr-6 outline-none focus:border-yellow-500 font-black text-2xl text-yellow-700 shadow-inner" />
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="space-y-4 animate-fade-in">
-                                    <div className="relative">
-                                        <div className="absolute left-6 top-1/2 -translate-y-1/2 text-indigo-500 font-black text-xl">EXP</div>
-                                        <input type="number" value={planForm.reward} onChange={e => setPlanForm({ ...planForm, reward: e.target.value })} placeholder="输入经验值 (可填负数表示扣除)" className="w-full bg-white border-2 border-indigo-200 rounded-2xl py-5 pl-16 pr-6 outline-none focus:border-indigo-500 font-black text-2xl text-indigo-700 shadow-inner placeholder:text-base placeholder:font-medium" />
+                                    <div className={`w-14 h-8 rounded-full p-1 transition-colors flex-shrink-0 ${planForm.requireApproval ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                                        <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform ${planForm.requireApproval ? 'translate-x-6' : 'translate-x-0'}`}></div>
                                     </div>
-                                    <div className="text-xs text-indigo-600/70 font-bold px-2">填写正数表示奖励经验，填写负数 (如 -10) 表示违反习惯的惩罚。</div>
                                 </div>
                             )}
-                        </div>
 
-                        {/* Standalone Require Approval Toggle */}
-                        {planType === 'study' && (
-                            <div className="bg-slate-50 rounded-3xl border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between shadow-sm cursor-pointer hover:bg-slate-100 transition-colors gap-4" onClick={() => setPlanForm({ ...planForm, requireApproval: !planForm.requireApproval })}>
-                                <div>
-                                    <div className="font-black text-slate-800 flex items-center gap-2">
-                                        <Icons.ShieldCheck size={18} className="text-emerald-500" /> 打卡需要家长审核
-                                    </div>
-                                    <div className="text-sm font-medium text-slate-500 mt-1">关闭后，孩子打卡将跳过等待，系统直接发放奖励</div>
-                                </div>
-                                <div className={`w-14 h-8 rounded-full p-1 transition-colors flex-shrink-0 ${planForm.requireApproval ? 'bg-emerald-500' : 'bg-slate-300'}`}>
-                                    <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform ${planForm.requireApproval ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                            {/* Attachments */}
+                            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                                <label className="block text-sm font-black text-slate-800 mb-3"><Icons.Paperclip size={16} className="inline mr-1 text-slate-500" /> 参考附件 (可选)</label>
+                                <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-slate-400 transition-all cursor-pointer">
+                                    <Icons.Upload size={28} className="mb-2 text-slate-300" />
+                                    <div className="font-bold text-slate-600 text-sm">点击上传参考图片/文档</div>
                                 </div>
                             </div>
-                        )}
+                            {/* Edit Track / History / Rejections */}
+                            {
+                                (() => {
+                                    try {
+                                        if (!editingTask || !editingTask.history || typeof editingTask.history !== 'object' || Array.isArray(editingTask.history) || Object.keys(editingTask.history).length === 0) {
+                                            return null;
+                                        }
+                                        return (
+                                            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                                                <div className="flex justify-between items-center mb-6">
+                                                    <label className="text-sm font-black text-slate-800 flex items-center gap-2">
+                                                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
+                                                            <Icons.Clock size={16} />
+                                                        </div>
+                                                        历史打卡记录与审核
+                                                    </label>
+                                                </div>
 
-                        {/* Attachments */}
-                        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                            <label className="block text-sm font-black text-slate-800 mb-3"><Icons.Paperclip size={16} className="inline mr-1 text-slate-500" /> 参考附件 (可选)</label>
-                            <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-slate-400 transition-all cursor-pointer">
-                                <Icons.Upload size={28} className="mb-2 text-slate-300" />
-                                <div className="font-bold text-slate-600 text-sm">点击上传参考图片/文档</div>
-                            </div>
+                                                <div className="space-y-8 pl-1 pr-3">
+                                                    {Object.entries(editingTask.history).sort((a, b) => new Date(b[0]) - new Date(a[0])).map(([dateStr, kidRecords]) => {
+                                                        if (!kidRecords || typeof kidRecords !== 'object' || Array.isArray(kidRecords)) return null;
+                                                        return (
+                                                            <div key={dateStr} className="relative animate-fade-in">
+                                                                <div className="sticky top-0 z-20 py-1 mb-3">
+                                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 rounded-full text-xs font-bold text-slate-500 shadow-sm border border-slate-100">
+                                                                        <Icons.Calendar size={12} /> {dateStr}
+                                                                    </span>
+                                                                </div>
+                                                            <div className="space-y-4">
+                                                            {Object.entries(kidRecords).map(([kidId, record]) => {
+                                                                if (!record || typeof record !== 'object') return null;
+                                                                const kUser = kids.find(k => String(k.id) === String(kidId));
+                                                                if (!kUser) return null;
+                                                                return (
+                                                                    <div key={kidId} className="bg-slate-50 rounded-2xl p-4 border border-slate-200 shadow-sm relative animate-fade-in group">
+                                                                        <div className="flex flex-col gap-3 py-1">
+                                                                            <div className="flex items-center justify-between">
+                                                                                <div className="flex items-center gap-3">
+                                                                                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-lg">{kUser.avatar}</div>
+                                                                                    <span className="font-bold text-sm text-slate-700">{kUser.name}</span>
+                                                                                </div>
+                                                                                <div>
+                                                                                    {record.status === 'completed' && <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded">已完成</span>}
+                                                                                    {record.status === 'pending' && <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded">待审核</span>}
+                                                                                    {record.status === 'failed' && <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded">未达标</span>}
+                                                                                    {record.status === 'todo' && <span className="px-2 py-1 bg-slate-200 text-slate-600 text-xs font-bold rounded">未完成</span>}
+                                                                                </div>
+                                                                            </div>
+                                                                            {record.timeSpent > 0 && (
+                                                                                <div className="text-xs text-slate-500">🕐 耗时: <span className="font-bold text-slate-700">{record.timeSpent} 分钟</span></div>
+                                                                            )}
+                                                                            <textarea
+                                                                                value={record.note || ''}
+                                                                                onChange={(e) => {
+                                                                                    const newHist = { ...editingTask.history };
+                                                                                    newHist[dateStr][kidId].note = e.target.value;
+                                                                                    setEditingTask({ ...editingTask, history: newHist });
+                                                                                }}
+                                                                                placeholder="添加或修改打卡备注..."
+                                                                                className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm focus:border-blue-500 outline-none placeholder:text-slate-300 resize-none h-20"
+                                                                            />
+                                                                            {record.status !== 'todo' && record.status !== 'failed' && (
+                                                                                <div className="flex justify-end mt-1">
+                                                                                    <button onClick={() => handleRejectTask(editingTask, dateStr, kidId)} className="text-xs font-bold text-red-500 hover:text-red-700 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-100 transition-colors flex items-center gap-1">
+                                                                                        <Icons.RefreshCw size={12} /> 设为未完成 (打回)
+                                                                                    </button>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                            </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        );
+                                    } catch (err) {
+                                        console.error("Error rendering task history in modal:", err);
+                                        return null;
+                                    }
+                                })()
+                            }
                         </div>
-
+                        {/* Footer Actions */}
+                        <div className="p-6 md:p-8 border-t border-slate-100 flex gap-4 bg-white sticky bottom-0 border-t border-slate-200 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+                            <button onClick={() => { setShowAddPlanModal(false); setEditingTask(null); }} className="flex-1 py-4 text-slate-600 font-black bg-white border-2 border-slate-200 rounded-2xl hover:bg-slate-50 hover:border-slate-300 transition-all">取消</button>
+                            <button onClick={handleSavePlan} className="flex-[2] flex items-center justify-center gap-2 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-600/30 hover:bg-blue-700 hover:scale-[1.02] transition-all">
+                                <Icons.Save size={20} /> {editingTask ? '保存修改' : '保存计划'}
+                            </button>
+                        </div>
                     </div>
-                    {/* Footer Actions */}
-                    <div className="p-6 md:p-8 border-t border-slate-100 flex gap-4 bg-white sticky bottom-0 border-t border-slate-200 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-                        <button onClick={() => { setShowAddPlanModal(false); setEditingTask(null); }} className="flex-1 py-4 text-slate-600 font-black bg-white border-2 border-slate-200 rounded-2xl hover:bg-slate-50 hover:border-slate-300 transition-all">取消</button>
-                        <button onClick={handleSavePlan} className="flex-[2] flex items-center justify-center gap-2 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-600/30 hover:bg-blue-700 hover:scale-[1.02] transition-all">
-                            <Icons.Save size={20} /> {editingTask ? '保存修改' : '保存计划'}
-                        </button>
+                </div >
+            );
+        } catch (error) {
+            console.error("FATAL ERROR IN renderAddPlanModal:", error);
+            return (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white p-8 rounded-2xl text-center shadow-xl relative z-[110] max-w-md w-full">
+                        <div className="text-red-500 text-6xl mb-4">⚠️</div>
+                        <h2 className="text-xl font-bold text-slate-800 mb-2">哎呀，页面出错了！</h2>
+                        <p className="text-red-600 mb-4 text-xs font-mono text-left bg-red-50 p-3 rounded-lg overflow-x-auto" id="crash-error-message">{error.message}</p>
+                        <p className="text-slate-500 mb-4 text-[10px] font-mono text-left bg-slate-100 p-3 rounded-lg overflow-y-auto max-h-32" id="crash-error-stack">{error.stack}</p>
+                        <button onClick={() => { setShowAddPlanModal(false); setEditingTask(null); }} className="bg-slate-800 text-white px-8 py-3 w-full rounded-xl font-bold hover:bg-slate-700 transition-colors">关闭即可恢复</button>
                     </div>
                 </div>
-            </div>
-        );
+            );
+        }
     };
 
     const renderAddKidModal = () => {
@@ -2753,7 +3208,7 @@ export default function App() {
             <h1 className="text-white text-3xl font-black mb-12">是谁在使用呢？</h1>
             <div className="flex flex-wrap justify-center gap-8 md:gap-12 max-w-3xl">
                 {kids.map(k => (
-                    <div key={k.id} onClick={() => { setActiveKidId(k.id); setAppState('kid_app'); setKidTab('study'); }} className="group cursor-pointer flex flex-col items-center">
+                    <div key={k.id} onClick={() => { changeActiveKid(k.id); changeAppState('kid_app'); setKidTab('study'); }} className="group cursor-pointer flex flex-col items-center">
                         <div className="w-28 h-28 md:w-36 md:h-36 rounded-[2rem] bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-6xl shadow-xl group-hover:scale-105 group-hover:ring-4 ring-white/50 transition-all">
                             {k.avatar}
                         </div>
@@ -2762,14 +3217,14 @@ export default function App() {
                 ))}
 
                 {/* Add Kid Button (Netflix Style) */}
-                <div onClick={() => { setActiveKidId(null); setNewKidForm({ name: '', gender: 'boy', avatar: '👦', dob: '' }); setShowAddKidModal(true); }} className="group cursor-pointer flex flex-col items-center">
+                <div onClick={() => { changeActiveKid(null); setNewKidForm({ name: '', gender: 'boy', avatar: '👦', dob: '' }); setShowAddKidModal(true); }} className="group cursor-pointer flex flex-col items-center">
                     <div className="w-28 h-28 md:w-36 md:h-36 rounded-[2rem] border-4 border-dashed border-slate-700 bg-slate-800/50 flex items-center justify-center text-5xl text-slate-500 shadow-xl group-hover:scale-105 group-hover:border-slate-500 group-hover:text-slate-400 transition-all">
                         <Icons.Plus size={48} strokeWidth={3} />
                     </div>
                     <span className="text-slate-500 mt-4 text-xl font-bold group-hover:text-slate-400 transition-colors">添加小朋友</span>
                 </div>
             </div>
-            <button onClick={() => parentSettings.pinEnabled ? setAppState('parent_pin') : setAppState('parent_app')} className="absolute bottom-10 flex items-center gap-2 text-slate-400 hover:text-white transition-colors bg-white/5 px-6 py-3 rounded-full font-bold">
+            <button onClick={() => parentSettings.pinEnabled ? changeAppState('parent_pin') : changeAppState('parent_app')} className="absolute bottom-10 flex items-center gap-2 text-slate-400 hover:text-white transition-colors bg-white/5 px-6 py-3 rounded-full font-bold">
                 <Icons.Settings size={18} /> 家长管理入口
             </button>
         </div>
@@ -2777,7 +3232,7 @@ export default function App() {
 
     const renderParentPinScreen = () => (
         <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 animate-fade-in">
-            <button onClick={() => { setAppState('profiles'); setPinInput(''); }} className="absolute top-8 left-8 text-slate-400 flex items-center gap-2 hover:text-white"><Icons.ChevronLeft size={20} /> 返回角色选择</button>
+            <button onClick={() => { changeAppState('profiles'); setPinInput(''); }} className="absolute top-8 left-8 text-slate-400 flex items-center gap-2 hover:text-white"><Icons.ChevronLeft size={20} /> 返回角色选择</button>
             <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center text-slate-400 mb-6"><Icons.Lock size={32} /></div>
             <h2 className="text-white text-2xl font-black mb-8">输入家长 PIN 码</h2>
             <div className="flex gap-4 mb-12">
@@ -2799,7 +3254,7 @@ export default function App() {
         let myTasks = tasks.filter(t => (t.kidId === activeKidId || t.kidId === 'all') && t.type === 'study' && isTaskDueOnDate(t, selectedDate));
 
         if (Array.isArray(taskFilter) && taskFilter.length > 0) {
-            myTasks = myTasks.filter(t => taskFilter.includes(t.category));
+            myTasks = myTasks.filter(t => taskFilter.includes(t.category || '计划'));
         }
 
         const getDailyStatus = (t) => getTaskStatusOnDate(t, selectedDate, activeKidId);
@@ -2811,12 +3266,60 @@ export default function App() {
         }
 
         const sortedTasks = [...myTasks];
-        if (taskSort === 'reward_desc') {
-            sortedTasks.sort((a, b) => b.reward - a.reward);
-        } else if (taskSort === 'reward_asc') {
-            sortedTasks.sort((a, b) => a.reward - b.reward);
+        // Handle kid-friendly sort options
+        switch (taskSort) {
+            case 'time_asc':
+                // Sort by time (shorter time first). Assuming t.reward correlates with expected time, or parse t.timePreset...
+                sortedTasks.sort((a, b) => parseInt(a.timeStr || 0) - parseInt(b.timeStr || 0));
+                break;
+            case 'category':
+                sortedTasks.sort((a, b) => (a.category || '').localeCompare(b.category || ''));
+                break;
+            case 'status':
+                sortedTasks.sort((a, b) => {
+                    const statusOrder = { 'todo': 0, 'in_progress': 1, 'failed': 2, 'pending_approval': 3, 'completed': 4 };
+                    return statusOrder[getDailyStatus(a)] - statusOrder[getDailyStatus(b)];
+                });
+                break;
+            case 'created_desc':
+                // Assuming ID dictates creation somewhat, or just fallback if no created field
+                sortedTasks.sort((a, b) => (b.id < a.id ? -1 : 1));
+                break;
+            case 'reward_desc':
+                sortedTasks.sort((a, b) => b.reward - a.reward);
+                break;
+            case 'reward_asc':
+                sortedTasks.sort((a, b) => a.reward - b.reward);
+                break;
+            case 'default':
+            default:
+                // Sort by the new custom order first, then ID
+                sortedTasks.sort((a, b) => {
+                    if (a.order !== undefined && b.order !== undefined) return a.order - b.order;
+                    return a.id.localeCompare(b.id);
+                });
+                break;
         }
         myTasks = sortedTasks;
+        // Helper for reordering (via Drag/Drop or Mobile buttons)
+        const handleReorderTask = (sourceIndex, targetIndex) => {
+            if (sourceIndex === targetIndex || targetIndex < 0 || targetIndex >= myTasks.length) return;
+            const updatedTasks = [...myTasks];
+            const [removed] = updatedTasks.splice(sourceIndex, 1);
+            updatedTasks.splice(targetIndex, 0, removed);
+            
+            // Assign new orders globally across identical day tasks
+            updatedTasks.forEach((task, idx) => task.order = idx);
+            
+            // Update all backend tasks (optimistic UI update + API call)
+            const newGlobalTasks = [...tasks];
+            updatedTasks.forEach(task => {
+                const globalIndex = newGlobalTasks.findIndex(g => g.id === task.id);
+                if(globalIndex > -1) newGlobalTasks[globalIndex].order = task.order;
+                apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order: task.order }) }).catch(console.error);
+            });
+            setTasks(newGlobalTasks);
+        };
 
         return (
             <div className="animate-fade-in">
@@ -2882,107 +3385,169 @@ export default function App() {
                 </div>
 
                 <div className="flex justify-between items-center mb-4 px-2">
-                    <div className="text-xl font-black text-slate-800 border-l-4 border-green-500 pl-3">今日任务</div>
-                    <div className="hidden sm:flex items-center gap-4 text-slate-500 text-sm font-bold relative z-20">
-                        {/* 科目多选下拉 */}
-                        <div className="relative">
+                    <div className="text-xl font-black text-slate-800 border-l-4 border-green-500 pl-3 shrink-0">今日任务</div>
+                    <div className="flex items-center justify-end gap-2 sm:gap-4 text-slate-500 text-xs sm:text-sm font-bold relative z-20 pb-2 sm:pb-0">
+                        {/* 统一筛选下拉 (综合科目与状态) */}
+                        <div className="relative shrink-0">
                             <button
-                                onClick={() => { setShowFilterDropdown(!showFilterDropdown); setShowStatusDropdown(false); }}
-                                className={`flex items-center gap-1 hover:text-indigo-600 transition-colors ${Array.isArray(taskFilter) && taskFilter.length > 0 ? 'text-indigo-600' : ''}`}
+                                onClick={() => { setShowFilterDropdown(!showFilterDropdown); setShowStatusDropdown(false); setShowSortDropdown(false); }}
+                                className={`flex items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-none sm:bg-transparent transition-colors shadow-sm sm:shadow-none border sm:border-transparent ${showFilterDropdown || (Array.isArray(taskFilter) && taskFilter.length > 0) || taskStatusFilter !== 'all' ? 'text-indigo-600 bg-indigo-50 border-indigo-100' : 'bg-white border-slate-200 hover:text-indigo-600'}`}
                             >
-                                {(Array.isArray(taskFilter) ? taskFilter.length : 0) === 0 ? '全部科目' : `已选 ${taskFilter.length} 科`} <Icons.ChevronDown size={14} className={`transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`} />
+                                <Icons.Filter size={16} className="sm:w-[14px] sm:h-[14px]" />
+                                <span className="hidden sm:inline">按条件筛选 {(Array.isArray(taskFilter) && taskFilter.length > 0) || taskStatusFilter !== 'all' ? '•' : ''}</span>
+                                <Icons.ChevronDown size={14} className={`hidden sm:block transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`} />
                             </button>
                             {showFilterDropdown && (
-                                <div className="absolute top-full mt-2 w-40 bg-white border border-slate-100 shadow-xl rounded-2xl py-2 z-50 animate-fade-in right-0 sm:left-0 sm:right-auto">
-                                    {allCategories.map(cat => (
-                                        <label key={cat} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 cursor-pointer w-full transition-colors">
-                                            <input
-                                                type="checkbox"
-                                                className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 cursor-pointer accent-indigo-600"
-                                                checked={Array.isArray(taskFilter) && taskFilter.includes(cat)}
-                                                onChange={(e) => {
-                                                    const currentFilter = Array.isArray(taskFilter) ? taskFilter : [];
-                                                    if (e.target.checked) setTaskFilter([...currentFilter, cat]);
-                                                    else setTaskFilter(currentFilter.filter(c => c !== cat));
-                                                }}
-                                            />
-                                            <span className="text-slate-700 font-bold">{cat}</span>
-                                        </label>
-                                    ))}
-                                    <div className="border-t border-slate-100 mt-1 pt-1">
-                                        <button
-                                            onClick={() => setTaskFilter([])}
-                                            className="w-full text-center py-2 text-xs text-slate-400 hover:text-indigo-600 font-bold transition-colors"
-                                        >
-                                            清除选择
-                                        </button>
+                                <div className="absolute top-full mt-2 w-56 transform -translate-x-1/2 left-1/2 sm:left-0 sm:translate-x-0 bg-white border border-slate-100 shadow-2xl rounded-2xl py-3 z-50 animate-fade-in origin-top">
+                                    <div className="px-4 pb-2 mb-2 text-xs font-black text-slate-400 border-b border-slate-50 uppercase tracking-widest">任务状态</div>
+                                    <div className="flex gap-2 px-4 mb-4">
+                                        <button onClick={() => setTaskStatusFilter('all')} className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors ${taskStatusFilter === 'all' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}>全部</button>
+                                        <button onClick={() => setTaskStatusFilter('incomplete')} className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors ${taskStatusFilter === 'incomplete' ? 'bg-amber-50 text-amber-600' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}>未完成</button>
+                                        <button onClick={() => setTaskStatusFilter('completed')} className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors ${taskStatusFilter === 'completed' ? 'bg-green-50 text-green-600' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}>已完成</button>
+                                    </div>
+
+                                    <div className="px-4 pb-2 mb-2 text-xs font-black text-slate-400 border-b border-slate-50 uppercase tracking-widest">任务科目</div>
+                                    <div className="max-h-48 overflow-y-auto override-scroll">
+                                        {Array.from(new Set(tasks.filter(t => (t.kidId === activeKidId || t.kidId === 'all') && t.type === 'study' && isTaskDueOnDate(t, selectedDate)).map(t => t.category).filter(Boolean))).map(cat => (
+                                            <label key={cat} className="flex items-center gap-3 px-4 py-2 hover:bg-slate-50 cursor-pointer w-full transition-colors">
+                                                <input
+                                                    type="checkbox"
+                                                    className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 cursor-pointer accent-indigo-600"
+                                                    checked={Array.isArray(taskFilter) && taskFilter.includes(cat)}
+                                                    onChange={(e) => {
+                                                        const currentFilter = Array.isArray(taskFilter) ? taskFilter : [];
+                                                        if (e.target.checked) setTaskFilter([...currentFilter, cat]);
+                                                        else setTaskFilter(currentFilter.filter(c => c !== cat));
+                                                    }}
+                                                />
+                                                <span className="text-slate-700 font-bold">{cat}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    
+                                    <div className="border-t border-slate-100 mt-2 pt-2 px-4 flex gap-2">
+                                        <button onClick={() => { setTaskFilter([]); setTaskStatusFilter('all'); }} className="flex-1 text-center py-2 text-xs font-bold text-slate-500 hover:bg-slate-50 rounded-lg transition-colors">重置</button>
+                                        <button onClick={() => setShowFilterDropdown(false)} className="flex-1 text-center py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm shadow-indigo-200">完成</button>
                                     </div>
                                 </div>
                             )}
                         </div>
 
-                        {/* 状态筛选下拉 */}
-                        <div className="relative">
-                            <button
-                                onClick={() => { setShowStatusDropdown(!showStatusDropdown); setShowFilterDropdown(false); }}
-                                className={`flex items-center gap-1 hover:text-indigo-600 transition-colors ${taskStatusFilter !== 'all' ? 'text-indigo-600' : ''}`}
+                        <div className="w-px h-4 bg-slate-200 shrink-0 hidden sm:block"></div>
+
+                        {/* 排序选择器 */}
+                        <div className="relative shrink-0 flex items-center justify-center group">
+                            <button 
+                                onClick={() => { setShowSortDropdown(!showSortDropdown); setShowFilterDropdown(false); }}
+                                className={`flex flex-row items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-none sm:bg-transparent bg-white shadow-sm sm:shadow-none border sm:border-transparent transition-colors cursor-pointer ${showSortDropdown || taskSort !== 'default' ? 'text-indigo-600 bg-indigo-50 border-indigo-100' : 'text-slate-500 border-slate-200 hover:text-indigo-600'}`}
                             >
-                                {taskStatusFilter === 'all' ? '全部状态' : (taskStatusFilter === 'completed' ? '已完成' : '未完成')} <Icons.ChevronDown size={14} className={`transition-transform ${showStatusDropdown ? 'rotate-180' : ''}`} />
+                                <Icons.SortAsc size={16} className="sm:w-[14px] sm:h-[14px]" />
+                                <span className="hidden sm:inline font-bold text-sm text-[13px] sm:text-sm">
+                                    {taskSort === 'default' && '默认顺序'}
+                                    {taskSort === 'time_asc' && '最快完成的'}
+                                    {taskSort === 'category' && '按科目分类'}
+                                    {taskSort === 'status' && '按完成状态'}
+                                    {taskSort === 'created_desc' && '最新添加的'}
+                                    {taskSort === 'reward_desc' && '奖励最多的'}
+                                </span>
+                                <Icons.ChevronDown size={14} className={`hidden sm:block transition-transform ${showSortDropdown ? 'rotate-180' : ''}`} />
                             </button>
-                            {showStatusDropdown && (
-                                <div className="absolute top-full mt-2 w-32 bg-white border border-slate-100 shadow-xl rounded-2xl py-2 z-50 animate-fade-in right-0 sm:left-0 sm:right-auto">
-                                    <button onClick={() => { setTaskStatusFilter('all'); setShowStatusDropdown(false); }} className={`w-full text-left px-4 py-2 hover:bg-slate-50 font-bold transition-colors ${taskStatusFilter === 'all' ? 'text-indigo-600' : 'text-slate-700'}`}>全部状态</button>
-                                    <button onClick={() => { setTaskStatusFilter('incomplete'); setShowStatusDropdown(false); }} className={`w-full text-left px-4 py-2 hover:bg-slate-50 font-bold transition-colors ${taskStatusFilter === 'incomplete' ? 'text-indigo-600' : 'text-slate-700'}`}>未完成</button>
-                                    <button onClick={() => { setTaskStatusFilter('completed'); setShowStatusDropdown(false); }} className={`w-full text-left px-4 py-2 hover:bg-slate-50 font-bold transition-colors ${taskStatusFilter === 'completed' ? 'text-indigo-600' : 'text-slate-700'}`}>已完成</button>
+                            
+                            {showSortDropdown && (
+                                <div className="absolute top-full right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-[60] animate-fade-in origin-top">
+                                    {[
+                                        { id: 'default', label: '默认顺序' },
+                                        { id: 'time_asc', label: '最快完成的' },
+                                        { id: 'category', label: '按科目分类' },
+                                        { id: 'status', label: '按完成状态' },
+                                        { id: 'created_desc', label: '最新添加的' },
+                                        { id: 'reward_desc', label: '奖励最多的' },
+                                    ].map(option => (
+                                        <button 
+                                            key={option.id}
+                                            onClick={() => { setTaskSort(option.id); setShowSortDropdown(false); }}
+                                            className={`w-full text-left px-4 py-2.5 text-sm font-bold transition-colors flex flex-row items-center justify-between ${taskSort === option.id ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50'}`}
+                                        >
+                                            {option.label}
+                                            {taskSort === option.id && <Icons.Check size={14} />}
+                                        </button>
+                                    ))}
                                 </div>
                             )}
                         </div>
 
-                        <div className="w-px h-4 bg-slate-200"></div>
+                        <div className="w-px h-4 bg-slate-200 shrink-0 hidden sm:block"></div>
 
-                        <select value={taskSort} onChange={e => setTaskSort(e.target.value)} className="bg-transparent outline-none cursor-pointer hover:text-indigo-600 appearance-none text-center">
-                            <option value="default">默认排序 ▼</option>
-                            <option value="reward_desc">奖励从高到低</option>
-                            <option value="reward_asc">奖励从低到高</option>
-                        </select>
-                        <button onClick={() => setTaskLayout(l => l === 'list' ? 'grid' : 'list')} className="flex items-center gap-1 hover:text-indigo-600"><Icons.LayoutGrid size={14} /> 布局</button>
-                        <button className="flex items-center gap-1 hover:text-indigo-600"><Icons.Settings size={14} /> 管理</button>
+                        <button onClick={() => setIsReordering(!isReordering)} className={`shrink-0 flex items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-none sm:bg-transparent shadow-sm sm:shadow-none border sm:border-transparent transition-colors ${isReordering ? 'bg-indigo-600 text-white sm:text-indigo-600 sm:bg-transparent sm:border-transparent border-indigo-600' : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600'}`}>
+                            {isReordering ? <Icons.Check size={16} className="sm:w-[14px] sm:h-[14px]" /> : <Icons.List size={16} className="sm:w-[14px] sm:h-[14px]" />} 
+                            <span className="hidden sm:inline">{isReordering ? '保存排序' : '自定义排序'}</span>
+                        </button>
                     </div>
                 </div>
 
-                <div className={taskLayout === 'grid' ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "space-y-4"}>
+                <div className="space-y-4 px-4 sm:px-0">
                     {myTasks.length === 0 ? (
                         <div className="text-center py-10 text-slate-400 font-bold bg-white rounded-2xl border border-slate-100 shadow-sm md:col-span-2">这一天没有安排任务哦~</div>
-                    ) : myTasks.map(t => (
-                        <div key={t.id} className="bg-white rounded-[2rem] p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/60 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 group flex flex-col sm:flex-row gap-4 relative overflow-hidden">
-                            <button onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className="absolute inset-0 z-0 cursor-pointer hidden sm:block" aria-label="查看任务详情"></button>
+                    ) : myTasks.map((t, index) => (
+                        <div 
+                            key={t.id} 
+                            draggable={isReordering}
+                            onDragStart={(e) => { e.dataTransfer.setData('text/plain', index); e.currentTarget.classList.add('opacity-50'); }}
+                            onDragEnd={(e) => { e.currentTarget.classList.remove('opacity-50'); }}
+                            onDragOver={(e) => { e.preventDefault(); }}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                                handleReorderTask(sourceIndex, index);
+                            }}
+                            className={`bg-white rounded-[2rem] p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/60 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 group flex flex-col sm:flex-row gap-4 relative overflow-hidden ${isReordering ? 'cursor-move ring-2 ring-indigo-300' : ''}`}
+                        >
+                            {!isReordering && <button onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className="absolute inset-0 z-0 cursor-pointer hidden sm:block" aria-label="查看任务详情"></button>}
+                            
+                            {isReordering && (
+                                <>
+                                    <div className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-300 flex items-center justify-center p-2 z-10 hidden sm:flex">
+                                        <Icons.GripVertical size={20} />
+                                    </div>
+                                    <div className="absolute left-1 top-1/2 -translate-y-1/2 flex flex-col gap-1 z-20 sm:hidden">
+                                        <button onClick={(e) => { e.stopPropagation(); handleReorderTask(index, index - 1); }} disabled={index === 0} className="w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur hover:bg-slate-50 border border-slate-200/50 rounded-full text-slate-400 disabled:opacity-30 disabled:bg-slate-50 shadow-sm transition-all"><Icons.ChevronDown className="rotate-180" size={16}/></button>
+                                        <button onClick={(e) => { e.stopPropagation(); handleReorderTask(index, index + 1); }} disabled={index === myTasks.length - 1} className="w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur hover:bg-slate-50 border border-slate-200/50 rounded-full text-slate-400 disabled:opacity-30 disabled:bg-slate-50 shadow-sm transition-all"><Icons.ChevronDown size={16}/></button>
+                                    </div>
+                                </>
+                            )}
 
                             {/* Left Section: Big Colorful Squircle Icon */}
-                            <div onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className="flex z-10 sm:w-auto items-start gap-4 flex-1 cursor-pointer">
+                            <div onClick={() => { if(!isReordering){ setPreviewTask(t); setShowPreviewModal(true); } }} className={`flex z-10 sm:w-auto items-start gap-4 flex-1 ${!isReordering ? 'cursor-pointer' : ''} ${isReordering ? 'sm:ml-6' : ''}`}>
                                 <div className={`w-16 h-16 shrink-0 rounded-[1.25rem] bg-gradient-to-br ${getCategoryGradient(t.category || '计划')} flex flex-col items-center justify-center text-white shadow-inner group-hover:scale-110 transition-transform duration-300`}>
                                     {renderIcon(t.iconName || getIconForCategory(t.category), 26)}
                                     <span className={`text-[11px] font-black mt-1 text-center w-full line-clamp-1 opacity-90 tracking-wide`}>{t.category || '计划'}</span>
                                 </div>
-                                <div className="flex-1 flex flex-col pt-0.5">
-                                    <h3 className="font-black text-slate-800 text-lg md:text-xl leading-tight mb-2 line-clamp-2">{t.title}</h3>
+                                <div className="flex-1 flex flex-col pt-0.5 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1.5 w-full">
+                                        <h3 className="font-black text-slate-800 text-lg md:text-xl leading-tight truncate">
+                                            {t.title}
+                                        </h3>
+                                        {/* Frequency Pill (Moved next to Title) */}
+                                        <div className="shrink-0 bg-indigo-50/80 text-indigo-500 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black tracking-wide border border-indigo-100/50">
+                                            {t.frequency || '每天'}
+                                        </div>
+                                    </div>
 
-                                    <div className="flex flex-wrap gap-2 items-center">
+                                    <div className="flex flex-wrap gap-1.5 items-center">
                                         {/* Reward Pill */}
-                                        <div className="bg-amber-100/80 text-amber-600 px-3 py-1 rounded-full text-xs font-black flex items-center gap-1 border border-amber-200/50">
-                                            {t.reward} <Icons.Star size={12} fill="currentColor" />
+                                        <div className="bg-amber-100/80 text-amber-600 px-2 py-0.5 rounded-full text-[11px] font-black flex items-center gap-1 border border-amber-200/50">
+                                            {t.reward} <Icons.Star size={10} fill="currentColor" />
                                         </div>
                                         {/* Time Pill */}
-                                        <div className="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                            <Icons.Clock size={12} /> {t.timeStr || '--:--'}
-                                        </div>
-                                        {/* Frequency Pill */}
-                                        <div className="bg-indigo-50 text-indigo-500 px-2 py-1 rounded-full text-[10px] font-black tracking-wide">
-                                            {t.frequency || '每天'}
+                                        <div className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full text-[11px] font-bold flex items-center gap-1 min-w-0">
+                                            <Icons.Clock size={10} className="shrink-0" /> 
+                                            <span className="truncate">{t.timeStr || '--:--'}</span>
                                         </div>
                                         {/* Running Timer Pill */}
                                         {getDailyStatus(t) === 'in_progress' && t.actualStartTime && (
-                                            <div className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs font-black flex items-center gap-1 animate-pulse border border-green-200">
-                                                <Icons.Play size={12} fill="currentColor" /> 已用时: {Math.floor((new Date() - new Date(t.actualStartTime)) / 60000)} 分钟
+                                            <div className="bg-green-100 text-green-600 px-2 py-0.5 rounded-full text-[10px] font-black flex items-center gap-1 animate-pulse border border-green-200 min-w-0">
+                                                <Icons.Play size={10} fill="currentColor" className="shrink-0" /> 
+                                                <span className="truncate whitespace-nowrap">{(Math.floor((new Date() - new Date(t.actualStartTime)) / 60000))}M</span>
                                             </div>
                                         )}
                                     </div>
@@ -2991,15 +3556,15 @@ export default function App() {
 
                             {/* Right/Bottom Section: Juicy Actions */}
                             <div className="z-10 flex sm:flex-col justify-end sm:justify-center items-stretch gap-2 shrink-0 sm:w-36 mt-2 sm:mt-0">
-                                {getDailyStatus(t) === 'todo' && (
+                                {(getDailyStatus(t) === 'todo' || getDailyStatus(t) === 'failed') && (
                                     <>
                                         {t.durationPreset || t.timeSetting === 'range' ? (
                                             <button onClick={() => handleStartTask(t.id)} className="flex-1 bg-gradient-to-b from-green-400 to-green-500 shadow-lg shadow-green-500/30 text-white rounded-full py-3 px-4 text-sm font-black hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1">
-                                                <Icons.Play size={16} fill="currentColor" /> START
+                                                <Icons.Play size={16} fill="currentColor" /> {getDailyStatus(t) === 'failed' ? '重新开始' : 'START'}
                                             </button>
                                         ) : (
                                             <button onClick={() => openQuickComplete(t)} className="flex-1 bg-gradient-to-b from-blue-500 to-blue-600 shadow-lg shadow-blue-500/30 text-white rounded-full py-3 px-4 text-sm font-black hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1">
-                                                <Icons.Check size={16} strokeWidth={3} /> 完成
+                                                <Icons.Check size={16} strokeWidth={3} /> {getDailyStatus(t) === 'failed' ? '重新提交' : '完成'}
                                             </button>
                                         )}
                                     </>
@@ -3011,12 +3576,12 @@ export default function App() {
                                 )}
                                 {getDailyStatus(t) === 'pending_approval' && (
                                     <div className="w-full text-center text-orange-500 bg-orange-50 rounded-full py-3 px-4 text-xs font-black flex items-center justify-center gap-1 border border-orange-200/50">
-                                        <Icons.Clock size={14} /> 待家长发金币
+                                        <Icons.Clock size={14} /> 待审批
                                     </div>
                                 )}
                                 {getDailyStatus(t) === 'completed' && (
                                     <div className="w-full text-center text-emerald-500 bg-emerald-50 rounded-full py-3 px-4 text-xs font-black flex items-center justify-center gap-1 border border-emerald-200/50">
-                                        <Icons.CheckCircle size={14} /> 已获奖励
+                                        <Icons.CheckCircle size={14} /> 已完成
                                     </div>
                                 )}
                             </div>
@@ -3080,7 +3645,6 @@ export default function App() {
                     </div>
                 </div>
 
-                {/* 内联 PIN 码弹窗 */}
                 {showParentPinModal && (
                     <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-fade-in">
                         <div className="bg-slate-800/90 w-full max-w-sm rounded-[2rem] p-8 text-center shadow-2xl border border-white/10">
@@ -3110,28 +3674,160 @@ export default function App() {
                         </div>
                     </div>
                 )}
-
-                <div className="bg-white border-b border-slate-100 p-5 md:p-8">
-                    <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
-                        <div className="flex items-center gap-4">
-                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-4xl shadow-inner border border-white">{activeKid.avatar}</div>
-                            <div>
-                                <h1 className="text-2xl font-black text-slate-800">早上好，{activeKid.name}！</h1>
-                                <p className="text-slate-500 text-sm mt-0.5">今天也要元气满满地学习和养成好习惯哦。</p>
+                
+                {/* 勋章与等级个人中心 Modal */}
+                {showLevelModal && (
+                    <div className="fixed inset-0 bg-[#f4f7f9] z-[200] flex flex-col animate-slide-up overflow-hidden">
+                        {/* Header Gradient Area */}
+                        <div className={`pt-12 pb-24 px-6 bg-gradient-to-br ${getLevelTier(activeKid.level).bg} relative overflow-hidden flex flex-col items-center text-white flex-shrink-0 rounded-b-[3rem] shadow-sm`}>
+                            <button onClick={() => setShowLevelModal(false)} className="absolute top-6 left-6 bg-white/20 hover:bg-white/30 w-10 h-10 rounded-full flex items-center justify-center transition-colors backdrop-blur-md">
+                                <Icons.ChevronLeft size={24} />
+                            </button>
+                            <div className="absolute top-6 text-lg font-black tracking-widest opacity-90 text-white/90">成长图鉴</div>
+                            
+                            <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-2xl transform translate-x-10 -translate-y-10"></div>
+                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-3xl transform -translate-x-20 translate-y-20 pointer-events-none"></div>
+                            
+                            <div className="mt-8 w-28 h-28 rounded-full bg-white/20 p-2 backdrop-blur-md shadow-xl relative z-10 mb-5 border border-white/30">
+                                <div className="w-full h-full bg-white rounded-full flex items-center justify-center text-5xl">{activeKid.avatar}</div>
+                                <div className="absolute -bottom-2 -right-2 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full flex items-center justify-center font-black border-2 border-white shadow-md text-sm tracking-wider">
+                                    Lv.{activeKid.level}
+                                </div>
+                            </div>
+                            <h2 className="text-3xl font-black tracking-wide drop-shadow-md mb-2">{activeKid.name}</h2>
+                            <div className="flex items-center gap-1.5 bg-white/20 px-4 py-1.5 rounded-full text-sm font-black backdrop-blur-sm shadow-inner border border-white/20 tracking-wider">
+                                {getLevelTier(activeKid.level).emoji} {getLevelTier(activeKid.level).title}
                             </div>
                         </div>
+                            
+                            {/* Card Body Overlay */}
+                            <div className="flex-1 overflow-y-auto hide-scrollbar px-6 pt-6 pb-24 -mt-12 relative z-20">
+                                
+                                {/* Progress Bar */}
+                                <div className="bg-white p-6 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mb-6 relative hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow">
+                                    <div className="flex justify-between items-end mb-3">
+                                        <span className="text-slate-500 font-bold text-sm tracking-wider">升级进度条</span>
+                                        <div className="text-right">
+                                            <div className="text-[10px] text-slate-400 font-bold mb-0.5">距离下一级还需要</div>
+                                            <span className={`font-black text-2xl ${getLevelTier(activeKid.level).color}`}>
+                                                {nextLevelExp - activeKid.exp} <span className="text-sm text-slate-400">EXP</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="h-5 bg-slate-50 rounded-full overflow-hidden shadow-inner relative border border-slate-100">
+                                        <div 
+                                            className={`h-full bg-gradient-to-r ${getLevelTier(activeKid.level).bg} relative shadow-[inset_0_-2px_4px_rgba(0,0,0,0.1)] transition-all duration-1000 ease-out`} 
+                                            style={{ width: `${Math.max(0, (activeKid.exp / nextLevelExp) * 100)}%` }}
+                                        >
+                                            <div className="absolute inset-0 bg-white/20 w-full animate-[shimmer_2s_infinite]"></div>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between items-center mt-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                        <span>Lv.{activeKid.level} ({activeKid.exp})</span>
+                                        <span>Lv.{activeKid.level + 1} ({nextLevelExp})</span>
+                                    </div>
+                                </div>
+                                
+                                {/* Honor & Badges */}
+                                <div className="mb-6">
+                                    <h3 className="font-black text-slate-800 text-lg mb-4 flex items-center gap-2 pl-2">
+                                        <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center shadow-inner"><Icons.Award size={18} /></div> 
+                                        我的成就勋章
+                                    </h3>
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <div className="bg-white rounded-[1.5rem] p-4 flex flex-col items-center justify-center shadow-[0_4px_15px_rgb(0,0,0,0.03)] border border-slate-100 aspect-square text-center opacity-100">
+                                            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-200 to-orange-400 flex items-center justify-center text-2xl shadow-inner mb-2 border-2 border-amber-100">🔥</div>
+                                            <div className="text-[11px] font-black text-slate-700 tracking-wider">初出茅庐</div>
+                                        </div>
+                                        <div className="bg-white rounded-[1.5rem] p-4 flex flex-col items-center justify-center shadow-[0_4px_15px_rgb(0,0,0,0.03)] border border-slate-100 aspect-square text-center opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
+                                            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-300 to-purple-500 flex items-center justify-center text-2xl shadow-inner mb-2 border-2 border-indigo-100">⚡</div>
+                                            <div className="text-[11px] font-black text-slate-800 tracking-wider">打卡7天</div>
+                                        </div>
+                                        <div className="bg-white rounded-[1.5rem] p-4 flex flex-col items-center justify-center shadow-[0_4px_15px_rgb(0,0,0,0.03)] border border-slate-100 aspect-square text-center opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
+                                            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-300 to-teal-500 flex items-center justify-center text-2xl shadow-inner mb-2 border-2 border-emerald-100">👑</div>
+                                            <div className="text-[11px] font-black text-slate-800 tracking-wider">百变达人</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* Card: EXP History Log */}
+                                <div className="mb-8">
+                                    <h3 className="font-black text-slate-800 text-lg mb-4 flex items-center gap-2 pl-2">
+                                        <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center shadow-inner"><Icons.Activity size={18} /></div> 
+                                        近期经验获取
+                                    </h3>
+                                    <div className="bg-white rounded-[2rem] p-5 shadow-[0_4px_15px_rgb(0,0,0,0.03)] border border-slate-100 space-y-4">
+                                        {transactions
+                                            .filter(t => t.kidId === activeKid.id && t.type === 'income' && t.category === 'habit' && t.amount > 0)
+                                            .slice(0, 5)
+                                            .map((t, idx, arr) => (
+                                            <div key={t.id} className={`flex items-center justify-between text-sm ${idx !== arr.length - 1 ? 'border-b border-slate-50 pb-4' : ''}`}>
+                                                <div className="flex items-center gap-3 text-slate-700 font-bold truncate pr-3">
+                                                    <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center flex-shrink-0 shadow-inner">
+                                                        <Icons.ArrowUpRight size={18} strokeWidth={3} />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="truncate tracking-wide">{t.title}</span>
+                                                        <span className="text-[10px] text-slate-400 font-medium tracking-wider">任务记录</span>
+                                                    </div>
+                                                </div>
+                                                <div className="font-black text-emerald-500 text-lg flex-shrink-0 tracking-wider">
+                                                    +{t.amount} EXP
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {transactions.filter(t => t.kidId === activeKid.id && t.type === 'income' && t.category === 'habit' && t.amount > 0).length === 0 && (
+                                            <div className="text-center py-8 flex flex-col items-center justify-center">
+                                                <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mb-3 shadow-inner">
+                                                    <Icons.Check size={32} />
+                                                </div>
+                                                <p className="text-sm text-slate-400 font-bold tracking-wider">还没有获取记录呢，快去完成任务吧！</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                )}
 
-                        <button onClick={() => setShowLevelRules(true)} className="w-full md:w-auto bg-slate-50 px-5 py-3.5 rounded-2xl border border-slate-100 flex items-center gap-3 hover:bg-indigo-50 transition-colors text-left shadow-sm">
-                            <div className="bg-yellow-100 p-2.5 rounded-xl text-yellow-500"><Icons.Star size={20} fill="currentColor" /></div>
-                            <div className="flex-1 min-w-[150px]">
-                                <div className="text-xs text-slate-500 font-bold flex items-center gap-1 mb-1.5">探索等级 Lv.{activeKid.level} <Icons.Info size={12} /></div>
-                                <div className="flex-1 h-2.5 bg-slate-200 rounded-full overflow-hidden"><div className="h-full bg-yellow-400" style={{ width: `${Math.max(0, (activeKid.exp / nextLevelExp) * 100)}%` }}></div></div>
-                                <span className="text-xs font-black text-slate-700 w-12 text-right">{activeKid.exp}/{nextLevelExp}</span>
+                <div className="bg-white border-b border-slate-100 p-5 md:p-8 hidden md:block">
+                    <div className="max-w-5xl mx-auto">
+                        <button 
+                            onClick={() => setShowLevelModal(true)} 
+                            className="w-full flex items-center justify-between bg-transparent hover:bg-slate-50/80 p-3 -mx-3 rounded-3xl transition-colors group text-left relative overflow-hidden"
+                        >
+                            <div className="flex items-center gap-5">
+                                <div className="relative flex-shrink-0">
+                                    {/* SVG Circular Progress Ring */}
+                                    <svg className="absolute -inset-2 w-[calc(100%+1rem)] h-[calc(100%+1rem)] -rotate-90 pointer-events-none drop-shadow-sm" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="46" fill="none" stroke="#f1f5f9" strokeWidth="6" />
+                                        <circle 
+                                            cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="6" 
+                                            strokeLinecap="round"
+                                            className={getLevelTier(activeKid.level).color}
+                                            strokeDasharray="289.02"
+                                            strokeDashoffset={289.02 - (289.02 * Math.max(0, activeKid.exp / nextLevelExp))}
+                                        />
+                                    </svg>
+                                    <div className="w-[72px] h-[72px] rounded-full bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center text-[40px] shadow-sm border-[4px] border-white relative z-10">{activeKid.avatar}</div>
+                                </div>
+                                <div>
+                                    <h1 className="text-[22px] font-black text-slate-800 tracking-tight leading-tight">早上好，{activeKid.name}！</h1>
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-black text-white shadow-sm bg-gradient-to-r ${getLevelTier(activeKid.level).bg}`}>
+                                            <span className="opacity-90 leading-none">{getLevelTier(activeKid.level).emoji}</span>
+                                            <span className="leading-none tracking-wider">LV.{activeKid.level} {getLevelTier(activeKid.level).title}</span>
+                                        </div>
+                                        <span className="text-[12px] font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">{activeKid.exp} / {nextLevelExp} EXP</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-indigo-500 transition-colors shadow-sm border border-slate-100 flex-shrink-0 transform md:translate-x-0 translate-x-2 opacity-50 group-hover:opacity-100 group-hover:scale-110 active:scale-95">
+                                <Icons.ChevronRight size={20} />
                             </div>
                         </button>
                     </div>
 
-                    <div className="max-w-5xl mx-auto mt-6 flex overflow-x-auto hide-scrollbar gap-3 pb-1">
+                    <div className="max-w-5xl mx-auto mt-6 hidden md:flex overflow-x-auto hide-scrollbar gap-3 pb-1">
                         {[
                             { id: 'study', icon: <Icons.BookOpen size={18} />, label: "赚家庭币" },
                             { id: 'habit', icon: <Icons.ShieldCheck size={18} />, label: "习惯养成" },
@@ -3145,77 +3841,219 @@ export default function App() {
                     </div>
                 </div>
 
-                <div className="max-w-5xl mx-auto p-4 md:p-8">
+                <div className="max-w-5xl mx-auto p-4 md:p-8 pb-28 md:pb-8">
                     {kidTab === 'study' && renderStudyTab()}
 
-                    {kidTab === 'habit' && (
-                        <div className="bg-white rounded-[2rem] p-6 md:p-8 shadow-sm border border-slate-100 animate-fade-in">
-                            <div className="mb-6 border-b border-slate-100 pb-4">
-                                <h2 className="text-xl font-black text-slate-800 flex items-center gap-2"><Icons.ShieldCheck className="text-yellow-500" /> 习惯养成区</h2>
-                                <p className="text-slate-500 text-sm mt-1">好习惯加经验助你升级，坏习惯会扣经验导致降级哦！</p>
-                            </div>
-                            <div className="space-y-4">
-                                {myTasks.filter(t => t.type === 'habit').map(t => (
-                                    <div key={t.id} className={`p-4 bg-slate-50 border border-slate-100 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors ${t.reward < 0 ? 'hover:border-red-200' : 'hover:border-emerald-200'}`}>
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-3xl shadow-sm border border-slate-100">{t.iconEmoji || renderIcon(t.iconName, 24)}</div>
-                                            <div>
-                                                <div className="font-bold text-slate-800 text-lg">{t.title}</div>
-                                                <div className={`text-xs font-black flex items-center gap-1 mt-1 w-fit px-2 py-0.5 rounded ${t.reward < 0 ? 'text-red-600 bg-red-50' : 'text-emerald-600 bg-emerald-50'}`}>
-                                                    {t.reward > 0 ? `+${t.reward} 经验值` : `扣 ${Math.abs(t.reward)} 经验值`}
-                                                </div>
+                    {kidTab === 'habit' && (() => {
+                        const todayTransactions = transactions.filter(t => t.kidId === activeKidId && t.category === 'habit' && new Date(t.date).toDateString() === new Date().toDateString());
+                        const todayEarned = todayTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+                        const todayDeducted = todayTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+
+                        return (
+                            <div className="space-y-6 animate-fade-in pb-10">
+                                {/* --- Glassmorphic Hero Dashboard Area --- */}
+                                <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 rounded-[2.5rem] p-6 md:p-8 shadow-2xl shadow-emerald-500/20 text-white relative overflow-hidden group min-h-[160px] flex items-center">
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700 pointer-events-none"></div>
+                                    <div className="absolute bottom-[-20%] left-[-10%] w-40 h-40 bg-black/10 rounded-full blur-2xl pointer-events-none"></div>
+                                    <Icons.ShieldCheck size={140} className="absolute -right-6 -bottom-8 opacity-[0.08] rotate-12 group-hover:rotate-0 transition-transform duration-500 pointer-events-none" />
+                                    
+                                    <div className="relative z-10 w-full flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                                        <div>
+                                            <div className="flex items-center gap-2 bg-white/20 w-fit px-3.5 py-1.5 rounded-full text-sm font-black backdrop-blur-md border border-white/20 mb-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)] text-emerald-50">
+                                                <Icons.Star size={16} className="text-yellow-300 fill-yellow-300" /> 习惯决定未来
+                                            </div>
+                                            <h2 className="text-3xl md:text-4xl font-black drop-shadow-md flex items-center gap-2">
+                                                习惯养成基地
+                                            </h2>
+                                        </div>
+                                        
+                                        {/* Daily Summary Stats */}
+                                        <div className="flex items-center gap-6 bg-white/10 backdrop-blur-md px-8 py-5 rounded-3xl border border-white/20 shadow-inner w-full md:w-auto mt-2 md:mt-0">
+                                            <div className="text-center flex-1 md:flex-initial">
+                                                <div className="text-[12px] font-black text-emerald-100 mb-1 tracking-widest">今日奖励</div>
+                                                <div className="text-3xl font-black text-white drop-shadow-sm leading-none">+{todayEarned}</div>
+                                            </div>
+                                            <div className="w-px h-10 bg-white/20 rounded-full"></div>
+                                            <div className="text-center flex-1 md:flex-initial">
+                                                <div className="text-[12px] font-black text-emerald-100 mb-1 tracking-widest">今日扣除</div>
+                                                <div className="text-3xl font-black text-yellow-300 drop-shadow-sm leading-none">-{todayDeducted}</div>
                                             </div>
                                         </div>
-                                        <div className="shrink-0 text-right">
-                                            {t.reward < 0 ? (
-                                                <span className="text-xs text-slate-400 font-bold bg-slate-100 px-3 py-2 rounded-xl inline-block">⚠️ 触犯会被家长直接扣分</span>
-                                            ) : (
-                                                <>
-                                                    {(() => {
-                                                        const entry = t.kidId === 'all' ? t.history?.[selectedDate]?.[activeKidId] : t.history?.[selectedDate];
-                                                        const count = entry?.count || (entry?.status === 'completed' ? 1 : 0);
-                                                        const isDailyOnce = t.habitType === 'daily_once';
-                                                        const isMaxedOut = t.habitType === 'multiple' && t.periodMaxPerDay && count >= t.periodMaxPerDay;
+                                    </div>
+                                </div>
 
-                                                        if ((isDailyOnce && count >= 1) || isMaxedOut) {
-                                                            return <span className="text-sm font-bold text-slate-400 bg-slate-100 px-4 py-2.5 rounded-xl flex items-center gap-1 justify-center overflow-hidden"><Icons.CheckCircle size={16} /> 已记录 {count > 1 ? `(${count})` : ''}</span>;
-                                                        } else {
-                                                            return (
-                                                                <button onClick={() => handleAttemptSubmit(t)} className="w-full md:w-auto px-6 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 flex items-center gap-2 justify-center transition-all">
-                                                                    去打卡 {count > 0 && <span className="bg-emerald-100 text-emerald-600 font-black text-[11px] px-2 py-0.5 rounded-full">{count}次</span>}
-                                                                </button>
-                                                            );
-                                                        }
-                                                    })()}
-                                                </>
-                                            )}
+                                {/* --- Chunky Habit Cards Grid --- */}
+                                <div>
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 px-2">
+                                        <h3 className="font-black text-slate-800 text-lg flex items-center gap-2">
+                                            <span className="w-1.5 h-5 bg-emerald-500 rounded-full"></span>
+                                            今日习惯打卡
+                                        </h3>
+                                        <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-2xl w-full md:w-auto overflow-x-auto hide-scrollbar">
+                                            {[
+                                                { id: 'all', label: '全部' },
+                                                { id: 'income', label: '赚取奖励' },
+                                                { id: 'expense', label: '扣除惩罚' },
+                                                { id: 'completed', label: '已达标' },
+                                                { id: 'pending', label: '待完成' }
+                                            ].map(filter => (
+                                                <button 
+                                                    key={filter.id} 
+                                                    onClick={() => setHabitCardFilter(filter.id)} 
+                                                    className={`px-4 py-1.5 rounded-xl text-xs font-black transition-all whitespace-nowrap ${habitCardFilter === filter.id ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                                >
+                                                    {filter.label}
+                                                </button>
+                                            ))}
                                         </div>
                                     </div>
-                                ))}
-                            </div>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+                                        {myTasks.filter(t => t.type === 'habit').filter(t => {
+                                            const entry = t.kidId === 'all' ? t.history?.[selectedDate]?.[activeKidId] : t.history?.[selectedDate];
+                                            const count = entry?.count || (entry?.status === 'completed' ? 1 : 0);
+                                            const isDone = (t.habitType === 'daily_once' && count >= 1) || (t.habitType === 'multiple' && t.periodMaxPerDay && count >= t.periodMaxPerDay);
+                                            
+                                            if (habitCardFilter === 'income') return t.reward >= 0;
+                                            if (habitCardFilter === 'expense') return t.reward < 0;
+                                            if (habitCardFilter === 'completed') return isDone;
+                                            if (habitCardFilter === 'pending') return !isDone;
+                                            return true;
+                                        }).map(t => {
+                                            const isNegative = t.reward < 0;
+                                            const entry = t.kidId === 'all' ? t.history?.[selectedDate]?.[activeKidId] : t.history?.[selectedDate];
+                                            const count = entry?.count || (entry?.status === 'completed' ? 1 : 0);
+                                            const isDailyOnce = t.habitType === 'daily_once';
+                                            const isMaxedOut = t.habitType === 'multiple' && t.periodMaxPerDay && count >= t.periodMaxPerDay;
+                                            const isDone = (isDailyOnce && count >= 1) || isMaxedOut;
 
-                            {/* Habit Transaction History */}
-                            <div className="bg-slate-50 rounded-2xl border border-slate-100 mt-8 overflow-hidden">
-                                <div className="border-b border-slate-100 p-5">
-                                    <h3 className="font-black text-slate-700 text-sm flex items-center gap-2"><Icons.List size={16} className="text-slate-400" /> 近期明细记录</h3>
-                                </div>
-                                <div className="p-5">
-                                    {transactions.filter(t => t.kidId === activeKidId && t.category === 'habit').length === 0 && <div className="text-center text-slate-400 text-xs py-4">暂无打卡记录</div>}
-                                    <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">
-                                        {transactions.filter(t => t.kidId === activeKidId && t.category === 'habit').slice(0, 30).map(item => (
-                                            <div key={item.id} className={`flex items-center justify-between p-3 rounded-xl border ${item.type === 'income' ? 'bg-emerald-50/50 border-emerald-100/50' : 'bg-red-50/50 border-red-100/50'}`}>
-                                                <div>
-                                                    <div className="font-bold text-slate-700 text-sm">{item.title}</div>
-                                                    <div className="text-xs text-slate-400 mt-0.5">{new Date(item.date).toLocaleString([], { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</div>
+                                            return (
+                                                <div key={t.id} className="bg-white p-5 rounded-[2rem] border border-slate-100/80 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all flex flex-col justify-between group">
+                                                    <div className="flex items-start justify-between gap-3 mb-5">
+                                                        <div className="flex items-start gap-4 flex-1">
+                                                            {/* Squircle Icon Container */}
+                                                            <div className={`w-14 h-14 rounded-[1.25rem] flex items-center justify-center text-3xl shadow-inner shrink-0 group-hover:scale-110 transition-transform duration-300 ${isNegative ? 'bg-red-50 text-red-500' : `bg-gradient-to-br ${t.habitColor || 'from-emerald-400 to-teal-500'} text-white`}`}>
+                                                                {t.iconEmoji || renderIcon(t.iconName, 26)}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0 pt-0.5">
+                                                                <h3 className="font-black text-slate-800 text-lg leading-tight mb-1.5 line-clamp-1">{t.title}</h3>
+                                                                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-black tracking-wide border ${isNegative ? 'bg-red-50 text-red-600 border-red-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>
+                                                                    {isNegative ? `扣 ${Math.abs(t.reward)} 家庭币` : `+${t.reward} 家庭币`}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Visual Streak / Counters */}
+                                                        {!isNegative && t.habitType === 'multiple' && t.periodMaxPerDay > 1 && (
+                                                            <div className="flex gap-1 shrink-0 bg-slate-50 p-1.5 rounded-full border border-slate-100/50">
+                                                                {Array.from({ length: t.periodMaxPerDay }).map((_, i) => (
+                                                                    <div key={i} className={`w-2.5 h-2.5 rounded-full ${i < count ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]' : 'bg-slate-200'}`} />
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Action Button Area */}
+                                                    <div className="mt-auto border-t border-slate-50 pt-4">
+                                                        {isDone && !isNegative ? (
+                                                            <div className="w-full bg-emerald-50/50 border border-emerald-100/50 rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-black text-emerald-600 shadow-inner">
+                                                                <Icons.CheckCircle size={18} /> 
+                                                                今日已达标 {count > 1 ? `(${count}次)` : ''}
+                                                            </div>
+                                                        ) : isNegative ? (
+                                                            <button onClick={() => handleAttemptSubmit(t)} className="relative overflow-hidden w-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-black shadow-[0_8px_20px_rgba(245,158,11,0.3)] active:scale-[0.98] transition-all group/btn">
+                                                                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+                                                                <Icons.ShieldAlert size={16} className="relative z-10" /> 
+                                                                <span className="relative z-10">我要坦白 (主动承认扣分)</span>
+                                                            </button>
+                                                        ) : (
+                                                            <button onClick={() => handleAttemptSubmit(t)} className="relative overflow-hidden w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-black shadow-[0_8px_20px_rgba(52,211,153,0.3)] active:scale-[0.98] transition-all group/btn">
+                                                                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+                                                                <Icons.Zap size={16} className="relative z-10" /> 
+                                                                <span className="relative z-10">我要去打卡</span>
+                                                                {count > 0 && <span className="relative z-10 bg-white/20 px-2 py-0.5 rounded-md text-[10px] ml-1 font-bold">已打卡 {count} 次</span>}
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <div className={`font-black tracking-wide ${item.type === 'income' ? 'text-emerald-500' : 'text-red-500'}`}>{item.type === 'income' ? '+' : '-'}{item.amount} EXP</div>
+                                            );
+                                        })}
+                                        {myTasks.filter(t => t.type === 'habit').length === 0 && (
+                                            <div className="md:col-span-2 bg-white rounded-[2rem] border-2 border-slate-100 border-dashed flex flex-col items-center justify-center py-12 shadow-sm">
+                                                <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-3xl mb-3 grayscale opacity-50">🏃</div>
+                                                <div className="text-slate-400 font-bold text-sm">家长还没有为你设置习惯哦</div>
                                             </div>
-                                        ))}
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* --- Habit Activity Log (Redesigned Timeline) --- */}
+                                <div className="bg-white rounded-[2rem] border border-slate-100/80 shadow-[0_4px_20px_rgb(0,0,0,0.02)] overflow-hidden relative">
+                                    <div className="h-1.5 w-full bg-gradient-to-r from-emerald-400 to-teal-400"></div>
+                                    
+                                    <div className="p-5 sm:p-6 border-b border-slate-50 bg-white flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                                        <div>
+                                            <h3 className="font-black text-slate-800 text-lg flex items-center gap-2">
+                                                <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center shadow-inner"><Icons.TrendingUp size={18} strokeWidth={2.5} /></div> 
+                                                近期足迹明细
+                                            </h3>
+                                        </div>
+                                        {/* Filter Chips */}
+                                        <div className="flex items-center gap-2 self-start sm:self-auto bg-slate-50 p-1 rounded-2xl">
+                                            <button onClick={() => setHistoryFilter('all')} className={`px-4 py-1.5 rounded-xl text-xs font-black transition-all ${historyFilter === 'all' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>全部</button>
+                                            <button onClick={() => setHistoryFilter('income')} className={`px-4 py-1.5 rounded-xl text-xs font-black transition-all ${historyFilter === 'income' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>获得</button>
+                                            <button onClick={() => setHistoryFilter('expense')} className={`px-4 py-1.5 rounded-xl text-xs font-black transition-all ${historyFilter === 'expense' ? 'bg-white text-red-500 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>扣分</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="p-4 sm:p-6 relative">
+                                        {transactions.filter(t => t.kidId === activeKidId && t.category === 'habit' && (historyFilter === 'all' || t.type === historyFilter)).length === 0 ? (
+                                            <div className="text-center text-slate-400 text-sm py-10 font-bold bg-slate-50 rounded-[1.5rem]">
+                                                {historyFilter === 'all' ? '暂无足迹记录，快去完成第一个习惯吧！' : '没有相关类型的足迹记录。'}
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-4 max-h-[22rem] overflow-y-auto custom-scrollbar pr-2 relative">
+                                                <div className="absolute left-[18px] top-4 bottom-4 w-0.5 bg-slate-100 rounded-full z-0"></div>
+                                                
+                                                {transactions.filter(t => t.kidId === activeKidId && t.category === 'habit' && (historyFilter === 'all' || t.type === historyFilter)).slice(0, 30).map(item => {
+                                                    const isIncome = item.type === 'income';
+                                                    const displayAmount = isIncome ? `+${item.amount}` : `-${item.amount}`;
+                                                    // Clean up legacy titles: Remove (Exp) and prefix "记录成长: "
+                                                    const cleanTitle = item.title.replace(/\(Exp\)/i, '').replace(/^(记录成长[:：\s]*)+/u, '').trim();
+
+                                                    return (
+                                                        <div key={item.id} className="relative pl-12 group z-10 mb-4 last:mb-0">
+                                                            {/* Timeline Dot */}
+                                                            <div className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-[14px] h-[14px] rounded-full border-2 border-white shadow-sm flex items-center justify-center ${isIncome ? 'bg-emerald-400' : 'bg-red-400'} z-20`}></div>
+
+                                                            <div className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-300 ${
+                                                                isIncome ? 'bg-gradient-to-r from-emerald-50/50 to-emerald-50/10 border-emerald-100 hover:border-emerald-200 hover:shadow-md hover:shadow-emerald-100' 
+                                                                         : 'bg-gradient-to-r from-red-50/50 to-red-50/10 border-red-100 hover:border-red-200 hover:shadow-md hover:shadow-red-100'
+                                                            }`}>
+                                                                <div className="flex-1 min-w-0 pr-4">
+                                                                    <div className="font-black text-slate-700 text-sm line-clamp-2">{cleanTitle}</div>
+                                                                    <div className="text-[11px] font-bold text-slate-400 flex items-center gap-1 mt-1.5">
+                                                                        <Icons.Clock size={10} />
+                                                                        {new Date(item.date).toLocaleString([], { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div className={`shrink-0 font-black text-base sm:text-lg tracking-tight bg-white px-3 py-1.5 rounded-xl shadow-sm border whitespace-nowrap flex items-baseline gap-0.5 ${
+                                                                    isIncome ? 'text-emerald-500 border-emerald-100/50' : 'text-red-500 border-red-100/50'
+                                                                }`}>
+                                                                    {displayAmount} <span className="text-[10px] font-bold text-slate-400">家庭币</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        );
+                    })()}
 
                     {kidTab === 'wealth' && (
                         <div className="space-y-8 animate-fade-in">
@@ -3355,9 +4193,6 @@ export default function App() {
                                             </div>
                                             <div className="flex items-center gap-4 self-end md:self-auto">
                                                 <span className="font-bold text-slate-500 mr-2">实付 <span className="text-indigo-600 font-black text-lg">{o.price}</span> 家庭币</span>
-                                                {o.status === 'shipping' && <button onClick={() => confirmReceipt(o.id)} className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-sm font-black shadow-md shadow-indigo-200 hover:bg-indigo-700 animate-pulse">确认收货</button>}
-                                                {o.status === 'received' && <button onClick={() => setSelectedOrder(o)} className="bg-white border-2 border-indigo-600 text-indigo-600 px-6 py-2 rounded-xl text-sm font-black hover:bg-indigo-50">马上评价</button>}
-                                                {o.status === 'completed' && <span className="text-sm font-bold text-slate-500 bg-slate-50 px-4 py-2 rounded-xl flex items-center gap-1 border border-slate-100">已评价 <Icons.Star size={14} className="text-yellow-400" fill="currentColor" />{o.rating}</span>}
                                             </div>
                                         </div>
                                     ))}
@@ -3377,7 +4212,7 @@ export default function App() {
                     <span className="font-black text-xl text-white tracking-tight">MiniLife 家庭版</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button onClick={() => setAppState('profiles')} className="text-sm font-bold text-slate-400 bg-slate-800 px-4 py-2 rounded-full hover:text-white transition-colors flex items-center gap-1">
+                    <button onClick={() => changeAppState('profiles')} className="text-sm font-bold text-slate-400 bg-slate-800 px-4 py-2 rounded-full hover:text-white transition-colors flex items-center gap-1">
                         返回选人
                     </button>
                     <button onClick={handleLogout} className="text-sm font-bold text-rose-400 bg-slate-800 px-4 py-2 rounded-full hover:bg-rose-500 hover:text-white border border-slate-700/50 hover:border-transparent transition-all flex items-center gap-1 shadow-sm">
@@ -3462,9 +4297,10 @@ export default function App() {
                                 </div>
                             </div>
                             <button onClick={() => {
+                                const defaultTimes = getDefaultTimeRange();
                                 setEditingTask(null);
                                 setPlanType('study');
-                                setPlanForm({ targetKid: parentKidFilter === 'all' ? 'all' : parentKidFilter, category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, timeSetting: 'none', startTime: '', endTime: '', durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
+                                setPlanForm({ targetKid: parentKidFilter === 'all' ? 'all' : parentKidFilter, category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
                                 setShowAddPlanModal(true);
                             }} className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all hover:scale-105">
                                 <Icons.Plus size={18} /> 新建计划
@@ -3557,27 +4393,208 @@ export default function App() {
                             if (effectiveFilter !== 'all') {
                                 parentTasks = parentTasks.filter(t => t.kidId === effectiveFilter || t.kidId === 'all');
                             }
-                            const getDailyStatus = (t) => getTaskStatusOnDate(t, selectedDate, activeKidId);
 
-                            if (parentTasks.length === 0) {
-                                return <div className="text-center py-16 text-slate-400 font-bold bg-white rounded-2xl border border-slate-100 shadow-sm">这一天没有安排学习计划哦~</div>;
+                            const getDailyStatus = (t) => getTaskStatusOnDate(t, selectedDate, effectiveFilter === 'all' ? kids[0]?.id : effectiveFilter);
+                            
+                            // Apply Subject Filters
+                            if (parentTaskFilter.length > 0) {
+                                parentTasks = parentTasks.filter(t => parentTaskFilter.includes(t.category || '计划'));
                             }
+                            // Apply Status Filters
+                            if (parentTaskStatusFilter !== 'all') {
+                                parentTasks = parentTasks.filter(t => {
+                                    const st = getDailyStatus(t);
+                                    if (parentTaskStatusFilter === 'completed') return st === 'completed';
+                                    if (parentTaskStatusFilter === 'pending') return st === 'pending_approval';
+                                    if (parentTaskStatusFilter === 'incomplete') return st === 'todo' || st === 'in_progress' || st === 'failed';
+                                    return true;
+                                });
+                            }
+
+                            // Dynamic Categories for Filter Menu
+                            const availableCategories = Array.from(new Set(tasks.filter(t => t.type === 'study' && isTaskDueOnDate(t, selectedDate) && (effectiveFilter === 'all' || t.kidId === effectiveFilter || t.kidId === 'all')).map(t => t.category || '计划'))).filter(Boolean);
+
+                            // Apply Sorting
+                            parentTasks.sort((a, b) => {
+                                if (isReordering) return (a.order || 0) - (b.order || 0);
+
+                                if (parentTaskSort === 'time_asc') {
+                                    const getMins = t => t.timeStr && t.timeStr.includes('分钟') ? parseInt(t.timeStr) : 999;
+                                    return getMins(a) - getMins(b);
+                                }
+                                if (parentTaskSort === 'category') return (a.category || '').localeCompare(b.category || '');
+                                if (parentTaskSort === 'status') {
+                                    const statusWeight = { completed: 3, pending_approval: 2, in_progress: 1, failed: 0, todo: 0 };
+                                    return statusWeight[getDailyStatus(a)] - statusWeight[getDailyStatus(b)];
+                                }
+                                if (parentTaskSort === 'created_desc') return (b.createdAt || '').localeCompare(a.createdAt || '');
+                                if (parentTaskSort === 'reward_desc') return (b.reward || 0) - (a.reward || 0);
+                                return (a.order || 0) - (b.order || 0); // Default order fallback
+                            });
+
+                            const handleParentReorderTask = (sourceIndex, targetIndex) => {
+                                if (sourceIndex === targetIndex || targetIndex < 0 || targetIndex >= parentTasks.length) return;
+                                const updatedSubList = [...parentTasks];
+                                const [removed] = updatedSubList.splice(sourceIndex, 1);
+                                updatedSubList.splice(targetIndex, 0, removed);
+                                
+                                // Reassign order only for the specifically dragged tasks
+                                updatedSubList.forEach((task, idx) => task.order = idx);
+                                
+                                const newGlobalTasks = [...tasks];
+                                updatedSubList.forEach(task => {
+                                    const globalIndex = newGlobalTasks.findIndex(g => g.id === task.id);
+                                    if(globalIndex > -1) newGlobalTasks[globalIndex].order = task.order;
+                                    apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order: task.order }) }).catch(console.error);
+                                });
+                                setTasks(newGlobalTasks);
+                            };
 
                             return (
                                 <div className="flex flex-col gap-4 max-w-3xl mx-auto w-full pb-10">
-                                    {parentTasks.map(t => {
+                                    
+                                    {/* Advanced Filter & Sort Bar (Copied from Kid Portal) */}
+                                    <div className="flex items-center justify-between bg-slate-50 border-b border-slate-200 pt-2 pb-3 mb-4">
+                                        <div className="flex items-center gap-2 md:gap-4 flex-1 relative">
+                                            {/* Filtering Button */}
+                                            <div className="relative shrink-0">
+                                                <button onClick={() => { setShowFilterDropdown(!showFilterDropdown); setShowSortDropdown(false); }} className={`flex items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-none sm:bg-transparent shadow-sm sm:shadow-none border sm:border-transparent transition-colors ${parentTaskFilter.length > 0 || parentTaskStatusFilter !== 'all' ? 'bg-indigo-600 text-white sm:text-indigo-600 sm:bg-transparent sm:border-transparent border-indigo-600' : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600'}`}>
+                                                    <Icons.Filter size={16} className={`sm:w-[14px] sm:h-[14px] ${showFilterDropdown ? 'text-indigo-600 fill-indigo-100' : ''}`} /> 
+                                                    <span className="hidden sm:inline font-bold text-sm">筛选</span>
+                                                    {(parentTaskFilter.length > 0 || parentTaskStatusFilter !== 'all') && <span className="absolute -top-1 -right-1 sm:static sm:w-auto sm:text-xs bg-red-500 text-white text-[10px] min-w-[16px] h-4 flex items-center justify-center rounded-full sm:bg-indigo-100 sm:text-indigo-600 sm:px-2">{parentTaskFilter.length + (parentTaskStatusFilter !== 'all' ? 1 : 0)}</span>}
+                                                </button>
+
+                                                {/* Filter Dropdown */}
+                                                {showFilterDropdown && (
+                                                    <div className="absolute left-0 sm:left-auto mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 z-[60]">
+                                                        <div className="px-3 py-2 text-xs font-black text-slate-400 border-b border-slate-50 mb-2">按状态</div>
+                                                        <div className="grid grid-cols-2 gap-2 px-2">
+                                                            <button onClick={() => setParentTaskStatusFilter('all')} className={`py-1.5 text-xs font-bold rounded-lg ${parentTaskStatusFilter === 'all' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}>全部状态</button>
+                                                            <button onClick={() => setParentTaskStatusFilter('incomplete')} className={`py-1.5 text-xs font-bold rounded-lg ${parentTaskStatusFilter === 'incomplete' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}>未完成</button>
+                                                            <button onClick={() => setParentTaskStatusFilter('pending')} className={`py-1.5 text-xs font-bold rounded-lg ${parentTaskStatusFilter === 'pending' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}>待审核</button>
+                                                            <button onClick={() => setParentTaskStatusFilter('completed')} className={`py-1.5 text-xs font-bold rounded-lg ${parentTaskStatusFilter === 'completed' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}>已完成</button>
+                                                        </div>
+
+                                                        <div className="px-3 py-2 text-xs font-black text-slate-400 border-b border-slate-50 mt-2 mb-2">按科目 ({availableCategories.length})</div>
+                                                        <div className="flex flex-col max-h-40 overflow-y-auto px-2 custom-scrollbar">
+                                                            {availableCategories.map(cat => (
+                                                                <label key={cat} className="flex items-center gap-2 p-2 hover:bg-slate-50 rounded-lg cursor-pointer">
+                                                                    <input 
+                                                                        type="checkbox" 
+                                                                        checked={parentTaskFilter.includes(cat)}
+                                                                        onChange={(e) => {
+                                                                            if (e.target.checked) setParentTaskFilter([...parentTaskFilter, cat]);
+                                                                            else setParentTaskFilter(parentTaskFilter.filter(c => c !== cat));
+                                                                        }}
+                                                                        className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500"
+                                                                    />
+                                                                    <span className="text-slate-700 font-bold">{cat}</span>
+                                                                </label>
+                                                            ))}
+                                                        </div>
+                                                        
+                                                        <div className="border-t border-slate-100 mt-2 pt-2 px-4 flex gap-2">
+                                                            <button onClick={() => { setParentTaskFilter([]); setParentTaskStatusFilter('all'); }} className="flex-1 text-center py-2 text-xs font-bold text-slate-500 hover:bg-slate-50 rounded-lg transition-colors">重置</button>
+                                                            <button onClick={() => setShowFilterDropdown(false)} className="flex-1 text-center py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm shadow-indigo-200">完成</button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="w-px h-4 bg-slate-200 shrink-0 hidden sm:block"></div>
+
+                                            {/* Sorting Selector */}
+                                            <div className="relative shrink-0 flex items-center justify-center group">
+                                                <button 
+                                                    onClick={() => { setShowSortDropdown(!showSortDropdown); setShowFilterDropdown(false); }}
+                                                    className={`flex items-center justify-center flex-row gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-none sm:bg-transparent bg-white shadow-sm sm:shadow-none border sm:border-transparent transition-colors cursor-pointer ${showSortDropdown || parentTaskSort !== 'default' ? 'text-indigo-600 bg-indigo-50 border-indigo-100' : 'text-slate-500 border-slate-200 hover:text-indigo-600'}`}
+                                                >
+                                                    <Icons.SortAsc size={16} className="sm:w-[14px] sm:h-[14px]" />
+                                                    <span className="hidden sm:inline font-bold text-[13px] sm:text-sm">
+                                                        {parentTaskSort === 'default' && '默认顺序'}
+                                                        {parentTaskSort === 'time_asc' && '最快完成的'}
+                                                        {parentTaskSort === 'category' && '按科目分类'}
+                                                        {parentTaskSort === 'status' && '按完成状态'}
+                                                        {parentTaskSort === 'created_desc' && '最新添加的'}
+                                                        {parentTaskSort === 'reward_desc' && '奖励最多的'}
+                                                    </span>
+                                                    <Icons.ChevronDown size={14} className={`hidden sm:block transition-transform ${showSortDropdown ? 'rotate-180' : ''}`} />
+                                                </button>
+                                                
+                                                {showSortDropdown && (
+                                                    <div className="absolute top-full right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-[60] animate-fade-in origin-top">
+                                                        {[
+                                                            { id: 'default', label: '默认顺序' },
+                                                            { id: 'time_asc', label: '最快完成的' },
+                                                            { id: 'category', label: '按科目分类' },
+                                                            { id: 'status', label: '按完成状态' },
+                                                            { id: 'created_desc', label: '最新添加的' },
+                                                            { id: 'reward_desc', label: '奖励最多的' },
+                                                        ].map(option => (
+                                                            <button 
+                                                                key={option.id}
+                                                                onClick={() => { setParentTaskSort(option.id); setShowSortDropdown(false); }}
+                                                                className={`w-full text-left px-4 py-2.5 text-sm font-bold transition-colors flex flex-row items-center justify-between ${parentTaskSort === option.id ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50'}`}
+                                                            >
+                                                                {option.label}
+                                                                {parentTaskSort === option.id && <Icons.Check size={14} />}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="w-px h-4 bg-slate-200 shrink-0 hidden sm:block"></div>
+
+                                            {/* Reordering Toggle */}
+                                            <button onClick={() => setIsReordering(!isReordering)} className={`shrink-0 flex items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-none sm:bg-transparent shadow-sm sm:shadow-none border sm:border-transparent transition-colors ${isReordering ? 'bg-indigo-600 text-white sm:text-indigo-600 sm:bg-transparent sm:border-transparent border-indigo-600' : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600'}`}>
+                                                {isReordering ? <Icons.Check size={16} className="sm:w-[14px] sm:h-[14px]" /> : <Icons.List size={16} className="sm:w-[14px] sm:h-[14px]" />} 
+                                                <span className="hidden sm:inline font-bold text-sm">{isReordering ? '保存排序' : '自定义排序'}</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {parentTasks.length === 0 && <div className="text-center py-16 text-slate-400 font-bold bg-white rounded-2xl border border-slate-100 shadow-sm">没有找到符合条件的任务哦~</div>}
+
+
+
+                                    {parentTasks.map((t, index) => {
                                         // For Parent view UI display trick: if KidId === 'all', randomly select the first active kid to show avatar or generic '全部孩子'
                                         let displayKidId = t.kidId;
                                         if (t.kidId === 'all') displayKidId = effectiveFilter === 'all' ? 'all' : effectiveFilter;
 
                                         const kidInfo = displayKidId === 'all' ? { name: '全部孩子', avatar: '👥' } : kids.find(k => k.id === displayKidId);
-                                        const status = getTaskStatusOnDate(t, selectedDate, displayKidId === 'all' ? kids[0]?.id : displayKidId);
+                                        const status = getDailyStatus(t);
                                         return (
-                                            <div key={t.id} className={`bg-white rounded-[2rem] p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 group flex flex-col sm:flex-row gap-4 relative overflow-hidden mb-4 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] ${status === 'completed' ? 'border-2 border-emerald-100 shadow-[0_8px_30px_rgba(16,185,129,0.06)]' : 'border border-slate-100/60'}`}>
-                                                <button onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className="absolute inset-0 z-0 cursor-pointer hidden sm:block" aria-label="查看任务详情"></button>
+                                            <div 
+                                                key={t.id} 
+                                                draggable={isReordering}
+                                                onDragStart={(e) => { e.dataTransfer.setData('text/plain', index); e.currentTarget.classList.add('opacity-50'); }}
+                                                onDragEnd={(e) => { e.currentTarget.classList.remove('opacity-50'); }}
+                                                onDragOver={(e) => { e.preventDefault(); }}
+                                                onDrop={(e) => {
+                                                    e.preventDefault();
+                                                    const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                                                    handleParentReorderTask(sourceIndex, index);
+                                                }}
+                                                className={`bg-white rounded-[2rem] p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 group flex flex-col sm:flex-row gap-4 relative overflow-hidden mb-4 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] ${status === 'completed' ? 'border-2 border-emerald-100 shadow-[0_8px_30px_rgba(16,185,129,0.06)]' : 'border border-slate-100/60'} ${isReordering ? 'cursor-move ring-2 ring-indigo-300' : ''}`}
+                                            >
+                                                {!isReordering && <button onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className="absolute inset-0 z-0 cursor-pointer hidden sm:block" aria-label="查看任务详情"></button>}
+                                                
+                                                {isReordering && (
+                                                    <>
+                                                        <div className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-300 flex items-center justify-center p-2 z-10 hidden sm:flex">
+                                                            <Icons.GripVertical size={20} />
+                                                        </div>
+                                                        <div className="absolute left-1 top-1/2 -translate-y-1/2 flex flex-col gap-1 z-20 sm:hidden">
+                                                            <button onClick={(e) => { e.stopPropagation(); handleParentReorderTask(index, index - 1); }} disabled={index === 0} className="w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur hover:bg-slate-50 border border-slate-200/50 rounded-full text-slate-400 disabled:opacity-30 disabled:bg-slate-50 shadow-sm transition-all"><Icons.ChevronDown className="rotate-180" size={16}/></button>
+                                                            <button onClick={(e) => { e.stopPropagation(); handleParentReorderTask(index, index + 1); }} disabled={index === parentTasks.length - 1} className="w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur hover:bg-slate-50 border border-slate-200/50 rounded-full text-slate-400 disabled:opacity-30 disabled:bg-slate-50 shadow-sm transition-all"><Icons.ChevronDown size={16}/></button>
+                                                        </div>
+                                                    </>
+                                                )}
 
                                                 {/* Left Section: Big Colorful Squircle Icon */}
-                                                <div onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className="flex z-10 sm:w-auto items-start gap-4 flex-1 cursor-pointer relative">
+                                                <div onClick={() => { if(!isReordering) { setPreviewTask(t); setShowPreviewModal(true); } }} className={`flex z-10 sm:w-auto items-start gap-4 flex-1 ${!isReordering ? 'cursor-pointer' : ''} ${isReordering ? 'sm:ml-6' : ''}`}>
                                                     <div className={`w-16 h-16 shrink-0 rounded-[1.25rem] bg-gradient-to-br ${getCategoryGradient(t.category || '计划')} flex flex-col items-center justify-center text-white shadow-inner group-hover:scale-110 transition-transform duration-300 relative`}>
                                                         {renderIcon(t.iconName || getIconForCategory(t.category), 26)}
                                                         <span className={`text-[11px] font-black mt-1 text-center w-full line-clamp-1 opacity-90 tracking-wide`}>{t.category || '计划'}</span>
@@ -3649,10 +4666,10 @@ export default function App() {
                                                                     periodCustomDays: t.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5],
                                                                     periodTargetCount: t.repeatConfig?.periodTargetCount || 1,
                                                                     periodMaxPerDay: t.repeatConfig?.periodMaxPerDay || 1,
-                                                                    timeSetting: t.timeStr && t.timeStr !== '--:--' ? (t.timeStr.includes('-') ? 'range' : 'duration') : 'none',
-                                                                    startTime: t.timeStr && t.timeStr.includes('-') ? t.timeStr.split('-')[0] : '',
-                                                                    endTime: t.timeStr && t.timeStr.includes('-') ? t.timeStr.split('-')[1] : '',
-                                                                    durationPreset: t.timeStr && t.timeStr.includes('分钟') ? parseInt(t.timeStr) : 25,
+                                                                    timeSetting: t.timeStr && String(t.timeStr) !== '--:--' ? (String(t.timeStr).includes('-') ? 'range' : 'duration') : 'none',
+                                                                    startTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[0] : '',
+                                                                    endTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[1] : '',
+                                                                    durationPreset: t.timeStr && String(t.timeStr).includes('分钟') ? parseInt(String(t.timeStr)) : 25,
                                                                     pointRule: (t.pointRule && t.pointRule === 'custom') || (t.type === 'habit') ? 'custom' : 'default',
                                                                     reward: String(t.reward || ''),
                                                                     iconEmoji: t.iconEmoji || '📚',
@@ -3681,48 +4698,74 @@ export default function App() {
                 )}
 
                 {parentTab === 'plans' && (
-                    <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden animate-fade-in">
-                        <div className="p-6 border-b border-slate-100 bg-emerald-50/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                            <div>
-                                <h2 className="font-black text-slate-800 text-xl">🌿 记录成长管理</h2>
-                                <p className="text-sm text-slate-500 mt-1">设置正向行为奖励或惩罚规则，引导孩子长期成长</p>
+                    <div className="animate-fade-in space-y-6">
+                        {/* Glassmorphic Hero Section */}
+                        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[2.5rem] p-6 sm:p-8 shadow-xl shadow-emerald-500/20 relative overflow-hidden flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+                            <div className="absolute bottom-0 left-0 w-40 h-40 bg-black/10 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4 pointer-events-none"></div>
+                            <div className="relative z-10 w-full sm:w-auto">
+                                <h2 className="font-extrabold text-white text-2xl sm:text-3xl mb-2 flex items-center gap-3 drop-shadow-sm">
+                                    <span className="bg-white/20 p-2 rounded-2xl backdrop-blur-sm border border-white/20 text-xl sm:text-2xl">🌱</span>
+                                    习惯养成与成长
+                                </h2>
+                                <p className="text-emerald-50 text-sm sm:text-base font-medium opacity-90 max-w-sm">设置正向行为规范，引导孩子通过日常点滴积累家庭财富，培养好习惯。</p>
                             </div>
                             <button onClick={() => {
+                                const defaultTimes = getDefaultTimeRange();
                                 setEditingTask(null);
                                 setPlanType('habit');
-                                setPlanForm({ targetKid: 'all', category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, timeSetting: 'none', startTime: '', endTime: '', durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
+                                setPlanForm({ targetKid: 'all', category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
                                 setShowAddPlanModal(true);
-                            }} className="w-full sm:w-auto bg-emerald-600 text-white px-6 py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 shadow-lg shadow-emerald-200 hover:bg-emerald-700">
-                                <Icons.Plus size={18} /> 新建习惯
+                            }} className="relative z-10 w-full sm:w-auto bg-white/95 backdrop-blur-sm text-emerald-700 px-6 py-3.5 sm:px-8 sm:py-4 rounded-2xl font-black text-base sm:text-lg transition-all hover:scale-105 hover:bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center gap-2 group">
+                                <Icons.Plus size={22} className="group-hover:rotate-90 transition-transform duration-300" /> 新建习惯规则
                             </button>
                         </div>
 
-                        <div className="p-6">
-                            <h3 className="font-bold text-slate-800 mb-4 text-lg">当前生效的习惯规则</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Habit Rules Grid */}
+                        <div>
+                            <h3 className="font-black text-slate-800 mb-4 sm:mb-5 text-lg sm:text-xl flex items-center gap-2 px-2">
+                                <span className="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
+                                当前生效的习惯规则
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                                 {tasks.filter(t => t.type === 'habit').map(t => {
                                     const kName = t.kidId === 'all' ? '全部孩子' : (kids.find(k => k.id === t.kidId)?.name || '未知');
                                     return (
-                                        <div key={t.id} className="p-4 border border-slate-100 rounded-2xl flex flex-col justify-between hover:shadow-md transition-shadow">
-                                            <div className="flex items-start gap-3 mb-4">
-                                                <div className="text-3xl bg-slate-50 rounded-xl p-2">{t.iconEmoji || '🛡️'}</div>
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <h4 className="font-black text-slate-800">{t.title}</h4>
-                                                        <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded">{kName} 的习惯</span>
+                                        <div key={t.id} className="bg-white p-5 rounded-[2rem] border border-slate-100/80 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all flex flex-col justify-between group">
+                                            <div className="flex items-start gap-4 mb-5">
+                                                <div className={`w-14 h-14 shrink-0 rounded-2xl bg-gradient-to-br ${t.habitColor || 'from-emerald-400 to-teal-500'} flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform duration-300`}>
+                                                    {t.iconEmoji || '🛡️'}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 mb-1">
+                                                        <h4 className="font-black text-slate-800 text-lg line-clamp-1">{t.title}</h4>
+                                                        <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-bold whitespace-nowrap w-fit">{kName} 专属</span>
                                                     </div>
-                                                    <p className="text-xs text-slate-500 mt-1 line-clamp-2">{t.standards}</p>
+                                                    <p className="text-sm text-slate-500 mt-1 line-clamp-2 leading-relaxed">{t.standards || t.desc}</p>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center justify-between border-t border-slate-50 pt-3">
-                                                <span className={`text-sm font-black ${t.reward < 0 ? 'text-red-500' : 'text-yellow-600'}`}>
-                                                    {t.reward > 0 ? '+' : ''}{t.reward} EXP
-                                                </span>
-                                                <div className="flex items-center gap-2">
-                                                    {t.reward < 0 && <button onClick={() => {
-                                                        handleExpChange(t.kidId, t.reward);
-                                                        notify(`已记录惩罚，扣除 ${kName} ${Math.abs(t.reward)} 经验值！`, "error");
-                                                    }} className="bg-red-50 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors">记录扣分</button>}
+                                            
+                                            <div className="flex items-center justify-between border-t border-slate-50 pt-4 mt-auto">
+                                                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-black tracking-wide ${t.reward < 0 ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
+                                                    {t.reward > 0 ? '+' : ''}{t.reward} 家庭币
+                                                </div>
+                                                <div className="flex items-center gap-1.5">
+                                                    {t.reward < 0 && (
+                                                        <button onClick={() => {
+                                                        const penalty = Math.abs(t.reward);
+                                                        const targetKid = kids.find(k => k.id === t.kidId);
+                                                        if (targetKid) {
+                                                            const newBals = { ...targetKid.balances, spend: Math.max(0, targetKid.balances.spend - penalty) };
+                                                            apiFetch(`/api/kids/${t.kidId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ balances: newBals, exp: Math.max(0, targetKid.exp - Math.ceil(penalty * 1.5)) }) });
+                                                            setKids(kids.map(k => k.id === t.kidId ? { ...k, balances: newBals, exp: Math.max(0, k.exp - Math.ceil(penalty * 1.5)) } : k));
+                                                            const refundTrans = { id: `trans_${Date.now()}_penalty`, kidId: t.kidId, type: 'expense', amount: penalty, title: `手动惩罚: ${t.title}`, date: new Date().toISOString(), category: 'task' };
+                                                            apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(refundTrans) });
+                                                            setTransactions([refundTrans, ...transactions]);
+                                                        }
+                                                        notify(`已记录惩罚，扣除 ${kName} ${penalty} 家庭币！`, "error");
+                                                    }} className="bg-red-50 text-red-600 hover:bg-red-500 hover:text-white px-3 py-1.5 rounded-xl text-xs font-black transition-all border border-red-100 hover:border-transparent">记录扣分</button>
+                                                    )}
+                                                    
                                                     <button onClick={() => {
                                                         setPlanType(t.type || 'habit');
                                                         setPlanForm({
@@ -3741,38 +4784,87 @@ export default function App() {
                                                         });
                                                         setShowAddPlanModal(true);
                                                         setEditingTask(t);
-                                                    }} className="text-slate-400 hover:text-emerald-500 p-2 transition-colors"><Icons.Edit3 size={16} /></button>
-                                                    <button onClick={() => setDeleteConfirmTask(t)} className="text-slate-400 hover:text-red-500 p-2 transition-colors"><Icons.Trash2 size={16} /></button>
+                                                    }} className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-500 hover:text-white hover:shadow-md hover:shadow-blue-200 transition-all"><Icons.Edit3 size={16} /></button>
+                                                    
+                                                    <button onClick={() => setDeleteConfirmTask(t)} className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-rose-500 hover:text-white hover:shadow-md hover:shadow-rose-200 transition-all"><Icons.Trash2 size={16} /></button>
                                                 </div>
                                             </div>
                                         </div>
                                     );
                                 })}
                                 {tasks.filter(t => t.type === 'habit').length === 0 && (
-                                    <div className="md:col-span-2 text-center py-16 text-slate-400 font-bold">暂无成长记录，点击上方按钮创建一个吧~</div>
+                                    <div className="md:col-span-2 bg-white rounded-[2rem] border-2 border-slate-100 border-dashed flex flex-col items-center justify-center py-16 sm:py-20 shadow-sm">
+                                        <div className="w-20 h-20 bg-slate-50 rounded-[1.5rem] flex items-center justify-center text-4xl mb-4 grayscale opacity-60">🌱</div>
+                                        <div className="text-slate-400 font-bold text-base sm:text-lg">暂无习惯规则，点击上方新建吧~</div>
+                                    </div>
                                 )}
                             </div>
+                        </div>
 
-                            <div className="mt-8 pt-6 border-t border-slate-100">
-                                <h3 className="font-bold text-slate-800 mb-4 text-base flex items-center gap-2"><Icons.List size={16} className="text-slate-400" /> 近期习惯打卡明细 (Exp)</h3>
-                                {transactions.filter(t => t.category === 'habit').length === 0 && <div className="text-center text-slate-400 text-sm py-8 bg-slate-50 rounded-2xl">暂无打卡明细</div>}
-                                <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
-                                    {transactions.filter(t => t.category === 'habit').slice(0, 40).map(item => {
-                                        const kName = kids.find(k => k.id === item.kidId)?.name || '未知';
-                                        return (
-                                            <div key={item.id} className={`flex items-center justify-between p-4 rounded-xl border ${item.type === 'income' ? 'bg-emerald-50/30 border-emerald-100/50' : 'bg-red-50/30 border-red-100/50'}`}>
-                                                <div>
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <span className="text-xs bg-white border border-slate-200 shadow-sm font-bold text-slate-600 px-2 py-0.5 rounded-md">{kName}</span>
-                                                        <div className="font-bold text-slate-700 text-sm">{item.title}</div>
-                                                    </div>
-                                                    <div className="text-xs text-slate-400">{new Date(item.date).toLocaleString([], { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</div>
-                                                </div>
-                                                <div className={`font-black text-lg tracking-wide ${item.type === 'income' ? 'text-emerald-500' : 'text-red-500'}`}>{item.type === 'income' ? '+' : '-'}{item.amount} EXP</div>
-                                            </div>
-                                        )
-                                    })}
+                        {/* Recent Habit Transactions Feed */}
+                        <div className="bg-white rounded-[2rem] shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-slate-100/80 overflow-hidden relative">
+                            {/* Decorative Top Banner */}
+                            <div className="h-1.5 w-full bg-gradient-to-r from-emerald-400 to-teal-400"></div>
+                            
+                            <div className="p-5 sm:p-6 border-b border-slate-100 bg-white flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                                <div>
+                                    <h3 className="font-black text-slate-800 text-lg flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center shadow-inner"><Icons.TrendingUp size={18} strokeWidth={2.5} /></div> 
+                                        近期成长轨迹
+                                    </h3>
+                                    <p className="text-xs text-slate-400 font-bold mt-1 ml-10">此处仅展示习惯打卡的家庭币收支记录</p>
                                 </div>
+                            </div>
+                            
+                            <div className="p-4 sm:p-6 relative">
+                                {transactions.filter(t => t.category === 'habit').length === 0 ? (
+                                    <div className="text-center py-12 text-slate-400 font-bold bg-slate-50 rounded-[1.5rem]">还没有产生打卡记录哦~</div>
+                                ) : (
+                                    <div className="space-y-4 max-h-[28rem] overflow-y-auto custom-scrollbar pr-2 relative">
+                                        {/* Global Timeline Track */}
+                                        <div className="absolute left-[18px] top-4 bottom-4 w-0.5 bg-slate-100 rounded-full z-0"></div>
+                                        
+                                        {transactions.filter(t => t.category === 'habit').slice(0, 40).map(item => {
+                                            const kName = kids.find(k => k.id === item.kidId)?.name || '未知';
+                                            const isIncome = item.type === 'income';
+                                            
+                                            // Handle cases where older backend versions logged 'EXP' into title or amounts
+                                            const displayAmount = isIncome ? `+${item.amount}` : `-${item.amount}`;
+                                            const cleanTitle = item.title.replace(/\(Exp\)/i, '').trim();
+                                            
+                                            return (
+                                                <div key={item.id} className="relative pl-12 group z-10">
+                                                    {/* Timeline Dot */}
+                                                    <div className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-[14px] h-[14px] rounded-full border-2 border-white shadow-sm flex items-center justify-center ${isIncome ? 'bg-emerald-400' : 'bg-red-400'} z-20`}></div>
+
+                                                    <div className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition-all duration-300 ${
+                                                        isIncome ? 'bg-gradient-to-r from-emerald-50/50 to-emerald-50/10 border-emerald-100 hover:border-emerald-200 hover:shadow-md hover:shadow-emerald-100' 
+                                                                 : 'bg-gradient-to-r from-red-50/50 to-red-50/10 border-red-100 hover:border-red-200 hover:shadow-md hover:shadow-red-100'
+                                                    }`}>
+                                                        <div className="mb-2 sm:mb-0">
+                                                            <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
+                                                                <span className="text-[10px] bg-white border border-slate-200 shadow-sm font-black text-slate-600 px-2.5 py-1 rounded-lg tracking-wider">{kName}</span>
+                                                                <div className="font-black text-slate-700 text-sm sm:text-[15px]">{cleanTitle}</div>
+                                                            </div>
+                                                            <div className="text-[11px] font-bold text-slate-400 flex items-center gap-1.5 mt-2">
+                                                                <div className="bg-slate-100 p-1 rounded-md"><Icons.Clock size={10} /></div>
+                                                                {new Date(item.date).toLocaleString([], { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className="flex items-center justify-end">
+                                                            <div className={`font-black text-lg tracking-tight bg-white px-4 py-2 rounded-xl shadow-sm border ${
+                                                                isIncome ? 'text-emerald-500 border-emerald-100/50' : 'text-red-500 border-red-100/50'
+                                                            }`}>
+                                                                {displayAmount} <span className="text-[11px] font-bold text-slate-400 ml-0.5">币</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -4323,6 +5415,71 @@ export default function App() {
         );
     }
 
+    const CelebrationModal = ({ data, onClose }) => {
+        if (!data) return null;
+        const isPositive = data.type === 'positive';
+        return (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
+                <div className="bg-white rounded-[2.5rem] w-full max-w-sm p-8 text-center relative overflow-hidden shadow-2xl animate-scale-up border-[3px] border-white/50">
+                    <div className={`absolute top-0 left-0 right-0 h-40 opacity-20 blur-3xl ${isPositive ? 'bg-gradient-to-br from-emerald-400 to-teal-500' : 'bg-gradient-to-br from-amber-400 to-orange-500'}`}></div>
+                    
+                    <div className="relative z-10 flex flex-col items-center">
+                        <div className={`w-28 h-28 rounded-[2rem] flex items-center justify-center text-6xl mb-6 shadow-inner ${isPositive ? 'bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-500' : 'bg-gradient-to-br from-amber-50 to-orange-50 text-orange-500'}`}>
+                            {isPositive ? '✨' : '🛡️'}
+                        </div>
+                        <h2 className="text-2xl font-black text-slate-800 mb-3">{isPositive ? '打卡成功！' : '勇敢坦白！'}</h2>
+                        <p className="text-base text-slate-500 mb-8 leading-relaxed font-bold bg-slate-50 p-4 rounded-2xl">"{data.message}"</p>
+                        
+                        <div className={`text-4xl font-black mb-8 flex items-baseline justify-center gap-1 ${isPositive ? 'text-emerald-500' : 'text-red-500'}`}>
+                            {isPositive ? '+' : '-'}{Math.abs(data.task.reward)} <span className="text-sm font-bold text-slate-400">家庭币</span>
+                        </div>
+                        
+                        <button onClick={onClose} className={`w-full py-4 rounded-2xl text-white font-black text-lg shadow-lg active:scale-95 transition-all outline-none ${isPositive ? 'bg-gradient-to-r from-emerald-400 to-teal-500 shadow-emerald-500/30 hover:shadow-emerald-500/50' : 'bg-gradient-to-r from-amber-400 to-orange-500 shadow-orange-500/30 hover:shadow-orange-500/50'}`}>
+                            继续保持
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // --- Mobile Bottom Navigation Portal ---
+    const mobileNavigationBar = appState === 'kid_app' ? createPortal(
+        <nav className="fixed bottom-0 left-0 right-0 w-full bg-white/90 backdrop-blur-xl border-t border-slate-100 flex justify-around items-center px-2 py-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] z-[9999] md:hidden shadow-[0_-10px_20px_rgb(0,0,0,0.03)]" style={{ position: 'fixed', bottom: 0, isolation: 'isolate', transform: 'none' }}>
+            {[
+                { id: 'study', icon: <Icons.BookOpen size={22} strokeWidth={2.5} />, label: "赚家庭币" },
+                { id: 'habit', icon: <Icons.ShieldCheck size={22} strokeWidth={2.5} />, label: "习惯养成" },
+                { id: 'wealth', icon: <Icons.Wallet size={22} strokeWidth={2.5} />, label: "财富中心" },
+                { id: 'shop', icon: <Icons.ShoppingBag size={22} strokeWidth={2.5} />, label: "家庭超市" },
+                { id: 'profile', icon: <Icons.User size={22} strokeWidth={2.5} />, label: "我的" }
+            ].map(tab => {
+                const isActive = tab.id === 'profile' ? showLevelModal : (!showLevelModal && kidTab === tab.id);
+                return (
+                    <button 
+                        key={tab.id} 
+                        onClick={() => {
+                            if (tab.id === 'profile') {
+                                setShowLevelModal(true);
+                            } else {
+                                setKidTab(tab.id);
+                                setShowLevelModal(false);
+                            }
+                        }}
+                        className={`flex flex-col items-center justify-center w-full py-1 gap-1 transition-all ${isActive ? 'text-indigo-600 scale-105' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        <div className={`relative flex items-center justify-center transition-all ${isActive ? 'bg-indigo-50 w-12 h-8 rounded-full' : 'h-8'}`}>
+                            {tab.icon}
+                        </div>
+                        <span className={`text-[10px] font-black tracking-wider transition-all ${isActive ? 'text-indigo-600' : 'text-slate-400'}`}>
+                            {tab.label}
+                        </span>
+                    </button>
+                );
+            })}
+        </nav>,
+        document.body
+    ) : null;
+
     // === 主返回 ===
     if (isLoading) {
         return <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white font-bold text-xl">加载中...</div>;
@@ -4335,10 +5492,18 @@ export default function App() {
             {appState === 'kid_app' && renderKidApp()}
             {appState === 'parent_app' && renderParentApp()}
 
+            {/* Mobile Bottom Navigation Rendered via Portal */}
+            {mobileNavigationBar}
+
             <div className="fixed top-24 right-6 z-[200] space-y-3 pointer-events-none">
                 {notifications.map(n => (
-                    <div key={n.id} className={`px-6 py-4 rounded-2xl shadow-xl animate-bounce-in text-white text-sm font-bold flex items-center gap-2 pointer-events-auto ${n.type === 'error' ? 'bg-rose-500' : n.type === 'info' ? 'bg-slate-800' : 'bg-emerald-500'}`}>
-                        <Icons.Bell size={18} /> {n.msg}
+                    <div key={n.id} className={`px-6 py-4 rounded-2xl shadow-xl animate-bounce-in text-white text-sm font-bold flex items-center justify-between gap-4 pointer-events-auto ${n.type === 'error' ? 'bg-rose-500' : n.type === 'info' ? 'bg-slate-800' : 'bg-emerald-500'}`}>
+                        <div className="flex items-center gap-2">
+                            <Icons.Bell size={18} /> {n.msg}
+                        </div>
+                        <button onClick={() => setNotifications(p => p.filter(x => x.id !== n.id))} className="opacity-70 hover:opacity-100 transition-opacity flex-shrink-0">
+                            <Icons.X size={16} />
+                        </button>
                     </div>
                 ))}
             </div>
@@ -4353,6 +5518,9 @@ export default function App() {
             {renderTimerModal()}
             {renderCalendarModal()}
             {renderAddKidModal()}
+            
+            <CelebrationModal data={celebrationData} onClose={() => setCelebrationData(null)} />
+
             {/* Delete Confirm Modal */}
             {deleteConfirmTask && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
@@ -4374,27 +5542,16 @@ export default function App() {
                 </div>
             )}
 
-            {showLevelRules && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
-                    <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl text-left relative">
-                        <button onClick={() => setShowLevelRules(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><Icons.X size={20} /></button>
-                        <h2 className="text-xl font-black text-slate-800 mb-4 flex items-center gap-2"><Icons.Award className="text-yellow-500" size={24} /> 等级系统说明</h2>
-                        <div className="space-y-4 text-sm text-slate-600 bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                            <p><span className="font-bold text-slate-800">🚀 如何升级：</span><br />完成【习惯养成】区的任务即可获得经验值 (EXP)。经验存满自动升至下一级。</p>
-                            <p><span className="font-bold text-slate-800">⚠️ 保级与降级警告：</span><br />如果有不良习惯（例如超时玩手机），家长会记录扣分。如果当前等级的 EXP 被扣至 0 以下，将会触发<span className="text-red-500 font-bold">降级惩罚</span>！</p>
-                            <p><span className="font-bold text-slate-800">💎 等级特权：</span><br />等级越高，时光金库的利息加成越高，解锁的高级愿望也越多。</p>
-                        </div>
-                        <button onClick={() => setShowLevelRules(false)} className="w-full mt-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700">我明白了，努力升级！</button>
-                    </div>
-                </div>
-            )}
-
             <style dangerouslySetInnerHTML={{
                 __html: `
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
         @keyframes bounceIn { 0% { opacity: 0; transform: scale(0.9); } 60% { opacity: 1; transform: scale(1.05); } 100% { transform: scale(1); } }
         .animate-bounce-in { animation: bounceIn 0.3s forwards; }
+        @keyframes scaleUp { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        .animate-scale-up { animation: scaleUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes bounceCustom { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-20px);} 60% {transform: translateY(-10px);} }
+        .animate-bounce-custom { animation: bounceCustom 1s ease infinite; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}} />
