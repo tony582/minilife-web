@@ -3219,69 +3219,84 @@ export default function App() {
                             {/* --- STUDY PLAN FORM --- */}
                             {planType === 'study' && (
                                 <div className="space-y-6 animate-fade-in relative z-0">
-                                    {/* Basic Info */}
-                                    <div>
-                                        <label className="block text-sm font-black text-slate-800 mb-2">指派给谁 <span className="text-red-500">*</span></label>
-                                        {/* Multi-select Buttons */}
-                                        <div className="flex flex-wrap gap-2">
-                                            <button 
-                                                onClick={() => setPlanForm({ ...planForm, targetKids: ['all'] })}
-                                                className={`px-4 py-2.5 rounded-xl text-sm font-bold border-2 transition-all flex items-center gap-1.5 ${(!planForm.targetKids || planForm.targetKids.includes('all')) ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20' : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300'}`}
-                                            >
-                                                👥 全部孩子
-                                            </button>
-                                            {kids.map(k => {
-                                                const isSelected = (!planForm.targetKids || planForm.targetKids.includes('all')) || planForm.targetKids.includes(k.id);
-                                                return (
-                                                    <button 
-                                                        key={k.id}
-                                                        onClick={() => {
-                                                            let newTargets = (!planForm.targetKids || planForm.targetKids.includes('all')) ? [] : [...planForm.targetKids];
-                                                            if (newTargets.includes(k.id)) {
-                                                                newTargets = newTargets.filter(id => id !== k.id);
-                                                            } else {
-                                                                newTargets.push(k.id);
-                                                            }
-                                                            if (newTargets.length === 0) newTargets = ['all'];
-                                                            if (newTargets.length === kids.length && kids.length > 0) newTargets = ['all'];
-                                                            setPlanForm({ ...planForm, targetKids: newTargets });
-                                                        }}
-                                                        className={`px-4 py-2.5 rounded-xl text-sm font-bold border-2 transition-all flex items-center gap-1.5 ${isSelected && (planForm.targetKids && !planForm.targetKids.includes('all')) ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20' : ((!planForm.targetKids || planForm.targetKids.includes('all')) ? 'bg-blue-50 text-blue-400 border-blue-100' : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300')}`}
-                                                    >
-                                                        <span className="text-base">{k.avatar}</span> {k.name}
-                                                    </button>
-                                                )
-                                            })}
+                                    {/* CARD 1: Basic Info */}
+                                    <div className="bg-white p-5 md:p-6 rounded-3xl border border-slate-100 shadow-sm space-y-5 md:space-y-6">
+                                        {/* Task Title */}
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">任务名称 <span className="text-red-500">*</span></label>
+                                            <input 
+                                                value={planForm.title} 
+                                                onChange={e => setPlanForm({ ...planForm, title: e.target.value })} 
+                                                placeholder="例如：练字30分钟、阅读打卡" 
+                                                className="w-full bg-slate-50/50 hover:bg-slate-50 focus:bg-white border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-black text-slate-800 transition-all text-lg md:text-xl placeholder:text-slate-300" 
+                                            />
                                         </div>
-                                    </div>
 
-                                    <div>
-                                        <label className="block text-sm font-black text-slate-800 mb-2">任务类型 <span className="text-red-500">*</span></label>
-                                        <select value={planForm.category} onChange={e => {
-                                            if (e.target.value === '__NEW__') {
-                                                const custom = window.prompt("请输入新任务分类名称 (最长6个字符)：");
-                                                if (custom && custom.trim()) {
-                                                    const newCat = custom.trim().substring(0, 6);
-                                                    setPlanForm({ ...planForm, category: newCat, iconName: getIconForCategory(newCat) });
+                                        {/* Task Desc (Subtle) */}
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">补充说明 <span className="text-slate-400 font-normal">(可选)</span></label>
+                                            <textarea 
+                                                value={planForm.desc} 
+                                                onChange={e => setPlanForm({ ...planForm, desc: e.target.value })} 
+                                                placeholder="补充一些具体要求或鼓励的话..." 
+                                                className="w-full bg-slate-50/50 hover:bg-slate-50 focus:bg-white border-2 border-transparent focus:border-blue-500 text-slate-700 transition-all min-h-[80px] rounded-2xl p-4 outline-none resize-y text-sm md:text-base placeholder:text-slate-400 font-medium" 
+                                            />
+                                        </div>
+
+                                        {/* Who is it for? */}
+                                        <div className="pt-2 border-t border-slate-50">
+                                            <label className="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">指派给谁</label>
+                                            <div className="flex flex-wrap gap-2">
+                                                <button 
+                                                    onClick={() => setPlanForm({ ...planForm, targetKids: ['all'] })}
+                                                    className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all flex items-center gap-1.5 ${(!planForm.targetKids || planForm.targetKids.includes('all')) ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20' : 'bg-slate-50 text-slate-500 border-slate-100 hover:border-blue-200'}`}
+                                                >
+                                                    👥 全部
+                                                </button>
+                                                {kids.map(k => {
+                                                    const isSelected = (!planForm.targetKids || planForm.targetKids.includes('all')) || planForm.targetKids.includes(k.id);
+                                                    return (
+                                                        <button 
+                                                            key={k.id}
+                                                            onClick={() => {
+                                                                let newTargets = (!planForm.targetKids || planForm.targetKids.includes('all')) ? [] : [...planForm.targetKids];
+                                                                if (newTargets.includes(k.id)) {
+                                                                    newTargets = newTargets.filter(id => id !== k.id);
+                                                                } else {
+                                                                    newTargets.push(k.id);
+                                                                }
+                                                                if (newTargets.length === 0) newTargets = ['all'];
+                                                                if (newTargets.length === kids.length && kids.length > 0) newTargets = ['all'];
+                                                                setPlanForm({ ...planForm, targetKids: newTargets });
+                                                            }}
+                                                            className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all flex items-center gap-1.5 ${isSelected && (planForm.targetKids && !planForm.targetKids.includes('all')) ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20' : ((!planForm.targetKids || planForm.targetKids.includes('all')) ? 'bg-blue-50 text-blue-400 border-blue-100' : 'bg-slate-50 text-slate-500 border-slate-100 hover:border-blue-200')}`}
+                                                        >
+                                                            <span className="text-base">{k.avatar}</span> {k.name}
+                                                        </button>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+
+                                        {/* Task Category (Subtle) */}
+                                        <div className="pt-2">
+                                            <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">分类</label>
+                                            <select value={planForm.category} onChange={e => {
+                                                if (e.target.value === '__NEW__') {
+                                                    const custom = window.prompt("请输入新任务分类名称 (最长6个字符)：");
+                                                    if (custom && custom.trim()) {
+                                                        const newCat = custom.trim().substring(0, 6);
+                                                        setPlanForm({ ...planForm, category: newCat, iconName: getIconForCategory(newCat) });
+                                                    }
+                                                } else {
+                                                    setPlanForm({ ...planForm, category: e.target.value, iconName: getIconForCategory(e.target.value) });
                                                 }
-                                            } else {
-                                                setPlanForm({ ...planForm, category: e.target.value, iconName: getIconForCategory(e.target.value) });
-                                            }
-                                        }} className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-blue-500 font-bold text-slate-700 transition-colors appearance-none">
-                                            {allCategories.map(c => <option key={c} value={c}>{c}</option>)}
-                                            {(!allCategories.includes(planForm.category) && planForm.category && planForm.category !== '__NEW__') && <option value={planForm.category}>{planForm.category}</option>}
-                                            <option value="__NEW__">➕ 自定义新分类...</option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-black text-slate-800 mb-2">任务名称 <span className="text-red-500">*</span></label>
-                                        <input value={planForm.title} onChange={e => setPlanForm({ ...planForm, title: e.target.value })} placeholder="例如：完成课后练习题、练字30分钟..." className="w-full bg-white border-2 border-slate-200 rounded-2xl p-3 md:p-4 outline-none focus:border-blue-500 font-bold text-slate-800 transition-all text-sm md:text-base placeholder:text-slate-400 placeholder:font-normal" />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-black text-slate-800 mb-2">任务说明 (可选)</label>
-                                        <textarea value={planForm.desc} onChange={e => setPlanForm({ ...planForm, desc: e.target.value })} placeholder="补充一些具体要求或鼓励的话..." className="w-full bg-white border-2 border-slate-200 rounded-2xl p-3 md:p-4 outline-none focus:border-blue-500 text-slate-700 transition-all min-h-[80px] md:min-h-[100px] resize-y text-sm md:text-base placeholder:text-slate-400 placeholder:font-normal" />
+                                            }} className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 outline-none focus:border-blue-500 font-bold text-slate-700 transition-colors appearance-none text-sm">
+                                                {allCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                                                {(!allCategories.includes(planForm.category) && planForm.category && planForm.category !== '__NEW__') && <option value={planForm.category}>{planForm.category}</option>}
+                                                <option value="__NEW__">➕ 自定义新分类...</option>
+                                            </select>
+                                        </div>
                                     </div>
 
                                 </div>
@@ -3290,117 +3305,152 @@ export default function App() {
                             {/* --- BEHAVIOR HABIT FORM --- */}
                             {planType === 'habit' && (
                                 <div className="space-y-6 animate-fade-in relative z-0">
-                                    {/* Visual Preview Row */}
-                                    <div className="flex flex-col md:flex-row gap-6">
-                                        {/* Left: Fields */}
-                                        <div className="flex-[2] space-y-6">
-                                            <div>
-                                                <label className="block text-sm font-black text-slate-800 mb-2">指派给谁 <span className="text-red-500">*</span></label>
-                                                {/* Multi-select Buttons for Habit */}
-                                                <div className="flex flex-wrap gap-2">
-                                                    <button 
-                                                        onClick={() => setPlanForm({ ...planForm, targetKids: ['all'] })}
-                                                        className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold border-2 transition-all flex items-center gap-1.5 ${(!planForm.targetKids || planForm.targetKids.includes('all')) ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20' : 'bg-white text-slate-500 border-slate-200 hover:border-emerald-300'}`}
-                                                    >
-                                                        👥 全部孩子
-                                                    </button>
-                                                    {kids.map(k => {
-                                                        const isSelected = (!planForm.targetKids || planForm.targetKids.includes('all')) || planForm.targetKids.includes(k.id);
-                                                        return (
-                                                            <button 
-                                                                key={k.id}
-                                                                onClick={() => {
-                                                                    let newTargets = (!planForm.targetKids || planForm.targetKids.includes('all')) ? [] : [...planForm.targetKids];
-                                                                    if (newTargets.includes(k.id)) {
-                                                                        newTargets = newTargets.filter(id => id !== k.id);
-                                                                    } else {
-                                                                        newTargets.push(k.id);
-                                                                    }
-                                                                    if (newTargets.length === 0) newTargets = ['all'];
-                                                                    if (newTargets.length === kids.length && kids.length > 0) newTargets = ['all'];
-                                                                    setPlanForm({ ...planForm, targetKids: newTargets });
-                                                                }}
-                                                                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold border-2 transition-all flex items-center gap-1.5 ${isSelected && (planForm.targetKids && !planForm.targetKids.includes('all')) ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20' : ((!planForm.targetKids || planForm.targetKids.includes('all')) ? 'bg-emerald-50 text-emerald-400 border-emerald-100' : 'bg-white text-slate-500 border-slate-200 hover:border-emerald-300')}`}
-                                                            >
-                                                                <span className="text-base">{k.avatar}</span> {k.name}
-                                                            </button>
-                                                        )
-                                                    })}
+                                    {/* CARD 1: Basic Info & Appearance */}
+                                    <div className="bg-white p-5 md:p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6">
+                                        <div className="flex flex-col md:flex-row gap-6">
+                                            {/* Left: Fields */}
+                                            <div className="flex-[2] space-y-5">
+                                                {/* Task Title */}
+                                                <div>
+                                                    <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">习惯名称 <span className="text-red-500">*</span></label>
+                                                    <input 
+                                                        value={planForm.title} 
+                                                        onChange={e => setPlanForm({ ...planForm, title: e.target.value })} 
+                                                        placeholder="例如：早起、不玩手机、自己整理书包" 
+                                                        className="w-full bg-slate-50/50 hover:bg-slate-50 focus:bg-white border-2 border-transparent focus:border-emerald-500 rounded-2xl p-4 outline-none font-black text-slate-800 transition-all text-lg md:text-xl placeholder:text-slate-300" 
+                                                    />
+                                                </div>
+                                                
+                                                {/* Task Desc (Subtle) */}
+                                                <div>
+                                                    <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">补充说明 <span className="text-slate-400 font-normal">(可选)</span></label>
+                                                    <textarea 
+                                                        value={planForm.desc} 
+                                                        onChange={e => setPlanForm({ ...planForm, desc: e.target.value })} 
+                                                        placeholder="描述这个习惯的具体标准..." 
+                                                        className="w-full bg-slate-50/50 hover:bg-slate-50 focus:bg-white border-2 border-transparent focus:border-emerald-500 text-slate-700 transition-all min-h-[80px] rounded-2xl p-4 outline-none resize-y text-sm md:text-base placeholder:text-slate-400 font-medium" 
+                                                    />
+                                                </div>
+
+                                                <div className="pt-2 border-t border-slate-50">
+                                                    <label className="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">指派给谁</label>
+                                                    {/* Multi-select Buttons for Habit */}
+                                                    <div className="flex flex-wrap gap-2">
+                                                        <button 
+                                                            onClick={() => setPlanForm({ ...planForm, targetKids: ['all'] })}
+                                                            className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all flex items-center gap-1.5 ${(!planForm.targetKids || planForm.targetKids.includes('all')) ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20' : 'bg-slate-50 text-slate-500 border-slate-100 hover:border-emerald-200'}`}
+                                                        >
+                                                            👥 全部
+                                                        </button>
+                                                        {kids.map(k => {
+                                                            const isSelected = (!planForm.targetKids || planForm.targetKids.includes('all')) || planForm.targetKids.includes(k.id);
+                                                            return (
+                                                                <button 
+                                                                    key={k.id}
+                                                                    onClick={() => {
+                                                                        let newTargets = (!planForm.targetKids || planForm.targetKids.includes('all')) ? [] : [...planForm.targetKids];
+                                                                        if (newTargets.includes(k.id)) {
+                                                                            newTargets = newTargets.filter(id => id !== k.id);
+                                                                        } else {
+                                                                            newTargets.push(k.id);
+                                                                        }
+                                                                        if (newTargets.length === 0) newTargets = ['all'];
+                                                                        if (newTargets.length === kids.length && kids.length > 0) newTargets = ['all'];
+                                                                        setPlanForm({ ...planForm, targetKids: newTargets });
+                                                                    }}
+                                                                    className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all flex items-center gap-1.5 ${isSelected && (planForm.targetKids && !planForm.targetKids.includes('all')) ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20' : ((!planForm.targetKids || planForm.targetKids.includes('all')) ? 'bg-emerald-50 text-emerald-400 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100 hover:border-emerald-200')}`}
+                                                                >
+                                                                    <span className="text-base">{k.avatar}</span> {k.name}
+                                                                </button>
+                                                            )
+                                                        })}
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div>
-                                                <label className="block text-sm font-black text-slate-800 mb-2">习惯名称 <span className="text-red-500">*</span></label>
-                                                <input value={planForm.title} onChange={e => setPlanForm({ ...planForm, title: e.target.value })} placeholder="例如：早起、不玩手机、自己整理书包" className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-emerald-500 font-bold text-slate-800 transition-all text-base placeholder:text-slate-400 placeholder:font-normal" />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-black text-slate-800 mb-2">习惯说明 (可选)</label>
-                                                <textarea value={planForm.desc} onChange={e => setPlanForm({ ...planForm, desc: e.target.value })} placeholder="描述这个习惯的具体标准..." className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-emerald-500 text-slate-700 transition-all min-h-[100px] resize-y text-base placeholder:text-slate-400 placeholder:font-normal" />
+
+                                            {/* Right: Live Preview */}
+                                            <div className="flex-1">
+                                                <label className="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider invisible hidden md:block">预览</label>
+                                                <div className={`w-full h-[180px] md:h-full min-h-[220px] rounded-3xl bg-gradient-to-br ${planForm.habitColor} p-6 flex flex-col items-center justify-center text-white shadow-xl relative overflow-hidden group transition-all duration-500`}>
+                                                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl transform translate-x-10 -translate-y-10 group-hover:scale-150 transition-transform"></div>
+                                                    <div className="text-6xl mb-4 transform group-hover:scale-110 transition-transform flex items-center justify-center bg-white/20 w-24 h-24 rounded-full backdrop-blur-sm shadow-inner">
+                                                        {planForm.iconEmoji}
+                                                    </div>
+                                                    <div className="font-black text-xl text-center leading-tight drop-shadow-md">{planForm.title || '习惯名称'}</div>
+                                                    <div className="text-white/80 text-xs font-bold mt-2 bg-black/10 px-3 py-1 rounded-full backdrop-blur-md">
+                                                        {planForm.habitType === 'daily_once' ? '每日一次' : '多次记录'}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        {/* Right: Live Preview */}
-                                        <div className="flex-1">
-                                            <label className="block text-sm font-black text-slate-800 mb-2 invisible hidden md:block">预览</label>
-                                            <div className={`w-full h-[180px] md:h-full min-h-[220px] rounded-3xl bg-gradient-to-br ${planForm.habitColor} p-6 flex flex-col items-center justify-center text-white shadow-xl relative overflow-hidden group transition-all duration-500`}>
-                                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl transform translate-x-10 -translate-y-10 group-hover:scale-150 transition-transform"></div>
-                                                <div className="text-6xl mb-4 transform group-hover:scale-110 transition-transform flex items-center justify-center bg-white/20 w-24 h-24 rounded-full backdrop-blur-sm shadow-inner">
-                                                    {planForm.iconEmoji}
-                                                </div>
-                                                <div className="font-black text-xl text-center leading-tight drop-shadow-md">{planForm.title || '习惯名称'}</div>
-                                                <div className="text-white/80 text-xs font-bold mt-2 bg-black/10 px-3 py-1 rounded-full backdrop-blur-md">
-                                                    {planForm.habitType === 'daily_once' ? '每日一次' : '多次记录'}
+                                        {/* Icon & Color Selectors */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-50">
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">选择图标</label>
+                                                <div className="bg-slate-50 rounded-2xl p-3 flex flex-wrap gap-2 border border-slate-100 h-[170px] content-start overflow-y-auto custom-scrollbar">
+                                                    {habitEmojis.map(e => (
+                                                        <button key={e} onClick={() => setPlanForm({ ...planForm, iconEmoji: e })} className={`text-3xl p-2 rounded-xl transition-all ${planForm.iconEmoji === e ? 'bg-white shadow-md scale-110 ring-2 ring-emerald-500' : 'hover:scale-110 opacity-60 grayscale hover:grayscale-0'}`}>{e}</button>
+                                                    ))}
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Icon & Color Selectors */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
-                                        <div>
-                                            <label className="block text-sm font-black text-slate-800 mb-3">选择图标</label>
-                                            <div className="bg-slate-50 rounded-2xl p-3 flex flex-wrap gap-2 border border-slate-100 h-[170px] content-start overflow-y-auto custom-scrollbar">
-                                                {habitEmojis.map(e => (
-                                                    <button key={e} onClick={() => setPlanForm({ ...planForm, iconEmoji: e })} className={`text-3xl p-2 rounded-xl transition-all ${planForm.iconEmoji === e ? 'bg-white shadow-md scale-110 ring-2 ring-emerald-500' : 'hover:scale-110 opacity-60 grayscale hover:grayscale-0'}`}>{e}</button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-black text-slate-800 mb-3">主题颜色</label>
-                                            <div className="bg-slate-50 rounded-2xl p-4 flex flex-wrap gap-4 border border-slate-100 h-[170px] content-start overflow-y-auto custom-scrollbar">
-                                                {habitColors.map(color => (
-                                                    <button key={color} onClick={() => setPlanForm({ ...planForm, habitColor: color })}
-                                                        className={`w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br ${color} transition-all relative overflow-hidden group 
-                                                    ${planForm.habitColor === color ? 'ring-4 ring-offset-2 ring-slate-800 scale-95 shadow-inner' : 'hover:scale-105 shadow-sm'}`}>
-                                                        {planForm.habitColor === color && <div className="absolute inset-0 flex items-center justify-center bg-black/20 text-white"><Icons.Check size={20} className="font-black" /></div>}
-                                                    </button>
-                                                ))}
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">主题颜色</label>
+                                                <div className="bg-slate-50 rounded-2xl p-4 flex flex-wrap gap-4 border border-slate-100 h-[170px] content-start overflow-y-auto custom-scrollbar">
+                                                    {habitColors.map(color => (
+                                                        <button key={color} onClick={() => setPlanForm({ ...planForm, habitColor: color })}
+                                                            className={`w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br ${color} transition-all relative overflow-hidden group 
+                                                        ${planForm.habitColor === color ? 'ring-4 ring-offset-2 ring-slate-800 scale-95 shadow-inner' : 'hover:scale-105 shadow-sm'}`}>
+                                                            {planForm.habitColor === color && <div className="absolute inset-0 flex items-center justify-center bg-black/20 text-white"><Icons.Check size={20} className="font-black" /></div>}
+                                                        </button>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             )}
 
-                            {/* Section 2: Repeat & Time */}
+                            {/* CARD 2: Schedule & Time */}
                             {planType === 'study' && (
-                                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+                                <div className="bg-white p-5 md:p-6 rounded-3xl border border-slate-100 shadow-sm space-y-5 md:space-y-6">
                                     <div>
                                         <label className="flex items-center gap-2 text-sm font-black text-slate-800 mb-3">
                                             <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center"><Icons.RefreshCw size={18} /></div>
-                                            任务类型 <span className="text-red-500">*</span>
+                                            任务安排 <span className="text-red-500">*</span>
                                         </label>
-                                        <select value={planForm.repeatType} onChange={e => setPlanForm({ ...planForm, repeatType: e.target.value })} className="w-full border-2 border-slate-100 rounded-2xl p-4 outline-none focus:border-blue-500 font-bold text-slate-700 hover:border-slate-300 transition-colors appearance-none bg-white">
-                                            <option value="today">仅当天 ({planForm.startDate})</option>
-                                            <option value="daily">每天</option>
-                                            <option value="weekly_custom">按周重复</option>
-                                            <option value="biweekly_custom">按双周重复</option>
-                                            <option value="ebbinghaus">记忆曲线 (艾宾浩斯)</option>
-                                            <option value="weekly_1">本周完成1次</option>
-                                            <option value="biweekly_1">本双周完成1次</option>
-                                            <option value="monthly_1">本月完成1次</option>
-                                            <option value="every_week_1">每周完成1次</option>
-                                            <option value="every_biweek_1">每双周完成1次</option>
-                                            <option value="every_month_1">每月完成1次</option>
-                                        </select>
+                                        
+                                        {/* Quick Chips for Repeat Type */}
+                                        <div className="flex flex-wrap gap-2 mb-3">
+                                            {[
+                                                { v: 'today', l: '仅今天' },
+                                                { v: 'daily', l: '每天' },
+                                                { v: 'weekly_custom', l: '每周固定' }
+                                            ].map(opt => (
+                                                <button
+                                                    key={opt.v}
+                                                    onClick={() => setPlanForm({ ...planForm, repeatType: opt.v })}
+                                                    className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all ${planForm.repeatType === opt.v ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20' : 'bg-slate-50 text-slate-500 border-slate-100 hover:border-orange-200'}`}
+                                                >
+                                                    {opt.l}
+                                                </button>
+                                            ))}
+                                            <select 
+                                                value={!['today', 'daily', 'weekly_custom'].includes(planForm.repeatType) ? planForm.repeatType : ''} 
+                                                onChange={e => { if(e.target.value) setPlanForm({ ...planForm, repeatType: e.target.value }) }} 
+                                                className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all outline-none appearance-none ${!['today', 'daily', 'weekly_custom'].includes(planForm.repeatType) ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20' : 'bg-slate-50 text-slate-500 border-slate-100 hover:border-orange-200'}`}
+                                            >
+                                                <option value="" disabled>更多安排...</option>
+                                                <option value="biweekly_custom">按双周重复</option>
+                                                <option value="ebbinghaus">记忆曲线 (艾宾浩斯)</option>
+                                                <option value="weekly_1">本周完成1次</option>
+                                                <option value="biweekly_1">本双周完成1次</option>
+                                                <option value="monthly_1">本月完成1次</option>
+                                                <option value="every_week_1">每周完成1次</option>
+                                                <option value="every_biweek_1">每双周完成1次</option>
+                                                <option value="every_month_1">每月完成1次</option>
+                                            </select>
+                                        </div>
                                         <div className="mt-3 bg-blue-50 text-blue-600 p-3 rounded-xl text-sm font-medium flex items-center gap-2 border border-blue-100">
                                             <Icons.Info size={16} /> 选择任务的重复周期和类型。
                                         </div>
@@ -3506,44 +3556,63 @@ export default function App() {
                                         </div>
                                     </div>
 
-                                    <div>
-                                        <label className="flex items-center gap-2 text-sm font-black text-slate-800 mb-3">
-                                            <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><Icons.Clock size={18} /></div>
-                                            任务时间配置 <span className="text-slate-400 font-normal text-xs">(可选)</span>
-                                        </label>
-                                        <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-100 w-full mb-4">
-                                            <button onClick={() => setPlanForm({ ...planForm, timeSetting: planForm.timeSetting === 'range' ? 'none' : 'range' })} className={`flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${planForm.timeSetting === 'range' ? 'bg-white shadow text-blue-600 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}>
-                                                <Icons.Clock size={16} /> 指定时间段
+                                    {/* Advanced Time Configuration Toggle */}
+                                    <div className="pt-2">
+                                        {planForm.timeSetting === 'none' ? (
+                                            <button 
+                                                onClick={() => setPlanForm({ ...planForm, timeSetting: 'range' })}
+                                                className="w-full py-4 rounded-2xl border-2 border-dashed border-slate-200 text-slate-500 font-bold hover:bg-slate-50 hover:border-blue-300 hover:text-blue-600 transition-all flex items-center justify-center gap-2"
+                                            >
+                                                <Icons.Plus size={18} /> 添加具体时间要求 (可选)
                                             </button>
-                                            <button onClick={() => setPlanForm({ ...planForm, timeSetting: planForm.timeSetting === 'duration' ? 'none' : 'duration' })} className={`flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${planForm.timeSetting === 'duration' ? 'bg-white shadow text-blue-600 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}>
-                                                <Icons.Settings size={16} /> 要求时长
-                                            </button>
-                                        </div>
+                                        ) : (
+                                            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-4 animate-fade-in relative">
+                                                <button 
+                                                    onClick={() => setPlanForm({ ...planForm, timeSetting: 'none', startTime: '', endTime: '', durationPreset: null })}
+                                                    className="absolute top-4 right-4 text-slate-400 hover:text-red-500 p-1 rounded-lg hover:bg-white transition-colors"
+                                                    title="移除时间要求"
+                                                >
+                                                    <Icons.Trash2 size={16} />
+                                                </button>
+                                                
+                                                <label className="flex items-center gap-2 text-sm font-black text-slate-800">
+                                                    <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><Icons.Clock size={16} /></div>
+                                                    时间要求
+                                                </label>
+
+                                                <div className="flex bg-white p-1.5 rounded-xl border border-slate-200 w-full mb-2">
+                                                    <button onClick={() => setPlanForm({ ...planForm, timeSetting: 'range' })} className={`flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all ${planForm.timeSetting === 'range' ? 'bg-blue-600 shadow text-white' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>
+                                                        指定时段
+                                                    </button>
+                                                    <button onClick={() => setPlanForm({ ...planForm, timeSetting: 'duration' })} className={`flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all ${planForm.timeSetting === 'duration' ? 'bg-emerald-500 shadow text-white' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>
+                                                        要求时长
+                                                    </button>
+                                                </div>
 
                                         {planForm.timeSetting === 'range' && (
-                                            <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 animate-fade-in">
+                                            <div className="animate-fade-in">
                                                 <div className="grid grid-cols-2 gap-3 md:gap-4">
                                                     <div className="w-full min-w-0">
                                                         <label className="block text-xs font-bold text-slate-600 mb-2 truncate">开始时间</label>
-                                                        <input type="time" value={planForm.startTime} onChange={e => setPlanForm({ ...planForm, startTime: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl px-2 py-2.5 md:p-3 outline-none focus:border-blue-500 font-bold bg-white text-xs sm:text-sm appearance-none" />
+                                                        <input type="time" value={planForm.startTime} onChange={e => setPlanForm({ ...planForm, startTime: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl px-2 py-2.5 outline-none focus:border-blue-500 font-bold bg-white text-xs sm:text-sm appearance-none" />
                                                     </div>
                                                     <div className="w-full min-w-0">
                                                         <label className="block text-xs font-bold text-slate-600 mb-2 truncate">结束时间</label>
-                                                        <input type="time" value={planForm.endTime} onChange={e => setPlanForm({ ...planForm, endTime: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl px-2 py-2.5 md:p-3 outline-none focus:border-blue-500 font-bold bg-white text-xs sm:text-sm appearance-none" />
+                                                        <input type="time" value={planForm.endTime} onChange={e => setPlanForm({ ...planForm, endTime: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl px-2 py-2.5 outline-none focus:border-blue-500 font-bold bg-white text-xs sm:text-sm appearance-none" />
                                                     </div>
                                                 </div>
                                             </div>
                                         )}
 
                                         {planForm.timeSetting === 'duration' && (
-                                            <div className="bg-emerald-50/30 border border-emerald-100 rounded-2xl p-5 animate-fade-in space-y-4">
+                                            <div className="animate-fade-in space-y-4 pt-2">
                                                 <div>
                                                     <span className="text-xs font-bold text-emerald-700 mb-3 block">常用时长</span>
                                                     <div className="grid grid-cols-3 gap-2">
                                                         {[{ label: '15分钟', val: 15 }, { label: '30分钟', val: 30 }, { label: '45分钟', val: 45 }, { label: '1小时', val: 60 }, { label: '1.5小时', val: 90 }, { label: '2小时', val: 120 }].map(opt => (
                                                             <button key={opt.val} onClick={() => setPlanForm({ ...planForm, durationPreset: opt.val })}
-                                                                className={`py-2.5 text-sm font-bold rounded-full border-2 transition-all
-                                                                ${planForm.durationPreset === opt.val ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-emerald-100 bg-white text-emerald-700 hover:border-emerald-200 hover:bg-emerald-50'}`}
+                                                                className={`py-2 text-xs font-bold rounded-lg border-2 transition-all
+                                                                ${planForm.durationPreset === opt.val ? 'border-emerald-500 bg-white text-emerald-600 shadow-sm' : 'border-transparent bg-slate-200/50 text-slate-600 hover:bg-slate-200'}`}
                                                             >
                                                                 {opt.label}
                                                             </button>
@@ -3551,7 +3620,7 @@ export default function App() {
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <span className="text-xs font-bold text-emerald-700 mb-2 block">其它时长</span>
+                                                    <span className="text-xs font-bold text-emerald-700 mb-2 block">自定义其它时长</span>
                                                     <div className="flex items-center gap-3">
                                                         <input
                                                             type="number"
@@ -3559,22 +3628,27 @@ export default function App() {
                                                             placeholder="例如：25"
                                                             value={planForm.durationPreset || ''}
                                                             onChange={e => setPlanForm({ ...planForm, durationPreset: Math.max(0, parseInt(e.target.value) || 0) })}
-                                                            className="flex-1 w-full min-w-0 border-2 border-emerald-200 rounded-xl p-3 outline-none focus:border-emerald-500 font-bold bg-white text-emerald-800"
+                                                            className="flex-1 w-full min-w-0 border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-emerald-500 font-bold bg-white text-emerald-800"
                                                         />
                                                         <span className="font-bold text-emerald-600 shrink-0 whitespace-nowrap">分钟</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         )}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
 
-                            {/* Conditional Section: Frequency (Habits only, as repetition is handled globally above) */}
+                            {/* CARD 2: Frequency & Limitations (Habits only) */}
                             {planType === 'habit' && (
-                                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                                    <label className="block text-sm font-black text-slate-800 mb-3"><Icons.RefreshCw size={16} className="inline mr-1 text-emerald-500" /> 打卡频率限制 <span className="text-red-500">*</span></label>
-                                    <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-white p-5 md:p-6 rounded-3xl border border-slate-100 shadow-sm space-y-5 md:space-y-6">
+                                    <label className="flex items-center gap-2 text-sm font-black text-slate-800 mb-3">
+                                        <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center"><Icons.RefreshCw size={18} /></div>
+                                        打卡频率限制 <span className="text-red-500">*</span>
+                                    </label>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <button onClick={() => setPlanForm({ ...planForm, habitType: 'daily_once' })} className={`p-4 rounded-2xl border-2 text-left transition-all ${planForm.habitType === 'daily_once' ? 'border-emerald-500 bg-emerald-50 shadow-md ring-2 ring-emerald-500/20' : 'border-slate-100 bg-slate-50 hover:bg-slate-100 text-slate-400'}`}>
                                             <div className={`font-black tracking-wide text-lg mb-1 ${planForm.habitType === 'daily_once' ? 'text-emerald-700' : 'text-slate-600'}`}>每日一次</div>
                                             <div className="text-xs font-medium opacity-80 leading-relaxed">适合阅读、早睡等每天只需达成一次的习惯。</div>
@@ -3585,71 +3659,78 @@ export default function App() {
                                         </button>
                                     </div>
                                     {planForm.habitType === 'multiple' && (
-                                        <div className="mt-4 pt-4 border-t border-slate-100 animate-fade-in space-y-4">
+                                        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 animate-fade-in space-y-4 pt-4 mt-2">
                                             <div>
                                                 <label className="block text-xs font-bold text-slate-600 mb-2">最高记录次数限制周期</label>
-                                                <div className="flex bg-slate-100 p-1 rounded-xl">
-                                                    <button onClick={() => setPlanForm({ ...planForm, periodMaxType: 'daily' })} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all outline-none ${planForm.periodMaxType === 'daily' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>每日限制</button>
-                                                    <button onClick={() => setPlanForm({ ...planForm, periodMaxType: 'weekly' })} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all outline-none ${planForm.periodMaxType === 'weekly' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>每周限制</button>
+                                                <div className="flex bg-slate-200/50 p-1.5 rounded-xl border border-slate-200">
+                                                    <button onClick={() => setPlanForm({ ...planForm, periodMaxType: 'daily' })} className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all outline-none ${planForm.periodMaxType === 'daily' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}>每日限制</button>
+                                                    <button onClick={() => setPlanForm({ ...planForm, periodMaxType: 'weekly' })} className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all outline-none ${planForm.periodMaxType === 'weekly' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}>每周限制</button>
                                                 </div>
                                             </div>
                                             <div>
                                                 <label className="block text-xs font-bold text-slate-600 mb-2">{planForm.periodMaxType === 'weekly' ? '每周' : '每日'}最高允许记录次数 <span className="text-slate-400 font-normal">(防过度打卡)</span></label>
-                                                <input type="number" min="1" max="999" value={planForm.periodMaxPerDay || 3} onChange={e => setPlanForm({ ...planForm, periodMaxPerDay: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border-2 border-slate-100 rounded-xl p-3 outline-none focus:border-emerald-500 font-bold bg-slate-50 text-emerald-700" />
+                                                <input type="number" min="1" max="999" value={planForm.periodMaxPerDay || 3} onChange={e => setPlanForm({ ...planForm, periodMaxPerDay: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-emerald-500 font-bold bg-white text-emerald-700" />
                                             </div>
                                         </div>
                                     )}
                                 </div>
                             )}
 
-                            {/* Reward/Points Settings */}
-                            <div className={`p-6 rounded-3xl border shadow-sm ${planType === 'study' ? 'bg-yellow-50 border-yellow-200' : 'bg-indigo-50 border-indigo-200'}`}>
-                                <label className={`block text-sm font-black mb-3 ${planType === 'study' ? 'text-yellow-800' : 'text-indigo-800'}`}>
-                                    <Icons.Star size={18} className="inline mr-1 mb-1" />
-                                    {planType === 'study' ? '金币奖励设定' : '家庭币奖惩设定'}
-                                </label>
+                            {/* CARD 3: Rewards & Approval */}
+                            {planType === 'study' ? (
+                                <div className="bg-white p-5 md:p-6 rounded-3xl border border-slate-100 shadow-sm space-y-5 md:space-y-6">
+                                    <label className="flex items-center gap-2 text-sm font-black text-slate-800 mb-3">
+                                        <div className="w-8 h-8 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center"><Icons.Star size={18} /></div>
+                                        任务奖励与审核
+                                    </label>
 
-                                {planType === 'study' ? (
-                                    <div className="space-y-4 animate-fade-in">
-                                        <div className="bg-white rounded-2xl border border-yellow-200 p-4 flex items-center justify-between shadow-sm cursor-pointer hover:bg-yellow-50 transition-colors" onClick={() => setPlanForm({ ...planForm, pointRule: planForm.pointRule === 'custom' ? 'default' : 'custom' })}>
-                                            <div>
-                                                <div className="font-black text-slate-800">自定义金币奖励</div>
-                                                <div className="text-xs text-slate-500 mt-0.5">关闭则使用系统规则自动计算奖励</div>
+                                    <div className="space-y-4">
+                                        {/* Point Rule Default/Custom Toggle */}
+                                        <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4 flex items-center justify-between shadow-sm cursor-pointer hover:bg-yellow-50/50 transition-colors" onClick={() => setPlanForm({ ...planForm, pointRule: planForm.pointRule === 'custom' ? 'default' : 'custom' })}>
+                                            <div className="flex-1 pr-4">
+                                                <div className="font-bold text-slate-800 text-sm">自定义金币奖励</div>
+                                                <div className="text-xs text-slate-500 mt-1">关闭则使用系统规则自动计算奖励</div>
                                             </div>
-                                            <div className={`w-14 h-8 rounded-full p-1 transition-colors ${planForm.pointRule === 'custom' ? 'bg-yellow-500' : 'bg-slate-300'}`}>
-                                                <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform ${planForm.pointRule === 'custom' ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                                            <div className={`w-12 h-6 md:w-14 md:h-7 rounded-full p-1 transition-colors flex-shrink-0 ${planForm.pointRule === 'custom' ? 'bg-yellow-500' : 'bg-slate-300'}`}>
+                                                <div className={`w-4 h-4 md:w-5 md:h-5 bg-white rounded-full shadow-md transform transition-transform ${planForm.pointRule === 'custom' ? 'translate-x-6 md:translate-x-7' : 'translate-x-0'}`}></div>
                                             </div>
                                         </div>
 
                                         {planForm.pointRule === 'custom' && (
-                                            <div className="relative animate-fade-in mt-4">
-                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-yellow-500 font-black text-xl">⭐</div>
-                                                <input type="number" value={planForm.reward} onChange={e => setPlanForm({ ...planForm, reward: e.target.value })} placeholder="输入完成可获得的金币数" className="w-full bg-white border-2 border-yellow-200 rounded-2xl p-4 pl-12 pr-4 outline-none focus:border-yellow-500 font-black text-base text-yellow-700 shadow-inner placeholder:text-slate-400 placeholder:font-normal" />
+                                            <div className="relative animate-fade-in pl-2">
+                                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-yellow-500 font-black text-lg">⭐</div>
+                                                <input type="number" value={planForm.reward} onChange={e => setPlanForm({ ...planForm, reward: e.target.value })} placeholder="输入完成可获得的金币数" className="w-full bg-white border-2 border-yellow-200 rounded-xl p-3 md:p-4 pl-12 pr-4 outline-none focus:border-yellow-500 font-black text-sm md:text-base text-yellow-700 placeholder:text-slate-300 placeholder:font-normal" />
                                             </div>
                                         )}
+
+                                        {/* Require Approval Toggle */}
+                                        <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4 flex items-center justify-between shadow-sm cursor-pointer hover:bg-emerald-50/50 transition-colors" onClick={() => setPlanForm({ ...planForm, requireApproval: !planForm.requireApproval })}>
+                                            <div className="flex-1 pr-4">
+                                                <div className="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                                                    <Icons.ShieldCheck size={16} className="text-emerald-500" />
+                                                    打卡需家长审核
+                                                </div>
+                                                <div className="text-xs text-slate-500 mt-1">关闭后孩子打卡直接发放奖励</div>
+                                            </div>
+                                            <div className={`w-12 h-6 md:w-14 md:h-7 rounded-full p-1 transition-colors flex-shrink-0 ${planForm.requireApproval ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                                                <div className={`w-4 h-4 md:w-5 md:h-5 bg-white rounded-full shadow-md transform transition-transform ${planForm.requireApproval ? 'translate-x-6 md:translate-x-7' : 'translate-x-0'}`}></div>
+                                            </div>
+                                        </div>
                                     </div>
-                                ) : (
+                                </div>
+                            ) : (
+                                <div className="bg-indigo-50 border border-indigo-200 p-6 rounded-3xl shadow-sm">
+                                    {/* Habit Reward Settings */}
+                                    <label className="block text-sm font-black mb-3 text-indigo-800">
+                                        <Icons.Star size={18} className="inline mr-1 mb-1" />
+                                        家庭币奖惩设定
+                                    </label>
                                     <div className="space-y-4 animate-fade-in">
                                         <div className="relative">
                                             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-500 font-black text-base">币</div>
                                             <input type="number" value={planForm.reward} onChange={e => setPlanForm({ ...planForm, reward: e.target.value })} placeholder="输入家庭币 (可填负数)" className="w-full bg-white border-2 border-indigo-200 rounded-2xl p-4 pl-14 pr-4 outline-none focus:border-indigo-500 font-black text-base text-indigo-700 shadow-inner placeholder:text-slate-400 placeholder:font-normal" />
                                         </div>
                                         <div className="text-xs text-indigo-600/70 font-bold px-2">填写正数表示奖励家庭币，填写负数 (如 -10) 表示违反习惯的惩罚。<br/>(经验值会自动按 1.5 倍同步计算)</div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Standalone Require Approval Toggle */}
-                            {planType === 'study' && (
-                                <div className="bg-slate-50 rounded-3xl border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between shadow-sm cursor-pointer hover:bg-slate-100 transition-colors gap-4" onClick={() => setPlanForm({ ...planForm, requireApproval: !planForm.requireApproval })}>
-                                    <div>
-                                        <div className="font-black text-slate-800 flex items-center gap-2">
-                                            <Icons.ShieldCheck size={18} className="text-emerald-500" /> 打卡需要家长审核
-                                        </div>
-                                        <div className="text-sm font-medium text-slate-500 mt-1">关闭后，孩子打卡将跳过等待，系统直接发放奖励</div>
-                                    </div>
-                                    <div className={`w-14 h-8 rounded-full p-1 transition-colors flex-shrink-0 ${planForm.requireApproval ? 'bg-emerald-500' : 'bg-slate-300'}`}>
-                                        <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform ${planForm.requireApproval ? 'translate-x-6' : 'translate-x-0'}`}></div>
                                     </div>
                                 </div>
                             )}
