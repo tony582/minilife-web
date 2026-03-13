@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { QRCodeSVG } from 'qrcode.react';
+import { Scanner } from '@yudiel/react-qr-scanner';
 
 // === 1. 纯净内联 SVG 图标库 ===
 const IconWrapper = ({ size = 24, className = "", children }) => (
@@ -645,6 +647,9 @@ export default function App() {
     const [showAddKidModal, setShowAddKidModal] = useState(false);
     const [newKidForm, setNewKidForm] = useState({ name: '', gender: 'boy', avatar: '' });
     const [showAddItemModal, setShowAddItemModal] = useState(false);
+    const [showQrScanner, setShowQrScanner] = useState(false);
+    const [orderHistoryFilterKid, setOrderHistoryFilterKid] = useState('all');
+    const [orderHistoryFilterTime, setOrderHistoryFilterTime] = useState('7'); // '7', '30', 'all'
     const [showLevelRules, setShowLevelRules] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
     const [deleteConfirmTask, setDeleteConfirmTask] = useState(null);
@@ -1750,12 +1755,31 @@ export default function App() {
         const activeKid = kids.find(k => k.id === activeKidId);
         if (activeKid.balances.spend < item.price) return notify(`钱不够，去“赚家庭币”赚点吧！`, 'error');
 
+        // Check limits per kid
+        const kidOrders = orders.filter(o => o.kidId === activeKidId && o.itemId === item.id);
         if (item.type === 'single') {
-            const hasBought = orders.some(o => o.kidId === activeKidId && o.itemName === item.name);
-            if (hasBought) return notify("此愿望/商品仅可兑换一次，你已经兑换过啦！", "error");
+            if (kidOrders.length >= 1) return notify("此愿望/商品仅可兑换一次，你已经兑换过啦！", "error");
+        } else if (item.type === 'multiple') {
+            const maxAllowed = item.maxExchanges || Infinity;
+            if (kidOrders.length >= maxAllowed) return notify(`该商品最多兑换 ${maxAllowed} 次，你已达到上限！`, "error");
         }
 
-        const newOrder = { id: `ORD-${Math.floor(Math.random() * 10000)}`, kidId: activeKidId, itemName: item.name, price: item.price, status: 'shipping', date: new Date().toLocaleDateString(), rating: 0, comment: "" };
+        // Generate a unique 8-character redeem code
+        const redeemCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+        const newOrder = { 
+            id: `ORD-${Math.floor(Math.random() * 100000)}`, 
+            kidId: activeKidId, 
+            itemId: item.id,
+            itemName: item.name, 
+            price: item.price, 
+            status: 'shipping', 
+            date: new Date().toLocaleDateString(), 
+            rating: 0, 
+            comment: "",
+            redeemCode: redeemCode
+        };
+        
         try {
             await apiFetch(`/api/kids/${activeKidId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ balances: { ...activeKid.balances, spend: activeKid.balances.spend - item.price } }) });
             await apiFetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newOrder) });
@@ -1771,11 +1795,13 @@ export default function App() {
                 category: 'wish'
             };
             await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newTrans) });
-            setTransactions([newTrans, ...transactions]);
+            
+            // NOTE: We no longer delete single items globally from inventory so other kids can still buy them!
 
+            setTransactions([newTrans, ...transactions]);
             setKids(kids.map(k => k.id === activeKidId ? { ...k, balances: { ...k.balances, spend: k.balances.spend - item.price } } : k));
             setOrders([newOrder, ...orders]);
-            notify(`下单成功！等待发货。`, "success");
+            notify(`下单成功！快去拿给爸爸妈妈核销吧！`, "success");
         } catch (e) { notify("网络请求失败", "error"); }
     };
 
@@ -2526,6 +2552,47 @@ export default function App() {
         );
     };
 
+    const handleVerifyOrder = async (orderIdOrCode) => {
+        const order = orders.find(o => o.id === orderIdOrCode || o.redeemCode === orderIdOrCode);
+        if (!order) return notify("未找到该订单或核销码无效", "error");
+        if (order.status !== 'shipping') return notify("该订单已被核销或状态错误", "error");
+
+        try {
+            await apiFetch(`/api/orders/${order.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'completed' }) });
+            setOrders(orders.map(o => o.id === order.id ? { ...o, status: 'completed' } : o));
+            notify("扫码核销成功！", "success");
+            setShowQrScanner(false);
+        } catch (e) {
+            notify("核销网络请求失败", "error");
+        }
+    };
+
+    const renderQrScannerModal = () => {
+        if (!showQrScanner) return null;
+        return (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+                <div className="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl relative overflow-hidden animate-spring-up p-6">
+                    <button onClick={() => setShowQrScanner(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-10 h-10 flex items-center justify-center bg-slate-50 rounded-full hover:bg-slate-100 transition-colors z-10"><Icons.X size={20} /></button>
+                    <div className="text-center mb-4 mt-2">
+                        <div className="w-14 h-14 bg-indigo-50 text-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-3"><Icons.Activity size={32} /></div>
+                        <h2 className="text-xl font-black text-slate-800">核销二维码扫描</h2>
+                        <p className="text-sm text-slate-500 mt-1">请让孩子出示兑换后的二维码</p>
+                    </div>
+                    <div className="rounded-2xl overflow-hidden bg-slate-100 border-4 border-slate-50 relative aspect-square flex items-center justify-center">
+                        <Scanner
+                            onScan={(result) => result && result.length > 0 && handleVerifyOrder(result[0].rawValue)}
+                            onError={(error) => console.log(error?.message)}
+                            components={{ audio: false }}
+                            allowMultiple={true}
+                            scanDelay={1000}
+                        />
+                    </div>
+                    <p className="text-xs text-slate-400 text-center mt-4">如果无法唤起摄像头，请使用列表侧的“一键手动核销”</p>
+                </div>
+            </div>
+        );
+    };
+
     const renderAddItemModal = () => {
         const emojis = ['🧸', '🎮', '🍔', '🍭', '🎢', '✈️', '📱', '📚', '🛡️', '🎟️'];
         if (!showAddItemModal) return null;
@@ -2562,17 +2629,30 @@ export default function App() {
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-1">重复兑换设置 <Icons.Info size={14} className="text-slate-400" /></label>
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="grid grid-cols-3 gap-3 mb-3">
                                 <button onClick={() => setNewItem({ ...newItem, type: 'single' })} className={`p-3 rounded-xl border-2 text-center transition-all ${newItem.type === 'single' ? 'border-purple-500 bg-purple-50' : 'border-slate-100 hover:border-slate-200'}`}>
                                     <div className="font-bold text-slate-800 text-sm">单次</div>
                                 </button>
-                                <button onClick={() => setNewItem({ ...newItem, type: 'multiple' })} className={`p-3 rounded-xl border-2 text-center transition-all ${newItem.type === 'multiple' ? 'border-purple-500 bg-purple-50' : 'border-slate-100 hover:border-slate-200'}`}>
+                                <button onClick={() => setNewItem({ ...newItem, type: 'multiple', maxExchanges: newItem.maxExchanges || 3 })} className={`p-3 rounded-xl border-2 text-center transition-all ${newItem.type === 'multiple' ? 'border-purple-500 bg-purple-50' : 'border-slate-100 hover:border-slate-200'}`}>
                                     <div className="font-bold text-slate-800 text-sm">多次</div>
                                 </button>
                                 <button onClick={() => setNewItem({ ...newItem, type: 'unlimited' })} className={`p-3 rounded-xl border-2 text-center transition-all ${newItem.type === 'unlimited' ? 'border-purple-500 bg-purple-50' : 'border-slate-100 hover:border-slate-200'}`}>
                                     <div className="font-bold text-slate-800 text-sm">永久</div>
                                 </button>
                             </div>
+                            {newItem.type === 'multiple' && (
+                                <div className="mt-4 p-4 bg-purple-50/50 rounded-xl border border-purple-100 animate-slide-in">
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">最多可兑换几次？</label>
+                                    <input 
+                                        type="number" 
+                                        min="1" 
+                                        value={newItem.maxExchanges || ''} 
+                                        onChange={e => setNewItem({ ...newItem, maxExchanges: parseInt(e.target.value) || 1 })} 
+                                        className="w-full border-2 border-white rounded-xl p-3 outline-none focus:border-purple-400 font-black text-lg text-purple-700 shadow-inner bg-white/60" 
+                                    />
+                                    <p className="text-xs text-slate-500 mt-2 font-medium">设置后，孩子累计兑换达到该次数时，商品将自动下架或不可购买。</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div className="p-4 border-t border-slate-100 flex gap-4 bg-slate-50">
@@ -4960,9 +5040,26 @@ export default function App() {
                                                             <span className="text-[10px] sm:text-xs font-bold">家庭币</span>
                                                         </div>
                                                     </div>
-                                                    <button onClick={(e) => { e.stopPropagation(); buyItem(item); }} className="w-10 h-10 sm:w-12 sm:h-12 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/30 hover:shadow-rose-500/50 hover:scale-105 active:scale-95 transition-all">
-                                                        <Icons.ShoppingBag size={20} className="sm:w-6 sm:h-6" />
-                                                    </button>
+                                                    {(() => {
+                                                        const isMultiple = item.type === 'multiple';
+                                                        const maxAllowed = item.maxExchanges || 1;
+                                                        const boughtCount = orders.filter(o => o.kidId === activeKidId && o.itemName === item.name).length;
+                                                        const reachedLimit = isMultiple && boughtCount >= maxAllowed;
+
+                                                        if (reachedLimit) {
+                                                            return (
+                                                                <button disabled className="px-4 h-10 sm:h-12 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center font-bold text-xs sm:text-sm cursor-not-allowed">
+                                                                    已达上限
+                                                                </button>
+                                                            );
+                                                        }
+
+                                                        return (
+                                                            <button onClick={(e) => { e.stopPropagation(); buyItem(item); }} className="w-10 h-10 sm:w-12 sm:h-12 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/30 hover:shadow-rose-500/50 hover:scale-105 active:scale-95 transition-all">
+                                                                <Icons.ShoppingBag size={20} className="sm:w-6 sm:h-6" />
+                                                            </button>
+                                                        );
+                                                    })()}
                                                 </div>
                                             </div>
                                         </div>
@@ -4976,16 +5073,55 @@ export default function App() {
                                             <p className="text-slate-400 font-bold">还没有买过东西，快去货架上看看吧~</p>
                                         </div>
                                     ) : myOrders.map(o => (
-                                        <div key={o.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-sm hover:border-indigo-100 transition-colors">
-                                            <div className="flex items-center gap-5">
-                                                <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-inner"><Icons.Package size={32} /></div>
+                                        <div key={o.id} className="bg-white p-5 rounded-[2rem] border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-sm hover:border-indigo-100/50 transition-colors">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-500 shadow-inner"><Icons.Package size={28} /></div>
                                                 <div>
                                                     <div className="font-black text-slate-800 text-lg">{o.itemName}</div>
-                                                    <div className="text-xs text-slate-400 font-mono mt-1 bg-slate-50 px-2 py-1 rounded inline-block">单号: {o.id} | {o.date}</div>
+                                                    <div className="text-[11px] text-slate-400 font-mono mt-1 flex items-center gap-2">
+                                                        <span className="bg-slate-50 px-2 py-0.5 rounded">单号: {o.id}</span>
+                                                        <span>{o.date}</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-4 self-end md:self-auto">
-                                                <span className="font-bold text-slate-500 mr-2">实付 <span className="text-indigo-600 font-black text-lg">{o.price}</span> 家庭币</span>
+                                            <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto mt-2 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-slate-50">
+                                                <div className="flex flex-col md:text-right">
+                                                    <span className="text-[10px] font-bold text-slate-400 mb-0.5">实付家庭币</span>
+                                                    <span className="text-indigo-600 font-black text-lg">{o.price}</span>
+                                                </div>
+                                                
+                                                <div className="ml-4 flex flex-col items-end">
+                                                    {o.status === 'shipping' && (
+                                                        <div className="flex flex-col items-end gap-2 text-right">
+                                                            <div className="px-4 py-2 bg-amber-50 text-amber-600 rounded-xl text-xs font-bold border border-amber-100 flex items-center gap-1.5 w-max">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div> 待核销
+                                                            </div>
+                                                            <div className="bg-white p-2 rounded-xl shadow-sm border border-slate-100">
+                                                                <QRCodeSVG value={o.redeemCode || o.id} size={64} level="H" />
+                                                            </div>
+                                                            <span className="text-[10px] text-slate-400 font-mono bg-slate-50 px-2 py-1 rounded-lg">核销码: {o.redeemCode || o.id}</span>
+                                                        </div>
+                                                    )}
+                                                    {o.status === 'shipped' && (
+                                                        <button 
+                                                            onClick={async () => {
+                                                                try {
+                                                                    await apiFetch(`/api/orders/${o.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'completed' }) });
+                                                                    setOrders(orders.map(order => order.id === o.id ? { ...order, status: 'completed' } : order));
+                                                                    setSelectedOrder(o); // Open Review Modal
+                                                                } catch (e) { notify("网络请求失败", "error"); }
+                                                            }}
+                                                            className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-xl text-sm font-black shadow-lg shadow-emerald-200 hover:scale-105 active:scale-95 transition-all text-center"
+                                                        >
+                                                            确认收货
+                                                        </button>
+                                                    )}
+                                                    {o.status === 'completed' && (
+                                                        <div className="px-4 py-2 bg-slate-50 text-slate-400 rounded-xl text-xs font-bold border border-slate-100 flex items-center gap-1.5">
+                                                            <Icons.CheckCircle size={14} /> 已完成
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
@@ -5895,75 +6031,210 @@ export default function App() {
                 )}
 
                 {parentTab === 'shop_manage' && (
-                    <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden animate-fade-in">
-                        <div className="p-6 border-b border-slate-100 bg-purple-50/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                            <div>
-                                <h2 className="font-black text-slate-800 text-xl">家庭超市货架配置</h2>
-                                <p className="text-sm text-slate-500 mt-1">设置吸引人的奖励，激发孩子的动力</p>
-                            </div>
-                            <button onClick={() => setShowAddItemModal(true)} className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-6 py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 shadow-lg shadow-purple-200 hover:opacity-90">
-                                <Icons.Plus size={18} /> 添加愿望商品
-                            </button>
-                        </div>
-                        <div className="p-4 sm:p-6 bg-slate-50/50">
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5">
-                                {inventory.map(item => (
-                                    <div key={item.id} className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 transition-all flex flex-col group relative">
-                                        {/* Top Banner/Badge */}
-                                        <div className="absolute top-3 inset-x-3 flex justify-between items-start z-10 pointer-events-none">
-                                            <div className={`text-[10px] font-black px-2 py-1 rounded-lg backdrop-blur-md shadow-sm border ${item.type === 'single' ? 'bg-orange-500/90 text-white border-orange-400' : item.type === 'multiple' ? 'bg-blue-500/90 text-white border-blue-400' : 'bg-purple-500/90 text-white border-purple-400'}`}>
-                                                {item.type === 'single' ? '单次兑换' : item.type === 'multiple' ? '多次兑换' : '永久特权'}
-                                            </div>
+                    <div className="space-y-6 animate-fade-in">
+                        {/* Parent Fulfilling Orders Section */}
+                        {orders.filter(o => o.status === 'shipping').length > 0 && (
+                            <div className="bg-white rounded-[2rem] shadow-sm border border-orange-200 overflow-hidden">
+                                <div className="p-6 border-b border-orange-100 bg-orange-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600"><Icons.CheckSquare size={20} /></div>
+                                        <div>
+                                            <h2 className="font-black text-slate-800 text-lg">核销中心 - 待处理兑换</h2>
+                                            <p className="text-xs text-slate-500 mt-0.5">请扫描孩子的二维码，或手动点击一键核销</p>
                                         </div>
-
-                                        {/* Image Area (Icon) */}
-                                        <div className={`h-32 sm:h-40 flex items-center justify-center text-6xl sm:text-7xl relative overflow-hidden bg-gradient-to-br ${item.type === 'privilege' ? 'from-purple-50 to-fuchsia-100' : 'from-indigo-50 to-blue-50'}`}>
-                                            <div className="absolute inset-0 bg-white/40 transform -skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700"></div>
-                                            <div className="transform group-hover:scale-110 transition-transform duration-500 drop-shadow-md relative z-10">
-                                                {item.iconEmoji}
-                                            </div>
-                                        </div>
-
-                                        {/* Details Area */}
-                                        <div className="p-4 sm:p-5 flex flex-col flex-1 bg-white">
-                                            <h3 className="font-black text-slate-800 text-sm sm:text-base line-clamp-2 leading-tight mb-2 group-hover:text-purple-600 transition-colors">{item.name}</h3>
-                                            <p className="text-slate-400 text-[11px] sm:text-xs mb-4 flex-1 line-clamp-2 leading-relaxed">{item.desc}</p>
-                                            
-                                            <div className="flex justify-between items-end mt-auto pt-3 border-t border-slate-50">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[9px] text-slate-400 font-bold mb-0.5">定价</span>
-                                                    <div className="flex items-baseline gap-1 text-slate-700">
-                                                        <span className="text-lg sm:text-xl font-black tracking-tight">{item.price}</span>
-                                                        <span className="text-[9px] sm:text-[10px] font-bold">家庭币</span>
+                                    </div>
+                                    <button onClick={() => setShowQrScanner(true)} className="w-full sm:w-auto px-6 py-3 bg-indigo-500 text-white rounded-xl text-sm font-black shadow-lg shadow-indigo-200 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
+                                        <Icons.Eye size={18} /> 打开扫码摄像头
+                                    </button>
+                                </div>
+                                <div className="p-4 sm:p-6 bg-white space-y-4">
+                                    {orders.filter(o => o.status === 'shipping').map(o => {
+                                        const kid = kids.find(k => k.id === o.kidId);
+                                        return (
+                                            <div key={o.id} className="bg-slate-50 p-5 rounded-2xl border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-5">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-2xl shadow-sm border border-slate-100">{kid?.avatar}</div>
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-black text-slate-800">{kid?.name}</span>
+                                                            <span className="text-xs text-slate-400">待核销</span>
+                                                        </div>
+                                                        <div className="font-black text-indigo-600 text-lg mt-0.5">{o.itemName}</div>
+                                                        <div className="text-[10px] text-slate-400 font-mono mt-1">单号: {o.id} | 核销码: <span className="text-slate-600 font-bold max-w-[80px] truncate inline-block align-bottom">{o.redeemCode || 'N/A'}</span></div>
                                                     </div>
                                                 </div>
+                                                <button 
+                                                    onClick={() => handleVerifyOrder(o.id)}
+                                                    className="w-full md:w-auto px-6 py-3 bg-slate-800 text-white rounded-xl text-sm font-black shadow-lg shadow-slate-200 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    <Icons.Check size={18} /> 一键手动核销
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Existing Inventory Grid */}
+                        <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+                            <div className="p-6 border-b border-slate-100 bg-purple-50/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                <div>
+                                    <h2 className="font-black text-slate-800 text-xl">家庭超市货架配置</h2>
+                                    <p className="text-sm text-slate-500 mt-1">设置吸引人的奖励，激发孩子的动力</p>
+                                </div>
+                                <button onClick={() => setShowAddItemModal(true)} className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-6 py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 shadow-lg shadow-purple-200 hover:opacity-90">
+                                    <Icons.Plus size={18} /> 添加愿望商品
+                                </button>
+                            </div>
+                            <div className="p-4 sm:p-6 bg-slate-50/50">
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5">
+                                    {inventory.map(item => (
+                                        <div key={item.id} className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 transition-all flex flex-col group relative">
+                                            {/* Top Banner/Badge */}
+                                            <div className="absolute top-3 inset-x-3 flex justify-between items-start z-10 pointer-events-none">
+                                                <div className={`text-[10px] font-black px-2 py-1 rounded-lg backdrop-blur-md shadow-sm border ${item.type === 'single' ? 'bg-orange-500/90 text-white border-orange-400' : item.type === 'multiple' ? 'bg-blue-500/90 text-white border-blue-400' : 'bg-purple-500/90 text-white border-purple-400'}`}>
+                                                    {item.type === 'single' ? '单次兑换' : item.type === 'multiple' ? '多次兑换' : '永久特权'}
+                                                </div>
+                                            </div>
+
+                                            {/* Image Area (Icon) */}
+                                            <div className={`h-32 sm:h-40 flex items-center justify-center text-6xl sm:text-7xl relative overflow-hidden bg-gradient-to-br ${item.type === 'privilege' ? 'from-purple-50 to-fuchsia-100' : 'from-indigo-50 to-blue-50'}`}>
+                                                <div className="absolute inset-0 bg-white/40 transform -skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700"></div>
+                                                <div className="transform group-hover:scale-110 transition-transform duration-500 drop-shadow-md relative z-10">
+                                                    {item.iconEmoji}
+                                                </div>
+                                            </div>
+
+                                            {/* Details Area */}
+                                            <div className="p-4 sm:p-5 flex flex-col flex-1 bg-white">
+                                                <h3 className="font-black text-slate-800 text-sm sm:text-base line-clamp-2 leading-tight mb-2 group-hover:text-purple-600 transition-colors">{item.name}</h3>
+                                                <p className="text-slate-400 text-[11px] sm:text-xs mb-4 flex-1 line-clamp-2 leading-relaxed">{item.desc}</p>
                                                 
-                                                {/* Admin Actions */}
-                                                <div className="flex items-center gap-1.5 opacity-100 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={() => { setNewItem({ ...item, price: item.price.toString() }); setShowAddItemModal(true); }} className="w-8 h-8 sm:w-10 sm:h-10 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-indigo-600 rounded-xl flex items-center justify-center transition-colors">
-                                                        <Icons.Settings size={16} className="sm:w-5 sm:h-5" />
-                                                    </button>
-                                                    <button onClick={async () => {
-                                                        if (!window.confirm(`确定要下架商品 【${item.name}】 吗？`)) return;
-                                                        try {
-                                                            await apiFetch(`/api/inventory/${item.id}`, { method: 'DELETE' });
-                                                            setInventory(inventory.filter(i => i.id !== item.id));
-                                                            notify("商品已下架", "success");
-                                                        } catch (e) { notify("网络下架失败", "error"); }
-                                                    }} className="w-8 h-8 sm:w-10 sm:h-10 bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-rose-500 rounded-xl flex items-center justify-center transition-colors">
-                                                        <Icons.Trash2 size={16} className="sm:w-5 sm:h-5" />
-                                                    </button>
+                                                <div className="flex justify-between items-end mt-auto pt-3 border-t border-slate-50">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[9px] text-slate-400 font-bold mb-0.5">定价</span>
+                                                        <div className="flex items-baseline gap-1 text-slate-700">
+                                                            <span className="text-lg sm:text-xl font-black tracking-tight">{item.price}</span>
+                                                            <span className="text-[9px] sm:text-[10px] font-bold">家庭币</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {/* Admin Actions */}
+                                                    <div className="flex items-center gap-1.5 opacity-100 group-hover:opacity-100 transition-opacity">
+                                                        <button onClick={() => { setNewItem({ ...item, price: item.price.toString() }); setShowAddItemModal(true); }} className="w-8 h-8 sm:w-10 sm:h-10 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-indigo-600 rounded-xl flex items-center justify-center transition-colors">
+                                                            <Icons.Settings size={16} className="sm:w-5 sm:h-5" />
+                                                        </button>
+                                                        <button onClick={async () => {
+                                                            if (!window.confirm(`确定要下架商品 【${item.name}】 吗？`)) return;
+                                                            try {
+                                                                await apiFetch(`/api/inventory/${item.id}`, { method: 'DELETE' });
+                                                                setInventory(inventory.filter(i => i.id !== item.id));
+                                                                notify("商品已下架", "success");
+                                                            } catch (e) { notify("网络下架失败", "error"); }
+                                                        }} className="w-8 h-8 sm:w-10 sm:h-10 bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-rose-500 rounded-xl flex items-center justify-center transition-colors">
+                                                            <Icons.Trash2 size={16} className="sm:w-5 sm:h-5" />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
+                                    ))}
+                                    {inventory.length === 0 && (
+                                        <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-5 bg-white rounded-[2rem] border-2 border-slate-100 border-dashed flex flex-col items-center justify-center py-12 shadow-sm">
+                                            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-3xl mb-3 grayscale opacity-50">🛒</div>
+                                            <div className="text-slate-400 font-bold text-sm">货架空空如也，快添加一些商品吧</div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Order History Section */}
+                        <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden mt-6">
+                            <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500"><Icons.Clock size={20} /></div>
+                                    <div>
+                                        <h2 className="font-black text-slate-800 text-lg">兑换记录明细</h2>
+                                        <p className="text-xs text-slate-500 mt-0.5">查看孩子们的历史兑换及核销记录</p>
                                     </div>
-                                ))}
-                                {inventory.length === 0 && (
-                                    <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-5 bg-white rounded-[2rem] border-2 border-slate-100 border-dashed flex flex-col items-center justify-center py-12 shadow-sm">
-                                        <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-3xl mb-3 grayscale opacity-50">🛒</div>
-                                        <div className="text-slate-400 font-bold text-sm">货架空空如也，快添加一些商品吧</div>
-                                    </div>
-                                )}
+                                </div>
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                    <select 
+                                        value={orderHistoryFilterKid} 
+                                        onChange={(e) => setOrderHistoryFilterKid(e.target.value)}
+                                        className="bg-white border text-sm font-bold border-slate-200 text-slate-700 rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 min-w-[120px]"
+                                    >
+                                        <option value="all">全部孩子</option>
+                                        {kids.map(k => (
+                                            <option key={k.id} value={k.id}>{k.name}</option>
+                                        ))}
+                                    </select>
+                                    <select 
+                                        value={orderHistoryFilterTime} 
+                                        onChange={(e) => setOrderHistoryFilterTime(e.target.value)}
+                                        className="bg-white border text-sm font-bold border-slate-200 text-slate-700 rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 min-w-[120px]"
+                                    >
+                                        <option value="7">最近 7 天</option>
+                                        <option value="30">最近 30 天</option>
+                                        <option value="all">全部时间</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="p-4 sm:p-6 bg-white space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar">
+                                {(() => {
+                                    const filteredOrders = orders.filter(o => {
+                                        if (o.status !== 'completed') return false;
+                                        if (orderHistoryFilterKid !== 'all' && o.kidId !== orderHistoryFilterKid) return false;
+                                        
+                                        if (orderHistoryFilterTime !== 'all') {
+                                            const daysNum = parseInt(orderHistoryFilterTime);
+                                            const orderDate = new Date(o.date);
+                                            const diffTime = Math.abs(new Date() - orderDate);
+                                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                            if (diffDays > daysNum) return false;
+                                        }
+                                        return true;
+                                    });
+
+                                    if (filteredOrders.length === 0) {
+                                        return (
+                                            <div className="text-center py-10">
+                                                <Icons.FileText size={48} className="mx-auto text-slate-200 mb-3" />
+                                                <p className="text-slate-400 font-bold text-sm">没有匹配的兑换记录</p>
+                                            </div>
+                                        );
+                                    }
+
+                                    return filteredOrders.map(o => {
+                                        const kid = kids.find(k => k.id === o.kidId);
+                                        return (
+                                            <div key={o.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-xl shadow-sm border border-slate-100">{kid?.avatar}</div>
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-bold text-slate-700 text-sm">{kid?.name}</span>
+                                                            <span className="text-xs text-slate-400">核销了</span>
+                                                        </div>
+                                                        <div className="font-black text-slate-800">{o.itemName}</div>
+                                                        <div className="text-[10px] text-slate-400 font-mono mt-0.5">{o.date}</div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-4 border-t md:border-t-0 border-slate-200 pt-3 md:pt-0">
+                                                    <div className="flex flex-col text-right">
+                                                        <span className="text-[10px] text-slate-400 font-bold mb-0.5">花费</span>
+                                                        <span className="font-black text-rose-500">{o.price} 金币</span>
+                                                    </div>
+                                                    <div className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-bold border border-emerald-100 flex items-center gap-1 min-w-max">
+                                                        <Icons.CheckCircle size={12} /> 已核销
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    });
+                                })()}
                             </div>
                         </div>
                     </div>
@@ -6475,6 +6746,7 @@ export default function App() {
             {renderPenaltyModal()}
             
             <CelebrationModal data={celebrationData} onClose={() => setCelebrationData(null)} />
+            {renderQrScannerModal()}
 
             {/* Delete Confirm Modal */}
             {deleteConfirmTask && (
