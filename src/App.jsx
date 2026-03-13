@@ -4961,7 +4961,7 @@ export default function App() {
                                                         </div>
                                                     </div>
                                                     <button onClick={(e) => { e.stopPropagation(); buyItem(item); }} className="w-10 h-10 sm:w-12 sm:h-12 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/30 hover:shadow-rose-500/50 hover:scale-105 active:scale-95 transition-all">
-                                                        <Icons.ShoppingCart size={20} className="sm:w-6 sm:h-6" />
+                                                        <Icons.ShoppingBag size={20} className="sm:w-6 sm:h-6" />
                                                     </button>
                                                 </div>
                                             </div>
