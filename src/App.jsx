@@ -3408,15 +3408,15 @@ export default function App() {
                                         {/* Dynamic Sub-configs based on Repeat Type */}
                                         <div className="mt-4 space-y-4 border-t border-slate-100 pt-4">
                                             {/* Date range for all Except Today where it's just StartDate */}
-                                            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 overflow-hidden">
-                                                <div className="flex-1 w-full min-w-0">
-                                                    <label className="block text-xs font-bold text-slate-600 mb-2">开始日期</label>
-                                                    <input type="date" value={planForm.startDate} onChange={e => setPlanForm({ ...planForm, startDate: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl p-2.5 md:p-3 outline-none focus:border-blue-500 font-bold bg-white text-slate-700 text-sm" />
+                                            <div className="grid grid-cols-2 gap-3 md:gap-4">
+                                                <div className="w-full min-w-0">
+                                                    <label className="block text-xs font-bold text-slate-600 mb-2 truncate">开始日期</label>
+                                                    <input type="date" value={planForm.startDate} onChange={e => setPlanForm({ ...planForm, startDate: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl px-2 py-2.5 md:p-3 outline-none focus:border-blue-500 font-bold bg-white text-slate-700 text-xs sm:text-sm appearance-none" />
                                                 </div>
                                                 {planForm.repeatType !== 'today' && (
-                                                    <div className="flex-1 w-full min-w-0">
-                                                        <label className="block text-xs font-bold text-slate-600 mb-2">结束日期 <span className="text-slate-400 font-normal">(可选)</span></label>
-                                                        <input type="date" value={planForm.endDate} onChange={e => setPlanForm({ ...planForm, endDate: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl p-2.5 md:p-3 outline-none focus:border-blue-500 font-bold bg-white text-slate-700 text-sm" />
+                                                    <div className="w-full min-w-0">
+                                                        <label className="block text-xs font-bold text-slate-600 mb-2 truncate">结束日期 <span className="text-slate-400 font-normal">(可选)</span></label>
+                                                        <input type="date" value={planForm.endDate} onChange={e => setPlanForm({ ...planForm, endDate: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl px-2 py-2.5 md:p-3 outline-none focus:border-blue-500 font-bold bg-white text-slate-700 text-xs sm:text-sm appearance-none" />
                                                     </div>
                                                 )}
                                             </div>
@@ -3521,15 +3521,15 @@ export default function App() {
                                         </div>
 
                                         {planForm.timeSetting === 'range' && (
-                                            <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 md:p-5 animate-fade-in">
-                                                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 overflow-hidden">
-                                                    <div className="flex-1 w-full min-w-0">
-                                                        <label className="block text-xs font-bold text-slate-600 mb-2">开始时间</label>
-                                                        <input type="time" value={planForm.startTime} onChange={e => setPlanForm({ ...planForm, startTime: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl p-2.5 md:p-3 outline-none focus:border-blue-500 font-bold bg-white text-sm" />
+                                            <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 animate-fade-in">
+                                                <div className="grid grid-cols-2 gap-3 md:gap-4">
+                                                    <div className="w-full min-w-0">
+                                                        <label className="block text-xs font-bold text-slate-600 mb-2 truncate">开始时间</label>
+                                                        <input type="time" value={planForm.startTime} onChange={e => setPlanForm({ ...planForm, startTime: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl px-2 py-2.5 md:p-3 outline-none focus:border-blue-500 font-bold bg-white text-xs sm:text-sm appearance-none" />
                                                     </div>
-                                                    <div className="flex-1 w-full min-w-0">
-                                                        <label className="block text-xs font-bold text-slate-600 mb-2">结束时间</label>
-                                                        <input type="time" value={planForm.endTime} onChange={e => setPlanForm({ ...planForm, endTime: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl p-2.5 md:p-3 outline-none focus:border-blue-500 font-bold bg-white text-sm" />
+                                                    <div className="w-full min-w-0">
+                                                        <label className="block text-xs font-bold text-slate-600 mb-2 truncate">结束时间</label>
+                                                        <input type="time" value={planForm.endTime} onChange={e => setPlanForm({ ...planForm, endTime: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl px-2 py-2.5 md:p-3 outline-none focus:border-blue-500 font-bold bg-white text-xs sm:text-sm appearance-none" />
                                                     </div>
                                                 </div>
                                             </div>
