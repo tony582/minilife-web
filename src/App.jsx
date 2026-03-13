@@ -3201,19 +3201,19 @@ export default function App() {
                     <div className="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl text-left overflow-hidden mt-auto mb-auto border border-white/20 flex flex-col max-h-[85vh] sm:max-h-[90vh]">
 
                         {/* Header */}
-                        <div className="bg-white p-6 flex justify-between items-center border-b border-slate-100 relative z-30 shadow-sm">
+                        <div className="bg-white p-4 md:p-6 flex justify-between items-center border-b border-slate-100 relative z-30 shadow-sm">
                             <div>
-                                <h2 className="text-2xl font-black text-slate-800 flex items-center gap-2">
+                                <h2 className="text-xl md:text-2xl font-black text-slate-800 flex items-center gap-2">
                                     {editingTask ? (planType === 'study' ? '✨ 编辑任务' : '✨ 编辑成长记录') : (planType === 'study' ? '新建任务' : '记录成长')}
                                 </h2>
                                 <div className="text-slate-500 text-sm mt-1 font-medium">
                                     {editingTask ? '修改任务信息后点击保存' : (planType === 'study' ? '布置任务，让孩子赚取家庭币' : '创建成长记录，设置家庭币奖励')}
                                 </div>
                             </div>
-                            <button onClick={() => { setShowAddPlanModal(false); setEditingTask(null); }} className="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 p-2 rounded-xl transition-all"><Icons.X size={24} /></button>
+                            <button onClick={() => { setShowAddPlanModal(false); setEditingTask(null); }} className="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 p-2 md:p-2.5 rounded-xl transition-all"><Icons.X size={20} className="md:w-6 md:h-6" /></button>
                         </div>
 
-                        <div className="p-6 md:p-8 space-y-6 md:space-y-8 bg-slate-50/50 flex-1 overflow-y-auto custom-scrollbar relative z-10 min-h-0">
+                        <div className="p-4 md:p-8 space-y-4 md:space-y-8 bg-slate-50/50 flex-1 overflow-y-auto custom-scrollbar relative z-10 min-h-0">
                             {/* --- STUDY PLAN FORM --- */}
 
                             {/* --- STUDY PLAN FORM --- */}
@@ -3276,12 +3276,12 @@ export default function App() {
 
                                     <div>
                                         <label className="block text-sm font-black text-slate-800 mb-2">任务名称 <span className="text-red-500">*</span></label>
-                                        <input value={planForm.title} onChange={e => setPlanForm({ ...planForm, title: e.target.value })} placeholder="例如：完成课后练习题、练字30分钟..." className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-blue-500 font-bold text-slate-800 transition-all text-base placeholder:text-slate-400 placeholder:font-normal" />
+                                        <input value={planForm.title} onChange={e => setPlanForm({ ...planForm, title: e.target.value })} placeholder="例如：完成课后练习题、练字30分钟..." className="w-full bg-white border-2 border-slate-200 rounded-2xl p-3 md:p-4 outline-none focus:border-blue-500 font-bold text-slate-800 transition-all text-sm md:text-base placeholder:text-slate-400 placeholder:font-normal" />
                                     </div>
 
                                     <div>
                                         <label className="block text-sm font-black text-slate-800 mb-2">任务说明 (可选)</label>
-                                        <textarea value={planForm.desc} onChange={e => setPlanForm({ ...planForm, desc: e.target.value })} placeholder="补充一些具体要求或鼓励的话..." className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-blue-500 text-slate-700 transition-all min-h-[100px] resize-y text-base placeholder:text-slate-400 placeholder:font-normal" />
+                                        <textarea value={planForm.desc} onChange={e => setPlanForm({ ...planForm, desc: e.target.value })} placeholder="补充一些具体要求或鼓励的话..." className="w-full bg-white border-2 border-slate-200 rounded-2xl p-3 md:p-4 outline-none focus:border-blue-500 text-slate-700 transition-all min-h-[80px] md:min-h-[100px] resize-y text-sm md:text-base placeholder:text-slate-400 placeholder:font-normal" />
                                     </div>
 
                                 </div>
@@ -3408,15 +3408,15 @@ export default function App() {
                                         {/* Dynamic Sub-configs based on Repeat Type */}
                                         <div className="mt-4 space-y-4 border-t border-slate-100 pt-4">
                                             {/* Date range for all Except Today where it's just StartDate */}
-                                            <div className="flex flex-col sm:flex-row gap-4">
-                                                <div className="flex-1 min-w-0">
+                                            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 overflow-hidden">
+                                                <div className="flex-1 w-full min-w-0">
                                                     <label className="block text-xs font-bold text-slate-600 mb-2">开始日期</label>
-                                                    <input type="date" value={planForm.startDate} onChange={e => setPlanForm({ ...planForm, startDate: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white text-slate-700" />
+                                                    <input type="date" value={planForm.startDate} onChange={e => setPlanForm({ ...planForm, startDate: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl p-2.5 md:p-3 outline-none focus:border-blue-500 font-bold bg-white text-slate-700 text-sm" />
                                                 </div>
                                                 {planForm.repeatType !== 'today' && (
-                                                    <div className="flex-1 min-w-0">
+                                                    <div className="flex-1 w-full min-w-0">
                                                         <label className="block text-xs font-bold text-slate-600 mb-2">结束日期 <span className="text-slate-400 font-normal">(可选)</span></label>
-                                                        <input type="date" value={planForm.endDate} onChange={e => setPlanForm({ ...planForm, endDate: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white text-slate-700" />
+                                                        <input type="date" value={planForm.endDate} onChange={e => setPlanForm({ ...planForm, endDate: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl p-2.5 md:p-3 outline-none focus:border-blue-500 font-bold bg-white text-slate-700 text-sm" />
                                                     </div>
                                                 )}
                                             </div>
@@ -3521,15 +3521,15 @@ export default function App() {
                                         </div>
 
                                         {planForm.timeSetting === 'range' && (
-                                            <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-5 animate-fade-in">
-                                                <div className="flex flex-col sm:flex-row gap-4">
-                                                    <div className="flex-1 min-w-0">
+                                            <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 md:p-5 animate-fade-in">
+                                                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 overflow-hidden">
+                                                    <div className="flex-1 w-full min-w-0">
                                                         <label className="block text-xs font-bold text-slate-600 mb-2">开始时间</label>
-                                                        <input type="time" value={planForm.startTime} onChange={e => setPlanForm({ ...planForm, startTime: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white" />
+                                                        <input type="time" value={planForm.startTime} onChange={e => setPlanForm({ ...planForm, startTime: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl p-2.5 md:p-3 outline-none focus:border-blue-500 font-bold bg-white text-sm" />
                                                     </div>
-                                                    <div className="flex-1 min-w-0">
+                                                    <div className="flex-1 w-full min-w-0">
                                                         <label className="block text-xs font-bold text-slate-600 mb-2">结束时间</label>
-                                                        <input type="time" value={planForm.endTime} onChange={e => setPlanForm({ ...planForm, endTime: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-blue-500 font-bold bg-white" />
+                                                        <input type="time" value={planForm.endTime} onChange={e => setPlanForm({ ...planForm, endTime: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl p-2.5 md:p-3 outline-none focus:border-blue-500 font-bold bg-white text-sm" />
                                                     </div>
                                                 </div>
                                             </div>
@@ -3742,10 +3742,10 @@ export default function App() {
                             }
                         </div>
                         {/* Footer Actions */}
-                        <div className="p-6 md:p-8 border-t border-slate-100 flex gap-4 bg-white sticky bottom-0 border-t border-slate-200 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-                            <button onClick={() => { setShowAddPlanModal(false); setEditingTask(null); }} className="flex-1 py-4 text-slate-600 font-black bg-white border-2 border-slate-200 rounded-2xl hover:bg-slate-50 hover:border-slate-300 transition-all">取消</button>
-                            <button onClick={handleSavePlan} className="flex-[2] flex items-center justify-center gap-2 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-600/30 hover:bg-blue-700 hover:scale-[1.02] transition-all">
-                                <Icons.Save size={20} /> {editingTask ? '保存修改' : '保存计划'}
+                        <div className="p-4 md:p-6 border-t border-slate-100 flex gap-3 md:gap-4 bg-white sticky bottom-0 z-30 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+                            <button onClick={() => { setShowAddPlanModal(false); setEditingTask(null); }} className="flex-1 py-3 md:py-4 text-sm md:text-base text-slate-600 font-black bg-white border-2 border-slate-200 rounded-xl md:rounded-2xl hover:bg-slate-50 hover:border-slate-300 transition-all">取消</button>
+                            <button onClick={handleSavePlan} className="flex-[2] flex items-center justify-center gap-2 py-3 md:py-4 text-sm md:text-base bg-blue-600 text-white font-black rounded-xl md:rounded-2xl shadow-xl shadow-blue-600/30 hover:bg-blue-700 hover:scale-[1.02] transition-all">
+                                <Icons.Save size={18} className="md:w-5 md:h-5" /> {editingTask ? '保存修改' : '保存任务'}
                             </button>
                         </div>
                     </div>
@@ -5066,7 +5066,7 @@ export default function App() {
                                 setPlanForm({ targetKids: parentKidFilter === 'all' ? ['all'] : [parentKidFilter], category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, periodMaxType: 'daily', timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
                                 setShowAddPlanModal(true);
                             }} className="bg-blue-600 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all hover:-translate-y-0.5">
-                                <Icons.Plus size={18} /> <span className="hidden sm:inline">新建计划</span><span className="sm:hidden">新建</span>
+                                <Icons.Plus size={18} /> <span className="hidden sm:inline">新建任务</span><span className="sm:hidden">新建</span>
                             </button>
                         </div>
 
