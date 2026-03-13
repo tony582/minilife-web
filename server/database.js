@@ -88,8 +88,15 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 attachments TEXT,
                 requireApproval INTEGER,
                 repeatConfig TEXT,
-                "order" INTEGER DEFAULT 0
+                "order" INTEGER DEFAULT 0,
+                periodMaxPerDay INTEGER,
+                periodMaxType TEXT
             )`);
+            
+            // Add safe migrations for existing instances
+            db.run(`ALTER TABLE tasks ADD COLUMN periodMaxPerDay INTEGER`, (err) => {});
+            db.run(`ALTER TABLE tasks ADD COLUMN periodMaxType TEXT`, (err) => {});
+
 
             // Inventory Table (Multi-tenant)
             db.run(`CREATE TABLE IF NOT EXISTS inventory (

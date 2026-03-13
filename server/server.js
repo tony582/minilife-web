@@ -11,10 +11,31 @@ app.use(express.json());
 
 const JWT_SECRET = 'minilife_super_secret_key_2026'; // In production, use env variable
 
-// Middleware: Authenticate Token
+// Global Active SSE Connections Mapping
+const clients = {};
+
+// Helper: Notify all connected clients for a user
+const notifyUser = (userId) => {
+    if (clients[userId]) {
+        clients[userId].forEach(clientRes => {
+            try {
+                clientRes.write(`data: ${JSON.stringify({ action: 'sync', timestamp: Date.now() })}\n\n`);
+            } catch (err) {
+                console.error("SSE Write Error:", err);
+            }
+        });
+    }
+};
+
+// Middleware: Authenticate Token (Supports headers or query param for SSE)
 const authenticateToken = (req, res, next) => {
+    let token = null;
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    if (authHeader) {
+        token = authHeader.split(' ')[1];
+    } else if (req.query.token) {
+        token = req.query.token;
+    }
 
     if (token == null) return res.status(401).json({ error: "No token provided" });
 
@@ -24,6 +45,28 @@ const authenticateToken = (req, res, next) => {
         next();
     });
 };
+
+// SSE Synchronization Endpoint
+app.get('/api/sync', authenticateToken, (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders(); 
+
+    const userId = req.user.id;
+    if (!clients[userId]) clients[userId] = [];
+    clients[userId].push(res);
+    
+    // Send initial connection heartbeat
+    res.write(`data: ${JSON.stringify({ action: 'connected' })}\n\n`);
+
+    req.on('close', () => {
+        if (clients[userId]) {
+            clients[userId] = clients[userId].filter(client => client !== res);
+            if (clients[userId].length === 0) delete clients[userId];
+        }
+    });
+});
 
 // Middleware: Require Admin
 const requireAdmin = (req, res, next) => {
@@ -169,6 +212,7 @@ app.post('/api/kids', authenticateToken, (req, res) => {
     const insert = "INSERT INTO kids (id, userId, name, avatar, level, exp, balance_spend, balance_save, balance_give, vault_locked, vault_projected) VALUES (?,?,?,?,1,0,0,0,0,0,0)";
     db.run(insert, [id, req.user.id, name, avatar], function (err) {
         if (err) return res.status(500).json({ error: err.message });
+        notifyUser(req.user.id);
         res.json({ id });
     });
 });
@@ -195,6 +239,7 @@ app.put('/api/kids/:id', authenticateToken, (req, res) => {
 
     db.run(query, params, function (err) {
         if (err) return res.status(500).json({ error: err.message });
+        notifyUser(req.user.id);
         res.json({ updatedID: req.params.id });
     });
 });
@@ -206,6 +251,7 @@ app.delete('/api/kids/:id', authenticateToken, (req, res) => {
         db.run("DELETE FROM transactions WHERE kidId = ? AND userId = ?", [req.params.id, req.user.id]);
         db.run("DELETE FROM kids WHERE id = ? AND userId = ?", [req.params.id, req.user.id], function (err) {
             if (err) return res.status(500).json({ error: err.message });
+            notifyUser(req.user.id);
             res.json({ deletedID: req.params.id });
         });
     });
@@ -228,22 +274,23 @@ app.get('/api/tasks', authenticateToken, (req, res) => {
 });
 
 app.post('/api/tasks', authenticateToken, (req, res) => {
-    const { id, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, dates, startDate, pointRule, habitType, attachments, requireApproval, repeatConfig, order } = req.body;
+    const { id, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, dates, startDate, pointRule, habitType, attachments, requireApproval, repeatConfig, order, periodMaxPerDay, periodMaxType } = req.body;
     const datesStr = dates ? JSON.stringify(dates) : '[]';
     const attachmentsStr = attachments ? JSON.stringify(attachments) : '[]';
     const repeatConfigStr = repeatConfig ? JSON.stringify(repeatConfig) : null;
     const requireApprovalInt = requireApproval ? 1 : 0;
     const orderInt = order || 0;
 
-    const insert = `INSERT INTO tasks (id, userId, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, dates, history, startDate, pointRule, habitType, attachments, requireApproval, repeatConfig, "order") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
-    db.run(insert, [id, req.user.id, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, datesStr, '{}', startDate, pointRule, habitType, attachmentsStr, requireApprovalInt, repeatConfigStr, orderInt], function (err) {
+    const insert = `INSERT INTO tasks (id, userId, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, dates, history, startDate, pointRule, habitType, attachments, requireApproval, repeatConfig, "order", periodMaxPerDay, periodMaxType) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+    db.run(insert, [id, req.user.id, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, datesStr, '{}', startDate, pointRule, habitType, attachmentsStr, requireApprovalInt, repeatConfigStr, orderInt, periodMaxPerDay, periodMaxType], function (err) {
         if (err) return res.status(500).json({ error: err.message });
+        notifyUser(req.user.id);
         res.json({ id });
     });
 });
 
 app.put('/api/tasks/:id', authenticateToken, (req, res) => {
-    const { status, title, reward, timeStr, frequency, standards, category, catColor, iconEmoji, iconName, dates, history, startDate, pointRule, habitType, attachments, requireApproval, repeatConfig, order } = req.body;
+    const { status, title, reward, timeStr, frequency, standards, category, catColor, iconEmoji, iconName, dates, history, startDate, pointRule, habitType, attachments, requireApproval, repeatConfig, order, periodMaxPerDay, periodMaxType } = req.body;
     let query = "UPDATE tasks SET ";
     let params = [];
     if (status !== undefined) { query += "status = ?, "; params.push(status); }
@@ -265,12 +312,15 @@ app.put('/api/tasks/:id', authenticateToken, (req, res) => {
     if (requireApproval !== undefined) { query += "requireApproval = ?, "; params.push(requireApproval ? 1 : 0); }
     if (repeatConfig !== undefined) { query += "repeatConfig = ?, "; params.push(repeatConfig ? JSON.stringify(repeatConfig) : null); }
     if (order !== undefined) { query += '"order" = ?, '; params.push(order); }
+    if (periodMaxPerDay !== undefined) { query += "periodMaxPerDay = ?, "; params.push(periodMaxPerDay); }
+    if (periodMaxType !== undefined) { query += "periodMaxType = ?, "; params.push(periodMaxType); }
     if (params.length === 0) return res.status(400).json({ error: "No fields to update" });
 
     query = query.slice(0, -2) + " WHERE id = ? AND userId = ?";
     params.push(req.params.id, req.user.id);
     db.run(query, params, function (err) {
         if (err) return res.status(500).json({ error: err.message });
+        notifyUser(req.user.id);
         res.json({ updatedID: req.params.id });
     });
 });
@@ -287,6 +337,7 @@ app.put('/api/tasks/:id/history', authenticateToken, (req, res) => {
         history[date] = { status, timeSpent, note, updatedAt: new Date().toISOString() };
         db.run("UPDATE tasks SET history = ? WHERE id = ? AND userId = ?", [JSON.stringify(history), req.params.id, req.user.id], function (updateErr) {
             if (updateErr) return res.status(500).json({ error: updateErr.message });
+            notifyUser(req.user.id);
             res.json({ updatedID: req.params.id, history });
         });
     });
@@ -295,6 +346,7 @@ app.put('/api/tasks/:id/history', authenticateToken, (req, res) => {
 app.delete('/api/tasks/:id', authenticateToken, (req, res) => {
     db.run("DELETE FROM tasks WHERE id = ? AND userId = ?", [req.params.id, req.user.id], function (err) {
         if (err) return res.status(500).json({ error: err.message });
+        notifyUser(req.user.id);
         res.json({ deletedID: req.params.id });
     });
 });
@@ -312,6 +364,7 @@ app.post('/api/inventory', authenticateToken, (req, res) => {
     const insert = `INSERT INTO inventory (id, userId, name, price, desc, iconEmoji, type) VALUES (?,?,?,?,?,?,?)`;
     db.run(insert, [id, req.user.id, name, price, desc, iconEmoji, type], function (err) {
         if (err) return res.status(500).json({ error: err.message });
+        notifyUser(req.user.id);
         res.json({ id });
     });
 });
@@ -321,6 +374,7 @@ app.put('/api/inventory/:id', authenticateToken, (req, res) => {
     const query = "UPDATE inventory SET name = ?, price = ?, desc = ?, iconEmoji = ?, type = ? WHERE id = ? AND userId = ?";
     db.run(query, [name, price, desc, iconEmoji, type, req.params.id, req.user.id], function (err) {
         if (err) return res.status(500).json({ error: err.message });
+        notifyUser(req.user.id);
         res.json({ updatedID: req.params.id });
     });
 });
@@ -328,6 +382,7 @@ app.put('/api/inventory/:id', authenticateToken, (req, res) => {
 app.delete('/api/inventory/:id', authenticateToken, (req, res) => {
     db.run("DELETE FROM inventory WHERE id = ? AND userId = ?", [req.params.id, req.user.id], function (err) {
         if (err) return res.status(500).json({ error: err.message });
+        notifyUser(req.user.id);
         res.json({ deletedID: req.params.id });
     });
 });
@@ -345,6 +400,7 @@ app.post('/api/orders', authenticateToken, (req, res) => {
     const insert = `INSERT INTO orders (id, userId, kidId, itemName, price, status, date, rating, comment) VALUES (?,?,?,?,?,?,?,?,?)`;
     db.run(insert, [id, req.user.id, kidId, itemName, price, status, date, rating, comment], function (err) {
         if (err) return res.status(500).json({ error: err.message });
+        notifyUser(req.user.id);
         res.json({ id });
     });
 });
@@ -360,6 +416,7 @@ app.put('/api/orders/:id', authenticateToken, (req, res) => {
 
     db.run(query, params, function (err) {
         if (err) return res.status(500).json({ error: err.message });
+        notifyUser(req.user.id);
         res.json({ updatedID: req.params.id });
     });
 });
@@ -384,6 +441,7 @@ app.post('/api/transactions', authenticateToken, (req, res) => {
     const insert = "INSERT INTO transactions (id, userId, kidId, type, amount, title, date, category) VALUES (?,?,?,?,?,?,?,?)";
     db.run(insert, [id, req.user.id, kidId, type, amount, title, date, category], function (err) {
         if (err) return res.status(500).json({ error: err.message });
+        notifyUser(req.user.id);
         res.json({ id });
     });
 });

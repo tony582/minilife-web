@@ -20,6 +20,7 @@ const Icons = {
     ShieldCheck: (p) => <IconWrapper {...p}><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2-1 4-2 7-2 2.5 0 4.5 1 6 2a1 1 0 0 1 1 1v7z" /><path d="m9 12 2 2 4-4" /></IconWrapper>,
     BookOpen: (p) => <IconWrapper {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></IconWrapper>,
     ArrowRight: (p) => <IconWrapper {...p}><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></IconWrapper>,
+    ArrowLeft: (p) => <IconWrapper {...p}><path d="M19 12H5" /><path d="M12 19l-7-7 7-7" /></IconWrapper>,
     ArrowUp: (p) => <IconWrapper {...p}><path d="m5 12 7-7 7 7" /><path d="M12 19V5" /></IconWrapper>,
     ArrowDown: (p) => <IconWrapper {...p}><path d="M12 5v14" /><path d="m19 12-7 7-7-7" /></IconWrapper>,
     CheckCircle: (p) => <IconWrapper {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><path d="m9 11 3 3L22 4" /></IconWrapper>,
@@ -28,7 +29,9 @@ const Icons = {
     TrendingUp: (p) => <IconWrapper {...p}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" /></IconWrapper>,
     TrendingDown: (p) => <IconWrapper {...p}><polyline points="22 17 13.5 8.5 8.5 13.5 2 7" /><polyline points="16 17 22 17 22 11" /></IconWrapper>,
     Lock: (p) => <IconWrapper {...p}><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></IconWrapper>,
+    Unlock: (p) => <IconWrapper {...p}><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></IconWrapper>,
     Award: (p) => <IconWrapper {...p}><circle cx="12" cy="8" r="7" /><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" /></IconWrapper>,
+    Gem: (p) => <IconWrapper {...p}><path d="M6 3h12l4 6-10 13L2 9Z" /><path d="M11 3 8 9l4 13" /><path d="M13 3l3 6-4 13" /></IconWrapper>,
     Bell: (p) => <IconWrapper {...p}><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></IconWrapper>,
     Info: (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></IconWrapper>,
     X: (p) => <IconWrapper {...p}><path d="M18 6 6 18" /><path d="m6 6 12 12" /></IconWrapper>,
@@ -39,7 +42,7 @@ const Icons = {
     ChevronDown: (p) => <IconWrapper {...p}><path d="m6 9 6 6 6-6" /></IconWrapper>,
     Plus: (p) => <IconWrapper {...p}><path d="M5 12h14" /><path d="M12 5v14" /></IconWrapper>,
     Trash2: (p) => <IconWrapper {...p}><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></IconWrapper>,
-    Settings: (p) => <IconWrapper {...p}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></IconWrapper>,
+    Settings: (p) => <IconWrapper {...p}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1-1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></IconWrapper>,
     Users: (p) => <IconWrapper {...p}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></IconWrapper>,
     UserPlus: (p) => <IconWrapper {...p}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" /></IconWrapper>,
     LogOut: (p) => <IconWrapper {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></IconWrapper>,
@@ -56,6 +59,7 @@ const Icons = {
     Wrench: (p) => <IconWrapper {...p}><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></IconWrapper>,
     RefreshCw: (p) => <IconWrapper {...p}><polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></IconWrapper>,
     Upload: (p) => <IconWrapper {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" /></IconWrapper>,
+    Target: (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></IconWrapper>,
     Save: (p) => <IconWrapper {...p}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></IconWrapper>,
     Image: (p) => <IconWrapper {...p}><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></IconWrapper>,
     FileText: (p) => <IconWrapper {...p}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><line x1="16" x2="8" y1="13" y2="13" /><line x1="16" x2="8" y1="17" y2="17" /><line x1="10" x2="8" y1="9" y2="9" /></IconWrapper>,
@@ -173,6 +177,55 @@ const apiFetch = async (url, options = {}) => {
     return res;
 };
 
+// === 钩子工具 ===
+const useOnClickOutside = (ref, handler) => {
+    useEffect(() => {
+        const listener = (event) => {
+            if (!ref.current || ref.current.contains(event.target)) {
+                return;
+            }
+            handler(event);
+        };
+        document.addEventListener('mousedown', listener);
+        document.addEventListener('touchstart', listener);
+        return () => {
+            document.removeEventListener('mousedown', listener);
+            document.removeEventListener('touchstart', listener);
+        };
+    }, [ref, handler]);
+};
+
+// Removed HTML5 Base64 Audio Engine to prevent iOS Safari from hijacking the Dynamic Island / Lock Screen media player.
+let globalAudioCtx = null;
+
+const CelebrationModal = ({ data, onClose }) => {
+    if (!data) return null;
+    const isPositive = data.type === 'positive';
+    return (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-simple-fade">
+            <div className="bg-white rounded-[2.5rem] w-full max-w-sm p-8 text-center relative overflow-hidden shadow-2xl animate-scale-up border-[3px] border-white/50">
+                <div className={`absolute top-0 left-0 right-0 h-40 opacity-20 blur-3xl ${isPositive ? 'bg-gradient-to-br from-emerald-400 to-teal-500' : 'bg-gradient-to-br from-amber-400 to-orange-500'}`}></div>
+                
+                <div className="relative z-10 flex flex-col items-center">
+                    <div className={`w-28 h-28 rounded-[2rem] flex items-center justify-center text-6xl mb-6 shadow-inner ${isPositive ? 'bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-500' : 'bg-gradient-to-br from-amber-50 to-orange-50 text-orange-500'}`}>
+                        {isPositive ? '✨' : '🛡️'}
+                    </div>
+                    <h2 className="text-2xl font-black text-slate-800 mb-3">{isPositive ? '打卡成功！' : '勇敢坦白！'}</h2>
+                    <p className="text-base text-slate-500 mb-8 leading-relaxed font-bold bg-slate-50 p-4 rounded-2xl">"{data.message}"</p>
+                    
+                    <div className={`text-4xl font-black mb-8 flex items-baseline justify-center gap-1 ${isPositive ? 'text-emerald-500' : 'text-red-500'}`}>
+                        {isPositive ? '+' : '-'}{Math.abs(data.task.reward)} <span className="text-sm font-bold text-slate-400">家庭币</span>
+                    </div>
+                    
+                    <button type="button" onClick={onClose} className={`w-full py-4 rounded-2xl text-white font-black text-lg shadow-lg active:scale-95 transition-all outline-none ${isPositive ? 'bg-gradient-to-r from-emerald-400 to-teal-500 shadow-emerald-500/30 hover:shadow-emerald-500/50' : 'bg-gradient-to-r from-amber-400 to-orange-500 shadow-orange-500/30 hover:shadow-orange-500/50'}`}>
+                        {isPositive ? '继续保持' : '我知道了'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export default function App() {
     // === 全局状态 ===
 
@@ -181,6 +234,7 @@ export default function App() {
     const [authLoading, setAuthLoading] = useState(true);
     const [authMode, setAuthMode] = useState('login'); // 'login' | 'register'
     const [authForm, setAuthForm] = useState({ email: '', password: '' });
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [activationCode, setActivationCode] = useState('');
 
     const [appState, setAppState] = useState(localStorage.getItem('minilife_appState') || 'profiles'); // 'profiles' | 'parent_pin' | 'kid_app' | 'parent_app'
@@ -191,6 +245,11 @@ export default function App() {
     const [historyFilter, setHistoryFilter] = useState('all'); // 'all', 'income', 'expense'
     const [habitCardFilter, setHabitCardFilter] = useState('all'); // 'all', 'income', 'expense', 'completed', 'pending'
     const [celebrationData, setCelebrationData] = useState(null);
+
+    // State for Parental Manual Penalty Multi-Child Selection
+    const [showPenaltyModal, setShowPenaltyModal] = useState(false);
+    const [penaltyTaskContext, setPenaltyTaskContext] = useState(null);
+    const [penaltySelectedKidIds, setPenaltySelectedKidIds] = useState([]);
 
     // Helper: Get Tier Title & Emoji Map based on Level
     const getLevelTier = (level) => {
@@ -203,6 +262,11 @@ export default function App() {
     };
     const handleAuth = async (e) => {
         e.preventDefault();
+        
+        if (authMode === 'register' && authForm.password !== confirmPassword) {
+            return notify('两次输入的密码不一致，请重新确认', 'error');
+        }
+
         try {
             const endpoint = authMode === 'login' ? '/api/login' : '/api/register';
             const res = await fetch(`${API_BASE}${endpoint}`, {
@@ -365,7 +429,75 @@ export default function App() {
             setAuthLoading(false);
             setIsLoading(false);
         };
+
         checkAuthAndFetch();
+
+        // Server-Sent Events (SSE) Live Sync - Robust Mobile Reconnection
+        let eventSource = null;
+        let reconnectTimeout = null;
+
+        const connectSSE = () => {
+            if (eventSource) {
+                eventSource.close();
+            }
+            if (!token) return;
+
+            console.log('Live Sync: Establishing connection...');
+            eventSource = new EventSource(`/api/sync?token=${token}`);
+            
+            eventSource.onopen = () => {
+                console.log('Live Sync Connected');
+                if (reconnectTimeout) clearTimeout(reconnectTimeout);
+            };
+
+            eventSource.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.action === 'sync') {
+                        console.log('Live Sync: Server update detected, fetching new data...');
+                        checkAuthAndFetch();
+                    }
+                } catch (err) {
+                    console.error('SSE Payload Error:', err);
+                }
+            };
+
+            eventSource.onerror = (err) => {
+                console.error('Live Sync connection lost, reconnecting...', err);
+                eventSource.close();
+                // Exponential backoff or simple delay
+                reconnectTimeout = setTimeout(connectSSE, 3000);
+            };
+        };
+
+        if (token) connectSSE();
+
+        // Auto-refresh and force reconnect when app comes back to foreground (PWA / Mobile Switch)
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                console.log('App resumed, silently fetching fresh data and reconnecting sync...');
+                checkAuthAndFetch();
+                connectSSE();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', handleVisibilityChange);
+
+        // Fallback Polling (15s) for stubborn iOS background thread sleeps
+        const fallbackPoll = setInterval(() => {
+            if (document.visibilityState === 'visible' && token) {
+                checkAuthAndFetch();
+            }
+        }, 15000);
+
+        return () => {
+            if (eventSource) eventSource.close();
+            if (reconnectTimeout) clearTimeout(reconnectTimeout);
+            clearInterval(fallbackPoll);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('focus', handleVisibilityChange);
+        };
     }, [token]);
 
     // Dummy out the old fetchData so it doesn't run or crash
@@ -421,6 +553,21 @@ export default function App() {
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
     const [showStatusDropdown, setShowStatusDropdown] = useState(false);
     const [showSortDropdown, setShowSortDropdown] = useState(false);
+    
+    // Parent header settings dropdown
+    const [showParentSettingsDropdown, setShowParentSettingsDropdown] = useState(false);
+    
+    const kidFilterRef = useRef();
+    const kidSortRef = useRef();
+    const parentFilterRef = useRef();
+    const parentSortRef = useRef();
+    const parentSettingsRef = useRef();
+    
+    useOnClickOutside(kidFilterRef, () => setShowFilterDropdown(false));
+    useOnClickOutside(kidSortRef, () => setShowSortDropdown(false));
+    useOnClickOutside(parentFilterRef, () => setShowFilterDropdown(false));
+    useOnClickOutside(parentSortRef, () => setShowSortDropdown(false));
+    useOnClickOutside(parentSettingsRef, () => setShowParentSettingsDropdown(false));
 
     // 弹窗状态
     const [taskToSubmit, setTaskToSubmit] = useState(null);
@@ -457,25 +604,25 @@ export default function App() {
 
     const getCategoryGradient = (cat) => {
         const gradients = {
-            '语文': 'from-rose-400 to-rose-500',
-            '数学': 'from-indigo-400 to-indigo-500',
-            '英语': 'from-sky-400 to-sky-500',
-            '物理': 'from-amber-400 to-amber-500',
-            '化学': 'from-fuchsia-400 to-fuchsia-500',
-            '生物': 'from-emerald-400 to-emerald-500',
-            '历史': 'from-stone-400 to-stone-500',
-            '地理': 'from-teal-400 to-teal-500',
-            '政治': 'from-red-400 to-red-500',
-            '道德与法治': 'from-blue-400 to-blue-500',
-            '信息技术': 'from-cyan-400 to-cyan-500',
-            '体育运动': 'from-orange-400 to-orange-500',
-            '娱乐': 'from-yellow-400 to-yellow-500',
-            '兴趣班': 'from-pink-400 to-pink-500',
-            '其他': 'from-slate-400 to-slate-500'
+            '语文': 'from-rose-500 to-rose-600',
+            '数学': 'from-indigo-500 to-indigo-600',
+            '英语': 'from-sky-500 to-sky-600',
+            '物理': 'from-amber-500 to-amber-600',
+            '化学': 'from-fuchsia-500 to-fuchsia-600',
+            '生物': 'from-emerald-500 to-emerald-600',
+            '历史': 'from-stone-500 to-stone-600',
+            '地理': 'from-teal-500 to-teal-600',
+            '政治': 'from-red-500 to-red-600',
+            '道德与法治': 'from-blue-500 to-blue-600',
+            '信息技术': 'from-cyan-500 to-cyan-600',
+            '体育运动': 'from-orange-500 to-orange-600',
+            '娱乐': 'from-yellow-500 to-yellow-600',
+            '兴趣班': 'from-pink-500 to-pink-600',
+            '其他': 'from-slate-500 to-slate-600'
         };
         if (gradients[cat]) return gradients[cat];
         let hash = 0; for (let i = 0; i < (cat || '').length; i++) hash = cat.charCodeAt(i) + ((hash << 5) - hash);
-        const dynamicGradients = ['from-rose-400 to-rose-500', 'from-lime-400 to-lime-500', 'from-teal-400 to-teal-500', 'from-fuchsia-400 to-fuchsia-500', 'from-sky-400 to-sky-500'];
+        const dynamicGradients = ['from-rose-500 to-rose-600', 'from-lime-500 to-lime-600', 'from-teal-500 to-teal-600', 'from-fuchsia-500 to-fuchsia-600', 'from-sky-500 to-sky-600'];
         return dynamicGradients[Math.abs(hash) % dynamicGradients.length];
     };
 
@@ -572,6 +719,7 @@ export default function App() {
         periodCustomDays: [1, 2, 3, 4, 5],
         periodTargetCount: 1,
         periodMaxPerDay: 1,
+        periodMaxType: 'daily', // 'daily' | 'weekly'
         timeSetting: 'range', // 'none' | 'range' | 'duration' - Default to range as requested
         startTime: '', endTime: '', durationPreset: 25,
         pointRule: 'default', // 'default' | 'custom'
@@ -677,13 +825,44 @@ export default function App() {
 
     // 预览弹窗状态 (Kid App)
     const [showPreviewModal, setShowPreviewModal] = useState(false);
-    const [previewTask, setPreviewTask] = useState(null);
+    const [previewTask, setPreviewTask] = useState(null); // Full task object for preview
+    
+    // Image Preview Zoom Modal State
+    const [showImagePreviewModal, setShowImagePreviewModal] = useState(false);
+    const [previewImages, setPreviewImages] = useState([]);
+    const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
+
+    // Helper function to get weekly completion count
+    const getWeeklyCompletionCount = (task, kidId, currentDStr) => {
+        const currentDt = new Date(currentDStr);
+        const day = currentDt.getDay() || 7;
+        const weekStartDt = new Date(currentDt);
+        weekStartDt.setDate(currentDt.getDate() - day + 1);
+        weekStartDt.setHours(0, 0, 0, 0);
+
+        const weekEndDt = new Date(weekStartDt);
+        weekEndDt.setDate(weekStartDt.getDate() + 6);
+        weekEndDt.setHours(23, 59, 59, 999);
+
+        let weeklyCount = 0;
+        const hist = task.history || {};
+        Object.keys(hist).forEach(dStr => {
+            const histDt = new Date(dStr);
+            if (histDt >= weekStartDt && histDt <= weekEndDt) {
+                const entry = task.kidId === 'all' ? hist[dStr]?.[kidId] : hist[dStr];
+                if (entry && (entry.status === 'completed' || entry.status === 'pending_approval' || entry.status === 'in_progress')) {
+                    weeklyCount += (entry.count || 1);
+                }
+            }
+        });
+        return weeklyCount;
+    };
 
     // === 额外约束检查: N次任务防刷限制 ===
     const checkPeriodLimits = (task, kidId, selectedDStr) => {
         if (!task) return { canSubmit: true };
 
-        // Ensure habits are always checked for daily limits
+        // Ensure habits are always checked for daily/weekly limits
         if (task.type === 'habit') {
             const hist = task.history || {};
             const entry = task.kidId === 'all' ? hist[selectedDStr]?.[kidId] : hist[selectedDStr];
@@ -692,8 +871,19 @@ export default function App() {
             if (task.habitType === 'daily_once' && todayCount >= 1) {
                 return { canSubmit: false, reason: '今天已经完整打过卡啦！' };
             }
-            if (task.habitType === 'multiple' && task.periodMaxPerDay && todayCount >= task.periodMaxPerDay) {
-                return { canSubmit: false, reason: `今天已达上限(${task.periodMaxPerDay}次)啦！` };
+            const maxPerDay = task.periodMaxPerDay || 3;
+            if (task.habitType === 'multiple') {
+                if (task.periodMaxType === 'weekly') {
+                    const weekCount = getWeeklyCompletionCount(task, kidId, selectedDStr);
+                    if (weekCount >= maxPerDay) {
+                        return { canSubmit: false, reason: `本周已达最高上限(${maxPerDay}次)啦！` };
+                    }
+                } else {
+                    // Default to 'daily'
+                    if (todayCount >= maxPerDay) {
+                        return { canSubmit: false, reason: `今天已达上限(${maxPerDay}次)啦！` };
+                    }
+                }
             }
         }
 
@@ -767,64 +957,49 @@ export default function App() {
                     newHistory[selectedDate] = histUpdate;
                 }
 
-                await apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHistory }) });
+                // Optimistic UI updates
                 setTasks(tasks.map(t => t.id === task.id ? { ...t, history: newHistory } : t));
 
-                // Instantly create transactions if kidId matches
-                const coinTrans = {
-                    id: `trans_${Date.now()}_coin`,
-                    kidId: activeKidId,
-                    type: task.reward > 0 ? 'income' : 'expense',
-                    amount: Math.abs(task.reward || 0),
-                    title: `记录成长: ${task.title}`,
-                    date: new Date().toISOString(),
-                    category: 'task'
-                };
-                
-                const expTrans = {
-                    id: `trans_${Date.now()}_exp`,
-                    kidId: activeKidId,
-                    type: task.reward > 0 ? 'income' : 'expense',
-                    amount: Math.ceil(Math.abs(task.reward || 0) * 1.5),
-                    title: `记录成长: ${task.title}`,
-                    date: new Date().toISOString(),
-                    category: 'habit'
-                };
-
-                if (task.reward !== 0) {
-                    await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(coinTrans) });
-                    await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(expTrans) });
-                    setTransactions(prev => [coinTrans, expTrans, ...prev]);
-                }
-
-                // Actually update kid EXP and Coins locally and backend
                 const targetKid = kids.find(k => k.id === activeKidId);
+                let newExp = targetKid ? targetKid.exp : 0;
+                let newBals = targetKid ? { ...targetKid.balances } : {};
+                
                 if (targetKid) {
                     const expDiff = Math.ceil((task.reward || 0) * 1.5);
-                    const newExp = Math.max(0, targetKid.exp + expDiff);
-                    const newBals = { ...targetKid.balances, spend: Math.max(0, targetKid.balances.spend + (task.reward || 0)) };
-                    await updateActiveKid({ exp: newExp, balances: newBals });
+                    newExp = Math.max(0, targetKid.exp + expDiff);
+                     newBals = { ...targetKid.balances, spend: Math.max(0, targetKid.balances.spend + (task.reward || 0)) };
+                     setKids(kids.map(k => k.id === activeKidId ? { ...k, exp: newExp, balances: newBals } : k));
+                }
+
+                if (task.reward !== 0) {
+                    setTransactions(prev => [
+                        { id: `trans_${Date.now()}_coin`, kidId: activeKidId, type: task.reward > 0 ? 'income' : 'expense', amount: Math.abs(task.reward || 0), title: `记录成长: ${task.title}`, date: new Date().toISOString(), category: 'task' },
+                        { id: `trans_${Date.now()}_exp`, kidId: activeKidId, type: task.reward > 0 ? 'income' : 'expense', amount: Math.ceil(Math.abs(task.reward || 0) * 1.5), title: `记录成长: ${task.title}`, date: new Date().toISOString(), category: 'habit' },
+                        ...prev
+                    ]);
                 }
 
                 playSuccessSound();
                 if (task.reward > 0) {
-                    const messages = [
-                        "太棒了！你的坚持让家庭财富又增加啦！🌟",
-                        "自律的你，正在闪闪发光！✨",
-                        "一个小小的习惯，成就大大的未来！🚀",
-                        "付出总有回报，金币+1！💰",
-                        "保持良好的习惯，你是全家的骄傲！🏅"
-                    ];
+                    const messages = ["太棒了！你的坚持让家庭财富又增加啦！🌟", "自律的你，正在闪闪发光！✨", "一个小小的习惯，成就大大的未来！🚀", "付出总有回报，金币+1！💰", "保持良好的习惯，你是全家的骄傲！🏅"];
                     setCelebrationData({ task, message: messages[Math.floor(Math.random() * messages.length)], type: 'positive' });
                 } else if (task.reward < 0) {
-                    const messages = [
-                        "诚实是金！即使扣分，你的坦白也值得欣赏！🛡️",
-                        "知错能改，善莫大焉，下次一定能做好！💪",
-                        "勇敢承认错误，你已经赢了第一步！✨"
-                    ];
+                    const messages = ["诚实是金！即使扣分，你的坦白也值得欣赏！🛡️", "知错能改，善莫大焉，下次一定能做好！💪", "勇敢承认错误，你已经赢了第一步！✨"];
                     setCelebrationData({ task, message: messages[Math.floor(Math.random() * messages.length)], type: 'negative' });
                 } else {
                     notify("打卡成功！", "success");
+                }
+
+                // Background network sync
+                apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHistory }) }).catch(e => console.error(e));
+                
+                if (task.reward !== 0) {
+                    apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kidId: activeKidId, type: task.reward > 0 ? 'income' : 'expense', amount: Math.abs(task.reward || 0), title: `记录成长: ${task.title}`, date: new Date().toISOString(), category: 'task' }) }).catch(e => console.error(e));
+                    apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kidId: activeKidId, type: task.reward > 0 ? 'income' : 'expense', amount: Math.ceil(Math.abs(task.reward || 0) * 1.5), title: `记录成长: ${task.title}`, date: new Date().toISOString(), category: 'habit' }) }).catch(e => console.error(e));
+                }
+
+                if (targetKid) {
+                    apiFetch(`/api/kids/${activeKidId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exp: newExp, balances: newBals }) }).catch(e => console.error(e));
                 }
 
             } catch (e) {
@@ -858,19 +1033,42 @@ export default function App() {
 
     const playSuccessSound = () => {
         try {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
+            // Use a globally cached AudioContext to prevent severe main-thread freezing and memory leaks
+            if (!window.AudioContext && !window.webkitAudioContext) return;
+            
+            if (!globalAudioCtx) {
+                const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+                globalAudioCtx = new AudioCtxClass();
+            }
+            const ctx = globalAudioCtx;
+            if (ctx.state === 'suspended') {
+                ctx.resume(); // Force wake on iOS
+            }
+
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
             oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
+            gainNode.connect(ctx.destination);
+            
             oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
-            oscillator.frequency.exponentialRampToValueAtTime(1046.50, audioCtx.currentTime + 0.1); // C6
-            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-            oscillator.start(audioCtx.currentTime);
-            oscillator.stop(audioCtx.currentTime + 0.3);
-        } catch (e) { }
+            const now = ctx.currentTime;
+            
+            // Bright cheerful chime (C5 -> C6 sweep)
+            oscillator.frequency.setValueAtTime(523.25, now);
+            oscillator.frequency.exponentialRampToValueAtTime(1046.50, now + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.5, now); // Start loud
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3); // Fade out quickly
+            
+            oscillator.start(now);
+            oscillator.stop(now + 0.3);
+            
+            // Don't close the global context! Let it persist for subsequent plays
+
+
+        } catch (e) {
+            console.error("Audio playback failed:", e);
+        }
     };
 
     const updateActiveKid = async (updates) => {
@@ -932,6 +1130,8 @@ export default function App() {
     const confirmSubmitTask = async () => {
         if (!taskToSubmit) return;
 
+        playSuccessSound(); // Fire exactly on click to bypass iOS async suspensions
+
         // Construct payload specifically based on whether history is 1D or 2D (unified)
         const histUpdate = { status: 'pending_approval' };
         let newHistory = { ...(taskToSubmit.history || {}) };
@@ -951,7 +1151,6 @@ export default function App() {
 
             setTasks(tasks.map(t => t.id === taskToSubmit.id ? { ...t, history: newHistory } : t));
             setTaskToSubmit(null);
-            playSuccessSound();
             notify("已快速完成并提交！等待家长审核。", "success");
         } catch (e) { notify("网络请求失败", "error"); }
     };
@@ -961,13 +1160,68 @@ export default function App() {
         if (!limits.canSubmit) return notify(limits.reason, 'error');
 
         setQuickCompleteTask(task);
-        setQcTimeMode('duration');
-        setQcHours(0);
-        setQcMinutes(0);
-        setQcSeconds(0);
-        setQcStartTime('');
+
+        let dHours = 0;
+        let dMinutes = 0;
+        let sTime = '';
+        
         const now = new Date();
-        setQcEndTime(`${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`);
+        const nowStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        let defaultMode = 'duration';
+
+        if (task.timeStr) {
+            // Check for range pattern HH:mm ~ HH:mm
+            const rangeMatch = task.timeStr.match(/(\d{1,2}:\d{2})\s*(?:-|~|到|至)\s*(\d{1,2}:\d{2})/);
+            
+            // Check for duration pattern like 30分钟, 1小时, 1.5小时
+            const minMatch = task.timeStr.match(/(\d+)\s*(?:分钟|min|m)/);
+            const hrMatch = task.timeStr.match(/(\d+(?:\.\d+)?)\s*(?:小时|hour|hr|h|个钟)/);
+
+            if (rangeMatch) {
+                const [sH, sM] = rangeMatch[1].split(':').map(Number);
+                const [eH, eM] = rangeMatch[2].split(':').map(Number);
+                let diffMins = (eH * 60 + eM) - (sH * 60 + sM);
+                if (diffMins < 0) diffMins += 24 * 60; // Handle cross-midnight logic if necessary
+                
+                // Subtract duration from now to get actual logical start time
+                const startRealDate = new Date(now.getTime() - diffMins * 60000);
+                sTime = `${String(startRealDate.getHours()).padStart(2, '0')}:${String(startRealDate.getMinutes()).padStart(2, '0')}`;
+                
+                dHours = Math.floor(diffMins / 60);
+                dMinutes = diffMins % 60;
+                defaultMode = 'actual';
+            } else if (minMatch || hrMatch) {
+                let totalM = 0;
+                if (minMatch) {
+                    totalM = parseInt(minMatch[1]);
+                } else if (hrMatch) {
+                    totalM = Math.round(parseFloat(hrMatch[1]) * 60);
+                }
+                
+                dHours = Math.floor(totalM / 60);
+                dMinutes = totalM % 60;
+                
+                // Calculate Logical Start Time = End Time (Now) - Target Duration
+                const startRealDate = new Date(now.getTime() - totalM * 60000);
+                sTime = `${String(startRealDate.getHours()).padStart(2, '0')}:${String(startRealDate.getMinutes()).padStart(2, '0')}`;
+                
+                defaultMode = 'duration';
+            } else {
+                // Check if it's just a single time like 20:00 (no endpoint known, fallback)
+                const timeMatch = task.timeStr.match(/(\d{1,2}:\d{2})/);
+                if (timeMatch) {
+                    sTime = timeMatch[1].padStart(5, '0');
+                    defaultMode = 'actual';
+                }
+            }
+        }
+
+        setQcTimeMode(defaultMode);
+        setQcHours(dHours);
+        setQcMinutes(dMinutes);
+        setQcSeconds(0);
+        setQcStartTime(sTime);
+        setQcEndTime(nowStr);
         setQcNote('');
         setQcAttachments([]);
     };
@@ -999,6 +1253,8 @@ export default function App() {
         if (qcTimeMode === 'actual' && (!qcStartTime || !qcEndTime)) {
             return notify('请填写完整的起止时间', 'error');
         }
+        
+        playSuccessSound(); // Fire exactly on click to bypass iOS async suspensions
 
         let spentStr = '';
         if (qcTimeMode === 'duration') {
@@ -1175,7 +1431,7 @@ export default function App() {
         } catch (e) { notify("网络请求失败", "error"); }
     };
 
-    const handleRejectTask = async (task, dateStr, kidId) => {
+    const handleRejectTask = async (task, dateStr, kidId, reason = '') => {
         try {
             const oldHistory = task.history && task.history[dateStr] && task.history[dateStr][kidId] ? task.history[dateStr][kidId] : {};
             
@@ -1184,7 +1440,7 @@ export default function App() {
             if (!histUpdates[dateStr]) histUpdates[dateStr] = {};
             histUpdates[dateStr] = {
                 ...histUpdates[dateStr],
-                [kidId]: { ...oldHistory, status: 'failed' } // preserve timeSpent and current note
+                [kidId]: { ...oldHistory, status: 'failed', rejectFeedback: reason } // preserve timeSpent and current note, add feedback
             };
 
             await apiFetch(`/api/tasks/${task.id}`, {
@@ -1446,7 +1702,7 @@ export default function App() {
                 return t;
             }));
 
-            fetchKids(); // Reload kids to get fresh balances across the board
+            apiFetch('/api/kids').then(r => r.json()).then(setKids).catch(console.error); // Reload kids to get fresh balances across the board
             notify(`一键审批完成！共计发放了 ${Object.values(kidRewardTotals).reduce((a, b) => a + b, 0) || 0} 家庭币。`, "success");
 
         } catch (e) {
@@ -1576,7 +1832,7 @@ export default function App() {
         } else {
             // Habit Logistics
             color = planForm.habitColor;
-            frequency = planForm.habitType === 'daily_once' ? '每日一次' : '多次记录';
+            frequency = planForm.habitType === 'daily_once' ? '每日一次' : (planForm.periodMaxType === 'weekly' ? `每周 ${planForm.periodMaxPerDay} 次` : `每日 ${planForm.periodMaxPerDay} 次`);
         }
 
         // === EDIT MODE: Update existing task ===
@@ -1598,9 +1854,11 @@ export default function App() {
                     periodMaxPerDay: Number(planForm.periodMaxPerDay)
                 } : null, // V2 explicit config
                 timeStr: timeStr,
-                standards: planForm.desc || "按要求完成",
+                standards: planForm.desc || "",
                 iconEmoji: planForm.iconEmoji,
-                requireApproval: planForm.requireApproval
+                requireApproval: planForm.requireApproval,
+                periodMaxPerDay: planType === 'habit' ? Number(planForm.periodMaxPerDay) : undefined,
+                periodMaxType: planType === 'habit' ? planForm.periodMaxType : undefined
             };
             try {
                 await apiFetch(`/api/tasks/${editingTask.id}`, {
@@ -1628,7 +1886,7 @@ export default function App() {
             id: Date.now().toString(),
             title: planForm.title, desc: planForm.desc,
             reward: planType === 'habit' && rewardNum < 0 ? rewardNum : Math.abs(rewardNum),
-            type: planType, status: 'todo', iconEmoji: planForm.iconEmoji, standards: planForm.desc || "按要求完成",
+            type: planType, status: 'todo', iconEmoji: planForm.iconEmoji, standards: planForm.desc || "",
             category: planType === 'study' ? planForm.category : "行为",
             catColor: color,
             frequency: frequency, timeStr: timeStr,
@@ -1637,6 +1895,8 @@ export default function App() {
             habitType: planForm.habitType,
             attachments: planForm.attachments || [],
             requireApproval: planForm.requireApproval,
+            periodMaxPerDay: planType === 'habit' ? Number(planForm.periodMaxPerDay) : undefined,
+            periodMaxType: planType === 'habit' ? planForm.periodMaxType : undefined,
             dates: planForm.repeatType === 'today' || planForm.repeatType === '仅当天' ? [planForm.startDate] : [],
             repeatConfig: planType === 'study' ? {
                 type: planForm.repeatType,
@@ -1972,8 +2232,8 @@ export default function App() {
     const renderTaskSubmitModal = () => {
         if (!taskToSubmit) return null;
         return (
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
-                <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl text-left">
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 pb-[5rem] md:pb-4 animate-fade-in">
+                <div className="bg-white w-full max-w-sm rounded-[2rem] p-5 md:p-6 shadow-2xl text-left max-h-[75vh] md:max-h-[85vh] overflow-y-auto">
                     <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mb-4"><Icons.CheckSquare size={24} /></div>
                     <h2 className="text-xl font-black text-slate-800 mb-2">提交验收确认</h2>
                     <p className="text-sm text-slate-500 mb-4">在提交给家长审核前，请确认你是否达到了以下标准：</p>
@@ -1997,8 +2257,8 @@ export default function App() {
         const totalDisplay = totalMins >= 60 ? `${Math.floor(totalMins / 60)}小时${totalMins % 60 > 0 ? totalMins % 60 + '分钟' : ''}` : `${totalMins}分钟`;
 
         return (
-            <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
-                <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl text-left max-h-[90vh] overflow-y-auto">
+            <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4 pb-[5rem] md:pb-4 animate-fade-in">
+                <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl text-left max-h-[75vh] md:max-h-[90vh] overflow-y-auto">
                     {/* 头部 */}
                     <div className="sticky top-0 bg-white z-10 p-6 pb-4 border-b border-slate-100 rounded-t-[2rem]">
                         <div className="flex items-start justify-between">
@@ -2097,20 +2357,17 @@ export default function App() {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 mb-1 block">开始时间</label>
-                                        <div className="relative">
-                                            <input type="time" value={qcStartTime} onChange={e => setQcStartTime(e.target.value)}
-                                                className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl py-3 px-4 font-bold text-slate-700 outline-none focus:border-indigo-400 transition-colors" />
-                                        </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="flex-1 min-w-0">
+                                        <label className="text-[11px] font-bold text-slate-500 mb-1 block text-center">开始时间</label>
+                                        <input type="time" value={qcStartTime} onChange={e => setQcStartTime(e.target.value)}
+                                            className="w-full box-border bg-slate-50 border-2 border-slate-200 rounded-xl py-2 px-1 text-center text-sm font-black text-slate-800 outline-none focus:border-indigo-400 transition-colors" />
                                     </div>
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 mb-1 block">结束时间</label>
-                                        <div className="relative">
-                                            <input type="time" value={qcEndTime} onChange={e => setQcEndTime(e.target.value)}
-                                                className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl py-3 px-4 font-bold text-slate-700 outline-none focus:border-indigo-400 transition-colors" />
-                                        </div>
+                                    <span className="text-slate-300 font-bold mt-5">-</span>
+                                    <div className="flex-1 min-w-0">
+                                        <label className="text-[11px] font-bold text-slate-500 mb-1 block text-center">结束时间</label>
+                                        <input type="time" value={qcEndTime} onChange={e => setQcEndTime(e.target.value)}
+                                            className="w-full box-border bg-slate-50 border-2 border-slate-200 rounded-xl py-2 px-1 text-center text-sm font-black text-slate-800 outline-none focus:border-indigo-400 transition-colors" />
                                     </div>
                                 </div>
                             )}
@@ -2325,15 +2582,267 @@ export default function App() {
         );
     };
 
+    const renderImagePreviewModal = () => {
+        if (!showImagePreviewModal || !previewImages || previewImages.length === 0) return null;
+
+        const currentImg = previewImages[currentPreviewIndex];
+
+        return (
+            <div className="fixed inset-0 bg-black/95 z-[9999] flex flex-col animate-fade-in">
+                {/* Header Toolbar */}
+                <div className="flex items-center justify-between p-4 text-white/50 absolute top-0 left-0 right-0 z-10">
+                    <div className="text-sm font-bold bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                        {currentPreviewIndex + 1} / {previewImages.length}
+                    </div>
+                    <div className="flex gap-4">
+                        <a 
+                            href={currentImg.data || currentImg.url} 
+                            download={currentImg.name || 'minilife-evidence.jpg'}
+                            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 hover:text-white transition-all backdrop-blur-sm cursor-pointer"
+                            title="下载原始图片"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+                        </a>
+                        <button 
+                            onClick={() => { setShowImagePreviewModal(false); setPreviewImages([]); }}
+                            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 hover:text-white transition-all backdrop-blur-sm"
+                        >
+                            <Icons.X size={20} />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Main Content Area */}
+                <div className="flex-1 relative flex items-center justify-center overflow-hidden p-4 md:p-8 mt-16 md:mt-0">
+                    {previewImages.length > 1 && (
+                        <button 
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setCurrentPreviewIndex(prev => (prev > 0 ? prev - 1 : previewImages.length - 1));
+                            }}
+                            className="absolute left-2 md:left-8 z-20 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-white/50 hover:bg-white/20 hover:text-white backdrop-blur-sm transition-all shadow-xl"
+                        >
+                            <Icons.ChevronLeft size={28} />
+                        </button>
+                    )}
+
+                    <img 
+                        src={currentImg.data || currentImg.url} 
+                        alt={currentImg.name || "Evidence"} 
+                        className="max-w-full max-h-full object-contain rounded-lg shadow-2xl transition-transform duration-300"
+                    />
+
+                    {previewImages.length > 1 && (
+                        <button 
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setCurrentPreviewIndex(prev => (prev < previewImages.length - 1 ? prev + 1 : 0));
+                            }}
+                            className="absolute right-2 md:right-8 z-20 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-white/50 hover:bg-white/20 hover:text-white backdrop-blur-sm transition-all shadow-xl"
+                        >
+                            <Icons.ChevronRight size={28} />
+                        </button>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
+    const confirmRejectTask = async () => {
+        if (!rejectingTaskInfo) return;
+        await handleRejectTask(rejectingTaskInfo.task, rejectingTaskInfo.dateStr, rejectingTaskInfo.kidId, rejectReason);
+        setShowRejectModal(false);
+        setRejectingTaskInfo(null);
+        setRejectReason('');
+    };
+
+    const renderRejectModal = () => {
+        if (!showRejectModal || !rejectingTaskInfo) return null;
+        return (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
+                <div className="bg-white w-full max-w-md rounded-[2rem] p-6 shadow-2xl text-left">
+                    <h2 className="text-xl font-black text-rose-600 mb-2">打回</h2>
+                    <p className="text-slate-500 text-sm mb-6">觉得孩子完成的不够好？写下原因让Ta修改吧：</p>
+                    <textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} placeholder="例如：字迹太潦草了，请重新写一遍..." className="w-full bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl p-4 text-sm font-medium outline-none focus:border-rose-400 focus:bg-white h-28 resize-none mb-6 placeholder:text-rose-300 transition-colors" />
+                    <div className="flex gap-3">
+                        <button onClick={() => { setShowRejectModal(false); setRejectingTaskInfo(null); setRejectReason(''); }} className="flex-1 py-3 text-slate-500 font-bold bg-slate-100 rounded-xl hover:bg-slate-200">取消</button>
+                        <button onClick={confirmRejectTask} className="flex-[2] py-3 bg-gradient-to-r from-rose-500 to-red-600 text-white font-black shadow-lg shadow-rose-500/30 rounded-xl hover:scale-105 transition-all">确认打回</button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+
+
+    const confirmPenalty = () => {
+        if (!penaltyTaskContext || penaltySelectedKidIds.length === 0) return;
+        
+        const penalty = Math.abs(penaltyTaskContext.reward);
+        let kidsUpdated = false;
+        
+        penaltySelectedKidIds.forEach(targetKidId => {
+            const targetKid = kids.find(k => k.id === targetKidId);
+            if (!targetKid) return;
+
+            // Enforce limit check for manual parental deductions (same as kid attempts)
+            const todayStr = formatDate(new Date());
+            const kidHistory = penaltyTaskContext.history || {};
+            const todayHist = kidHistory[todayStr] || {};
+            const kidTodayData = penaltyTaskContext.kidId === 'all' ? (todayHist[targetKidId] || {}) : todayHist;
+            
+            // Check limit based on target kid, just to be safe they haven't maxed it
+            const maxAllowed = penaltyTaskContext.maxPerDay || 1;
+            const attemptsToday = Array.isArray(kidTodayData) ? kidTodayData.length : (kidTodayData.status ? 1 : 0);
+            
+            if (attemptsToday >= maxAllowed) {
+                notify(`${targetKid.name} 的此项记录今日已达上限，无法继续扣除。`, "warning");
+                return; // Skip this child, they reached the limit
+            }
+
+            kidsUpdated = true;
+            
+            // 1. Update balances
+            const newBals = { ...targetKid.balances, spend: Math.max(0, targetKid.balances.spend - penalty) };
+            const newExp = Math.max(0, targetKid.exp - Math.ceil(penalty * 1.5));
+            apiFetch(`/api/kids/${targetKid.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ balances: newBals, exp: newExp }) });
+            setKids(prevKids => prevKids.map(k => k.id === targetKid.id ? { ...k, balances: newBals, exp: newExp } : k));
+            
+            // 2. Post transaction
+            const refundTrans = { id: `trans_${Date.now()}_penalty_${targetKid.id}`, kidId: targetKid.id, type: 'expense', amount: penalty, title: `手动惩罚: ${penaltyTaskContext.title}`, date: new Date().toISOString(), category: 'task' };
+            apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(refundTrans) });
+            setTransactions(prev => [refundTrans, ...prev]);
+            notify(`已记录惩罚，扣除 ${targetKid.name} ${penalty} 家庭币！`, "error");
+
+            // 3. Update Task history so next time it knows attemptsToday is incremented
+            let newHist = { ...kidHistory };
+            const newRecord = { status: 'completed', attemptId: `attempt_${Date.now()}_${targetKidId}` };
+            
+            if (penaltyTaskContext.kidId === 'all') {
+                if (!newHist[todayStr]) newHist[todayStr] = {};
+                if (!newHist[todayStr][targetKidId]) newHist[todayStr][targetKidId] = [];
+                // If it was an object (old format without multi-record), convert to array logic or just push if array
+                if (!Array.isArray(newHist[todayStr][targetKidId])) {
+                     if (newHist[todayStr][targetKidId].status) newHist[todayStr][targetKidId] = [newHist[todayStr][targetKidId]];
+                     else newHist[todayStr][targetKidId] = [];
+                }
+                newHist[todayStr][targetKidId].push(newRecord);
+            } else {
+                 if (!newHist[todayStr]) newHist[todayStr] = [];
+                 if (!Array.isArray(newHist[todayStr])) {
+                     if (newHist[todayStr].status) newHist[todayStr] = [newHist[todayStr]];
+                     else newHist[todayStr] = [];
+                 }
+                 newHist[todayStr].push(newRecord);
+            }
+            apiFetch(`/api/tasks/${penaltyTaskContext.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHist }) });
+            setTasks(prev => prev.map(t => t.id === penaltyTaskContext.id ? { ...t, history: newHist } : t));
+        });
+        
+        if (kidsUpdated) {
+            setShowPenaltyModal(false);
+            setPenaltyTaskContext(null);
+        }
+    };
+
+    const toggleKidSelectionPenalty = (kidId) => {
+        setPenaltySelectedKidIds(prev => 
+            prev.includes(kidId) ? prev.filter(id => id !== kidId) : [...prev, kidId]
+        );
+    };
+
+    const renderPenaltyModal = () => {
+        if (!showPenaltyModal || !penaltyTaskContext) return null;
+        
+        const availableKids = penaltyTaskContext.kidId === 'all' 
+            ? kids 
+            : kids.filter(k => k.id === penaltyTaskContext.kidId);
+
+        return (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in pb-12">
+                <div className="bg-white w-full max-w-sm rounded-[2rem] p-5 shadow-2xl text-left border-[3px] border-white/50">
+                    <div className="flex flex-col items-center mb-4">
+                        <div className="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-2 text-2xl">
+                            🚨
+                        </div>
+                        <h2 className="text-lg font-black text-slate-800">确认扣分对象</h2>
+                        <p className="text-xs text-slate-500 font-bold mt-1 text-center">
+                            请勾选要扣除 <span className="text-red-500 text-sm font-extrabold">{Math.abs(penaltyTaskContext.reward)}</span> 家庭币的孩子<br/>
+                            <span className="text-[10px] text-slate-400 font-normal">(单据限制: {penaltyTaskContext.maxPerDay || 1}次/天)</span>
+                        </p>
+                    </div>
+
+                    {availableKids.length > 1 && (
+                        <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
+                            <span className="text-xs font-bold text-slate-400">选择受罚对象 ({availableKids.length} 人)</span>
+                            <button 
+                                onClick={() => {
+                                    if (penaltySelectedKidIds.length === availableKids.length) {
+                                        setPenaltySelectedKidIds([]); // Deselect all
+                                    } else {
+                                        setPenaltySelectedKidIds(availableKids.map(k => k.id)); // Select all
+                                    }
+                                }}
+                                className="text-xs font-black transition-colors flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-transparent hover:border-slate-200 hover:bg-slate-50 active:bg-slate-100"
+                                style={{ color: penaltySelectedKidIds.length === availableKids.length ? '#f43f5e' : '#64748b' }}
+                            >
+                                <Icons.CheckSquare size={14} />
+                                {penaltySelectedKidIds.length === availableKids.length ? '取消全选' : '全部选中'}
+                            </button>
+                        </div>
+                    )}
+
+                    <div className="space-y-2.5 mb-5 max-h-[35vh] overflow-y-auto pr-1 custom-scrollbar">
+                        {availableKids.map(k => {
+                            const isSelected = penaltySelectedKidIds.includes(k.id);
+                            return (
+                                <button
+                                    key={k.id}
+                                    onClick={() => toggleKidSelectionPenalty(k.id)}
+                                    className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${isSelected ? 'border-red-500 bg-red-50 shadow-inner' : 'border-slate-100 hover:border-slate-200 bg-white'}`}
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-2xl border border-slate-200 shadow-sm shrink-0">
+                                        {k.avatar}
+                                    </div>
+                                    <span className={`font-black text-left flex-1 ${isSelected ? 'text-red-700' : 'text-slate-700'}`}>{k.name}</span>
+                                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center ${isSelected ? 'border-red-500 bg-red-500' : 'border-slate-300'}`}>
+                                        {isSelected && <Icons.Check size={14} className="text-white" />}
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    <div className="flex gap-3">
+                        <button onClick={() => setShowPenaltyModal(false)} className="flex-1 py-3 text-slate-500 font-bold bg-slate-100 rounded-xl hover:bg-slate-200">取消</button>
+                        <button 
+                            disabled={penaltySelectedKidIds.length === 0}
+                            onClick={confirmPenalty} 
+                            className="flex-[2] py-3 bg-gradient-to-r from-red-500 to-rose-600 text-white font-black shadow-lg shadow-red-500/30 rounded-xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                        >
+                            执行扣分
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     const renderKidPreviewModal = () => {
         if (!showPreviewModal || !previewTask) return null;
 
-        // Extract history specific to activeKidId
+        // Evaluate the correct kid context for parents viewing 'All Kids'
+        let resolvedKidId = activeKidId;
+        if (appState === 'parent_app' && activeKidId === 'all') {
+            resolvedKidId = kids.length > 0 ? kids[0].id : activeKidId;
+        }
+
+        // Extract history specific to resolvedKidId
         let kidHistory = {};
         if (previewTask.kidId === 'all') {
             Object.entries(previewTask.history || {}).forEach(([date, dateObj]) => {
-                if (dateObj[activeKidId]) {
-                    kidHistory[date] = dateObj[activeKidId];
+                if (dateObj[resolvedKidId]) {
+                    kidHistory[date] = dateObj[resolvedKidId];
                 }
             });
         } else {
@@ -2374,69 +2883,127 @@ export default function App() {
         }
 
         return (
-            <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-fade-in overflow-y-auto">
-                <div className="bg-white w-full max-w-md rounded-[2rem] p-6 md:p-8 shadow-2xl relative overflow-hidden my-auto max-h-[90vh] flex flex-col">
-                    {/* Header Decoration */}
-                    <div className={`absolute top-0 left-0 right-0 h-32 bg-gradient-to-br ${getCategoryGradient(previewTask.category || '计划任务')} opacity-20`}></div>
-                    <div className="absolute top-4 right-4 z-50">
-                        <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); }} className="w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-all shadow cursor-pointer relative">
-                            <Icons.X size={20} />
+            <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 pb-[5rem] md:pb-4 animate-fade-in overflow-y-auto">
+                <div className="bg-white w-full max-w-md rounded-[2rem] p-5 md:p-8 shadow-2xl relative overflow-hidden my-auto max-h-[75vh] md:max-h-[85vh] flex flex-col">
+                    {/* Ultra-Compact Header */}
+                    <div className="absolute top-3 right-3 z-50">
+                        <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); }} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors">
+                            <Icons.X size={16} />
                         </button>
                     </div>
 
-                    <div className="relative z-10 pt-4 flex flex-col items-center text-center shrink-0">
-                        <div className={`w-24 h-24 rounded-[2rem] bg-gradient-to-br ${getCategoryGradient(previewTask.category || '计划任务')} flex items-center justify-center ${previewTask.type === 'habit' ? 'text-5xl' : 'text-white'} shadow-xl border-4 border-white mb-4 -rotate-3`}>
+                    <div className="relative z-10 flex items-start gap-3 shrink-0 mb-4 pr-10 border-b border-slate-100 pb-4">
+                        <div className={`w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br ${getCategoryGradient(previewTask.category || '计划任务')} flex items-center justify-center ${previewTask.type === 'habit' ? 'text-2xl' : 'text-white'} shadow-sm`}>
                             {previewTask.type === 'habit'
                                 ? (previewTask.iconEmoji || '⭐')
-                                : renderIcon(previewTask.iconName || getIconForCategory(previewTask.category), 50)
+                                : renderIcon(previewTask.iconName || getIconForCategory(previewTask.category), previewTask.type === 'habit' ? 28 : 22)
                             }
                         </div>
-                        <div className="text-sm font-black text-slate-500 mb-1 px-3 py-1 bg-slate-100 rounded-full tracking-wider">{previewTask.category || '计划任务'}</div>
-                        <h2 className="text-2xl font-black text-slate-800 mb-6">{previewTask.title}</h2>
+                        <div className="flex flex-col min-w-0 pt-0.5 mt-[-2px]">
+                            <div className="flex items-center mb-1">
+                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${previewTask.type === 'habit' ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500'}`}>
+                                    {previewTask.category || '计划任务'}
+                                </span>
+                            </div>
+                            <h2 className="text-base font-black text-slate-800 leading-tight line-clamp-2">{previewTask.title}</h2>
+                        </div>
                     </div>
 
-                    <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar pr-2 mb-6">
-                        {/* Task Information Card */}
-                        <div className="w-full bg-slate-50 rounded-2xl p-4 border border-slate-100 text-left space-y-4 mb-6">
-                            {/* 任务类型与频次 */}
-                            <div className="flex items-start gap-3">
-                                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><Icons.RefreshCw size={16} /></div>
-                                <div>
-                                    <div className="text-xs font-bold text-slate-400 mb-0.5">任务类型与频次</div>
-                                    <div className="text-sm font-black text-slate-700">
-                                        {previewTask.type === 'habit' ? '我的成长' : '学习计划'} • {previewTask.frequency || '每天'}
-                                    </div>
+                    <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar pr-2 mb-4 md:mb-6">
+                        {/* Review Mode Overlay for Parents */}
+                        {(appState === 'parent_app' && getTaskStatusOnDate(previewTask, selectedDate, resolvedKidId) === 'pending_approval') ? (
+                            <div className="w-full text-left space-y-4 mb-6">
+                                <div className="text-sm font-black text-rose-600 mb-2 flex items-center gap-2">
+                                    <Icons.Clock size={16} /> 待审核验收
+                                </div>
+                                <div className="bg-orange-50/50 rounded-2xl p-4 border border-orange-100 flex flex-col gap-3">
+                                    {(() => {
+                                        const hr = kidHistory[selectedDate];
+                                        if (!hr) return <div className="text-slate-400 text-sm font-bold">暂无提交记录</div>;
+                                        return (
+                                            <>
+                                                {hr.actualTimeStr && (
+                                                    <div className="flex items-start gap-2 text-sm">
+                                                        <span className="text-orange-400 mt-0.5"><Icons.Clock size={14}/></span>
+                                                        <span className="font-bold text-slate-700">实际时间: <span className="text-orange-600 font-black tracking-wide ml-1">{hr.actualTimeStr}</span></span>
+                                                    </div>
+                                                )}
+                                                {hr.actualDuration && (
+                                                    <div className="flex items-start gap-2 text-sm">
+                                                        <span className="text-orange-400 mt-0.5"><Icons.Play size={14} fill="currentColor"/></span>
+                                                        <span className="font-bold text-slate-700">总耗时: <span className="text-orange-600 font-black tracking-wide ml-1">{hr.actualDuration}</span></span>
+                                                    </div>
+                                                )}
+                                                {hr.note && (
+                                                    <div className="flex items-start gap-2 text-sm">
+                                                        <span className="text-orange-400 mt-0.5"><Icons.MessageCircle size={14}/></span>
+                                                        <span className="font-bold text-slate-600 leading-relaxed bg-white px-3 py-2 rounded-xl border border-orange-100 w-full shadow-sm"><span className="text-slate-400 text-xs mr-2 block mb-1">孩子留言:</span>{hr.note}</span>
+                                                    </div>
+                                                )}
+                                                {hr.attachments && hr.attachments.length > 0 && (
+                                                    <div className="mt-2">
+                                                        <span className="text-slate-400 text-xs font-bold mr-2 block mb-2">图片/视频证据:</span>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {hr.attachments.map((url, i) => (
+                                                                <div key={i} onClick={(e) => { e.stopPropagation(); setPreviewImages(hr.attachments); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-white shadow-md cursor-pointer hover:border-orange-300 hover:scale-105 transition-all">
+                                                                    {(typeof url === 'string' && (url.endsWith('.mp4') || url.endsWith('.webm'))) ? (
+                                                                        <video src={url} className="w-full h-full object-cover" />
+                                                                    ) : (
+                                                                        <img src={typeof url === 'string' ? url : (url.url || url)} className="w-full h-full object-cover" alt="证据" />
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                             </div>
+                        ) : (
+                            <div className="w-full bg-slate-50 rounded-2xl p-4 border border-slate-100 text-left space-y-4 mb-6">
+                                {/* 执行频次 */}
+                                <div className="flex items-start gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><Icons.RefreshCw size={16} /></div>
+                                    <div>
+                                        <div className="text-xs font-bold text-slate-400 mb-0.5">执行频次</div>
+                                        <div className="text-sm font-black text-slate-700">
+                                            {previewTask.frequency || '每天'}
+                                        </div>
+                                    </div>
+                                </div>
 
-                            {(previewTask.timeStr && previewTask.timeStr !== '--:--') && (
+                                {(previewTask.timeStr && previewTask.timeStr !== '--:--') && (
+                                    <div className="flex items-start gap-3 border-t border-slate-200 pt-3">
+                                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><Icons.Clock size={16} /></div>
+                                        <div>
+                                            <div className="text-xs font-bold text-slate-400 mb-0.5">时间要求</div>
+                                            <div className="text-sm font-black text-slate-700">{previewTask.timeStr}</div>
+                                        </div>
+                                    </div>
+                                )}
                                 <div className="flex items-start gap-3 border-t border-slate-200 pt-3">
-                                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><Icons.Clock size={16} /></div>
+                                    <div className="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center shrink-0"><Icons.Star size={16} fill="currentColor" /></div>
                                     <div>
-                                        <div className="text-xs font-bold text-slate-400 mb-0.5">时间要求</div>
-                                        <div className="text-sm font-black text-slate-700">{previewTask.timeStr}</div>
+                                        <div className="text-xs font-bold text-slate-400 mb-0.5">奖励规则</div>
+                                        <div className="text-sm font-black text-slate-700">
+                                            {previewTask.pointRule === 'custom' ? `固定得 ${previewTask.reward} ${previewTask.type === 'habit' ? '家庭币' : '家庭币'}` : `系统自动计算 (${previewTask.reward} ${previewTask.type === 'habit' ? '家庭币' : '家庭币'})`}
+                                        </div>
                                     </div>
                                 </div>
-                            )}
-                            <div className="flex items-start gap-3 border-t border-slate-200 pt-3">
-                                <div className="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center shrink-0"><Icons.Star size={16} fill="currentColor" /></div>
-                                <div>
-                                    <div className="text-xs font-bold text-slate-400 mb-0.5">奖励规则</div>
-                                    <div className="text-sm font-black text-slate-700">
-                                        {previewTask.pointRule === 'custom' ? `固定得 ${previewTask.reward} ${previewTask.type === 'habit' ? '家庭币' : '家庭币'}` : `系统自动计算 (${previewTask.reward} ${previewTask.type === 'habit' ? '家庭币' : '家庭币'})`}
+                                {/* 任务说明 */}
+                                {(previewTask.desc || previewTask.standards) && (
+                                    <div className="flex items-start gap-3 border-t border-slate-200 pt-3">
+                                        <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0"><Icons.FileText size={16} /></div>
+                                        <div>
+                                            <div className="text-xs font-bold text-slate-400 mb-0.5">任务说明</div>
+                                            <div className="text-sm font-medium text-slate-600 leading-relaxed whitespace-pre-wrap">{previewTask.desc || previewTask.standards}</div>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
-                            {previewTask.desc && (
-                                <div className="flex items-start gap-3 border-t border-slate-200 pt-3">
-                                    <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0"><Icons.FileText size={16} /></div>
-                                    <div>
-                                        <div className="text-xs font-bold text-slate-400 mb-0.5">家长寄语/任务要求</div>
-                                        <div className="text-sm font-medium text-slate-600 leading-relaxed">{previewTask.desc}</div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                        )}
 
                         {/* 历史完成信息记录 */}
                         <div className="w-full text-left">
@@ -2482,10 +3049,31 @@ export default function App() {
                                                         <span className="font-bold">打卡备注：</span>{record.note}
                                                     </p>
                                                 )}
-                                                {record.attachmentCount > 0 && (
-                                                    <div className="mt-2 flex items-center gap-1 text-xs text-blue-600 bg-blue-50 w-fit px-2 py-1 rounded">
-                                                        <Icons.Paperclip size={12} /> {record.attachmentCount} 个附件 (已归档)
+                                                {record.attachments && Array.isArray(record.attachments) && record.attachments.length > 0 ? (
+                                                    <div className="mt-3 flex overflow-x-auto gap-2 pb-1 hide-scrollbar">
+                                                        {record.attachments.map((att, idx) => (
+                                                            <div 
+                                                                key={idx} 
+                                                                onClick={() => {
+                                                                    setPreviewImages(record.attachments);
+                                                                    setCurrentPreviewIndex(idx);
+                                                                    setShowImagePreviewModal(true);
+                                                                }}
+                                                                className="w-16 h-16 shrink-0 rounded-lg overflow-hidden border border-slate-200 shadow-sm cursor-pointer hover:shadow-md transition-all relative group"
+                                                            >
+                                                                <img src={att.data || att.url} alt="Evidence" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                                                    <Icons.Eye size={16} className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" />
+                                                                </div>
+                                                            </div>
+                                                        ))}
                                                     </div>
+                                                ) : (
+                                                    record.attachmentCount > 0 && (
+                                                        <div className="mt-2 flex items-center gap-1 text-xs text-blue-600 bg-blue-50 w-fit px-2 py-1 rounded">
+                                                            <Icons.Paperclip size={12} /> {record.attachmentCount} 个附件 (已归档或无预览)
+                                                        </div>
+                                                    )
                                                 )}
                                             </div>
                                         ))}
@@ -2533,48 +3121,56 @@ export default function App() {
                         {/* Parent Controls */}
                         {appState === 'parent_app' && (
                             <div className="flex gap-2 w-full mt-3 border-t border-slate-100 pt-4">
-                                {getTaskStatusOnDate(previewTask, selectedDate, activeKidId) === 'pending_approval' && (
-                                    <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleApproveTask(previewTask, selectedDate); }} className="flex-[2] bg-emerald-500 text-white rounded-xl py-3 font-black shadow-lg shadow-emerald-200 hover:bg-emerald-600 transition-all">
-                                        <Icons.CheckCircle className="inline-block mr-1" size={16} /> 审批验收
-                                    </button>
+                                {getTaskStatusOnDate(previewTask, selectedDate, resolvedKidId) === 'pending_approval' ? (
+                                    <>
+                                        <button onClick={() => { setShowPreviewModal(false); setRejectingTaskInfo({task: previewTask, dateStr: selectedDate, kidId: resolvedKidId}); setShowRejectModal(true); }} className="flex-1 bg-rose-50 text-rose-600 rounded-xl py-4 font-black hover:bg-rose-100 active:scale-95 transition-all flex items-center justify-center gap-1.5 border border-rose-200">
+                                            <Icons.X size={18} strokeWidth={3} /> 打回
+                                        </button>
+                                        <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleApproveTask(previewTask, selectedDate, resolvedKidId); }} className="flex-[2] bg-emerald-500 text-white rounded-xl py-4 font-black shadow-lg shadow-emerald-200 hover:bg-emerald-600 active:scale-95 transition-all flex items-center justify-center gap-1.5">
+                                            <Icons.Check size={20} strokeWidth={3} /> 确认通过
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button onClick={() => {
+                                            setShowPreviewModal(false);
+                                            setEditingTask(previewTask);
+                                            setPlanType(previewTask.type || 'study');
+                                            setPlanForm({
+                                                targetKid: previewTask.kidId,
+                                                category: previewTask.category || '技能',
+                                                title: previewTask.title,
+                                                desc: previewTask.standards || previewTask.desc || '',
+                                                startDate: previewTask.startDate || new Date().toISOString().split('T')[0],
+                                                endDate: previewTask.repeatConfig?.endDate || '',
+                                                repeatType: previewTask.repeatConfig?.type || (previewTask.frequency === '仅当天' ? 'today' : (previewTask.frequency === '每周一至周五' ? 'weekly_custom' : 'daily')),
+                                                weeklyDays: previewTask.repeatConfig?.weeklyDays || [1, 2, 3, 4, 5],
+                                                ebbStrength: previewTask.repeatConfig?.ebbStrength || 'normal',
+                                                periodDaysType: previewTask.repeatConfig?.periodDaysType || 'any',
+                                                periodCustomDays: previewTask.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5],
+                                                periodTargetCount: previewTask.repeatConfig?.periodTargetCount || 1,
+                                                periodMaxPerDay: previewTask.repeatConfig?.periodMaxPerDay || 1,
+                                                timeSetting: previewTask.timeStr && String(previewTask.timeStr) !== '--:--' ? (String(previewTask.timeStr).includes('-') ? 'range' : 'duration') : 'none',
+                                                startTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[0] : '',
+                                                endTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[1] : '',
+                                                durationPreset: previewTask.timeStr && String(previewTask.timeStr).includes('分钟') ? parseInt(String(previewTask.timeStr)) : 25,
+                                                pointRule: (previewTask.pointRule && previewTask.pointRule === 'custom') || (previewTask.type === 'habit') ? 'custom' : 'default',
+                                                reward: String(previewTask.reward || ''),
+                                                iconEmoji: previewTask.iconEmoji || '📚',
+                                                habitColor: previewTask.catColor || 'from-blue-400 to-blue-500',
+                                                habitType: previewTask.habitType || 'daily_once',
+                                                attachments: previewTask.attachments || [],
+                                                requireApproval: previewTask.requireApproval !== undefined ? previewTask.requireApproval : true
+                                            });
+                                            setShowAddPlanModal(true);
+                                        }} className="flex-1 bg-blue-50 text-blue-600 rounded-xl py-3 font-bold hover:bg-blue-100 transition-colors flex justify-center items-center gap-1">
+                                            <Icons.Edit3 size={14} /> 编辑
+                                        </button>
+                                        <button onClick={() => { setShowPreviewModal(false); setDeleteConfirmTask(previewTask); }} className="flex-1 bg-red-50 text-red-500 rounded-xl py-3 font-bold hover:bg-red-100 transition-colors flex justify-center items-center gap-1">
+                                            <Icons.Trash2 size={14} /> 删除
+                                        </button>
+                                    </>
                                 )}
-                                <button onClick={() => {
-                                    setShowPreviewModal(false);
-                                    setEditingTask(previewTask);
-                                    setPlanType(previewTask.type || 'study');
-                                    setPlanForm({
-                                        targetKid: previewTask.kidId,
-                                        category: previewTask.category || '技能',
-                                        title: previewTask.title,
-                                        desc: previewTask.standards || previewTask.desc || '',
-                                        startDate: previewTask.startDate || new Date().toISOString().split('T')[0],
-                                        endDate: previewTask.repeatConfig?.endDate || '',
-                                        repeatType: previewTask.repeatConfig?.type || (previewTask.frequency === '仅当天' ? 'today' : (previewTask.frequency === '每周一至周五' ? 'weekly_custom' : 'daily')),
-                                        weeklyDays: previewTask.repeatConfig?.weeklyDays || [1, 2, 3, 4, 5],
-                                        ebbStrength: previewTask.repeatConfig?.ebbStrength || 'normal',
-                                        periodDaysType: previewTask.repeatConfig?.periodDaysType || 'any',
-                                        periodCustomDays: previewTask.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5],
-                                        periodTargetCount: previewTask.repeatConfig?.periodTargetCount || 1,
-                                        periodMaxPerDay: previewTask.repeatConfig?.periodMaxPerDay || 1,
-                                        timeSetting: previewTask.timeStr && String(previewTask.timeStr) !== '--:--' ? (String(previewTask.timeStr).includes('-') ? 'range' : 'duration') : 'none',
-                                        startTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[0] : '',
-                                        endTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[1] : '',
-                                        durationPreset: previewTask.timeStr && String(previewTask.timeStr).includes('分钟') ? parseInt(String(previewTask.timeStr)) : 25,
-                                        pointRule: (previewTask.pointRule && previewTask.pointRule === 'custom') || (previewTask.type === 'habit') ? 'custom' : 'default',
-                                        reward: String(previewTask.reward || ''),
-                                        iconEmoji: previewTask.iconEmoji || '📚',
-                                        habitColor: previewTask.catColor || 'from-blue-400 to-blue-500',
-                                        habitType: previewTask.habitType || 'daily_once',
-                                        attachments: previewTask.attachments || [],
-                                        requireApproval: previewTask.requireApproval !== undefined ? previewTask.requireApproval : true
-                                    });
-                                    setShowAddPlanModal(true);
-                                }} className="flex-1 bg-blue-50 text-blue-600 rounded-xl py-3 font-bold hover:bg-blue-100 transition-colors flex justify-center items-center gap-1">
-                                    <Icons.Edit3 size={14} /> 编辑
-                                </button>
-                                <button onClick={() => { setShowPreviewModal(false); setDeleteConfirmTask(previewTask); }} className="flex-1 bg-red-50 text-red-500 rounded-xl py-3 font-bold hover:bg-red-100 transition-colors flex justify-center items-center gap-1">
-                                    <Icons.Trash2 size={14} /> 删除
-                                </button>
                             </div>
                         )}
                     </div>
@@ -2933,9 +3529,18 @@ export default function App() {
                                         </button>
                                     </div>
                                     {planForm.habitType === 'multiple' && (
-                                        <div className="mt-4 pt-4 border-t border-slate-100 animate-fade-in">
-                                            <label className="block text-xs font-bold text-slate-600 mb-2">每日最高允许记录次数 <span className="text-slate-400 font-normal">(防过度打卡)</span></label>
-                                            <input type="number" min="1" max="99" value={planForm.periodMaxPerDay || 3} onChange={e => setPlanForm({ ...planForm, periodMaxPerDay: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border-2 border-slate-100 rounded-xl p-3 outline-none focus:border-emerald-500 font-bold bg-slate-50 text-emerald-700" />
+                                        <div className="mt-4 pt-4 border-t border-slate-100 animate-fade-in space-y-4">
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-600 mb-2">最高记录次数限制周期</label>
+                                                <div className="flex bg-slate-100 p-1 rounded-xl">
+                                                    <button onClick={() => setPlanForm({ ...planForm, periodMaxType: 'daily' })} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all outline-none ${planForm.periodMaxType === 'daily' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>每日限制</button>
+                                                    <button onClick={() => setPlanForm({ ...planForm, periodMaxType: 'weekly' })} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all outline-none ${planForm.periodMaxType === 'weekly' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>每周限制</button>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-600 mb-2">{planForm.periodMaxType === 'weekly' ? '每周' : '每日'}最高允许记录次数 <span className="text-slate-400 font-normal">(防过度打卡)</span></label>
+                                                <input type="number" min="1" max="999" value={planForm.periodMaxPerDay || 3} onChange={e => setPlanForm({ ...planForm, periodMaxPerDay: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border-2 border-slate-100 rounded-xl p-3 outline-none focus:border-emerald-500 font-bold bg-slate-50 text-emerald-700" />
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -2993,14 +3598,7 @@ export default function App() {
                                 </div>
                             )}
 
-                            {/* Attachments */}
-                            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                                <label className="block text-sm font-black text-slate-800 mb-3"><Icons.Paperclip size={16} className="inline mr-1 text-slate-500" /> 参考附件 (可选)</label>
-                                <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-slate-400 transition-all cursor-pointer">
-                                    <Icons.Upload size={28} className="mb-2 text-slate-300" />
-                                    <div className="font-bold text-slate-600 text-sm">点击上传参考图片/文档</div>
-                                </div>
-                            </div>
+
                             {/* Edit Track / History / Rejections */}
                             {
                                 (() => {
@@ -3203,7 +3801,7 @@ export default function App() {
     const renderProfileSelection = () => (
         <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 animate-fade-in relative">
             <div className="absolute top-8 left-8 flex items-center gap-2 text-white/50">
-                <Icons.Award size={28} /> <span className="font-black text-xl tracking-widest">MiniLife</span>
+                <img src="/minilife_logo.png" className="w-10 h-10 rounded-2xl shadow-sm" alt="MiniLife Logo" /> <span className="font-black text-2xl tracking-widest text-[#2c3e50]">MiniLife</span>
             </div>
             <h1 className="text-white text-3xl font-black mb-12">是谁在使用呢？</h1>
             <div className="flex flex-wrap justify-center gap-8 md:gap-12 max-w-3xl">
@@ -3217,7 +3815,14 @@ export default function App() {
                 ))}
 
                 {/* Add Kid Button (Netflix Style) */}
-                <div onClick={() => { changeActiveKid(null); setNewKidForm({ name: '', gender: 'boy', avatar: '👦', dob: '' }); setShowAddKidModal(true); }} className="group cursor-pointer flex flex-col items-center">
+                <div onClick={() => { 
+                    if (kids.length >= 5) {
+                        return notify("目前最多支持添加5名家庭成员！", "warning");
+                    }
+                    changeActiveKid(null); 
+                    setNewKidForm({ name: '', gender: 'boy', avatar: '👦', dob: '' }); 
+                    setShowAddKidModal(true); 
+                }} className="group cursor-pointer flex flex-col items-center">
                     <div className="w-28 h-28 md:w-36 md:h-36 rounded-[2rem] border-4 border-dashed border-slate-700 bg-slate-800/50 flex items-center justify-center text-5xl text-slate-500 shadow-xl group-hover:scale-105 group-hover:border-slate-500 group-hover:text-slate-400 transition-all">
                         <Icons.Plus size={48} strokeWidth={3} />
                     </div>
@@ -3388,7 +3993,7 @@ export default function App() {
                     <div className="text-xl font-black text-slate-800 border-l-4 border-green-500 pl-3 shrink-0">今日任务</div>
                     <div className="flex items-center justify-end gap-2 sm:gap-4 text-slate-500 text-xs sm:text-sm font-bold relative z-20 pb-2 sm:pb-0">
                         {/* 统一筛选下拉 (综合科目与状态) */}
-                        <div className="relative shrink-0">
+                        <div className="relative shrink-0" ref={kidFilterRef}>
                             <button
                                 onClick={() => { setShowFilterDropdown(!showFilterDropdown); setShowStatusDropdown(false); setShowSortDropdown(false); }}
                                 className={`flex items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-none sm:bg-transparent transition-colors shadow-sm sm:shadow-none border sm:border-transparent ${showFilterDropdown || (Array.isArray(taskFilter) && taskFilter.length > 0) || taskStatusFilter !== 'all' ? 'text-indigo-600 bg-indigo-50 border-indigo-100' : 'bg-white border-slate-200 hover:text-indigo-600'}`}
@@ -3436,7 +4041,7 @@ export default function App() {
                         <div className="w-px h-4 bg-slate-200 shrink-0 hidden sm:block"></div>
 
                         {/* 排序选择器 */}
-                        <div className="relative shrink-0 flex items-center justify-center group">
+                        <div className="relative shrink-0 flex items-center justify-center group" ref={kidSortRef}>
                             <button 
                                 onClick={() => { setShowSortDropdown(!showSortDropdown); setShowFilterDropdown(false); }}
                                 className={`flex flex-row items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-none sm:bg-transparent bg-white shadow-sm sm:shadow-none border sm:border-transparent transition-colors cursor-pointer ${showSortDropdown || taskSort !== 'default' ? 'text-indigo-600 bg-indigo-50 border-indigo-100' : 'text-slate-500 border-slate-200 hover:text-indigo-600'}`}
@@ -3603,8 +4208,7 @@ export default function App() {
             <div className="min-h-screen bg-[#f4f7f9] font-sans pb-24 text-left animate-fade-in">
                 <div className="bg-white border-b border-slate-100 px-4 md:px-8 py-3 flex justify-between items-center sticky top-0 z-20 shadow-sm">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white"><Icons.Award size={18} /></div>
-                        <span className="font-black text-xl text-slate-800 tracking-tight">MiniLife</span>
+                        <img src="/minilife_logo.png" className="w-8 h-8 rounded-xl shadow-sm border border-slate-100/50" alt="Logo" /> <span className="font-black text-xl text-slate-800 tracking-tight">MiniLife</span>
                     </div>
                     <div className="flex items-center gap-2">
                         {/* 孩子切换器 */}
@@ -3892,10 +4496,10 @@ export default function App() {
                                         <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-2xl w-full md:w-auto overflow-x-auto hide-scrollbar">
                                             {[
                                                 { id: 'all', label: '全部' },
-                                                { id: 'income', label: '赚取奖励' },
-                                                { id: 'expense', label: '扣除惩罚' },
-                                                { id: 'completed', label: '已达标' },
-                                                { id: 'pending', label: '待完成' }
+                                                { id: 'income', label: '好习惯' },
+                                                { id: 'expense', label: '坏习惯' },
+                                                { id: 'completed', label: '已打卡' },
+                                                { id: 'pending', label: '未打卡' }
                                             ].map(filter => (
                                                 <button 
                                                     key={filter.id} 
@@ -3912,8 +4516,10 @@ export default function App() {
                                         {myTasks.filter(t => t.type === 'habit').filter(t => {
                                             const entry = t.kidId === 'all' ? t.history?.[selectedDate]?.[activeKidId] : t.history?.[selectedDate];
                                             const count = entry?.count || (entry?.status === 'completed' ? 1 : 0);
-                                            const isDone = (t.habitType === 'daily_once' && count >= 1) || (t.habitType === 'multiple' && t.periodMaxPerDay && count >= t.periodMaxPerDay);
-                                            
+                                            let currentLimitCount = count;
+                                            if (t.habitType === 'multiple' && t.periodMaxType === 'weekly') currentLimitCount = getWeeklyCompletionCount(t, activeKidId, selectedDate);
+                                            const maxPerDay = t.periodMaxPerDay || 3;
+                                            const isDone = (t.habitType === 'daily_once' && count >= 1) || (t.habitType === 'multiple' && currentLimitCount >= maxPerDay);
                                             if (habitCardFilter === 'income') return t.reward >= 0;
                                             if (habitCardFilter === 'expense') return t.reward < 0;
                                             if (habitCardFilter === 'completed') return isDone;
@@ -3923,8 +4529,11 @@ export default function App() {
                                             const isNegative = t.reward < 0;
                                             const entry = t.kidId === 'all' ? t.history?.[selectedDate]?.[activeKidId] : t.history?.[selectedDate];
                                             const count = entry?.count || (entry?.status === 'completed' ? 1 : 0);
+                                            let currentLimitCount = count;
+                                            if (t.habitType === 'multiple' && t.periodMaxType === 'weekly') currentLimitCount = getWeeklyCompletionCount(t, activeKidId, selectedDate);
+                                            const maxPerDay = t.periodMaxPerDay || 3;
                                             const isDailyOnce = t.habitType === 'daily_once';
-                                            const isMaxedOut = t.habitType === 'multiple' && t.periodMaxPerDay && count >= t.periodMaxPerDay;
+                                            const isMaxedOut = t.habitType === 'multiple' && currentLimitCount >= maxPerDay;
                                             const isDone = (isDailyOnce && count >= 1) || isMaxedOut;
 
                                             return (
@@ -3943,31 +4552,56 @@ export default function App() {
                                                             </div>
                                                         </div>
 
-                                                        {/* Visual Streak / Counters */}
-                                                        {!isNegative && t.habitType === 'multiple' && t.periodMaxPerDay > 1 && (
-                                                            <div className="flex gap-1 shrink-0 bg-slate-50 p-1.5 rounded-full border border-slate-100/50">
-                                                                {Array.from({ length: t.periodMaxPerDay }).map((_, i) => (
-                                                                    <div key={i} className={`w-2.5 h-2.5 rounded-full ${i < count ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]' : 'bg-slate-200'}`} />
-                                                                ))}
-                                                            </div>
-                                                        )}
+                                                        {/* Visual Streak / Counters / Progress Bars */}
+                                                        {(() => {
+                                                            const displayMax = isDailyOnce ? 1 : (t.periodMaxPerDay || 3);
+                                                            const displayCount = isDailyOnce ? (count >= 1 ? 1 : 0) : currentLimitCount;
+                                                            const useProgressBar = displayMax > 7 || (t.habitType === 'multiple' && t.periodMaxType === 'weekly');
+                                                            
+                                                            if (useProgressBar) {
+                                                                const labelPrefix = t.periodMaxType === 'weekly' ? '本周' : '今日';
+                                                                return (
+                                                                    <div className="flex flex-col items-end gap-1.5 mt-1 shrink-0 w-24">
+                                                                        <span className="text-[10px] font-black text-slate-400 whitespace-nowrap bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">{labelPrefix} {displayCount}/{displayMax}</span>
+                                                                        <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner border border-slate-200/50">
+                                                                            <div className={`h-full rounded-full transition-all duration-500 ease-out ${isNegative ? 'bg-gradient-to-r from-red-400 to-orange-500' : 'bg-gradient-to-r from-emerald-400 to-teal-500'}`} style={{ width: `${Math.min(100, (displayCount / displayMax) * 100)}%` }}></div>
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            } else {
+                                                                return (
+                                                                    <div className="flex gap-1 shrink-0 bg-slate-50 p-1.5 rounded-full border border-slate-100/50 flex-wrap mt-1 justify-end max-w-[80px]">
+                                                                        {Array.from({ length: displayMax }).map((_, i) => (
+                                                                            <div key={i} className={`w-2.5 h-2.5 rounded-full ${i < displayCount ? (isNegative ? 'bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.6)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]') : 'bg-slate-200 shadow-inner'}`} />
+                                                                        ))}
+                                                                    </div>
+                                                                );
+                                                            }
+                                                        })()}
                                                     </div>
 
                                                     {/* Action Button Area */}
                                                     <div className="mt-auto border-t border-slate-50 pt-4">
-                                                        {isDone && !isNegative ? (
-                                                            <div className="w-full bg-emerald-50/50 border border-emerald-100/50 rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-black text-emerald-600 shadow-inner">
-                                                                <Icons.CheckCircle size={18} /> 
-                                                                今日已达标 {count > 1 ? `(${count}次)` : ''}
-                                                            </div>
+                                                        {isDone ? (
+                                                            isNegative ? (
+                                                                <div className="w-full bg-red-50/50 border border-red-100/50 rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-black text-red-500 shadow-inner">
+                                                                    <Icons.ShieldAlert size={18} /> 
+                                                                    已达记录上限 {count > 1 ? `(${count}次)` : ''}
+                                                                </div>
+                                                            ) : (
+                                                                <div className="w-full bg-emerald-50/50 border border-emerald-100/50 rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-black text-emerald-600 shadow-inner">
+                                                                    <Icons.CheckCircle size={18} /> 
+                                                                    今日已达标 {count > 1 ? `(${count}次)` : ''}
+                                                                </div>
+                                                            )
                                                         ) : isNegative ? (
-                                                            <button onClick={() => handleAttemptSubmit(t)} className="relative overflow-hidden w-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-black shadow-[0_8px_20px_rgba(245,158,11,0.3)] active:scale-[0.98] transition-all group/btn">
+                                                            <button type="button" onClick={() => handleAttemptSubmit(t)} className="relative overflow-hidden w-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-black shadow-[0_8px_20px_rgba(245,158,11,0.3)] active:scale-[0.98] transition-all group/btn">
                                                                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
                                                                 <Icons.ShieldAlert size={16} className="relative z-10" /> 
                                                                 <span className="relative z-10">我要坦白 (主动承认扣分)</span>
                                                             </button>
                                                         ) : (
-                                                            <button onClick={() => handleAttemptSubmit(t)} className="relative overflow-hidden w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-black shadow-[0_8px_20px_rgba(52,211,153,0.3)] active:scale-[0.98] transition-all group/btn">
+                                                            <button type="button" onClick={() => handleAttemptSubmit(t)} className="relative overflow-hidden w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-black shadow-[0_8px_20px_rgba(52,211,153,0.3)] active:scale-[0.98] transition-all group/btn">
                                                                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
                                                                 <Icons.Zap size={16} className="relative z-10" /> 
                                                                 <span className="relative z-10">我要去打卡</span>
@@ -4206,28 +4840,82 @@ export default function App() {
     };
     const renderParentApp = () => (
         <div className="min-h-screen bg-[#f4f7f9] font-sans pb-24 text-left animate-fade-in">
-            <div className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-20">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center text-white"><Icons.Award size={24} /></div>
-                    <span className="font-black text-xl text-white tracking-tight">MiniLife 家庭版</span>
+            <div className="bg-slate-900 border-b border-slate-800 px-4 md:px-6 py-3 md:py-4 flex justify-between items-center sticky top-0 z-[110]">
+                <div className="flex items-center gap-2 md:gap-3">
+                    <button onClick={() => changeAppState('profiles')} className="group flex items-center gap-1.5 md:gap-2 text-slate-300 hover:text-white transition-colors bg-slate-800/80 hover:bg-slate-700/80 rounded-full px-3 py-1.5 md:px-4 md:py-2 border border-slate-700/50 hover:border-slate-600/50 shadow-sm backdrop-blur-sm">
+                        <Icons.ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
+                        <span className="font-bold text-xs md:text-sm">切换角色</span>
+                    </button>
+                    <div className="hidden sm:flex items-center gap-2.5 ml-1 pl-3 md:pl-4 border-l border-slate-800/80">
+                        <img src="/minilife_logo.png" className="w-8 h-8 md:w-10 md:h-10 rounded-xl shadow-sm" alt="Logo" /> <span className="font-black text-lg md:text-xl text-white tracking-tight">MiniLife 家庭版</span>
+                    </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <button onClick={() => changeAppState('profiles')} className="text-sm font-bold text-slate-400 bg-slate-800 px-4 py-2 rounded-full hover:text-white transition-colors flex items-center gap-1">
-                        返回选人
+                <div className="flex items-center gap-3 md:gap-4 relative" ref={parentSettingsRef}>
+                    <button onClick={() => setShowParentSettingsDropdown(!showParentSettingsDropdown)} className={`relative flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-full transition-all duration-300 group shadow-sm ${showParentSettingsDropdown ? 'bg-indigo-500 text-white shadow-indigo-500/30' : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700/80 hover:text-white border border-slate-700/50 hover:border-slate-600/50'}`}>
+                        <Icons.Settings size={20} className={`transition-transform duration-500 ${showParentSettingsDropdown ? 'rotate-90' : 'group-hover:rotate-45'}`} />
+                        {parentSettings.pinEnabled && <div className="absolute top-1 right-1 w-2.5 h-2.5 bg-emerald-500 border-2 border-slate-900 rounded-full"></div>}
                     </button>
-                    <button onClick={handleLogout} className="text-sm font-bold text-rose-400 bg-slate-800 px-4 py-2 rounded-full hover:bg-rose-500 hover:text-white border border-slate-700/50 hover:border-transparent transition-all flex items-center gap-1 shadow-sm">
-                        <Icons.LogOut size={16} /> 注销登录
-                    </button>
+
+                    {showParentSettingsDropdown && (
+                        <div className="absolute top-full right-0 mt-3 w-64 md:w-72 bg-white rounded-3xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] border border-slate-100 p-2 z-[110] animate-fade-in origin-top-right overflow-hidden before:content-[''] before:absolute before:-top-2 before:right-6 before:w-4 before:h-4 before:bg-white before:rotate-45 before:border-l before:border-t before:border-slate-100">
+                            
+                            {/* App Identity Banner visible only in dropdown on mobile */}
+                            <div className="sm:hidden px-4 py-3 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl mb-2 flex items-center gap-3 border border-purple-100/50">
+                                <img src="/minilife_logo.png" className="w-9 h-9 rounded-xl shadow-sm border border-white" alt="Logo" /> <span className="font-black text-[15px] text-indigo-900 tracking-tight">MiniLife 家庭版</span>
+                            </div>
+
+                            <div className="flex flex-col gap-1 p-1">
+                                <button onClick={() => { setShowParentSettingsDropdown(false); setShowSettingsModal(true); }} className="flex items-center gap-3 px-3 py-3 rounded-2xl text-left hover:bg-slate-50 transition-colors group">
+                                    <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-100 transition-all shrink-0"><Icons.Users size={18} /></div>
+                                    <div>
+                                        <div className="font-bold text-[15px] text-slate-800 group-hover:text-blue-600 transition-colors">孩子资料与基础管教</div>
+                                        <div className="text-[11px] font-medium text-slate-400 mt-0.5">管理孩子名单、设定权限</div>
+                                    </div>
+                                    <Icons.ChevronRight size={14} className="ml-auto text-slate-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
+                                </button>
+                                
+                                <button onClick={() => { setShowParentSettingsDropdown(false); setShowSubscriptionModal(true); }} className="flex items-center gap-3 px-3 py-3 rounded-2xl text-left hover:bg-slate-50 transition-colors group">
+                                    <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-purple-100 transition-all shrink-0"><Icons.Gem size={18} /></div>
+                                    <div>
+                                        <div className="font-bold text-[15px] text-slate-800 group-hover:text-purple-600 transition-colors">MiniLife 体验计划与订阅</div>
+                                        <div className="text-[11px] font-medium text-slate-400 mt-0.5">解锁完整功能、激活码兑换</div>
+                                    </div>
+                                    <Icons.ChevronRight size={14} className="ml-auto text-slate-300 group-hover:text-purple-500 group-hover:translate-x-0.5 transition-all" />
+                                </button>
+                                
+                                <div className="h-px bg-slate-100 my-1 mx-2"></div>
+
+                                <button onClick={() => { setShowParentSettingsDropdown(false); handleTogglePin(); }} className="flex items-center gap-3 px-3 py-3 rounded-2xl text-left hover:bg-slate-50 transition-colors group">
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 transition-all shrink-0 ${parentSettings.pinEnabled ? 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 group-hover:bg-slate-200'}`}>
+                                        {parentSettings.pinEnabled ? <Icons.Lock size={18} /> : <Icons.Unlock size={18} />}
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="font-bold text-[15px] text-slate-800 flex items-center gap-2">
+                                            后台安全锁 
+                                            {parentSettings.pinEnabled ? <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] uppercase tracking-wider font-black rounded text-center">已开启</span> : <span className="px-1.5 py-0.5 bg-slate-200 text-slate-500 text-[9px] uppercase tracking-wider font-black rounded text-center">未开启</span>}
+                                        </div>
+                                        <div className="text-[11px] font-medium text-slate-400 mt-0.5">保护后台不被孩子误触</div>
+                                    </div>
+                                </button>
+                            </div>
+                            
+                            <div className="p-2 border-t border-slate-100 mt-1 bg-slate-50/50 rounded-b-[22px]">
+                                <button onClick={() => { setShowParentSettingsDropdown(false); handleLogout(); }} className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-rose-500 font-bold hover:bg-rose-50 hover:text-rose-600 transition-colors">
+                                    <Icons.LogOut size={16} /> 退回登录页
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
             <div className="max-w-5xl mx-auto p-4 md:p-8">
-                <div className="flex gap-4 border-b border-slate-200 mb-8 overflow-x-auto hide-scrollbar">
-                    <button onClick={() => setParentTab('tasks')} className={`pb-3 px-2 font-black text-sm whitespace-nowrap transition-all border-b-4 ${parentTab === 'tasks' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>📋 学习计划</button>
-                    <button onClick={() => setParentTab('plans')} className={`pb-3 px-2 font-black text-sm whitespace-nowrap transition-all border-b-4 ${parentTab === 'plans' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>🌿 我的成长</button>
-                    <button onClick={() => setParentTab('wealth')} className={`pb-3 px-2 font-black text-sm whitespace-nowrap transition-all border-b-4 ${parentTab === 'wealth' ? 'border-amber-600 text-amber-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>💰 财富中心</button>
-                    <button onClick={() => setParentTab('shop_manage')} className={`pb-3 px-2 font-black text-sm whitespace-nowrap transition-all border-b-4 ${parentTab === 'shop_manage' ? 'border-purple-600 text-purple-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>愿望超市配置</button>
-                    <button onClick={() => setParentTab('settings')} className={`pb-3 px-2 font-black text-sm whitespace-nowrap transition-all border-b-4 ${parentTab === 'settings' ? 'border-slate-800 text-slate-800' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>家庭与安全设置</button>
+                <div className="hidden md:flex gap-4 border-b border-slate-200 mb-8 overflow-x-auto hide-scrollbar">
+                    <button onClick={() => setParentTab('tasks')} className={`pb-3 px-2 font-black text-sm whitespace-nowrap transition-all border-b-4 ${parentTab === 'tasks' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>赚家庭币</button>
+                    <button onClick={() => setParentTab('plans')} className={`pb-3 px-2 font-black text-sm whitespace-nowrap transition-all border-b-4 ${parentTab === 'plans' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>习惯养成</button>
+                    <button onClick={() => setParentTab('wealth')} className={`pb-3 px-2 font-black text-sm whitespace-nowrap transition-all border-b-4 ${parentTab === 'wealth' ? 'border-amber-600 text-amber-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>财富中心</button>
+                    <button onClick={() => setParentTab('shop_manage')} className={`pb-3 px-2 font-black text-sm whitespace-nowrap transition-all border-b-4 ${parentTab === 'shop_manage' ? 'border-purple-600 text-purple-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>家庭超市</button>
+                    <button onClick={() => setParentTab('settings')} className={`pb-3 px-2 font-black text-sm whitespace-nowrap transition-all border-b-4 ${parentTab === 'settings' ? 'border-slate-800 text-slate-800' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>我的</button>
                 </div>
 
                 {parentTab === 'tasks' && (
@@ -4287,20 +4975,20 @@ export default function App() {
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                             <div className="flex items-center gap-3">
                                 <div className="text-xl font-black text-slate-800 border-l-4 border-indigo-500 pl-3">当日任务总览</div>
-                                <div className="flex items-center bg-white rounded-full border border-slate-200 shadow-sm overflow-hidden">
+                                <div className="flex flex-wrap items-center bg-white rounded-2xl md:rounded-full border border-slate-200 shadow-sm p-1 sm:p-0 overflow-hidden gap-1 sm:gap-0">
                                     {kids.map(k => (
-                                        <button key={k.id} onClick={() => setParentKidFilter(k.id)} className={`px-4 py-2 text-xs font-bold transition-all ${parentKidFilter === k.id || (parentKidFilter === 'all' && kids[0]?.id === k.id) ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}>
+                                        <button key={k.id} onClick={() => setParentKidFilter(k.id)} className={`px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold rounded-xl sm:rounded-none transition-all ${parentKidFilter === k.id || (parentKidFilter === 'all' && kids[0]?.id === k.id) ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}>
                                             {k.avatar} {k.name}
                                         </button>
                                     ))}
-                                    <button onClick={() => setParentKidFilter('all')} className={`px-4 py-2 text-xs font-bold transition-all ${parentKidFilter === 'all' && kids.length === 0 ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}>全部</button>
+                                    <button onClick={() => setParentKidFilter('all')} className={`px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold rounded-xl sm:rounded-none transition-all ${parentKidFilter === 'all' && kids.length === 0 ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}>全部</button>
                                 </div>
                             </div>
                             <button onClick={() => {
                                 const defaultTimes = getDefaultTimeRange();
                                 setEditingTask(null);
                                 setPlanType('study');
-                                setPlanForm({ targetKid: parentKidFilter === 'all' ? 'all' : parentKidFilter, category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
+                                setPlanForm({ targetKid: parentKidFilter === 'all' ? 'all' : parentKidFilter, category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, periodMaxType: 'daily', timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
                                 setShowAddPlanModal(true);
                             }} className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all hover:scale-105">
                                 <Icons.Plus size={18} /> 新建计划
@@ -4348,12 +5036,12 @@ export default function App() {
                                         </button>
                                     </div>
                                     <div className="space-y-3">
-                                        {pendingApprovals.map(({ task: t, date, actualKidId }) => {
+                                        {pendingApprovals.map(({ task: t, date, actualKidId, record }) => {
                                             const kidInfo = kids.find(k => k.id === actualKidId);
                                             return (
                                                 <div
                                                     key={`${t.id}-${date}`}
-                                                    onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }}
+                                                    onClick={() => { setSelectedDate(date); setPreviewTask(t); setShowPreviewModal(true); }}
                                                     className="flex flex-col sm:flex-row sm:items-center justify-between bg-white rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border-transparent cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all group"
                                                 >
                                                     <div className="flex items-center gap-4 mb-3 sm:mb-0">
@@ -4372,10 +5060,10 @@ export default function App() {
                                                     <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-none border-slate-50">
                                                         <span className="font-black text-indigo-600 text-md whitespace-nowrap">{t.reward > 0 ? '+' : ''}{t.reward} 家庭币</span>
                                                         <button
-                                                            onClick={(e) => { e.stopPropagation(); handleApproveTask(t, date, actualKidId); }}
+                                                            onClick={(e) => { e.stopPropagation(); setSelectedDate(date); setPreviewTask(t); setShowPreviewModal(true); }}
                                                             className="shrink-0 px-4 sm:px-6 py-2.5 bg-[#00C875] text-white rounded-xl text-sm font-black shadow-lg shadow-emerald-200/50 hover:bg-[#00b065] active:scale-95 transition-all flex items-center justify-center gap-1.5"
                                                         >
-                                                            <Icons.Check size={16} strokeWidth={3} /> 审批通过
+                                                            <Icons.Check size={16} strokeWidth={3} /> 去审核
                                                         </button>
                                                     </div>
                                                 </div>
@@ -4457,7 +5145,7 @@ export default function App() {
                                     <div className="flex items-center justify-between bg-slate-50 border-b border-slate-200 pt-2 pb-3 mb-4">
                                         <div className="flex items-center gap-2 md:gap-4 flex-1 relative">
                                             {/* Filtering Button */}
-                                            <div className="relative shrink-0">
+                                            <div className="relative shrink-0" ref={parentFilterRef}>
                                                 <button onClick={() => { setShowFilterDropdown(!showFilterDropdown); setShowSortDropdown(false); }} className={`flex items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-none sm:bg-transparent shadow-sm sm:shadow-none border sm:border-transparent transition-colors ${parentTaskFilter.length > 0 || parentTaskStatusFilter !== 'all' ? 'bg-indigo-600 text-white sm:text-indigo-600 sm:bg-transparent sm:border-transparent border-indigo-600' : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600'}`}>
                                                     <Icons.Filter size={16} className={`sm:w-[14px] sm:h-[14px] ${showFilterDropdown ? 'text-indigo-600 fill-indigo-100' : ''}`} /> 
                                                     <span className="hidden sm:inline font-bold text-sm">筛选</span>
@@ -4504,7 +5192,7 @@ export default function App() {
                                             <div className="w-px h-4 bg-slate-200 shrink-0 hidden sm:block"></div>
 
                                             {/* Sorting Selector */}
-                                            <div className="relative shrink-0 flex items-center justify-center group">
+                                            <div className="relative shrink-0 flex items-center justify-center group" ref={parentSortRef}>
                                                 <button 
                                                     onClick={() => { setShowSortDropdown(!showSortDropdown); setShowFilterDropdown(false); }}
                                                     className={`flex items-center justify-center flex-row gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-none sm:bg-transparent bg-white shadow-sm sm:shadow-none border sm:border-transparent transition-colors cursor-pointer ${showSortDropdown || parentTaskSort !== 'default' ? 'text-indigo-600 bg-indigo-50 border-indigo-100' : 'text-slate-500 border-slate-200 hover:text-indigo-600'}`}
@@ -4565,6 +5253,11 @@ export default function App() {
 
                                         const kidInfo = displayKidId === 'all' ? { name: '全部孩子', avatar: '👥' } : kids.find(k => k.id === displayKidId);
                                         const status = getDailyStatus(t);
+                                        
+                                        // Extract exact history record for evidence rendering
+                                        const actualRenderKidId = displayKidId === 'all' ? kids[0]?.id : displayKidId;
+                                        const hr = t.history?.[selectedDate]?.[actualRenderKidId];
+
                                         return (
                                             <div 
                                                 key={t.id} 
@@ -4579,7 +5272,7 @@ export default function App() {
                                                 }}
                                                 className={`bg-white rounded-[2rem] p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 group flex flex-col sm:flex-row gap-4 relative overflow-hidden mb-4 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] ${status === 'completed' ? 'border-2 border-emerald-100 shadow-[0_8px_30px_rgba(16,185,129,0.06)]' : 'border border-slate-100/60'} ${isReordering ? 'cursor-move ring-2 ring-indigo-300' : ''}`}
                                             >
-                                                {!isReordering && <button onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className="absolute inset-0 z-0 cursor-pointer hidden sm:block" aria-label="查看任务详情"></button>}
+                                                {!isReordering && <button onClick={() => { setSelectedDate(selectedDate); setPreviewTask(t); setShowPreviewModal(true); }} className="absolute inset-0 z-0 cursor-pointer hidden sm:block" aria-label="查看任务详情"></button>}
                                                 
                                                 {isReordering && (
                                                     <>
@@ -4643,8 +5336,8 @@ export default function App() {
                                                 {/* Right/Bottom Section: Parent Actions */}
                                                 <div className="z-10 flex sm:flex-col justify-end sm:justify-center items-stretch gap-2 shrink-0 sm:w-32 mt-2 sm:mt-0 relative">
                                                     {status === 'pending_approval' ? (
-                                                        <button onClick={(e) => { e.stopPropagation(); handleApproveTask(t, selectedDate, displayKidId === 'all' ? kids[0]?.id : displayKidId); }} className="flex-1 sm:flex-none bg-gradient-to-b from-emerald-400 to-emerald-500 shadow-lg shadow-emerald-500/30 text-white rounded-full py-3 sm:py-2 px-4 text-xs sm:text-sm font-black hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 border border-emerald-400/50">
-                                                            <Icons.CheckCircle size={16} fill="currentColor" /> 验收发放
+                                                        <button onClick={(e) => { e.stopPropagation(); setPreviewTask(t); setShowPreviewModal(true); }} className="flex-1 sm:flex-none bg-gradient-to-b from-emerald-400 to-emerald-500 shadow-lg shadow-emerald-500/30 text-white rounded-xl py-3 sm:py-2 px-4 text-xs sm:text-sm font-black hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 border border-emerald-400/50">
+                                                            <Icons.CheckCircle size={16} fill="currentColor" /> 去审核
                                                         </button>
                                                     ) : (
                                                         <>
@@ -4666,6 +5359,7 @@ export default function App() {
                                                                     periodCustomDays: t.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5],
                                                                     periodTargetCount: t.repeatConfig?.periodTargetCount || 1,
                                                                     periodMaxPerDay: t.repeatConfig?.periodMaxPerDay || 1,
+                                                                    periodMaxType: t.periodMaxType || 'daily',
                                                                     timeSetting: t.timeStr && String(t.timeStr) !== '--:--' ? (String(t.timeStr).includes('-') ? 'range' : 'duration') : 'none',
                                                                     startTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[0] : '',
                                                                     endTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[1] : '',
@@ -4714,7 +5408,7 @@ export default function App() {
                                 const defaultTimes = getDefaultTimeRange();
                                 setEditingTask(null);
                                 setPlanType('habit');
-                                setPlanForm({ targetKid: 'all', category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
+                                setPlanForm({ targetKid: 'all', category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, periodMaxType: 'daily', timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
                                 setShowAddPlanModal(true);
                             }} className="relative z-10 w-full sm:w-auto bg-white/95 backdrop-blur-sm text-emerald-700 px-6 py-3.5 sm:px-8 sm:py-4 rounded-2xl font-black text-base sm:text-lg transition-all hover:scale-105 hover:bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center gap-2 group">
                                 <Icons.Plus size={22} className="group-hover:rotate-90 transition-transform duration-300" /> 新建习惯规则
@@ -4750,21 +5444,47 @@ export default function App() {
                                                     {t.reward > 0 ? '+' : ''}{t.reward} 家庭币
                                                 </div>
                                                 <div className="flex items-center gap-1.5">
-                                                    {t.reward < 0 && (
-                                                        <button onClick={() => {
-                                                        const penalty = Math.abs(t.reward);
-                                                        const targetKid = kids.find(k => k.id === t.kidId);
-                                                        if (targetKid) {
-                                                            const newBals = { ...targetKid.balances, spend: Math.max(0, targetKid.balances.spend - penalty) };
-                                                            apiFetch(`/api/kids/${t.kidId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ balances: newBals, exp: Math.max(0, targetKid.exp - Math.ceil(penalty * 1.5)) }) });
-                                                            setKids(kids.map(k => k.id === t.kidId ? { ...k, balances: newBals, exp: Math.max(0, k.exp - Math.ceil(penalty * 1.5)) } : k));
-                                                            const refundTrans = { id: `trans_${Date.now()}_penalty`, kidId: t.kidId, type: 'expense', amount: penalty, title: `手动惩罚: ${t.title}`, date: new Date().toISOString(), category: 'task' };
-                                                            apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(refundTrans) });
-                                                            setTransactions([refundTrans, ...transactions]);
+                                                    {t.reward < 0 && (() => {
+                                                        const todayStr = formatDate(new Date());
+                                                        const kidHistory = t.history || {};
+                                                        const todayHist = kidHistory[todayStr] || {};
+                                                        const maxAllowed = t.maxPerDay || 1;
+                                                        
+                                                        // Check if ALL assigned kids are maxed out
+                                                        const targetKids = t.kidId === 'all' ? kids : kids.filter(k => k.id === t.kidId);
+                                                        let allMaxed = true;
+                                                        
+                                                        for (const k of targetKids) {
+                                                            const kidTodayData = t.kidId === 'all' ? (todayHist[k.id] || {}) : todayHist;
+                                                            const attemptsToday = Array.isArray(kidTodayData) ? kidTodayData.length : (kidTodayData.status ? 1 : 0);
+                                                            if (attemptsToday < maxAllowed) {
+                                                                allMaxed = false;
+                                                                break;
+                                                            }
                                                         }
-                                                        notify(`已记录惩罚，扣除 ${kName} ${penalty} 家庭币！`, "error");
-                                                    }} className="bg-red-50 text-red-600 hover:bg-red-500 hover:text-white px-3 py-1.5 rounded-xl text-xs font-black transition-all border border-red-100 hover:border-transparent">记录扣分</button>
-                                                    )}
+
+                                                        if (allMaxed && targetKids.length > 0) {
+                                                            return (
+                                                                <button disabled className="bg-slate-100 text-slate-400 px-3 py-1.5 rounded-xl text-xs font-black border border-slate-200 cursor-not-allowed">
+                                                                    已达记录上限
+                                                                </button>
+                                                            );
+                                                        }
+
+                                                        return (
+                                                            <button onClick={() => {
+                                                                setPenaltyTaskContext(t);
+                                                                if (t.kidId !== 'all') {
+                                                                    setPenaltySelectedKidIds([t.kidId]);
+                                                                } else if (kids.length === 1) {
+                                                                    setPenaltySelectedKidIds([kids[0].id]);
+                                                                } else {
+                                                                    setPenaltySelectedKidIds([]);
+                                                                }
+                                                                setShowPenaltyModal(true);
+                                                            }} className="bg-red-50 text-red-600 hover:bg-red-500 hover:text-white px-3 py-1.5 rounded-xl text-xs font-black transition-all border border-red-100 hover:border-transparent">记录扣分</button>
+                                                        );
+                                                    })()}
                                                     
                                                     <button onClick={() => {
                                                         setPlanType(t.type || 'habit');
@@ -4780,7 +5500,8 @@ export default function App() {
                                                             iconEmoji: t.iconEmoji || '⭐',
                                                             habitColor: t.catColor || t.habitColor || 'from-blue-400 to-blue-500',
                                                             habitType: t.habitType || 'daily_once',
-                                                            periodMaxPerDay: t.periodMaxPerDay || 3
+                                                            periodMaxPerDay: t.periodMaxPerDay || 3,
+                                                            periodMaxType: t.periodMaxType || 'daily'
                                                         });
                                                         setShowAddPlanModal(true);
                                                         setEditingTask(t);
@@ -5123,10 +5844,25 @@ export default function App() {
                             </div>
                         </div>
 
+                        {/* Child Growth Profile Management Card */}
+                        <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2rem] p-8 shadow-sm border border-indigo-400/30 text-white relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+                            <div className="flex items-center gap-3 mb-6 border-b border-indigo-400/30 pb-4 relative z-10">
+                                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white backdrop-blur-sm"><Icons.Star size={20} /></div>
+                                <h2 className="text-xl font-black text-white">儿童成长图鉴管理</h2>
+                            </div>
+                            <div className="space-y-4 relative z-10">
+                                <p className="text-indigo-100 text-sm leading-relaxed font-medium">配置儿童的等级称号、升级所需经验值以及专属头像框。等级系统能极大提升孩子的打卡动力。</p>
+                                <button onClick={() => setShowLevelModal(true)} className="w-full bg-white text-indigo-600 py-3.5 rounded-xl font-black hover:bg-slate-50 transition-colors shadow-lg shadow-indigo-900/20 active:scale-[0.98] flex items-center justify-center gap-2 group-hover:shadow-xl group-hover:shadow-indigo-900/30">
+                                    进入图鉴配置中心 <Icons.ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                                </button>
+                            </div>
+                        </div>
+
                         <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
                             <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
                                 <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-700"><Icons.Users size={20} /></div>
-                                <h2 className="text-xl font-black text-slate-800">孩子资料管理</h2>
+                                <h2 className="text-xl font-black text-slate-800">孩子资料管理 <span className="text-sm font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md ml-1">{kids.length}/5人</span></h2>
                             </div>
                             <div className="space-y-4 mb-6">
                                 {kids.map(k => (
@@ -5160,12 +5896,15 @@ export default function App() {
                                     </div>
                                 ))}
                             </div>
-                            <div className="flex justify-center">
                                 <button onClick={() => {
+                                    if (kids.length >= 5) {
+                                        return notify("目前最多支持添加5名家庭成员！", "warning");
+                                    }
                                     setNewKidForm({ id: null, name: '', gender: 'boy', avatar: '👦' });
                                     setShowAddKidModal(true);
-                                }} className="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 border-2 border-dashed border-slate-300">添加家庭成员 +</button>
-                            </div>
+                                }} className="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 border-2 border-dashed border-slate-300 transition-colors flex items-center justify-center gap-2">
+                                    <Icons.Plus size={18} className="text-slate-400"/> 添加家庭成员 
+                                </button>
                         </div>
                     </div>
                 )}
@@ -5180,68 +5919,88 @@ export default function App() {
     if (!token) {
         const themeSettings = authMode === 'login'
             ? {
-                bgGradient: 'from-indigo-500 to-purple-600',
-                btnBg: 'bg-indigo-600 hover:bg-indigo-700',
-                btnShadow: 'shadow-indigo-200',
-                iconBox: 'from-indigo-500 to-purple-500',
-                title: '欢迎回来',
-                subtitle: '管理家庭大大小小的事迹',
+                title: '欢迎回航',
+                subtitle: '继续记录这段关于爱与成长的奇妙旅程...',
                 btnText: '登 录',
-                Icon: Icons.LogIn
+                btnClass: 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 shadow-indigo-500/30'
             }
             : {
-                bgGradient: 'from-emerald-400 to-teal-500',
-                btnBg: 'bg-emerald-500 hover:bg-emerald-600',
-                btnShadow: 'shadow-emerald-200',
-                iconBox: 'from-emerald-400 to-teal-400',
-                title: '开启家庭大本营',
-                subtitle: '注册即享 3 天全功能免费体验',
+                title: '开启 MiniLife',
+                subtitle: '为孩子搭建一座充满成就感与回忆的城堡',
                 btnText: '注 册 并 试 用',
-                Icon: Icons.UserPlus
+                btnClass: 'bg-gradient-to-r from-orange-400 to-rose-500 hover:from-orange-300 hover:to-rose-400 shadow-orange-500/30'
             };
 
         return (
-            <div className={`min-h-screen bg-gradient-to-br ${themeSettings.bgGradient} flex items-center justify-center p-4 transition-colors duration-500`}>
-                <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden relative">
-                    <div className="bg-slate-50 p-8 text-center border-b border-slate-100">
-                        {/* 顶部胶囊切换器 */}
-                        <div className="flex bg-slate-200/60 p-1 rounded-2xl mb-8 max-w-[200px] mx-auto shadow-inner">
-                            <button
-                                onClick={() => setAuthMode('login')}
-                                className={`flex-1 py-2 rounded-xl text-sm font-black transition-all ${authMode === 'login' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                            >登录</button>
-                            <button
-                                onClick={() => setAuthMode('register')}
-                                className={`flex-1 py-2 rounded-xl text-sm font-black transition-all ${authMode === 'register' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                            >注册</button>
-                        </div>
+            <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden">
+                {/* Lush Dribbble-style Background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-orange-50 z-0"></div>
+                
+                {/* Floating animated blobs */}
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-300/30 rounded-full blur-[100px] animate-pulse"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-300/30 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '2s' }}></div>
 
-                        <div className={`w-20 h-20 bg-gradient-to-br ${themeSettings.iconBox} rounded-[2rem] mx-auto flex items-center justify-center text-white mb-4 shadow-xl transition-colors duration-500`}>
-                            <themeSettings.Icon size={36} strokeWidth={2.5} />
-                        </div>
-                        <h1 className="text-3xl font-black text-slate-800 tracking-tight">{themeSettings.title}</h1>
-                        <p className="text-slate-500 font-bold mt-2 text-sm">{themeSettings.subtitle}</p>
+                <div className="w-full max-w-[420px] bg-white/70 backdrop-blur-3xl border border-white shadow-2xl rounded-[2.5rem] p-6 md:p-10 relative z-10 transition-all duration-500 ease-out">
+                    
+                    {/* Header with App Logo */}
+                    <div className="text-center mb-5">
+                        <img src="/minilife_logo_transparent.png?v=2" alt="MiniLife" className="w-20 h-20 md:w-28 md:h-28 mx-auto mb-2 drop-shadow-xl animate-float" />
+                        <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight">{themeSettings.title}</h1>
+                        <p className="text-slate-500 font-bold mt-2 text-xs md:text-sm leading-relaxed max-w-[280px] mx-auto">{themeSettings.subtitle}</p>
                     </div>
-                    <form onSubmit={handleAuth} className="p-8 space-y-6">
-                        <div>
-                            <label className="block text-sm font-black text-slate-700 mb-2">邮箱</label>
-                            <input required type="email" value={authForm.email} onChange={e => setAuthForm({ ...authForm, email: e.target.value })} className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-slate-400 font-bold text-slate-800 transition-colors placeholder:text-slate-300" placeholder="name@example.com" />
+
+                    {/* Mode Switcher */}
+                    <div className="flex bg-slate-200/50 p-1 rounded-xl mb-5 shadow-inner backdrop-blur-sm">
+                        <button
+                            type="button"
+                            onClick={() => setAuthMode('login')}
+                            className={`flex-1 py-2 text-[13px] md:text-sm rounded-lg font-black transition-all duration-300 ${authMode === 'login' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        >欢迎登录</button>
+                        <button
+                            type="button"
+                            onClick={() => setAuthMode('register')}
+                            className={`flex-1 py-2 text-[13px] md:text-sm rounded-lg font-black transition-all duration-300 ${authMode === 'register' ? 'bg-white text-orange-500 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        >注册账号</button>
+                    </div>
+
+                    <form onSubmit={handleAuth} className="space-y-3 md:space-y-5">
+                        <div className="space-y-1">
+                            <label className="pl-1 text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest">Email 账号</label>
+                            <input required type="email" value={authForm.email} onChange={e => setAuthForm({ ...authForm, email: e.target.value })} 
+                                className="w-full bg-white/60 border-2 border-white focus:border-indigo-300 focus:bg-white rounded-xl md:rounded-2xl p-3 md:p-4 outline-none font-bold text-slate-800 transition-all shadow-inner placeholder:text-slate-300" 
+                                placeholder="name@example.com" />
                         </div>
-                        <div>
-                            <label className="block text-sm font-black text-slate-700 mb-2">密码</label>
-                            <input required type="password" value={authForm.password} onChange={e => setAuthForm({ ...authForm, password: e.target.value })} className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-slate-400 font-bold text-slate-800 transition-colors placeholder:text-slate-300" placeholder="••••••••" />
+                        <div className="space-y-1">
+                            <label className="pl-1 text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest">安全密码</label>
+                            <input required type="password" value={authForm.password} onChange={e => setAuthForm({ ...authForm, password: e.target.value })} 
+                                className="w-full bg-white/60 border-2 border-white focus:border-indigo-300 focus:bg-white rounded-xl md:rounded-2xl p-3 md:p-4 outline-none font-bold text-slate-800 transition-all shadow-inner placeholder:text-slate-300" 
+                                placeholder="••••••••" />
                         </div>
-                        <button type="submit" className={`w-full text-white font-black text-lg py-4 rounded-2xl shadow-lg transition-all active:scale-[0.98] ${themeSettings.btnBg} ${themeSettings.btnShadow}`}>
-                            {themeSettings.btnText}
-                        </button>
+                        
+                        {/* Conditional Confirm Password */}
+                        {authMode === 'register' && (
+                            <div className="space-y-1 animate-slide-in">
+                                <label className="pl-1 text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest">确认密码</label>
+                                <input required type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} 
+                                    className="w-full bg-white/60 border-2 border-white focus:border-orange-300 focus:bg-white rounded-xl md:rounded-2xl p-3 md:p-4 outline-none font-bold text-slate-800 transition-all shadow-inner placeholder:text-slate-300" 
+                                    placeholder="再次输入密码" />
+                            </div>
+                        )}
+
+                        <div className="pt-2 md:pt-4">
+                            <button type="submit" className={`w-full text-white font-black text-[15px] md:text-[17px] py-3.5 md:py-4 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-[1.02] active:scale-95 ${themeSettings.btnClass}`}>
+                                {themeSettings.btnText}
+                            </button>
+                        </div>
                     </form>
                 </div>
+
                 {/* Notifications overlay needed for auth page too */}
-                <div className="fixed top-4 right-4 z-50 space-y-2">
+                <div className="fixed top-4 right-4 z-50 space-y-2 pointer-events-none">
                     {notifications.map(n => (
-                        <div key={n.id} className={`p-4 rounded-xl shadow-xl flex items-center gap-3 animate-slide-in ${n.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
+                        <div key={n.id} className={`p-4 rounded-xl shadow-xl flex items-center gap-3 animate-slide-in pointer-events-auto backdrop-blur-md ${n.type === 'success' ? 'bg-emerald-50/90 text-emerald-700 border border-emerald-200' : 'bg-rose-50/90 text-rose-700 border border-rose-200'}`}>
                             {n.type === 'success' ? <Icons.CheckCircle size={24} /> : <Icons.AlertCircle size={24} />}
-                            <span className="font-bold">{n.msg}</span>
+                            <span className="font-bold text-sm tracking-wide">{n.msg}</span>
                         </div>
                     ))}
                 </div>
@@ -5415,56 +6174,47 @@ export default function App() {
         );
     }
 
-    const CelebrationModal = ({ data, onClose }) => {
-        if (!data) return null;
-        const isPositive = data.type === 'positive';
-        return (
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
-                <div className="bg-white rounded-[2.5rem] w-full max-w-sm p-8 text-center relative overflow-hidden shadow-2xl animate-scale-up border-[3px] border-white/50">
-                    <div className={`absolute top-0 left-0 right-0 h-40 opacity-20 blur-3xl ${isPositive ? 'bg-gradient-to-br from-emerald-400 to-teal-500' : 'bg-gradient-to-br from-amber-400 to-orange-500'}`}></div>
-                    
-                    <div className="relative z-10 flex flex-col items-center">
-                        <div className={`w-28 h-28 rounded-[2rem] flex items-center justify-center text-6xl mb-6 shadow-inner ${isPositive ? 'bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-500' : 'bg-gradient-to-br from-amber-50 to-orange-50 text-orange-500'}`}>
-                            {isPositive ? '✨' : '🛡️'}
-                        </div>
-                        <h2 className="text-2xl font-black text-slate-800 mb-3">{isPositive ? '打卡成功！' : '勇敢坦白！'}</h2>
-                        <p className="text-base text-slate-500 mb-8 leading-relaxed font-bold bg-slate-50 p-4 rounded-2xl">"{data.message}"</p>
-                        
-                        <div className={`text-4xl font-black mb-8 flex items-baseline justify-center gap-1 ${isPositive ? 'text-emerald-500' : 'text-red-500'}`}>
-                            {isPositive ? '+' : '-'}{Math.abs(data.task.reward)} <span className="text-sm font-bold text-slate-400">家庭币</span>
-                        </div>
-                        
-                        <button onClick={onClose} className={`w-full py-4 rounded-2xl text-white font-black text-lg shadow-lg active:scale-95 transition-all outline-none ${isPositive ? 'bg-gradient-to-r from-emerald-400 to-teal-500 shadow-emerald-500/30 hover:shadow-emerald-500/50' : 'bg-gradient-to-r from-amber-400 to-orange-500 shadow-orange-500/30 hover:shadow-orange-500/50'}`}>
-                            继续保持
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    };
+    // CelebrationModal has been correctly moved outside the App component body.
 
     // --- Mobile Bottom Navigation Portal ---
-    const mobileNavigationBar = appState === 'kid_app' ? createPortal(
-        <nav className="fixed bottom-0 left-0 right-0 w-full bg-white/90 backdrop-blur-xl border-t border-slate-100 flex justify-around items-center px-2 py-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] z-[9999] md:hidden shadow-[0_-10px_20px_rgb(0,0,0,0.03)]" style={{ position: 'fixed', bottom: 0, isolation: 'isolate', transform: 'none' }}>
-            {[
-                { id: 'study', icon: <Icons.BookOpen size={22} strokeWidth={2.5} />, label: "赚家庭币" },
-                { id: 'habit', icon: <Icons.ShieldCheck size={22} strokeWidth={2.5} />, label: "习惯养成" },
-                { id: 'wealth', icon: <Icons.Wallet size={22} strokeWidth={2.5} />, label: "财富中心" },
-                { id: 'shop', icon: <Icons.ShoppingBag size={22} strokeWidth={2.5} />, label: "家庭超市" },
-                { id: 'profile', icon: <Icons.User size={22} strokeWidth={2.5} />, label: "我的" }
-            ].map(tab => {
-                const isActive = tab.id === 'profile' ? showLevelModal : (!showLevelModal && kidTab === tab.id);
-                return (
-                    <button 
-                        key={tab.id} 
-                        onClick={() => {
-                            if (tab.id === 'profile') {
-                                setShowLevelModal(true);
-                            } else {
-                                setKidTab(tab.id);
-                                setShowLevelModal(false);
-                            }
-                        }}
+    const renderMobileNavigationBar = () => {
+        if (appState !== 'kid_app' && appState !== 'parent_app') return null;
+        
+        const isParent = appState === 'parent_app';
+        
+        const mobileTabs = isParent ? [
+            { id: 'tasks', label: '赚家庭币', icon: <Icons.Target size={22} strokeWidth={2.5} /> },
+            { id: 'plans', label: '习惯养成', icon: <Icons.CheckSquare size={22} strokeWidth={2.5} /> },
+            { id: 'wealth', label: '财富中心', icon: <Icons.Landmark size={22} strokeWidth={2.5} /> },
+            { id: 'shop_manage', label: '家庭超市', icon: <Icons.ShoppingBag size={22} strokeWidth={2.5} /> },
+            { id: 'settings', label: '我的', icon: <Icons.User size={22} strokeWidth={2.5} /> }
+        ] : [
+            { id: 'study', label: '赚家庭币', icon: <Icons.BookOpen size={22} strokeWidth={2.5} /> },
+            { id: 'habit', label: '习惯养成', icon: <Icons.ShieldCheck size={22} strokeWidth={2.5} /> },
+            { id: 'wealth', label: '财富中心', icon: <Icons.Wallet size={22} strokeWidth={2.5} /> },
+            { id: 'shop', label: '家庭超市', icon: <Icons.ShoppingBag size={22} strokeWidth={2.5} /> },
+            { id: 'profile', label: '我的', icon: <Icons.User size={22} strokeWidth={2.5} /> }
+        ];
+
+        return createPortal(
+            <nav className="fixed bottom-0 left-0 right-0 w-full bg-white/90 backdrop-blur-xl border-t border-slate-100 flex justify-around items-center px-2 py-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] z-[9999] md:hidden shadow-[0_-10px_20px_rgb(0,0,0,0.03)]" style={{ position: 'fixed', bottom: 0, isolation: 'isolate', transform: 'none' }}>
+                {mobileTabs.map(tab => {
+                    const isActive = isParent ? parentTab === tab.id : (tab.id === 'profile' ? showLevelModal : (!showLevelModal && kidTab === tab.id));
+                    return (
+                        <button 
+                            key={tab.id} 
+                            onClick={() => {
+                                if (isParent) {
+                                    setParentTab(tab.id);
+                                } else {
+                                    if (tab.id === 'profile') {
+                                        setShowLevelModal(true);
+                                    } else {
+                                        setKidTab(tab.id);
+                                        setShowLevelModal(false);
+                                    }
+                                }
+                            }}
                         className={`flex flex-col items-center justify-center w-full py-1 gap-1 transition-all ${isActive ? 'text-indigo-600 scale-105' : 'text-slate-400 hover:text-slate-600'}`}
                     >
                         <div className={`relative flex items-center justify-center transition-all ${isActive ? 'bg-indigo-50 w-12 h-8 rounded-full' : 'h-8'}`}>
@@ -5475,10 +6225,11 @@ export default function App() {
                         </span>
                     </button>
                 );
-            })}
-        </nav>,
-        document.body
-    ) : null;
+                })}
+            </nav>,
+            document.body
+        );
+    };
 
     // === 主返回 ===
     if (isLoading) {
@@ -5493,7 +6244,7 @@ export default function App() {
             {appState === 'parent_app' && renderParentApp()}
 
             {/* Mobile Bottom Navigation Rendered via Portal */}
-            {mobileNavigationBar}
+            {renderMobileNavigationBar()}
 
             <div className="fixed top-24 right-6 z-[200] space-y-3 pointer-events-none">
                 {notifications.map(n => (
@@ -5518,6 +6269,7 @@ export default function App() {
             {renderTimerModal()}
             {renderCalendarModal()}
             {renderAddKidModal()}
+            {renderPenaltyModal()}
             
             <CelebrationModal data={celebrationData} onClose={() => setCelebrationData(null)} />
 
@@ -5546,6 +6298,8 @@ export default function App() {
                 __html: `
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes simpleFade { from { opacity: 0; } to { opacity: 1; } }
+        .animate-simple-fade { animation: simpleFade 0.2s ease-out forwards; }
         @keyframes bounceIn { 0% { opacity: 0; transform: scale(0.9); } 60% { opacity: 1; transform: scale(1.05); } 100% { transform: scale(1); } }
         .animate-bounce-in { animation: bounceIn 0.3s forwards; }
         @keyframes scaleUp { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
