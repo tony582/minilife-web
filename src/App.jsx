@@ -4928,20 +4928,42 @@ export default function App() {
                             </div>
 
                             {kidShopTab === 'browse' ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                                     {inventory.map(item => (
-                                        <div key={item.id} className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm hover:shadow-xl transition-all p-6 flex flex-col group">
-                                            <div className="h-32 bg-slate-50 rounded-2xl flex items-center justify-center text-6xl mb-5">{item.iconEmoji}</div>
-                                            <div className="flex justify-between items-start mb-2">
-                                                <h3 className="font-black text-slate-800 text-lg line-clamp-1">{item.name}</h3>
-                                            </div>
-                                            <p className="text-slate-400 text-xs mb-6 flex-1 line-clamp-2">{item.desc}</p>
-                                            <div className="flex justify-between items-end mt-auto border-t border-slate-50 pt-5">
-                                                <div>
-                                                    <div className="text-[10px] text-slate-400 font-bold mb-1">{item.type === 'single' ? '单次兑换' : item.type === 'multiple' ? '多次兑换' : '永久有效'}</div>
-                                                    <span className="text-2xl font-black text-indigo-600">{item.price} <span className="text-sm">家庭币</span></span>
+                                        <div key={item.id} className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all flex flex-col group cursor-pointer relative">
+                                            {/* Top Banner/Badge */}
+                                            <div className="absolute top-3 inset-x-3 flex justify-between items-start z-10 pointer-events-none">
+                                                <div className={`text-[10px] font-black px-2 py-1 rounded-lg backdrop-blur-md shadow-sm border ${item.type === 'single' ? 'bg-orange-500/90 text-white border-orange-400' : item.type === 'multiple' ? 'bg-blue-500/90 text-white border-blue-400' : 'bg-purple-500/90 text-white border-purple-400'}`}>
+                                                    {item.type === 'single' ? '单次兑换' : item.type === 'multiple' ? '多次兑换' : '永久特权'}
                                                 </div>
-                                                <button onClick={() => buyItem(item)} className="bg-slate-900 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-black shadow-md">购买</button>
+                                            </div>
+
+                                            {/* Image Area (Icon) */}
+                                            <div className={`h-40 sm:h-48 flex items-center justify-center text-7xl sm:text-8xl relative overflow-hidden bg-gradient-to-br ${item.type === 'privilege' ? 'from-purple-100 to-fuchsia-200' : 'from-indigo-50 to-blue-100'}`}>
+                                                <div className="absolute inset-0 bg-white/20 transform -skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-1000"></div>
+                                                <div className="absolute w-full h-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.8)_0%,transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                                <div className="transform group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500 drop-shadow-xl relative z-10">
+                                                    {item.iconEmoji}
+                                                </div>
+                                            </div>
+
+                                            {/* Details Area */}
+                                            <div className="p-4 sm:p-5 flex flex-col flex-1 bg-white">
+                                                <h3 className="font-black text-slate-800 text-base sm:text-lg line-clamp-2 leading-tight mb-2 group-hover:text-indigo-600 transition-colors">{item.name}</h3>
+                                                <p className="text-slate-400 text-xs sm:text-sm mb-4 flex-1 line-clamp-2 leading-relaxed">{item.desc}</p>
+                                                
+                                                <div className="flex justify-between items-end mt-auto pt-4 border-t border-slate-50">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[10px] text-slate-400 font-bold mb-0.5">售价</span>
+                                                        <div className="flex items-baseline gap-1 text-rose-500">
+                                                            <span className="text-xl sm:text-2xl font-black tracking-tight">{item.price}</span>
+                                                            <span className="text-[10px] sm:text-xs font-bold">家庭币</span>
+                                                        </div>
+                                                    </div>
+                                                    <button onClick={(e) => { e.stopPropagation(); buyItem(item); }} className="w-10 h-10 sm:w-12 sm:h-12 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/30 hover:shadow-rose-500/50 hover:scale-105 active:scale-95 transition-all">
+                                                        <Icons.ShoppingCart size={20} className="sm:w-6 sm:h-6" />
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
@@ -5883,50 +5905,66 @@ export default function App() {
                                 <Icons.Plus size={18} /> 添加愿望商品
                             </button>
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm min-w-[600px]">
-                                <thead className="bg-slate-50 border-b border-slate-200">
-                                    <tr>
-                                        <th className="px-6 py-4 font-black text-slate-400 uppercase tracking-wider w-20">图标</th>
-                                        <th className="px-6 py-4 font-black text-slate-400 uppercase tracking-wider">商品/愿望信息</th>
-                                        <th className="px-6 py-4 font-black text-slate-400 uppercase tracking-wider">兑换规则</th>
-                                        <th className="px-6 py-4 font-black text-slate-400 uppercase tracking-wider">定价</th>
-                                        <th className="px-6 py-4 font-black text-slate-400 uppercase tracking-wider text-right">操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {inventory.map(item => (
-                                        <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <div className="text-3xl bg-slate-100 w-12 h-12 flex items-center justify-center rounded-xl">{item.iconEmoji}</div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="font-black text-slate-800 text-base">{item.name}</div>
-                                                <div className="text-xs text-slate-400 mt-1 max-w-[200px] truncate">{item.desc}</div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className="text-xs font-bold text-slate-600 bg-slate-200 px-3 py-1.5 rounded-lg border border-slate-300">
-                                                    {item.type === 'single' ? '单次兑换' : item.type === 'multiple' ? '多次兑换' : '无限次'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl font-black text-base">{item.price} 家庭币</span>
-                                            </td>
-                                            <td className="px-6 py-4 flex justify-end gap-2 mt-1">
-                                                <button onClick={() => { setNewItem({ ...item, price: item.price.toString() }); setShowAddItemModal(true); }} className="hover:text-indigo-600 bg-white shadow-sm border border-slate-200 p-2.5 rounded-xl transition-colors"><Icons.Settings size={18} /></button>
-                                                <button onClick={async () => {
-                                                    if (!window.confirm(`确定要下架商品 【${item.name}】 吗？`)) return;
-                                                    try {
-                                                        await apiFetch(`/api/inventory/${item.id}`, { method: 'DELETE' });
-                                                        setInventory(inventory.filter(i => i.id !== item.id));
-                                                        notify("商品已下架", "success");
-                                                    } catch (e) { notify("网络下架失败", "error"); }
-                                                }} className="hover:text-rose-500 bg-white shadow-sm border border-slate-200 p-2.5 rounded-xl transition-colors"><Icons.Trash2 size={18} /></button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                        <div className="p-4 sm:p-6 bg-slate-50/50">
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5">
+                                {inventory.map(item => (
+                                    <div key={item.id} className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 transition-all flex flex-col group relative">
+                                        {/* Top Banner/Badge */}
+                                        <div className="absolute top-3 inset-x-3 flex justify-between items-start z-10 pointer-events-none">
+                                            <div className={`text-[10px] font-black px-2 py-1 rounded-lg backdrop-blur-md shadow-sm border ${item.type === 'single' ? 'bg-orange-500/90 text-white border-orange-400' : item.type === 'multiple' ? 'bg-blue-500/90 text-white border-blue-400' : 'bg-purple-500/90 text-white border-purple-400'}`}>
+                                                {item.type === 'single' ? '单次兑换' : item.type === 'multiple' ? '多次兑换' : '永久特权'}
+                                            </div>
+                                        </div>
+
+                                        {/* Image Area (Icon) */}
+                                        <div className={`h-32 sm:h-40 flex items-center justify-center text-6xl sm:text-7xl relative overflow-hidden bg-gradient-to-br ${item.type === 'privilege' ? 'from-purple-50 to-fuchsia-100' : 'from-indigo-50 to-blue-50'}`}>
+                                            <div className="absolute inset-0 bg-white/40 transform -skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700"></div>
+                                            <div className="transform group-hover:scale-110 transition-transform duration-500 drop-shadow-md relative z-10">
+                                                {item.iconEmoji}
+                                            </div>
+                                        </div>
+
+                                        {/* Details Area */}
+                                        <div className="p-4 sm:p-5 flex flex-col flex-1 bg-white">
+                                            <h3 className="font-black text-slate-800 text-sm sm:text-base line-clamp-2 leading-tight mb-2 group-hover:text-purple-600 transition-colors">{item.name}</h3>
+                                            <p className="text-slate-400 text-[11px] sm:text-xs mb-4 flex-1 line-clamp-2 leading-relaxed">{item.desc}</p>
+                                            
+                                            <div className="flex justify-between items-end mt-auto pt-3 border-t border-slate-50">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] text-slate-400 font-bold mb-0.5">定价</span>
+                                                    <div className="flex items-baseline gap-1 text-slate-700">
+                                                        <span className="text-lg sm:text-xl font-black tracking-tight">{item.price}</span>
+                                                        <span className="text-[9px] sm:text-[10px] font-bold">家庭币</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* Admin Actions */}
+                                                <div className="flex items-center gap-1.5 opacity-100 group-hover:opacity-100 transition-opacity">
+                                                    <button onClick={() => { setNewItem({ ...item, price: item.price.toString() }); setShowAddItemModal(true); }} className="w-8 h-8 sm:w-10 sm:h-10 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-indigo-600 rounded-xl flex items-center justify-center transition-colors">
+                                                        <Icons.Settings size={16} className="sm:w-5 sm:h-5" />
+                                                    </button>
+                                                    <button onClick={async () => {
+                                                        if (!window.confirm(`确定要下架商品 【${item.name}】 吗？`)) return;
+                                                        try {
+                                                            await apiFetch(`/api/inventory/${item.id}`, { method: 'DELETE' });
+                                                            setInventory(inventory.filter(i => i.id !== item.id));
+                                                            notify("商品已下架", "success");
+                                                        } catch (e) { notify("网络下架失败", "error"); }
+                                                    }} className="w-8 h-8 sm:w-10 sm:h-10 bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-rose-500 rounded-xl flex items-center justify-center transition-colors">
+                                                        <Icons.Trash2 size={16} className="sm:w-5 sm:h-5" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                {inventory.length === 0 && (
+                                    <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-5 bg-white rounded-[2rem] border-2 border-slate-100 border-dashed flex flex-col items-center justify-center py-12 shadow-sm">
+                                        <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-3xl mb-3 grayscale opacity-50">🛒</div>
+                                        <div className="text-slate-400 font-bold text-sm">货架空空如也，快添加一些商品吧</div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 )}
