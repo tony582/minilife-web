@@ -709,7 +709,7 @@ export default function App() {
     const [lastSavedEndTime, setLastSavedEndTime] = useState(''); // Record last used end time to chain tasks
 
     const [planForm, setPlanForm] = useState({
-        targetKid: 'all', category: '技能', title: '', desc: '',
+        targetKids: ['all'], category: '技能', title: '', desc: '',
         startDate: new Date().toISOString().split('T')[0],
         endDate: '',
         repeatType: 'today', // 'today' | 'daily' | 'weekly_custom' | 'biweekly_custom' | 'ebbinghaus' | 'weekly_1' | 'biweekly_1' | 'monthly_1' | 'every_week_1' | 'every_biweek_1' | 'every_month_1'
@@ -1911,12 +1911,14 @@ export default function App() {
             history: {} // History will now store { date: { kidId: { status } } }
         };
 
-        if (planForm.targetKid === 'all') {
+        if (!planForm.targetKids) planForm.targetKids = [planForm.targetKid || 'all'];
+        
+        if (planForm.targetKids.includes('all') || planForm.targetKids.length === kids.length) {
             // Unify logic: DB has one task, kidId = 'all'
             newTasks = [{ ...baseTask, kidId: 'all' }];
         } else {
-            // Assign localized task as per usual for single selection
-            newTasks = [{ ...baseTask, kidId: planForm.targetKid }];
+            // Assign localized task as per usual for single/multiple selection
+            newTasks = planForm.targetKids.map(id => ({ ...baseTask, kidId: id }));
         }
 
         try {
@@ -1929,7 +1931,7 @@ export default function App() {
             }
             setShowAddPlanModal(false);
             setPlanForm({
-                targetKid: 'all', category: '技能', title: '', desc: '',
+                targetKids: ['all'], category: '技能', title: '', desc: '',
                 startDate: new Date().toISOString().split('T')[0],
                 endDate: '',
                 repeatType: 'today', timeSetting: 'none',
@@ -3137,7 +3139,7 @@ export default function App() {
                                             setEditingTask(previewTask);
                                             setPlanType(previewTask.type || 'study');
                                             setPlanForm({
-                                                targetKid: previewTask.kidId,
+                                                targetKids: [previewTask.kidId || 'all'],
                                                 category: previewTask.category || '技能',
                                                 title: previewTask.title,
                                                 desc: previewTask.standards || previewTask.desc || '',
@@ -3196,7 +3198,7 @@ export default function App() {
 
             return (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in overflow-y-auto pt-10 pb-20">
-                    <div className="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl text-left overflow-hidden mt-auto mb-auto border border-white/20">
+                    <div className="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl text-left overflow-hidden mt-auto mb-auto border border-white/20 flex flex-col max-h-[85vh] sm:max-h-[90vh]">
 
                         {/* Header */}
                         <div className="bg-white p-6 flex justify-between items-center border-b border-slate-100 relative z-30 shadow-sm">
@@ -3211,7 +3213,7 @@ export default function App() {
                             <button onClick={() => { setShowAddPlanModal(false); setEditingTask(null); }} className="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 p-2 rounded-xl transition-all"><Icons.X size={24} /></button>
                         </div>
 
-                        <div className="p-6 md:p-8 space-y-6 md:space-y-8 bg-slate-50/50 h-[65vh] overflow-y-auto custom-scrollbar relative z-10">
+                        <div className="p-6 md:p-8 space-y-6 md:space-y-8 bg-slate-50/50 flex-1 overflow-y-auto custom-scrollbar relative z-10 min-h-0">
                             {/* --- STUDY PLAN FORM --- */}
 
                             {/* --- STUDY PLAN FORM --- */}
@@ -3220,10 +3222,37 @@ export default function App() {
                                     {/* Basic Info */}
                                     <div>
                                         <label className="block text-sm font-black text-slate-800 mb-2">指派给谁 <span className="text-red-500">*</span></label>
-                                        <select value={planForm.targetKid} onChange={e => setPlanForm({ ...planForm, targetKid: e.target.value })} className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-blue-500 font-bold text-slate-700 transition-colors appearance-none">
-                                            <option value="all">👥 全部孩子</option>
-                                            {kids.map(k => <option key={k.id} value={k.id}>{k.avatar} {k.name}</option>)}
-                                        </select>
+                                        {/* Multi-select Buttons */}
+                                        <div className="flex flex-wrap gap-2">
+                                            <button 
+                                                onClick={() => setPlanForm({ ...planForm, targetKids: ['all'] })}
+                                                className={`px-4 py-2.5 rounded-xl text-sm font-bold border-2 transition-all flex items-center gap-1.5 ${(!planForm.targetKids || planForm.targetKids.includes('all')) ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20' : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300'}`}
+                                            >
+                                                👥 全部孩子
+                                            </button>
+                                            {kids.map(k => {
+                                                const isSelected = (!planForm.targetKids || planForm.targetKids.includes('all')) || planForm.targetKids.includes(k.id);
+                                                return (
+                                                    <button 
+                                                        key={k.id}
+                                                        onClick={() => {
+                                                            let newTargets = (!planForm.targetKids || planForm.targetKids.includes('all')) ? [] : [...planForm.targetKids];
+                                                            if (newTargets.includes(k.id)) {
+                                                                newTargets = newTargets.filter(id => id !== k.id);
+                                                            } else {
+                                                                newTargets.push(k.id);
+                                                            }
+                                                            if (newTargets.length === 0) newTargets = ['all'];
+                                                            if (newTargets.length === kids.length && kids.length > 0) newTargets = ['all'];
+                                                            setPlanForm({ ...planForm, targetKids: newTargets });
+                                                        }}
+                                                        className={`px-4 py-2.5 rounded-xl text-sm font-bold border-2 transition-all flex items-center gap-1.5 ${isSelected && (planForm.targetKids && !planForm.targetKids.includes('all')) ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20' : ((!planForm.targetKids || planForm.targetKids.includes('all')) ? 'bg-blue-50 text-blue-400 border-blue-100' : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300')}`}
+                                                    >
+                                                        <span className="text-base">{k.avatar}</span> {k.name}
+                                                    </button>
+                                                )
+                                            })}
+                                        </div>
                                     </div>
 
                                     <div>
@@ -3267,10 +3296,37 @@ export default function App() {
                                         <div className="flex-[2] space-y-6">
                                             <div>
                                                 <label className="block text-sm font-black text-slate-800 mb-2">指派给谁 <span className="text-red-500">*</span></label>
-                                                <select value={planForm.targetKid} onChange={e => setPlanForm({ ...planForm, targetKid: e.target.value })} className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-emerald-500 font-bold text-slate-700 transition-colors appearance-none">
-                                                    <option value="all">👥 全部孩子</option>
-                                                    {kids.map(k => <option key={k.id} value={k.id}>{k.avatar} {k.name}</option>)}
-                                                </select>
+                                                {/* Multi-select Buttons for Habit */}
+                                                <div className="flex flex-wrap gap-2">
+                                                    <button 
+                                                        onClick={() => setPlanForm({ ...planForm, targetKids: ['all'] })}
+                                                        className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold border-2 transition-all flex items-center gap-1.5 ${(!planForm.targetKids || planForm.targetKids.includes('all')) ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20' : 'bg-white text-slate-500 border-slate-200 hover:border-emerald-300'}`}
+                                                    >
+                                                        👥 全部孩子
+                                                    </button>
+                                                    {kids.map(k => {
+                                                        const isSelected = (!planForm.targetKids || planForm.targetKids.includes('all')) || planForm.targetKids.includes(k.id);
+                                                        return (
+                                                            <button 
+                                                                key={k.id}
+                                                                onClick={() => {
+                                                                    let newTargets = (!planForm.targetKids || planForm.targetKids.includes('all')) ? [] : [...planForm.targetKids];
+                                                                    if (newTargets.includes(k.id)) {
+                                                                        newTargets = newTargets.filter(id => id !== k.id);
+                                                                    } else {
+                                                                        newTargets.push(k.id);
+                                                                    }
+                                                                    if (newTargets.length === 0) newTargets = ['all'];
+                                                                    if (newTargets.length === kids.length && kids.length > 0) newTargets = ['all'];
+                                                                    setPlanForm({ ...planForm, targetKids: newTargets });
+                                                                }}
+                                                                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold border-2 transition-all flex items-center gap-1.5 ${isSelected && (planForm.targetKids && !planForm.targetKids.includes('all')) ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20' : ((!planForm.targetKids || planForm.targetKids.includes('all')) ? 'bg-emerald-50 text-emerald-400 border-emerald-100' : 'bg-white text-slate-500 border-slate-200 hover:border-emerald-300')}`}
+                                                            >
+                                                                <span className="text-base">{k.avatar}</span> {k.name}
+                                                            </button>
+                                                        )
+                                                    })}
+                                                </div>
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-black text-slate-800 mb-2">习惯名称 <span className="text-red-500">*</span></label>
@@ -4971,27 +5027,46 @@ export default function App() {
                             </div>
                         </div>
 
-                        {/* Action Bar: Kid Filter + New Plan */}
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                            <div className="flex items-center gap-3">
-                                <div className="text-xl font-black text-slate-800 border-l-4 border-indigo-500 pl-3">当日任务总览</div>
-                                <div className="flex flex-wrap items-center bg-white rounded-2xl md:rounded-full border border-slate-200 shadow-sm p-1 sm:p-0 overflow-hidden gap-1 sm:gap-0">
-                                    {kids.map(k => (
-                                        <button key={k.id} onClick={() => setParentKidFilter(k.id)} className={`px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold rounded-xl sm:rounded-none transition-all ${parentKidFilter === k.id || (parentKidFilter === 'all' && kids[0]?.id === k.id) ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}>
-                                            {k.avatar} {k.name}
-                                        </button>
-                                    ))}
-                                    <button onClick={() => setParentKidFilter('all')} className={`px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold rounded-xl sm:rounded-none transition-all ${parentKidFilter === 'all' && kids.length === 0 ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}>全部</button>
-                                </div>
+                        {/* Kid Filter Bar - NEW STANDALONE UI */}
+                        {kids.length > 0 && (
+                            <div className="flex overflow-x-auto hide-scrollbar gap-2 sm:gap-3 mb-6 py-2 px-2 -mx-2 snap-x">
+                                <button 
+                                    onClick={() => setParentKidFilter('all')} 
+                                    className={`shrink-0 snap-start flex items-center justify-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-3 rounded-2xl transition-all border ${parentKidFilter === 'all' ? 'bg-indigo-600 text-white border-indigo-500 shadow-[0_8px_20px_rgb(79,70,229,0.25)] ring-4 ring-indigo-600/20' : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200 shadow-sm'}`}
+                                >
+                                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-lg sm:text-xl shadow-inner ${parentKidFilter === 'all' ? 'bg-white/20' : 'bg-slate-100'}`}>🌐</div>
+                                    <div className="text-left font-black">
+                                        <div className={`text-[9px] sm:text-xs mb-0.5 ${parentKidFilter === 'all' ? 'text-indigo-200' : 'text-slate-400'}`}>查看所有</div>
+                                        <div className="text-xs sm:text-base leading-none">全部孩子</div>
+                                    </div>
+                                </button>
+                                {kids.map(k => (
+                                     <button 
+                                        key={k.id} 
+                                        onClick={() => setParentKidFilter(k.id)} 
+                                        className={`shrink-0 snap-start flex items-center justify-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-3 rounded-2xl transition-all border ${parentKidFilter === k.id ? 'bg-indigo-600 text-white border-indigo-500 shadow-[0_8px_20px_rgb(79,70,229,0.25)] ring-4 ring-indigo-600/20' : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200 shadow-sm'}`}
+                                    >
+                                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-lg sm:text-xl shadow-inner ${parentKidFilter === k.id ? 'bg-white/20' : 'bg-slate-100'}`}>{k.avatar}</div>
+                                        <div className="text-left font-black">
+                                            <div className={`text-[9px] sm:text-xs mb-0.5 ${parentKidFilter === k.id ? 'text-indigo-200' : 'text-slate-400'}`}>查看待办</div>
+                                            <div className="text-xs sm:text-base leading-none">{k.name}</div>
+                                        </div>
+                                    </button>
+                                ))}
                             </div>
+                        )}
+
+                        {/* Title & Action Bar */}
+                        <div className="flex justify-between items-center mb-6 relative">
+                            <div className="text-xl font-black text-slate-800 border-l-4 border-indigo-500 pl-3">当日任务总览</div>
                             <button onClick={() => {
                                 const defaultTimes = getDefaultTimeRange();
                                 setEditingTask(null);
                                 setPlanType('study');
-                                setPlanForm({ targetKid: parentKidFilter === 'all' ? 'all' : parentKidFilter, category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, periodMaxType: 'daily', timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
+                                setPlanForm({ targetKids: parentKidFilter === 'all' ? ['all'] : [parentKidFilter], category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, periodMaxType: 'daily', timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
                                 setShowAddPlanModal(true);
-                            }} className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all hover:scale-105">
-                                <Icons.Plus size={18} /> 新建计划
+                            }} className="bg-blue-600 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all hover:-translate-y-0.5">
+                                <Icons.Plus size={18} /> <span className="hidden sm:inline">新建计划</span><span className="sm:hidden">新建</span>
                             </button>
                         </div>
 
@@ -5006,12 +5081,14 @@ export default function App() {
                                     if (t.kidId === 'all') {
                                         // 2D unified logic
                                         Object.entries(hr || {}).forEach(([kId, kResult]) => {
+                                            if (parentKidFilter !== 'all' && kId !== parentKidFilter) return;
                                             if (kId !== 'status' && kResult?.status === 'pending_approval') {
                                                 approvals.push({ task: t, date, record: kResult, actualKidId: kId });
                                             }
                                         });
                                     } else {
                                         // Legacy 1D logic
+                                        if (parentKidFilter !== 'all' && t.kidId !== parentKidFilter) return;
                                         if (hr?.status === 'pending_approval') {
                                             approvals.push({ task: t, date, record: hr, actualKidId: t.kidId });
                                         }
@@ -5076,13 +5153,20 @@ export default function App() {
 
                         {/* Task Cards Grid */}
                         {(() => {
-                            const effectiveFilter = parentKidFilter === 'all' && kids.length > 0 ? kids[0].id : parentKidFilter;
+                            const effectiveFilter = parentKidFilter; // Fix: Stop forcing kids[0].id when 'all' is selected
                             let parentTasks = tasks.filter(t => t.type === 'study' && isTaskDueOnDate(t, selectedDate));
                             if (effectiveFilter !== 'all') {
                                 parentTasks = parentTasks.filter(t => t.kidId === effectiveFilter || t.kidId === 'all');
                             }
 
-                            const getDailyStatus = (t) => getTaskStatusOnDate(t, selectedDate, effectiveFilter === 'all' ? kids[0]?.id : effectiveFilter);
+                            // Notice: We map to 'getTaskStatusOnDate' using the task's specific kidId when we are in 'all' view,
+                            // or fallback to validating against kid[0] if the task itself is meant for 'all'.
+                            // In real-world, a task for 'all' shouldn't exist as a generic state, 
+                            // but we process the query keeping the exact kid in context.
+                            const getDailyStatus = (t) => {
+                                let queryKidId = effectiveFilter === 'all' ? (t.kidId === 'all' ? kids[0]?.id : t.kidId) : effectiveFilter;
+                                return getTaskStatusOnDate(t, selectedDate, queryKidId);
+                            };
                             
                             // Apply Subject Filters
                             if (parentTaskFilter.length > 0) {
@@ -5346,7 +5430,7 @@ export default function App() {
                                                                 setEditingTask(t);
                                                                 setPlanType(t.type || 'study');
                                                                 setPlanForm({
-                                                                    targetKid: t.kidId,
+                                                                    targetKids: [t.kidId || 'all'],
                                                                     category: t.category || '技能',
                                                                     title: t.title,
                                                                     desc: t.standards || t.desc || '',
@@ -5408,7 +5492,7 @@ export default function App() {
                                 const defaultTimes = getDefaultTimeRange();
                                 setEditingTask(null);
                                 setPlanType('habit');
-                                setPlanForm({ targetKid: 'all', category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, periodMaxType: 'daily', timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
+                                setPlanForm({ targetKids: ['all'], category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, periodMaxType: 'daily', timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
                                 setShowAddPlanModal(true);
                             }} className="relative z-10 w-full sm:w-auto bg-white/95 backdrop-blur-sm text-emerald-700 px-6 py-3.5 sm:px-8 sm:py-4 rounded-2xl font-black text-base sm:text-lg transition-all hover:scale-105 hover:bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center gap-2 group">
                                 <Icons.Plus size={22} className="group-hover:rotate-90 transition-transform duration-300" /> 新建习惯规则
@@ -5489,7 +5573,7 @@ export default function App() {
                                                     <button onClick={() => {
                                                         setPlanType(t.type || 'habit');
                                                         setPlanForm({
-                                                            targetKid: t.kidId,
+                                                            targetKids: [t.kidId || 'all'],
                                                             category: t.category || '记录成长',
                                                             title: t.title,
                                                             desc: t.standards || t.desc || '',
