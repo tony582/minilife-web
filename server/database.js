@@ -106,6 +106,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 price INTEGER,
                 desc TEXT,
                 iconEmoji TEXT,
+                image TEXT,
                 type TEXT
             )`);
 
@@ -115,12 +116,19 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 userId TEXT NOT NULL,
                 kidId TEXT,
                 itemName TEXT,
+                itemImage TEXT,
                 price INTEGER,
                 status TEXT,
                 date TEXT,
                 rating INTEGER,
-                comment TEXT
+                comment TEXT,
+                redeemCode TEXT
             )`);
+
+            // Safe migrations for newly added columns
+            db.run(`ALTER TABLE inventory ADD COLUMN image TEXT`, (err) => {});
+            db.run(`ALTER TABLE orders ADD COLUMN itemImage TEXT`, (err) => {});
+            db.run(`ALTER TABLE orders ADD COLUMN redeemCode TEXT`, (err) => {});
 
             // Transactions Table (Multi-tenant)
             db.run(`CREATE TABLE IF NOT EXISTS transactions (

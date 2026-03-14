@@ -7,7 +7,8 @@ const db = require('./database');
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const JWT_SECRET = 'minilife_super_secret_key_2026'; // In production, use env variable
 
@@ -360,9 +361,9 @@ app.get('/api/inventory', authenticateToken, (req, res) => {
 });
 
 app.post('/api/inventory', authenticateToken, (req, res) => {
-    const { id, name, price, desc, iconEmoji, type } = req.body;
-    const insert = `INSERT INTO inventory (id, userId, name, price, desc, iconEmoji, type) VALUES (?,?,?,?,?,?,?)`;
-    db.run(insert, [id, req.user.id, name, price, desc, iconEmoji, type], function (err) {
+    const { id, name, price, desc, iconEmoji, image, type } = req.body;
+    const insert = `INSERT INTO inventory (id, userId, name, price, desc, iconEmoji, image, type) VALUES (?,?,?,?,?,?,?,?)`;
+    db.run(insert, [id, req.user.id, name, price, desc, iconEmoji, image, type], function (err) {
         if (err) return res.status(500).json({ error: err.message });
         notifyUser(req.user.id);
         res.json({ id });
@@ -370,9 +371,9 @@ app.post('/api/inventory', authenticateToken, (req, res) => {
 });
 
 app.put('/api/inventory/:id', authenticateToken, (req, res) => {
-    const { name, price, desc, iconEmoji, type } = req.body;
-    const query = "UPDATE inventory SET name = ?, price = ?, desc = ?, iconEmoji = ?, type = ? WHERE id = ? AND userId = ?";
-    db.run(query, [name, price, desc, iconEmoji, type, req.params.id, req.user.id], function (err) {
+    const { name, price, desc, iconEmoji, image, type } = req.body;
+    const query = "UPDATE inventory SET name = ?, price = ?, desc = ?, iconEmoji = ?, image = ?, type = ? WHERE id = ? AND userId = ?";
+    db.run(query, [name, price, desc, iconEmoji, image, type, req.params.id, req.user.id], function (err) {
         if (err) return res.status(500).json({ error: err.message });
         notifyUser(req.user.id);
         res.json({ updatedID: req.params.id });
@@ -396,9 +397,9 @@ app.get('/api/orders', authenticateToken, (req, res) => {
 });
 
 app.post('/api/orders', authenticateToken, (req, res) => {
-    const { id, kidId, itemName, price, status, date, rating, comment } = req.body;
-    const insert = `INSERT INTO orders (id, userId, kidId, itemName, price, status, date, rating, comment) VALUES (?,?,?,?,?,?,?,?,?)`;
-    db.run(insert, [id, req.user.id, kidId, itemName, price, status, date, rating, comment], function (err) {
+    const { id, kidId, itemName, itemImage, price, status, date, rating, comment, redeemCode } = req.body;
+    const insert = `INSERT INTO orders (id, userId, kidId, itemName, itemImage, price, status, date, rating, comment, redeemCode) VALUES (?,?,?,?,?,?,?,?,?,?,?)`;
+    db.run(insert, [id, req.user.id, kidId, itemName, itemImage, price, status, date, rating, comment, redeemCode], function (err) {
         if (err) return res.status(500).json({ error: err.message });
         notifyUser(req.user.id);
         res.json({ id });

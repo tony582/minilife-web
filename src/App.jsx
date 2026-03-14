@@ -9,7 +9,13 @@ const IconWrapper = ({ size = 24, className = "", children }) => (
 );
 
 const Icons = {
+    ThumbsUp: (p) => <IconWrapper {...p}><path d="M7 10v12" /><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z" /></IconWrapper>,
+    ThumbsDown: (p) => <IconWrapper {...p}><path d="M17 14V2" /><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z" /></IconWrapper>,
     Home: (p) => <IconWrapper {...p}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></IconWrapper>,
+    PlusCircle: (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></IconWrapper>,
+    Wind: (p) => <IconWrapper {...p}><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></IconWrapper>,
+    Coffee: (p) => <IconWrapper {...p}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></IconWrapper>,
+    Quote: (p) => <IconWrapper {...p}><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></IconWrapper>,
     AlertCircle: (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></IconWrapper>,
     Wallet: (p) => <IconWrapper {...p}><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" /><path d="M3 5v14a2 2 0 0 0 2 2h16v-5" /><path d="M18 12a2 2 0 0 0 0 4h4v-4Z" /></IconWrapper>,
     PiggyBank: (p) => <IconWrapper {...p}><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2h0V5z" /><path d="M2 9v1c0 1.1.9 2 2 2h1" /><path d="M16 11h.01" /></IconWrapper>,
@@ -642,6 +648,9 @@ export default function App() {
     // Derived states
     const [showTransferModal, setShowTransferModal] = useState(false);
     const [transferForm, setTransferForm] = useState({ amount: '', target: 'vault' });
+    const [showSettingsModal, setShowSettingsModal] = useState(false);
+    const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+    const [previewImageIndex, setPreviewImageIndex] = useState(0);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [showAddPlanModal, setShowAddPlanModal] = useState(false);
     const [showAddKidModal, setShowAddKidModal] = useState(false);
@@ -653,6 +662,30 @@ export default function App() {
     const [showLevelRules, setShowLevelRules] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
     const [deleteConfirmTask, setDeleteConfirmTask] = useState(null);
+    const [mallSortByPrice, setMallSortByPrice] = useState('none');
+    const [orderSortByPrice, setOrderSortByPrice] = useState('none');
+    const [orderFilterStatus, setOrderFilterStatus] = useState('all');
+    const [kidCheckoutItem, setKidCheckoutItem] = useState(null);
+    const [showAvatarPickerModal, setShowAvatarPickerModal] = useState(false);
+    const [pendingAvatar, setPendingAvatar] = useState('');
+
+    // Rate Limiting & Emotional Reminder States
+    const [pointActionTimings, setPointActionTimings] = useState([]);
+    const [showEmotionalReminderModal, setShowEmotionalReminderModal] = useState(false);
+    const [emotionalCooldownSeconds, setEmotionalCooldownSeconds] = useState(0);
+    const [showRewardModal, setShowRewardModal] = useState(false);
+
+    // Reject Task States
+    const [showRejectModal, setShowRejectModal] = useState(false);
+    const [rejectingTaskInfo, setRejectingTaskInfo] = useState(null);
+    const [rejectReason, setRejectReason] = useState('');
+
+    // Transaction History Modal States
+    const [showTransactionHistoryModal, setShowTransactionHistoryModal] = useState(false);
+    const [transactionHistoryFilterTime, setTransactionHistoryFilterTime] = useState('all'); // 'all', '7', '30', '90', 'custom'
+    const [transactionHistoryStartDate, setTransactionHistoryStartDate] = useState('');
+    const [transactionHistoryEndDate, setTransactionHistoryEndDate] = useState('');
+    const [transactionHistoryFilterType, setTransactionHistoryFilterType] = useState('all'); // 'all', 'income', 'expense'
 
     const [showTimerModal, setShowTimerModal] = useState(false);
     const [timerTargetId, setTimerTargetId] = useState(null);
@@ -854,9 +887,13 @@ export default function App() {
         Object.keys(hist).forEach(dStr => {
             const histDt = new Date(dStr);
             if (histDt >= weekStartDt && histDt <= weekEndDt) {
-                const entry = task.kidId === 'all' ? hist[dStr]?.[kidId] : hist[dStr];
-                if (entry && (entry.status === 'completed' || entry.status === 'pending_approval' || entry.status === 'in_progress')) {
-                    weeklyCount += (entry.count || 1);
+                let entry = task.kidId === 'all' ? hist[dStr]?.[kidId] : hist[dStr];
+                if (entry) {
+                    if (Array.isArray(entry)) {
+                        weeklyCount += entry.filter(e => e.status === 'completed' || e.status === 'pending_approval' || e.status === 'in_progress').length;
+                    } else if (entry.status === 'completed' || entry.status === 'pending_approval' || entry.status === 'in_progress') {
+                        weeklyCount += (entry.count || 1);
+                    }
                 }
             }
         });
@@ -950,18 +987,25 @@ export default function App() {
         if (task.type === 'habit') {
             try {
                 const hist = task.history || {};
-                const entry = task.kidId === 'all' ? hist[selectedDate]?.[activeKidId] : hist[selectedDate];
-                const newCount = (entry?.count || 0) + 1;
-
-                const histUpdate = { status: 'completed', count: newCount, timeSpent: 0 };
-                let newHistory = { ...hist };
+                let newHistory = JSON.parse(JSON.stringify(hist));
+                const newRecord = { status: 'completed', attemptId: `attempt_${Date.now()}_${activeKidId}_${Math.random().toString(36).substr(2,5)}` };
 
                 if (task.kidId === 'all') {
-                    newHistory[selectedDate] = { ...(newHistory[selectedDate] || {}), [activeKidId]: histUpdate };
+                    if (!newHistory[selectedDate]) newHistory[selectedDate] = {};
+                    if (!newHistory[selectedDate][activeKidId]) newHistory[selectedDate][activeKidId] = [];
+                    if (!Array.isArray(newHistory[selectedDate][activeKidId])) {
+                        if (newHistory[selectedDate][activeKidId].status) newHistory[selectedDate][activeKidId] = [newHistory[selectedDate][activeKidId]];
+                        else newHistory[selectedDate][activeKidId] = [];
+                    }
+                    newHistory[selectedDate][activeKidId].push(newRecord);
                 } else {
-                    newHistory[selectedDate] = histUpdate;
+                    if (!newHistory[selectedDate]) newHistory[selectedDate] = [];
+                    if (!Array.isArray(newHistory[selectedDate])) {
+                        if (newHistory[selectedDate].status) newHistory[selectedDate] = [newHistory[selectedDate]];
+                        else newHistory[selectedDate] = [];
+                    }
+                    newHistory[selectedDate].push(newRecord);
                 }
-
                 // Optimistic UI updates
                 setTasks(tasks.map(t => t.id === task.id ? { ...t, history: newHistory } : t));
 
@@ -978,7 +1022,7 @@ export default function App() {
 
                 if (task.reward !== 0) {
                     setTransactions(prev => [
-                        { id: `trans_${Date.now()}_coin`, kidId: activeKidId, type: task.reward > 0 ? 'income' : 'expense', amount: Math.abs(task.reward || 0), title: `记录成长: ${task.title}`, date: new Date().toISOString(), category: 'task' },
+                        { id: `trans_${Date.now()}_coin`, kidId: activeKidId, type: task.reward > 0 ? 'income' : 'expense', amount: Math.abs(task.reward || 0), title: `记录成长: ${task.title}`, date: new Date().toISOString(), category: 'habit' },
                         { id: `trans_${Date.now()}_exp`, kidId: activeKidId, type: task.reward > 0 ? 'income' : 'expense', amount: Math.ceil(Math.abs(task.reward || 0) * 1.5), title: `记录成长: ${task.title}`, date: new Date().toISOString(), category: 'habit' },
                         ...prev
                     ]);
@@ -999,7 +1043,7 @@ export default function App() {
                 apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHistory }) }).catch(e => console.error(e));
                 
                 if (task.reward !== 0) {
-                    apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kidId: activeKidId, type: task.reward > 0 ? 'income' : 'expense', amount: Math.abs(task.reward || 0), title: `记录成长: ${task.title}`, date: new Date().toISOString(), category: 'task' }) }).catch(e => console.error(e));
+                    apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kidId: activeKidId, type: task.reward > 0 ? 'income' : 'expense', amount: Math.abs(task.reward || 0), title: `记录成长: ${task.title}`, date: new Date().toISOString(), category: 'habit' }) }).catch(e => console.error(e));
                     apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kidId: activeKidId, type: task.reward > 0 ? 'income' : 'expense', amount: Math.ceil(Math.abs(task.reward || 0) * 1.5), title: `记录成长: ${task.title}`, date: new Date().toISOString(), category: 'habit' }) }).catch(e => console.error(e));
                 }
 
@@ -1018,10 +1062,9 @@ export default function App() {
     // === 全局方法 ===
     const getTaskStatusOnDate = (t, date, kidId) => {
         if (!t?.history) return 'todo';
-        if (t.kidId === 'all') {
-            return t.history[date]?.[kidId]?.status || 'todo';
-        }
-        return t.history[date]?.status || 'todo';
+        let entry = t.kidId === 'all' ? t.history[date]?.[kidId] : t.history[date];
+        if (!entry) return 'todo';
+        return Array.isArray(entry) ? (entry.length > 0 ? entry[0].status : 'todo') : (entry.status || 'todo');
     };
 
     const getTaskTimeSpent = (t, date, kidId) => {
@@ -1358,7 +1401,18 @@ export default function App() {
     const handleMarkHabitComplete = async (task, date) => {
         try {
             await apiFetch(`/api/tasks/${task.id}/history`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, status: 'completed' }) });
-            setTasks(tasks.map(t => t.id === task.id ? { ...t, history: { ...(t.history || {}), [date]: { ...(t.history?.[date] || {}), status: 'completed' } } } : t));
+            setTasks(tasks.map(t => {
+                if (t.id === task.id) {
+                    let dateHist = t.history?.[date] || [];
+                    if (!Array.isArray(dateHist)) {
+                         dateHist = dateHist.status ? [dateHist] : [];
+                    }
+                    const newEntry = { status: 'completed', attemptId: `kid_attempt_${Date.now()}` };
+                    const newHist = { ...(t.history || {}), [date]: [...dateHist, newEntry] };
+                    return { ...t, history: newHist };
+                }
+                return t;
+            }));
 
             const targetKid = kids.find(k => k.id === task.kidId);
             if (!targetKid) return;
@@ -1373,7 +1427,7 @@ export default function App() {
                         amount: task.reward || 0,
                         title: `完成记录: ${task.title}`,
                         date: new Date().toISOString(),
-                        category: 'task'
+                        category: 'habit'
                     };
                     await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newTrans) });
 
@@ -1413,7 +1467,7 @@ export default function App() {
                         amount: absPenalty,
                         title: `违规扣分: ${task.title}`,
                         date: new Date().toISOString(),
-                        category: 'task'
+                        category: 'habit'
                     };
                     const expRefundTrans = {
                         id: `trans_${Date.now()}_penalty_exp`,
@@ -1753,15 +1807,24 @@ export default function App() {
 
     const buyItem = async (item) => {
         const activeKid = kids.find(k => k.id === activeKidId);
-        if (activeKid.balances.spend < item.price) return notify(`钱不够，去“赚家庭币”赚点吧！`, 'error');
+        if (activeKid.balances.spend < item.price) {
+            notify(`钱不够，去“赚家庭币”赚点吧！`, 'error');
+            return false;
+        }
 
         // Check limits per kid
         const kidOrders = orders.filter(o => o.kidId === activeKidId && o.itemId === item.id);
         if (item.type === 'single') {
-            if (kidOrders.length >= 1) return notify("此愿望/商品仅可兑换一次，你已经兑换过啦！", "error");
+            if (kidOrders.length >= 1) {
+                notify("此愿望/商品仅可兑换一次，你已经兑换过啦！", "error");
+                return false;
+            }
         } else if (item.type === 'multiple') {
             const maxAllowed = item.maxExchanges || Infinity;
-            if (kidOrders.length >= maxAllowed) return notify(`该商品最多兑换 ${maxAllowed} 次，你已达到上限！`, "error");
+            if (kidOrders.length >= maxAllowed) {
+                notify(`该商品最多兑换 ${maxAllowed} 次，你已达到上限！`, "error");
+                return false;
+            }
         }
 
         // Generate a unique 8-character redeem code
@@ -1802,7 +1865,11 @@ export default function App() {
             setKids(kids.map(k => k.id === activeKidId ? { ...k, balances: { ...k.balances, spend: k.balances.spend - item.price } } : k));
             setOrders([newOrder, ...orders]);
             notify(`下单成功！快去拿给爸爸妈妈核销吧！`, "success");
-        } catch (e) { notify("网络请求失败", "error"); }
+            return true;
+        } catch (e) { 
+            notify("网络请求失败", "error");
+            return false;
+        }
     };
 
     const getDefaultTimeRange = () => {
@@ -1859,13 +1926,19 @@ export default function App() {
             // Habit Logistics
             color = planForm.habitColor;
             frequency = planForm.habitType === 'daily_once' ? '每日一次' : (planForm.periodMaxType === 'weekly' ? `每周 ${planForm.periodMaxPerDay} 次` : `每日 ${planForm.periodMaxPerDay} 次`);
+            // Set the reward sign based on habitRewardType
+            if (planForm.habitRewardType === 'penalty') {
+                rewardNum = -Math.abs(rewardNum);
+            } else {
+                rewardNum = Math.abs(rewardNum);
+            }
         }
 
         // === EDIT MODE: Update existing task ===
         if (editingTask) {
             const updates = {
                 title: planForm.title,
-                reward: planType === 'habit' && rewardNum < 0 ? rewardNum : Math.abs(rewardNum),
+                reward: planType === 'habit' ? rewardNum : Math.abs(rewardNum),
                 category: planType === 'study' ? planForm.category : "行为",
                 catColor: color,
                 frequency: frequency, // V1 fallback
@@ -1911,7 +1984,7 @@ export default function App() {
         const baseTask = {
             id: Date.now().toString(),
             title: planForm.title, desc: planForm.desc,
-            reward: planType === 'habit' && rewardNum < 0 ? rewardNum : Math.abs(rewardNum),
+            reward: planType === 'habit' ? rewardNum : Math.abs(rewardNum),
             type: planType, status: 'todo', iconEmoji: planForm.iconEmoji, standards: planForm.desc || "",
             category: planType === 'study' ? planForm.category : "行为",
             catColor: color,
@@ -2476,6 +2549,191 @@ export default function App() {
         );
     };
 
+    const renderTransactionHistoryModal = () => {
+        if (!showTransactionHistoryModal) return null;
+        
+        // Use all transactions for the kid except habits (similar to the summary logic)
+        let filteredTrans = transactions.filter(t => t.kidId === activeKidId && t.category !== 'habit');
+
+        // Apply Time Filter
+        const now = new Date();
+        if (transactionHistoryFilterTime !== 'all' && transactionHistoryFilterTime !== 'custom') {
+            const days = parseInt(transactionHistoryFilterTime, 10);
+            const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+            filteredTrans = filteredTrans.filter(t => new Date(t.date) >= cutoff);
+        } else if (transactionHistoryFilterTime === 'custom' && transactionHistoryStartDate && transactionHistoryEndDate) {
+            const start = new Date(transactionHistoryStartDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(transactionHistoryEndDate);
+            end.setHours(23, 59, 59, 999);
+            filteredTrans = filteredTrans.filter(t => {
+                const d = new Date(t.date);
+                return d >= start && d <= end;
+            });
+        }
+
+        // Apply Type Filter
+        if (transactionHistoryFilterType !== 'all') {
+            filteredTrans = filteredTrans.filter(t => t.type === transactionHistoryFilterType);
+        }
+
+        // Calculate Statistics
+        const totalIncome = filteredTrans.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0);
+        const totalExpense = filteredTrans.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0);
+
+        // Group by Date
+        const groupedTrans = filteredTrans.reduce((acc, t) => {
+            const dStr = new Date(t.date).toLocaleDateString();
+            if (!acc[dStr]) acc[dStr] = [];
+            acc[dStr].push(t);
+            return acc;
+        }, {});
+
+        // Sort dates descending
+        const sortedDates = Object.keys(groupedTrans).sort((a, b) => new Date(b) - new Date(a));
+
+        return (
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[200] flex justify-end animate-fade-in">
+                <div className="bg-[#f4f7f9] w-full md:w-[600px] h-full shadow-2xl flex flex-col translate-x-0 overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-white border-b border-slate-100 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+                        <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
+                            <Icons.FileText className="text-indigo-500" />
+                            积分历史记录
+                        </h2>
+                        <button onClick={() => setShowTransactionHistoryModal(false)} className="w-10 h-10 bg-slate-50 text-slate-400 hover:text-slate-600 rounded-full flex items-center justify-center hover:bg-slate-100 transition-colors">
+                            <Icons.X size={20} />
+                        </button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                        <div className="p-4 md:p-6 space-y-6">
+                            {/* Summary Statistics */}
+                            <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex gap-4 divide-x divide-slate-100">
+                                <div className="flex-1 text-center">
+                                    <div className="text-xs font-bold text-emerald-500 mb-1 flex items-center justify-center gap-1"><Icons.TrendingUp size={14}/> 赚取总计</div>
+                                    <div className="text-2xl font-black text-emerald-600">+{totalIncome}</div>
+                                </div>
+                                <div className="flex-1 text-center">
+                                    <div className="text-xs font-bold text-rose-500 mb-1 flex items-center justify-center gap-1"><Icons.ShoppingBag size={14}/> 消费总计</div>
+                                    <div className="text-2xl font-black text-rose-600">-{totalExpense}</div>
+                                </div>
+                            </div>
+
+                            {/* Filters */}
+                            <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 space-y-4">
+                                <div>
+                                    <div className="text-xs font-bold text-slate-400 mb-2">时间范围</div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {[
+                                            { id: 'all', label: '全部' },
+                                            { id: '7', label: '近7天' },
+                                            { id: '30', label: '近30天' },
+                                            { id: '90', label: '近90天' },
+                                            { id: 'custom', label: '自定义' }
+                                        ].map(f => (
+                                            <button 
+                                                key={f.id} 
+                                                onClick={() => setTransactionHistoryFilterTime(f.id)}
+                                                className={`px-4 py-1.5 rounded-full text-sm font-bold transition-colors ${transactionHistoryFilterTime === f.id ? 'bg-indigo-500 text-white shadow-md shadow-indigo-200' : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-100'}`}
+                                            >
+                                                {f.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {transactionHistoryFilterTime === 'custom' && (
+                                        <div className="flex items-center gap-2 mt-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                            <input type="date" value={transactionHistoryStartDate} onChange={e => setTransactionHistoryStartDate(e.target.value)} className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm font-bold text-slate-700 outline-none focus:border-indigo-400" />
+                                            <span className="text-slate-400 font-bold">至</span>
+                                            <input type="date" value={transactionHistoryEndDate} onChange={e => setTransactionHistoryEndDate(e.target.value)} className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm font-bold text-slate-700 outline-none focus:border-indigo-400" />
+                                        </div>
+                                    )}
+                                </div>
+                                <div>
+                                    <div className="text-xs font-bold text-slate-400 mb-2">流向</div>
+                                    <div className="flex gap-2">
+                                        {[
+                                            { id: 'all', label: '全部分类' },
+                                            { id: 'income', label: '仅看收入' },
+                                            { id: 'expense', label: '仅看消费' }
+                                        ].map(f => (
+                                            <button 
+                                                key={f.id} 
+                                                onClick={() => setTransactionHistoryFilterType(f.id)}
+                                                className={`flex-1 py-1.5 rounded-full text-sm font-bold transition-colors ${transactionHistoryFilterType === f.id ? 'bg-indigo-50 text-indigo-600 border border-indigo-200' : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-100'}`}
+                                            >
+                                                {f.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Grouped List */}
+                            <div className="space-y-6 pb-8">
+                                {sortedDates.length === 0 ? (
+                                    <div className="text-center py-12 text-slate-400 bg-white rounded-3xl border border-slate-100 border-dashed">
+                                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-300">
+                                            <Icons.Inbox size={24} />
+                                        </div>
+                                        <p className="font-bold">查询不到相关流水记录</p>
+                                    </div>
+                                ) : (
+                                    sortedDates.map(dateStr => {
+                                        // Calculate daily summary
+                                        const dailyIncome = groupedTrans[dateStr].filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0);
+                                        const dailyExpense = groupedTrans[dateStr].filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0);
+                                        
+                                        const dObj = new Date(dateStr);
+                                        const isToday = dObj.toDateString() === new Date().toDateString();
+
+                                        return (
+                                            <div key={dateStr} className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                                                {/* Date Header Segment */}
+                                                <div className="bg-slate-50/80 px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                                                    <div className="font-bold text-slate-700 text-sm flex items-center gap-2">
+                                                        <Icons.Calendar size={14} className="text-slate-400" /> 
+                                                        {dateStr} {isToday && <span className="text-[10px] bg-indigo-100 text-indigo-600 px-1.5 rounded">今天</span>}
+                                                    </div>
+                                                    <div className="flex items-center gap-3 text-xs font-bold font-mono">
+                                                        {dailyIncome > 0 && <span className="text-emerald-500">入:{dailyIncome}</span>}
+                                                        {dailyExpense > 0 && <span className="text-rose-500">出:{dailyExpense}</span>}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="divide-y divide-slate-50">
+                                                    {groupedTrans[dateStr].map(item => {
+                                                        const isIncome = item.type === 'income';
+                                                        return (
+                                                            <div key={item.id} className="flex items-center justify-between py-4 px-4 hover:bg-slate-50/50 transition-colors group">
+                                                                <div className="flex items-center gap-4">
+                                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-inner shrink-0 ${isIncome ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
+                                                                        {isIncome ? <Icons.TrendingUp size={16} /> : <Icons.ShoppingBag size={16} />}
+                                                                    </div>
+                                                                    <div>
+                                                                        <div className="font-bold text-slate-700 text-sm leading-tight mb-0.5">{item.title}</div>
+                                                                        <div className="text-[10px] font-bold text-slate-400">{new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className={`font-black tracking-tight text-lg ${isIncome ? 'text-emerald-500' : 'text-slate-800'}`}>
+                                                                    {isIncome ? '+' : '-'}{item.amount}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     const renderTransferModal = () => {
         if (!showTransferModal) return null;
         const activeKid = kids.find(k => k.id === activeKidId);
@@ -2618,6 +2876,16 @@ export default function App() {
                         <div>
                             <label className="block text-sm font-bold text-slate-700 mb-2">愿望名称 *</label>
                             <input value={newItem.name} onChange={e => setNewItem({ ...newItem, name: e.target.value })} placeholder="例如：乐高积木、游乐园门票..." className="w-full border-2 border-slate-100 rounded-xl p-3 outline-none focus:border-purple-500 font-medium" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">图片链接 (可选)</label>
+                            <input value={newItem.image || ''} onChange={e => setNewItem({ ...newItem, image: e.target.value })} placeholder="例如：https://example.com/image.jpg" className="w-full border-2 border-slate-100 rounded-xl p-3 outline-none focus:border-purple-500 text-sm mb-3" />
+                            {newItem.image && (
+                                <div className="mt-2 text-center">
+                                    <img src={newItem.image} alt="Preview" className="w-24 h-24 object-cover rounded-xl shadow-sm mx-auto border border-slate-200" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
+                                    <div className="hidden text-xs text-rose-500 mt-1 font-bold">无效的图片链接</div>
+                                </div>
+                            )}
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-slate-700 mb-2">详细描述 (可选)</label>
@@ -2763,18 +3031,17 @@ export default function App() {
         const penalty = Math.abs(penaltyTaskContext.reward);
         let kidsUpdated = false;
         
+        let newHist = JSON.parse(JSON.stringify(penaltyTaskContext.history || {}));
+        const todayStr = formatDate(new Date());
+        
         penaltySelectedKidIds.forEach(targetKidId => {
             const targetKid = kids.find(k => k.id === targetKidId);
             if (!targetKid) return;
 
-            // Enforce limit check for manual parental deductions (same as kid attempts)
-            const todayStr = formatDate(new Date());
-            const kidHistory = penaltyTaskContext.history || {};
-            const todayHist = kidHistory[todayStr] || {};
-            const kidTodayData = penaltyTaskContext.kidId === 'all' ? (todayHist[targetKidId] || {}) : todayHist;
+            // Enforce limit check for manual parental deductions
+            const kidTodayData = penaltyTaskContext.kidId === 'all' ? (newHist[todayStr]?.[targetKidId] || {}) : (newHist[todayStr] || {});
             
-            // Check limit based on target kid, just to be safe they haven't maxed it
-            const maxAllowed = penaltyTaskContext.maxPerDay || 1;
+            const maxAllowed = penaltyTaskContext.periodMaxPerDay || penaltyTaskContext.maxPerDay || 1;
             const attemptsToday = Array.isArray(kidTodayData) ? kidTodayData.length : (kidTodayData.status ? 1 : 0);
             
             if (attemptsToday >= maxAllowed) {
@@ -2791,19 +3058,17 @@ export default function App() {
             setKids(prevKids => prevKids.map(k => k.id === targetKid.id ? { ...k, balances: newBals, exp: newExp } : k));
             
             // 2. Post transaction
-            const refundTrans = { id: `trans_${Date.now()}_penalty_${targetKid.id}`, kidId: targetKid.id, type: 'expense', amount: penalty, title: `手动惩罚: ${penaltyTaskContext.title}`, date: new Date().toISOString(), category: 'task' };
+            const refundTrans = { id: `trans_${Date.now()}_penalty_${targetKid.id}`, kidId: targetKid.id, type: 'expense', amount: penalty, title: `手动惩罚: ${penaltyTaskContext.title}`, date: new Date().toISOString(), category: 'habit' };
             apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(refundTrans) });
             setTransactions(prev => [refundTrans, ...prev]);
             notify(`已记录惩罚，扣除 ${targetKid.name} ${penalty} 家庭币！`, "error");
 
-            // 3. Update Task history so next time it knows attemptsToday is incremented
-            let newHist = { ...kidHistory };
-            const newRecord = { status: 'completed', attemptId: `attempt_${Date.now()}_${targetKidId}` };
+            // 3. Update Task history locally in newHist so next iter sees it
+            const newRecord = { status: 'completed', attemptId: `attempt_${Date.now()}_${targetKidId}_${Math.random().toString(36).substr(2,5)}` };
             
             if (penaltyTaskContext.kidId === 'all') {
                 if (!newHist[todayStr]) newHist[todayStr] = {};
                 if (!newHist[todayStr][targetKidId]) newHist[todayStr][targetKidId] = [];
-                // If it was an object (old format without multi-record), convert to array logic or just push if array
                 if (!Array.isArray(newHist[todayStr][targetKidId])) {
                      if (newHist[todayStr][targetKidId].status) newHist[todayStr][targetKidId] = [newHist[todayStr][targetKidId]];
                      else newHist[todayStr][targetKidId] = [];
@@ -2817,17 +3082,91 @@ export default function App() {
                  }
                  newHist[todayStr].push(newRecord);
             }
-            apiFetch(`/api/tasks/${penaltyTaskContext.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHist }) });
-            setTasks(prev => prev.map(t => t.id === penaltyTaskContext.id ? { ...t, history: newHist } : t));
         });
         
         if (kidsUpdated) {
+            apiFetch(`/api/tasks/${penaltyTaskContext.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHist }) });
+            setTasks(prev => prev.map(t => t.id === penaltyTaskContext.id ? { ...t, history: newHist } : t));
             setShowPenaltyModal(false);
             setPenaltyTaskContext(null);
         }
     };
 
+    const confirmReward = () => {
+        if (!penaltyTaskContext || penaltySelectedKidIds.length === 0) return;
+        
+        const reward = Math.abs(penaltyTaskContext.reward);
+        let kidsUpdated = false;
+        
+        let newHist = JSON.parse(JSON.stringify(penaltyTaskContext.history || {}));
+        const todayStr = formatDate(new Date());
+
+        penaltySelectedKidIds.forEach(targetKidId => {
+            const targetKid = kids.find(k => k.id === targetKidId);
+            if (!targetKid) return;
+
+            // Enforce limit check
+            const kidTodayData = penaltyTaskContext.kidId === 'all' ? (newHist[todayStr]?.[targetKidId] || {}) : (newHist[todayStr] || {});
+            
+            const maxAllowed = penaltyTaskContext.periodMaxPerDay || penaltyTaskContext.maxPerDay || 1;
+            const attemptsToday = Array.isArray(kidTodayData) ? kidTodayData.length : (kidTodayData.status ? 1 : 0);
+            
+            if (attemptsToday >= maxAllowed) {
+                notify(`${targetKid.name} 的此项记录今日已达上限，无法继续加分。`, "warning");
+                return;
+            }
+
+            kidsUpdated = true;
+            
+            // 1. Update balances
+            const newBals = { ...targetKid.balances, spend: targetKid.balances.spend + reward };
+            const newExp = targetKid.exp + Math.ceil(reward * 1.5);
+            apiFetch(`/api/kids/${targetKid.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ balances: newBals, exp: newExp }) });
+            setKids(prevKids => prevKids.map(k => k.id === targetKid.id ? { ...k, balances: newBals, exp: newExp } : k));
+            
+            // 2. Post transaction
+            const rewardTrans = { id: `trans_${Date.now()}_reward_${targetKid.id}`, kidId: targetKid.id, type: 'income', amount: reward, title: `奖励加分: ${penaltyTaskContext.title}`, date: new Date().toISOString(), category: 'habit' };
+            apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rewardTrans) });
+            setTransactions(prev => [rewardTrans, ...prev]);
+            notify(`已记录奖励，给予 ${targetKid.name} ${reward} 家庭币！`, "success");
+
+            // 3. Update Task history
+            const newRecord = { status: 'completed', attemptId: `attempt_${Date.now()}_${targetKidId}_${Math.random().toString(36).substr(2,5)}` };
+            
+            if (penaltyTaskContext.kidId === 'all') {
+                if (!newHist[todayStr]) newHist[todayStr] = {};
+                if (!newHist[todayStr][targetKidId]) newHist[todayStr][targetKidId] = [];
+                if (!Array.isArray(newHist[todayStr][targetKidId])) {
+                     if (newHist[todayStr][targetKidId].status) newHist[todayStr][targetKidId] = [newHist[todayStr][targetKidId]];
+                     else newHist[todayStr][targetKidId] = [];
+                }
+                newHist[todayStr][targetKidId].push(newRecord);
+            } else {
+                 if (!newHist[todayStr]) newHist[todayStr] = [];
+                 if (!Array.isArray(newHist[todayStr])) {
+                     if (newHist[todayStr].status) newHist[todayStr] = [newHist[todayStr]];
+                     else newHist[todayStr] = [];
+                 }
+                 newHist[todayStr].push(newRecord);
+            }
+        });
+        
+        if (kidsUpdated) {
+            apiFetch(`/api/tasks/${penaltyTaskContext.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHist }) });
+            setTasks(prev => prev.map(t => t.id === penaltyTaskContext.id ? { ...t, history: newHist } : t));
+            setShowRewardModal(false);
+            setPenaltyTaskContext(null);
+        }
+    };
+
     const toggleKidSelectionPenalty = (kidId) => {
+        if (!penaltyTaskContext) return;
+        const requiredCoins = Math.abs(penaltyTaskContext.reward);
+        const kUser = kids.find(k => k.id === kidId);
+        if (kUser && kUser.balances.spend < requiredCoins) {
+            notify(`${kUser.name} 的可用金币不足 ${requiredCoins} 枚，无法扣除`, "warning");
+            return;
+        }
         setPenaltySelectedKidIds(prev => 
             prev.includes(kidId) ? prev.filter(id => id !== kidId) : [...prev, kidId]
         );
@@ -2839,6 +3178,8 @@ export default function App() {
         const availableKids = penaltyTaskContext.kidId === 'all' 
             ? kids 
             : kids.filter(k => k.id === penaltyTaskContext.kidId);
+            
+        const eligibleKids = availableKids.filter(k => k.balances.spend >= Math.abs(penaltyTaskContext.reward));
 
         return (
             <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in pb-12">
@@ -2850,7 +3191,7 @@ export default function App() {
                         <h2 className="text-lg font-black text-slate-800">确认扣分对象</h2>
                         <p className="text-xs text-slate-500 font-bold mt-1 text-center">
                             请勾选要扣除 <span className="text-red-500 text-sm font-extrabold">{Math.abs(penaltyTaskContext.reward)}</span> 家庭币的孩子<br/>
-                            <span className="text-[10px] text-slate-400 font-normal">(单据限制: {penaltyTaskContext.maxPerDay || 1}次/天)</span>
+                            <span className="text-[10px] text-slate-400 font-normal">(单据限制: {penaltyTaskContext.periodMaxPerDay || penaltyTaskContext.maxPerDay || 1}次/天)</span>
                         </p>
                     </div>
 
@@ -2859,17 +3200,18 @@ export default function App() {
                             <span className="text-xs font-bold text-slate-400">选择受罚对象 ({availableKids.length} 人)</span>
                             <button 
                                 onClick={() => {
-                                    if (penaltySelectedKidIds.length === availableKids.length) {
+                                    if (penaltySelectedKidIds.length === eligibleKids.length && eligibleKids.length > 0) {
                                         setPenaltySelectedKidIds([]); // Deselect all
                                     } else {
-                                        setPenaltySelectedKidIds(availableKids.map(k => k.id)); // Select all
+                                        setPenaltySelectedKidIds(eligibleKids.map(k => k.id)); // Select all eligible
                                     }
                                 }}
-                                className="text-xs font-black transition-colors flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-transparent hover:border-slate-200 hover:bg-slate-50 active:bg-slate-100"
-                                style={{ color: penaltySelectedKidIds.length === availableKids.length ? '#f43f5e' : '#64748b' }}
+                                disabled={eligibleKids.length === 0}
+                                className="text-xs font-black transition-colors flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-transparent hover:border-slate-200 hover:bg-slate-50 active:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                style={{ color: penaltySelectedKidIds.length === eligibleKids.length && eligibleKids.length > 0 ? '#f43f5e' : '#64748b' }}
                             >
                                 <Icons.CheckSquare size={14} />
-                                {penaltySelectedKidIds.length === availableKids.length ? '取消全选' : '全部选中'}
+                                {penaltySelectedKidIds.length === eligibleKids.length && eligibleKids.length > 0 ? '取消全选' : '选中可用'}
                             </button>
                         </div>
                     )}
@@ -2877,16 +3219,22 @@ export default function App() {
                     <div className="space-y-2.5 mb-5 max-h-[35vh] overflow-y-auto pr-1 custom-scrollbar">
                         {availableKids.map(k => {
                             const isSelected = penaltySelectedKidIds.includes(k.id);
+                            const requiredCoins = Math.abs(penaltyTaskContext.reward);
+                            const isShort = k.balances.spend < requiredCoins;
                             return (
                                 <button
                                     key={k.id}
                                     onClick={() => toggleKidSelectionPenalty(k.id)}
-                                    className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${isSelected ? 'border-red-500 bg-red-50 shadow-inner' : 'border-slate-100 hover:border-slate-200 bg-white'}`}
+                                    disabled={isShort}
+                                    className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${isSelected ? 'border-red-500 bg-red-50 shadow-inner' : (isShort ? 'border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed' : 'border-slate-100 hover:border-slate-200 bg-white')}`}
                                 >
-                                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-2xl border border-slate-200 shadow-sm shrink-0">
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-2xl border ${isShort ? 'bg-slate-200 border-slate-300 opacity-50 grayscale' : 'bg-slate-100 border-slate-200 shadow-sm'} shrink-0`}>
                                         {k.avatar}
                                     </div>
-                                    <span className={`font-black text-left flex-1 ${isSelected ? 'text-red-700' : 'text-slate-700'}`}>{k.name}</span>
+                                    <div className="flex-1 flex flex-col items-start -mt-0.5">
+                                        <span className={`font-black text-left ${isSelected ? 'text-red-700' : (isShort ? 'text-slate-400' : 'text-slate-700')}`}>{k.name}</span>
+                                        {isShort && <span className="text-[10px] font-bold text-red-400 bg-red-50 px-1.5 py-0.5 rounded mt-0.5">余额不足 ({k.balances.spend}枚)</span>}
+                                    </div>
                                     <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center ${isSelected ? 'border-red-500 bg-red-500' : 'border-slate-300'}`}>
                                         {isSelected && <Icons.Check size={14} className="text-white" />}
                                     </div>
@@ -2905,6 +3253,147 @@ export default function App() {
                             执行扣分
                         </button>
                     </div>
+                </div>
+            </div>
+        );
+    };
+
+    const renderRewardModal = () => {
+        if (!showRewardModal || !penaltyTaskContext) return null;
+        
+        const availableKids = penaltyTaskContext.kidId === 'all' 
+            ? kids 
+            : kids.filter(k => k.id === penaltyTaskContext.kidId);
+
+        return (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in pb-12">
+                <div className="bg-white w-full max-w-sm rounded-[2rem] p-5 shadow-2xl text-left border-[3px] border-white/50">
+                    <div className="flex flex-col items-center mb-4">
+                        <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mb-2 text-2xl">
+                            🌟
+                        </div>
+                        <h2 className="text-lg font-black text-slate-800">确认加分对象</h2>
+                        <p className="text-xs text-slate-500 font-bold mt-1 text-center">
+                            请勾选要给予奖励 <span className="text-yellow-500 text-sm font-extrabold flex inline-flex items-center gap-0.5"><Icons.Star size={14} className="fill-yellow-500" />{Math.abs(penaltyTaskContext.reward)}</span> 的孩子<br/>
+                            <span className="text-[10px] text-slate-400 font-normal">(单据限制: {penaltyTaskContext.maxPerDay || 1}次/天)</span>
+                        </p>
+                    </div>
+
+                    {availableKids.length > 1 && (
+                        <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
+                            <span className="text-xs font-bold text-slate-400">选择奖励对象 ({availableKids.length} 人)</span>
+                            <button 
+                                onClick={() => {
+                                    if (penaltySelectedKidIds.length === availableKids.length) {
+                                        setPenaltySelectedKidIds([]); // Deselect all
+                                    } else {
+                                        setPenaltySelectedKidIds(availableKids.map(k => k.id)); // Select all
+                                    }
+                                }}
+                                className="text-xs font-black transition-colors flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-transparent hover:border-slate-200 hover:bg-slate-50 active:bg-slate-100"
+                                style={{ color: penaltySelectedKidIds.length === availableKids.length ? '#10b981' : '#64748b' }}
+                            >
+                                <Icons.CheckSquare size={14} />
+                                {penaltySelectedKidIds.length === availableKids.length ? '取消全选' : '全部选中'}
+                            </button>
+                        </div>
+                    )}
+
+                    <div className="space-y-2.5 mb-5 max-h-[35vh] overflow-y-auto pr-1 custom-scrollbar">
+                        {availableKids.map(k => {
+                            const isSelected = penaltySelectedKidIds.includes(k.id);
+                            return (
+                                <button
+                                    key={k.id}
+                                    onClick={() => toggleKidSelectionPenalty(k.id)}
+                                    className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${isSelected ? 'border-emerald-500 bg-emerald-50 shadow-inner' : 'border-slate-100 hover:border-slate-200 bg-white'}`}
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-2xl border border-slate-200 shadow-sm shrink-0">
+                                        {k.avatar}
+                                    </div>
+                                    <span className={`font-black text-left flex-1 ${isSelected ? 'text-emerald-700' : 'text-slate-700'}`}>{k.name}</span>
+                                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center ${isSelected ? 'border-emerald-500 bg-emerald-500' : 'border-slate-300'}`}>
+                                        {isSelected && <Icons.Check size={14} className="text-white" />}
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    <div className="flex gap-3">
+                        <button onClick={() => setShowRewardModal(false)} className="flex-1 py-3 text-slate-500 font-bold bg-slate-100 rounded-xl hover:bg-slate-200">取消</button>
+                        <button 
+                            disabled={penaltySelectedKidIds.length === 0}
+                            onClick={confirmReward} 
+                            className="flex-[2] py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black shadow-lg shadow-emerald-500/30 rounded-xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                        >
+                            执行奖励
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // Handle countdown timer for Emotional Modal
+    useEffect(() => {
+        let timer;
+        if (showEmotionalReminderModal && emotionalCooldownSeconds > 0) {
+            timer = setInterval(() => {
+                setEmotionalCooldownSeconds(prev => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(timer);
+    }, [showEmotionalReminderModal, emotionalCooldownSeconds]);
+
+    const renderEmotionalReminderModal = () => {
+        if (!showEmotionalReminderModal) return null;
+        
+        const isAnger = typeof showEmotionalReminderModal === 'object' && showEmotionalReminderModal.type === 'anger';
+        const modalBg = isAnger ? "bg-gradient-to-br from-rose-50 to-orange-50" : "bg-gradient-to-br from-indigo-50 to-sky-50";
+        const iconBg = isAnger ? "from-rose-100 to-orange-100 border-rose-200 text-rose-500" : "from-indigo-100 to-sky-100 border-indigo-200 text-indigo-500";
+        const quoteColor = isAnger ? "text-rose-700/80" : "text-indigo-700/80";
+        const btnClass = emotionalCooldownSeconds > 0 
+            ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none" 
+            : "bg-slate-800 text-white shadow-xl shadow-slate-800/20 hover:scale-[1.02] active:scale-95";
+
+        return (
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-fade-in pb-12">
+                <div className={`w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl text-center border-[4px] border-white/60 relative overflow-hidden isolate ${modalBg}`}>
+                    {/* Decorative blobs */}
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-white/40 rounded-full blur-3xl -z-10 -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/40 rounded-full blur-3xl -z-10 translate-y-1/2 -translate-x-1/2"></div>
+                    
+                    <div className={`w-20 h-20 bg-gradient-to-br ${iconBg} rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border-[3px] opacity-90 ${isAnger ? 'animate-pulse' : ''}`}>
+                        {isAnger ? <Icons.Wind size={36} strokeWidth={2.5} /> : <Icons.Coffee size={36} strokeWidth={2.5} />}
+                    </div>
+                    
+                    <h2 className="text-2xl font-black text-slate-800 tracking-tight leading-snug font-serif">
+                        {isAnger ? "深呼吸..." : "慢慢来..."}
+                    </h2>
+                    
+                    <div className="mt-6 relative">
+                        <Icons.Quote size={40} className={`absolute -top-4 -left-2 opacity-10 ${quoteColor} -z-10`} />
+                        <p className="text-[15px] font-medium text-slate-600 leading-relaxed text-justify px-2 relative z-10 text-pretty">
+                            {isAnger 
+                                ? "也许此刻您感到生气和失望。但教育是一场漫长的修行，请试着给彼此一点时间，放下这一刻的严厉。\n\n也许，一个拥抱，一句鼓励，能让改变悄然发生。🌱"
+                                : "连续的点击可能让孩子无所适从。陪伴的意义不仅在奖惩，多给孩子一些纯粹的关怀与鼓励吧。✨"
+                            }
+                        </p>
+                    </div>
+                    
+                    <button 
+                         disabled={emotionalCooldownSeconds > 0}
+                        onClick={() => setShowEmotionalReminderModal(false)} 
+                        className={`w-full mt-8 py-4 rounded-2xl font-black transition-all duration-300 outline-none flex items-center justify-center gap-2 ${btnClass}`}
+                    >
+                        {emotionalCooldownSeconds > 0 ? (
+                            <><Icons.Hourglass size={18} className="animate-spin-slow" /> 等待 {emotionalCooldownSeconds}s</>
+                        ) : (
+                            isAnger ? "我冷静下来了" : "我知道了"
+                        )}
+                    </button>
+                    {!emotionalCooldownSeconds && isAnger && <p className="text-[11px] text-slate-400 mt-3 font-bold">倒计时结束，您可以关闭窗口</p>}
                 </div>
             </div>
         );
@@ -3803,14 +4292,34 @@ export default function App() {
                                     {/* Habit Reward Settings */}
                                     <label className="block text-sm font-black mb-3 text-indigo-800">
                                         <Icons.Star size={18} className="inline mr-1 mb-1" />
-                                        家庭币奖惩设定
+                                        好坏习惯设定
                                     </label>
                                     <div className="space-y-4 animate-fade-in">
-                                        <div className="relative">
-                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-500 font-black text-base">币</div>
-                                            <input type="number" value={planForm.reward} onChange={e => setPlanForm({ ...planForm, reward: e.target.value })} placeholder="输入家庭币 (可填负数)" className="w-full bg-white border-2 border-indigo-200 rounded-2xl p-4 pl-14 pr-4 outline-none focus:border-indigo-500 font-black text-base text-indigo-700 shadow-inner placeholder:text-slate-400 placeholder:font-normal" />
+                                        <div className="flex p-1.5 bg-white rounded-2xl border border-indigo-100 shadow-sm">
+                                            <button 
+                                                onClick={() => setPlanForm({ ...planForm, habitRewardType: 'reward' })}
+                                                className={`flex-1 flex flex-col justify-center items-center py-2.5 rounded-xl font-black transition-all ${planForm.habitRewardType === 'reward' ? 'bg-emerald-500 text-white shadow-md scale-[1.02]' : 'bg-transparent text-slate-400 hover:bg-slate-50'}`}
+                                            >
+                                                <div className="flex items-center gap-1.5"><Icons.ThumbsUp size={16} /> 好习惯</div>
+                                                <div className={`text-[10px] mt-0.5 font-bold ${planForm.habitRewardType === 'reward' ? 'text-emerald-100' : 'text-slate-300'}`}>(奖励金币)</div>
+                                            </button>
+                                            <button 
+                                                onClick={() => setPlanForm({ ...planForm, habitRewardType: 'penalty' })}
+                                                className={`flex-1 flex flex-col justify-center items-center py-2.5 rounded-xl font-black transition-all ${planForm.habitRewardType === 'penalty' ? 'bg-rose-500 text-white shadow-md scale-[1.02]' : 'bg-transparent text-slate-400 hover:bg-slate-50'}`}
+                                            >
+                                                <div className="flex items-center gap-1.5"><Icons.ThumbsDown size={16} /> 坏习惯</div>
+                                                <div className={`text-[10px] mt-0.5 font-bold ${planForm.habitRewardType === 'penalty' ? 'text-rose-100' : 'text-slate-300'}`}>(扣除金币)</div>
+                                            </button>
                                         </div>
-                                        <div className="text-xs text-indigo-600/70 font-bold px-2">填写正数表示奖励家庭币，填写负数 (如 -10) 表示违反习惯的惩罚。<br/>(经验值会自动按 1.5 倍同步计算)</div>
+
+                                        <div className="relative">
+                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-400 font-black text-sm">每次{planForm.habitRewardType === 'penalty' ? '扣除' : '奖励'}</div>
+                                            <input type="number" min="0" value={Math.abs(planForm.reward || 0)} onChange={e => setPlanForm({ ...planForm, reward: Math.max(0, parseInt(e.target.value) || 0).toString() })} className="w-full bg-white border-2 border-indigo-200 rounded-2xl p-4 pl-24 pr-4 outline-none focus:border-indigo-500 font-black text-lg text-indigo-700 shadow-inner placeholder:text-slate-400 placeholder:font-normal" />
+                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-indigo-400 font-black text-sm">家庭币</div>
+                                        </div>
+                                        <div className="text-xs text-indigo-600/70 font-bold px-2">
+                                            请直接填写正数。系统会根据上方选择的类型自动处理加减。<br/>输入 0 表示只记录打卡，不影响金币。
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -4072,6 +4581,122 @@ export default function App() {
             </div>
         </div>
     );
+    const renderKidProfileTab = () => {
+        const activeKid = kids.find(k => k.id === activeKidId);
+        if (!activeKid) return null;
+        const nextLevelExp = getLevelReq(activeKid.level);
+
+        return (
+            <div className="space-y-6 animate-fade-in pb-10">
+                {/* --- 沉浸式顶部 Header --- */}
+                <div className="flex justify-between items-center bg-white/60 backdrop-blur-xl p-4 md:p-6 rounded-b-[2rem] shadow-sm z-30 sticky top-0 border-b border-white/50">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-600/30">
+                            M
+                        </div>
+                        <h1 className="text-xl font-black text-slate-800 tracking-tight">MiniLife</h1>
+                    </div>
+                </div>
+
+                {/* --- 专属个人名片与等级进度 --- */}
+                <div className="bg-white p-6 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative overflow-hidden group hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full blur-3xl -z-10 -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-50 rounded-full blur-3xl -z-10 translate-y-1/2 -translate-x-1/2"></div>
+                    
+                    <div className="flex flex-col items-center">
+                        <button 
+                            onClick={() => setShowAvatarPickerModal(true)} 
+                            className="relative mb-4 group/avatar"
+                        >
+                            <div className="w-24 h-24 rounded-full bg-slate-50 flex items-center justify-center text-5xl shadow-inner border-[4px] border-white group-hover/avatar:border-indigo-100 transition-colors relative z-10 overflow-hidden">
+                                {activeKid.avatar?.startsWith('data:image/') ? (
+                                    <img src={activeKid.avatar} alt="avatar" className="w-full h-full object-cover" />
+                                ) : (
+                                    activeKid.avatar
+                                )}
+                            </div>
+                            <div className="absolute -bottom-2 -translate-x-1/2 left-1/2 bg-slate-800 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-20 opacity-0 group-hover/avatar:opacity-100 transition-opacity shadow-md pointer-events-none whitespace-nowrap">
+                                点击更换头像
+                            </div>
+                            {/* Animated EXP Ring */}
+                            <svg className="absolute -inset-3 w-[calc(100%+1.5rem)] h-[calc(100%+1.5rem)] -rotate-90 pointer-events-none" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="46" fill="none" stroke="#f1f5f9" strokeWidth="6" />
+                                <circle 
+                                    cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="6" 
+                                    strokeLinecap="round"
+                                    className={getLevelTier(activeKid.level).color}
+                                    strokeDasharray="289.02"
+                                    strokeDashoffset={289.02 - (289.02 * Math.max(0, activeKid.exp / nextLevelExp))}
+                                />
+                            </svg>
+                        </button>
+
+                        <h2 className="text-2xl font-black text-slate-800">{activeKid.name}</h2>
+                        
+                        <div className="flex items-center gap-2 mt-2">
+                            <span className="text-sm font-bold text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">{activeKid.exp} / {nextLevelExp} EXP</span>
+                        </div>
+                    </div>
+
+                    <button 
+                        onClick={() => setShowLevelModal(true)} 
+                        className={`w-full mt-6 py-4 flex items-center justify-center gap-2 rounded-2xl font-black text-white shadow-lg transition-all active:scale-95 bg-gradient-to-r ${getLevelTier(activeKid.level).bg} shadow-${getLevelTier(activeKid.level).color.split('-')[1]}-500/20`}
+                    >
+                        <span className="text-xl">{getLevelTier(activeKid.level).emoji}</span>
+                        <span>我的等级特权：Lv.{activeKid.level} {getLevelTier(activeKid.level).title}</span>
+                        <Icons.ChevronRight size={18} className="opacity-70" />
+                    </button>
+                </div>
+
+                {/* --- Apple Fitness 风格 成就勋章系统 (Placeholder) --- */}
+                <div className="bg-slate-900 p-6 rounded-[2rem] relative overflow-hidden shadow-2xl isolate">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl -z-10 -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-rose-500/20 rounded-full blur-3xl -z-10 translate-y-1/2 -translate-x-1/2"></div>
+                    
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-black text-white flex items-center gap-2 drop-shadow-md">
+                            <Icons.Award size={24} className="text-yellow-400" />
+                            我的成就勋章
+                        </h2>
+                        <span className="text-xs font-bold text-slate-400 bg-slate-800 px-2 py-1 rounded-md">即将上线</span>
+                    </div>
+
+                    <div className="flex overflow-x-auto hide-scrollbar gap-4 pb-4 -mx-2 px-2 snap-x">
+                        {/* Medal 1: First Habit (Unlocked style) */}
+                        <div className="min-w-[140px] flex flex-col items-center bg-slate-800/80 p-5 rounded-[1.5rem] border border-slate-700/50 backdrop-blur-md relative snap-center group">
+                            <div className="absolute inset-0 rounded-[1.5rem] bg-gradient-to-br from-yellow-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#FFD700] via-[#FDB931] to-[#9F7928] shadow-[0_0_20px_rgba(255,215,0,0.3),inset_0_-4px_8px_rgba(0,0,0,0.3),inset_0_4px_8px_rgba(255,255,255,0.6)] flex items-center justify-center mb-4 relative z-10 box-border border-2 border-yellow-200/30">
+                                <Icons.Star size={36} className="text-amber-900 opacity-80" strokeWidth={2.5} />
+                            </div>
+                            <p className="text-sm font-black text-white tracking-wider mb-1">初次闪耀</p>
+                            <p className="text-[10px] text-slate-400 font-bold text-center">完成首次习惯打卡</p>
+                        </div>
+
+                        {/* Medal 2: 7-Day Streak (Locked style) */}
+                        <div className="min-w-[140px] flex flex-col items-center bg-slate-800/40 p-5 rounded-[1.5rem] border border-slate-700/30 backdrop-blur-md relative snap-center opacity-60">
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 shadow-[inset_0_-4px_8px_rgba(0,0,0,0.4),inset_0_4px_8px_rgba(255,255,255,0.1)] flex items-center justify-center mb-4 relative z-10 box-border border-2 border-slate-600">
+                                <Icons.Zap size={36} className="text-slate-900 opacity-50" strokeWidth={2.5} />
+                            </div>
+                            <p className="text-sm font-black text-slate-300 tracking-wider mb-1">毅力之火</p>
+                            <p className="text-[10px] text-slate-500 font-bold text-center">连续打卡 7 天</p>
+                            <div className="absolute top-3 right-3 text-slate-600"><Icons.Lock size={14} /></div>
+                        </div>
+
+                        {/* Medal 3: Wealth Master (Locked style) */}
+                        <div className="min-w-[140px] flex flex-col items-center bg-slate-800/40 p-5 rounded-[1.5rem] border border-slate-700/30 backdrop-blur-md relative snap-center opacity-60">
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 shadow-[inset_0_-4px_8px_rgba(0,0,0,0.4),inset_0_4px_8px_rgba(255,255,255,0.1)] flex items-center justify-center mb-4 relative z-10 box-border border-2 border-slate-600">
+                                <Icons.PiggyBank size={36} className="text-slate-900 opacity-50" strokeWidth={2.5} />
+                            </div>
+                            <p className="text-sm font-black text-slate-300 tracking-wider mb-1">理财大师</p>
+                            <p className="text-[10px] text-slate-500 font-bold text-center">累计获得 1000 币</p>
+                            <div className="absolute top-3 right-3 text-slate-600"><Icons.Lock size={14} /></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     const renderStudyTab = () => {
         let myTasks = tasks.filter(t => (t.kidId === activeKidId || t.kidId === 'all') && t.type === 'study' && isTaskDueOnDate(t, selectedDate));
 
@@ -4417,7 +5042,7 @@ export default function App() {
     const renderKidApp = () => {
         const activeKid = kids.find(k => k.id === activeKidId);
         if (!activeKid) return null;
-        const myTasks = tasks.filter(t => t.kidId === activeKidId || t.kidId === 'all');
+        const myTasks = tasks.filter(t => t.kidId === activeKidId || t.kidId === 'all'); console.log("Kid Render Tasks:", JSON.parse(JSON.stringify(myTasks)));
         const myOrders = orders.filter(o => o.kidId === activeKidId);
         const nextLevelExp = getLevelReq(activeKid.level);
 
@@ -4495,8 +5120,104 @@ export default function App() {
                         </div>
                     </div>
                 )}
+
+                {/* --- 专属头像选择器 Modal --- */}
+                {showAvatarPickerModal && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-fade-in">
+                        <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative overflow-hidden flex flex-col items-center">
+                            <h3 className="font-black text-xl text-slate-800 mb-6">选择新头像</h3>
+                            
+                            {/* Upload Button */}
+                            <div className="w-full mb-6">
+                                <input 
+                                    type="file" 
+                                    id="avatar-upload" 
+                                    accept="image/*" 
+                                    className="hidden" 
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+                                        const reader = new FileReader();
+                                        reader.onload = (event) => {
+                                            const img = new Image();
+                                            img.onload = () => {
+                                                const canvas = document.createElement('canvas');
+                                                const MAX_SIZE = 256;
+                                                let width = img.width;
+                                                let height = img.height;
+                                                if (width > height) {
+                                                    if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+                                                } else {
+                                                    if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+                                                }
+                                                canvas.width = width;
+                                                canvas.height = height;
+                                                const ctx = canvas.getContext('2d');
+                                                ctx.drawImage(img, 0, 0, width, height);
+                                                setPendingAvatar(canvas.toDataURL('image/jpeg', 0.8));
+                                            };
+                                            img.src = event.target.result;
+                                        };
+                                        reader.readAsDataURL(file);
+                                    }}
+                                />
+                                <label htmlFor="avatar-upload" className="w-full bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold py-3 rounded-2xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors active:scale-95">
+                                    <Icons.Camera size={24} className="text-slate-400" />
+                                    <span className="text-xs">拍照 / 上传相册图片</span>
+                                </label>
+                            </div>
+
+                            <div className="grid grid-cols-4 gap-4 mb-8 w-full">
+                                {/* Special visual slot for base64 pending avatar if present and not an emoji */}
+                                <div className={`col-span-4 flex justify-center mb-2 ${pendingAvatar && pendingAvatar.startsWith('data:image/') ? 'block' : 'hidden'}`}>
+                                    <div className="relative">
+                                        <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border-[3px] border-indigo-400 shadow-lg scale-110">
+                                             <img src={pendingAvatar} alt="Pending Avatar" className="w-full h-full object-cover" />
+                                        </div>
+                                        <button onClick={() => setPendingAvatar('')} className="absolute -top-2 -right-2 bg-rose-500 text-white p-1 rounded-full shadow-md hover:bg-rose-600">
+                                            <Icons.X size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Emoji presets */}
+                                {['👦', '👧', '🦁', '🦊', '🐱', '🐶', '🐰', '🐯', '🐼', '🐨', '🦖', '🚀'].map(emoji => (
+                                    <button 
+                                        key={emoji} 
+                                        onClick={() => setPendingAvatar(emoji)}
+                                        className={`w-14 h-14 text-3xl flex items-center justify-center rounded-2xl transition-all ${pendingAvatar === emoji ? 'bg-indigo-100 border-[3px] border-indigo-400 scale-110 shadow-lg' : 'bg-slate-50 border border-slate-100 hover:bg-slate-100 hover:scale-105'} ${pendingAvatar?.startsWith('data:image/') ? 'opacity-50 grayscale' : ''}`}
+                                    >
+                                        {emoji}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="flex gap-3 w-full">
+                                <button onClick={() => { setShowAvatarPickerModal(false); setPendingAvatar(''); }} className="flex-1 py-3.5 bg-slate-100 text-slate-500 rounded-xl font-black text-sm hover:bg-slate-200 transition-colors">取消</button>
+                                <button 
+                                    onClick={async () => {
+                                        if (!pendingAvatar || pendingAvatar === activeKid.avatar) {
+                                            setShowAvatarPickerModal(false);
+                                            return;
+                                        }
+                                        try {
+                                            await apiFetch(`/api/kids/${activeKid.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ avatar: pendingAvatar }) });
+                                            setKids(kids.map(k => k.id === activeKid.id ? { ...k, avatar: pendingAvatar } : k));
+                                            setShowAvatarPickerModal(false);
+                                            notify('头像修改成功！', 'success');
+                                        } catch (e) {
+                                            notify('保存失败，请重试', 'error');
+                                        }
+                                    }} 
+                                    className="flex-[2] py-3.5 bg-indigo-600 text-white rounded-xl font-black text-sm shadow-md shadow-indigo-600/20 hover:bg-indigo-700 active:scale-95 transition-all"
+                                >
+                                    保存设置
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 
-                {/* 勋章与等级个人中心 Modal */}
+                {/* 勋章与等级个人中心 Modal (保留作为 Level Details) */}
                 {showLevelModal && (
                     <div className="fixed inset-0 bg-[#f4f7f9] z-[200] flex flex-col animate-slide-up overflow-hidden">
                         {/* Header Gradient Area */}
@@ -4664,6 +5385,7 @@ export default function App() {
 
                 <div className="max-w-5xl mx-auto p-4 md:p-8 pb-28 md:pb-8">
                     {kidTab === 'study' && renderStudyTab()}
+                    {kidTab === 'profile' && renderKidProfileTab()}
 
                     {kidTab === 'habit' && (() => {
                         const todayTransactions = transactions.filter(t => t.kidId === activeKidId && t.category === 'habit' && new Date(t.date).toDateString() === new Date().toDateString());
@@ -4732,10 +5454,10 @@ export default function App() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                                         {myTasks.filter(t => t.type === 'habit').filter(t => {
                                             const entry = t.kidId === 'all' ? t.history?.[selectedDate]?.[activeKidId] : t.history?.[selectedDate];
-                                            const count = entry?.count || (entry?.status === 'completed' ? 1 : 0);
+                                            const count = Array.isArray(entry) ? entry.length : (entry?.count || (entry?.status === 'completed' ? 1 : 0));
                                             let currentLimitCount = count;
                                             if (t.habitType === 'multiple' && t.periodMaxType === 'weekly') currentLimitCount = getWeeklyCompletionCount(t, activeKidId, selectedDate);
-                                            const maxPerDay = t.periodMaxPerDay || 3;
+                                            const maxPerDay = t.periodMaxPerDay || t.maxPerDay || 1;
                                             const isDone = (t.habitType === 'daily_once' && count >= 1) || (t.habitType === 'multiple' && currentLimitCount >= maxPerDay);
                                             if (habitCardFilter === 'income') return t.reward >= 0;
                                             if (habitCardFilter === 'expense') return t.reward < 0;
@@ -4745,10 +5467,10 @@ export default function App() {
                                         }).map(t => {
                                             const isNegative = t.reward < 0;
                                             const entry = t.kidId === 'all' ? t.history?.[selectedDate]?.[activeKidId] : t.history?.[selectedDate];
-                                            const count = entry?.count || (entry?.status === 'completed' ? 1 : 0);
+                                            const count = Array.isArray(entry) ? entry.length : (entry?.count || (entry?.status === 'completed' ? 1 : 0));
                                             let currentLimitCount = count;
                                             if (t.habitType === 'multiple' && t.periodMaxType === 'weekly') currentLimitCount = getWeeklyCompletionCount(t, activeKidId, selectedDate);
-                                            const maxPerDay = t.periodMaxPerDay || 3;
+                                            const maxPerDay = t.periodMaxPerDay || t.maxPerDay || 1;
                                             const isDailyOnce = t.habitType === 'daily_once';
                                             const isMaxedOut = t.habitType === 'multiple' && currentLimitCount >= maxPerDay;
                                             const isDone = (isDailyOnce && count >= 1) || isMaxedOut;
@@ -4954,43 +5676,38 @@ export default function App() {
 
                             {/* Kid Transaction History */}
                             <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
-                                <div className="border-b border-slate-100 p-6 bg-slate-50/50">
+                                <div className="border-b border-slate-100 p-6 bg-slate-50/50 flex items-center justify-between">
                                     <h3 className="font-black text-slate-800 text-lg flex items-center gap-2"><Icons.List size={18} className="text-slate-500" /> 近期交易明细</h3>
+                                    <button onClick={() => setShowTransactionHistoryModal(true)} className="text-sm font-bold text-indigo-500 hover:text-indigo-600 flex items-center gap-1 transition-colors">
+                                        查看全部明细 <Icons.ChevronRight size={14} />
+                                    </button>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2">
-                                    {/* Income List */}
-                                    <div className="p-6 md:border-r border-slate-100">
-                                        <h4 className="font-black text-slate-700 mb-4 flex items-center gap-2 text-sm"><Icons.TrendingUp size={16} className="text-emerald-500" /> 赚取金币</h4>
-                                        {transactions.filter(t => t.kidId === activeKidId && t.type === 'income' && t.category !== 'habit').length === 0 && <div className="text-center text-slate-400 text-sm py-8">暂无收入记录</div>}
-                                        <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
-                                            {transactions.filter(t => t.kidId === activeKidId && t.type === 'income' && t.category !== 'habit').slice(0, 20).map(item => (
-                                                <div key={item.id} className="flex items-center justify-between p-3 bg-emerald-50/50 rounded-xl">
-                                                    <div>
-                                                        <div className="font-bold text-slate-700 text-sm">{item.title}</div>
-                                                        <div className="text-xs text-slate-400 mt-0.5">{new Date(item.date).toLocaleDateString()}</div>
+                                <div className="p-6">
+                                    {transactions.filter(t => t.kidId === activeKidId && t.category !== 'habit').length === 0 ? (
+                                        <div className="text-center text-slate-400 text-sm py-8">暂无交易记录</div>
+                                    ) : (
+                                        <div className="space-y-3 custom-scrollbar pr-2">
+                                            {transactions.filter(t => t.kidId === activeKidId && t.category !== 'habit').slice(0, 40).map(item => {
+                                                const isIncome = item.type === 'income';
+                                                return (
+                                                    <div key={item.id} className="flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100/50 transition-colors rounded-2xl border border-slate-100/50">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-inner shrink-0 ${isIncome ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+                                                                {isIncome ? <Icons.TrendingUp size={20} /> : <Icons.ShoppingBag size={20} />}
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-black text-slate-700 text-base">{item.title}</div>
+                                                                <div className="text-xs font-bold text-slate-400 mt-0.5">{new Date(item.date).toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className={`font-black text-lg ${isIncome ? 'text-emerald-600' : 'text-slate-800'}`}>
+                                                            {isIncome ? '+' : '-'}{item.amount}
+                                                        </div>
                                                     </div>
-                                                    <div className="font-black text-emerald-600">+{item.amount} 家庭币</div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
-                                    </div>
-
-                                    {/* Expense List */}
-                                    <div className="p-6 border-t md:border-t-0 border-slate-100">
-                                        <h4 className="font-black text-slate-700 mb-4 flex items-center gap-2 text-sm"><Icons.ShoppingBag size={16} className="text-red-500" /> 超市消费</h4>
-                                        {transactions.filter(t => t.kidId === activeKidId && t.type === 'expense' && t.category !== 'habit').length === 0 && <div className="text-center text-slate-400 text-sm py-8">暂无消费记录</div>}
-                                        <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
-                                            {transactions.filter(t => t.kidId === activeKidId && t.type === 'expense' && t.category !== 'habit').slice(0, 20).map(item => (
-                                                <div key={item.id} className="flex items-center justify-between p-3 bg-red-50/50 rounded-xl">
-                                                    <div>
-                                                        <div className="font-bold text-slate-700 text-sm">{item.title}</div>
-                                                        <div className="text-xs text-slate-400 mt-0.5">{new Date(item.date).toLocaleDateString()}</div>
-                                                    </div>
-                                                    <div className="font-black text-red-500">-{item.amount} 家庭币</div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -4998,19 +5715,81 @@ export default function App() {
 
                     {kidTab === 'shop' && (
                         <div className="animate-fade-in space-y-6">
-                            <div className="flex bg-white p-2 rounded-2xl shadow-sm border border-slate-100 max-w-sm mx-auto">
-                                <button onClick={() => setKidShopTab('browse')} className={`flex-1 py-2.5 rounded-xl font-black text-sm transition-all ${kidShopTab === 'browse' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}>官方货架区</button>
-                                <div className="w-px h-6 bg-slate-200 mx-1 self-center"></div>
-                                <button onClick={() => setKidShopTab('orders')} className={`flex-1 py-2.5 rounded-xl font-black text-sm relative transition-all ${kidShopTab === 'orders' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}>
-                                    我的订单
-                                    {myOrders.filter(o => o.status === 'shipping').length > 0 && <span className="absolute top-2 right-8 w-2 h-2 bg-red-500 rounded-full"></span>}
-                                </button>
+                            <div className="bg-white rounded-3xl p-3 shadow-sm border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10 w-full mb-6">
+                                <div className="flex bg-slate-50 p-1.5 rounded-2xl w-full sm:w-auto overflow-x-auto whitespace-nowrap hide-scrollbar snap-x">
+                                    <button onClick={() => setKidShopTab('browse')} className={`flex-1 sm:px-6 py-2.5 px-4 rounded-xl font-black text-sm transition-all snap-center shrink-0 ${kidShopTab === 'browse' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>官方货架区</button>
+                                    <button onClick={() => setKidShopTab('orders')} className={`flex-1 sm:px-6 py-2.5 px-4 rounded-xl font-black text-sm relative transition-all snap-center shrink-0 ${kidShopTab === 'orders' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+                                        我的订单
+                                        {myOrders.filter(o => o.status === 'shipping').length > 0 && <span className="absolute top-2 right-2 sm:right-4 w-2 h-2 bg-red-500 rounded-full"></span>}
+                                    </button>
+                                </div>
+                                
+                                <div className="flex items-center gap-2 sm:w-auto w-full overflow-x-auto whitespace-nowrap hide-scrollbar">
+                                    {kidShopTab === 'browse' && (
+                                        <div className="flex items-center gap-2 bg-slate-50 px-4 py-2.5 rounded-2xl w-full shrink-0">
+                                            <Icons.Filter size={16} className="text-slate-400" />
+                                            <select 
+                                                value={mallSortByPrice}
+                                                onChange={(e) => setMallSortByPrice(e.target.value)}
+                                                className="bg-transparent text-slate-700 font-bold text-sm outline-none cursor-pointer w-full"
+                                            >
+                                                <option value="none">推荐排序</option>
+                                                <option value="asc">价格低到高</option>
+                                                <option value="desc">价格高到低</option>
+                                                <option value="available">可兑换的</option>
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    {kidShopTab === 'orders' && (
+                                        <>
+                                            <div className="flex items-center gap-2 bg-slate-50 px-4 py-2.5 rounded-2xl min-w-[120px] shrink-0">
+                                                <Icons.Filter size={14} className="text-slate-400" />
+                                                <select 
+                                                    value={orderFilterStatus}
+                                                    onChange={(e) => setOrderFilterStatus(e.target.value)}
+                                                    className="bg-transparent text-slate-700 font-bold text-sm outline-none cursor-pointer w-full"
+                                                >
+                                                    <option value="all">全部状态</option>
+                                                    <option value="shipping">待核销</option>
+                                                    <option value="completed">已完成</option>
+                                                </select>
+                                            </div>
+                                            <div className="flex items-center gap-2 bg-slate-50 px-4 py-2.5 rounded-2xl min-w-[120px] shrink-0">
+                                                <Icons.SortAsc size={14} className="text-slate-400" />
+                                                <select 
+                                                    value={orderSortByPrice}
+                                                    onChange={(e) => setOrderSortByPrice(e.target.value)}
+                                                    className="bg-transparent text-slate-700 font-bold text-sm outline-none cursor-pointer w-full"
+                                                >
+                                                    <option value="none">最新下单</option>
+                                                    <option value="desc">金额最高</option>
+                                                    <option value="asc">金额最低</option>
+                                                </select>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
                             </div>
 
                             {kidShopTab === 'browse' ? (
-                                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                                    {inventory.map(item => (
-                                        <div key={item.id} className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all flex flex-col group cursor-pointer relative">
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 mt-6">
+                                        {[...inventory].filter(item => {
+                                            if (mallSortByPrice === 'available') {
+                                                const isMultiple = item.type === 'multiple';
+                                                const maxAllowed = item.maxExchanges || 1;
+                                                const boughtCount = orders.filter(o => o.kidId === activeKidId && o.itemName === item.name).length;
+                                                const reachedLimit = isMultiple && boughtCount >= maxAllowed;
+                                                return !reachedLimit && (activeKid.balance >= item.price);
+                                            }
+                                            return true;
+                                        }).sort((a,b) => {
+                                            if (mallSortByPrice === 'asc') return a.price - b.price;
+                                            if (mallSortByPrice === 'desc' || mallSortByPrice === 'available') return b.price - a.price;
+                                            return 0;
+                                        }).map(item => (
+                                            <div key={item.id} className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all flex flex-col group cursor-pointer relative">
                                             {/* Top Banner/Badge */}
                                             <div className="absolute top-3 inset-x-3 flex justify-between items-start z-10 pointer-events-none">
                                                 <div className={`text-[10px] font-black px-2 py-1 rounded-lg backdrop-blur-md shadow-sm border ${item.type === 'single' ? 'bg-orange-500/90 text-white border-orange-400' : item.type === 'multiple' ? 'bg-blue-500/90 text-white border-blue-400' : 'bg-purple-500/90 text-white border-purple-400'}`}>
@@ -5022,7 +5801,10 @@ export default function App() {
                                             <div className={`h-40 sm:h-48 flex items-center justify-center text-7xl sm:text-8xl relative overflow-hidden bg-gradient-to-br ${item.type === 'privilege' ? 'from-purple-100 to-fuchsia-200' : 'from-indigo-50 to-blue-100'}`}>
                                                 <div className="absolute inset-0 bg-white/20 transform -skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-1000"></div>
                                                 <div className="absolute w-full h-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.8)_0%,transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                                <div className="transform group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500 drop-shadow-xl relative z-10">
+                                                {item.image ? (
+                                                    <img src={item.image} alt={item.name} className="w-full h-full object-cover relative z-10 transform group-hover:scale-105 transition-transform duration-500" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
+                                                ) : null}
+                                                <div className={`transform group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500 drop-shadow-xl relative z-10 ${item.image ? 'hidden' : ''}`}>
                                                     {item.iconEmoji}
                                                 </div>
                                             </div>
@@ -5035,9 +5817,9 @@ export default function App() {
                                                 <div className="flex justify-between items-end mt-auto pt-4 border-t border-slate-50">
                                                     <div className="flex flex-col">
                                                         <span className="text-[10px] text-slate-400 font-bold mb-0.5">售价</span>
-                                                        <div className="flex items-baseline gap-1 text-rose-500">
+                                                        <div className="flex items-center gap-1 text-yellow-500">
+                                                            <Icons.Star size={14} className="fill-yellow-500 text-yellow-500" />
                                                             <span className="text-xl sm:text-2xl font-black tracking-tight">{item.price}</span>
-                                                            <span className="text-[10px] sm:text-xs font-bold">家庭币</span>
                                                         </div>
                                                     </div>
                                                     {(() => {
@@ -5055,7 +5837,7 @@ export default function App() {
                                                         }
 
                                                         return (
-                                                            <button onClick={(e) => { e.stopPropagation(); buyItem(item); }} className="w-10 h-10 sm:w-12 sm:h-12 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/30 hover:shadow-rose-500/50 hover:scale-105 active:scale-95 transition-all">
+                                                            <button onClick={(e) => { e.stopPropagation(); setKidCheckoutItem(item); }} className="w-10 h-10 sm:w-12 sm:h-12 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/30 hover:shadow-rose-500/50 hover:scale-105 active:scale-95 transition-all">
                                                                 <Icons.ShoppingBag size={20} className="sm:w-6 sm:h-6" />
                                                             </button>
                                                         );
@@ -5065,17 +5847,31 @@ export default function App() {
                                         </div>
                                     ))}
                                 </div>
+                                </div>
                             ) : (
                                 <div className="space-y-4">
-                                    {myOrders.length === 0 ? (
+                                    {[...myOrders].filter(o => orderFilterStatus === 'all' || o.status === orderFilterStatus).sort((a,b) => {
+                                        if (orderSortByPrice === 'asc') return a.price - b.price;
+                                        if (orderSortByPrice === 'desc') return b.price - a.price;
+                                        return 0;
+                                    }).length === 0 ? (
                                         <div className="text-center py-20 bg-white rounded-[2rem] shadow-sm border border-slate-100">
                                             <Icons.ShoppingBag size={48} className="mx-auto text-slate-200 mb-4" />
-                                            <p className="text-slate-400 font-bold">还没有买过东西，快去货架上看看吧~</p>
+                                            <p className="text-slate-400 font-bold">没有找到对应的订单记录~</p>
                                         </div>
-                                    ) : myOrders.map(o => (
-                                        <div key={o.id} className="bg-white p-5 rounded-[2rem] border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-sm hover:border-indigo-100/50 transition-colors">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-500 shadow-inner"><Icons.Package size={28} /></div>
+                                    ) : [...myOrders].filter(o => orderFilterStatus === 'all' || o.status === orderFilterStatus).sort((a,b) => {
+                                        if (orderSortByPrice === 'asc') return a.price - b.price;
+                                        if (orderSortByPrice === 'desc') return b.price - a.price;
+                                        return 0;
+                                    }).map(o => (
+                                        <div key={o.id} className="bg-white p-4 sm:p-5 rounded-[1.5rem] sm:rounded-[2rem] border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-5 shadow-sm hover:border-indigo-100/50 hover:shadow-md transition-all">
+                                            <div className="flex items-center gap-3 sm:gap-5">
+                                                <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 shadow-inner overflow-hidden border border-slate-100/50">
+                                                    {o.itemImage ? (
+                                                        <img src={o.itemImage} alt={o.itemName} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
+                                                    ) : null}
+                                                    <div className={o.itemImage ? 'hidden' : ''}><Icons.Package size={32} /></div>
+                                                </div>
                                                 <div>
                                                     <div className="font-black text-slate-800 text-lg">{o.itemName}</div>
                                                     <div className="text-[11px] text-slate-400 font-mono mt-1 flex items-center gap-2">
@@ -5130,6 +5926,32 @@ export default function App() {
                         </div>
                     )}
                 </div>
+
+                {/* Kid Checkout Confirmation Modal */}
+                {kidCheckoutItem && (
+                    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-fade-in">
+                        <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 sm:p-8 shadow-2xl scale-in group">
+                            <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-5 text-rose-500 shadow-inner group-hover:scale-110 transition-transform relative">
+                                <Icons.ShoppingBag size={32} />
+                            </div>
+                            <h3 className="text-xl sm:text-2xl font-black text-center text-slate-800 mb-2 tracking-tight">确认兑换</h3>
+                            <p className="text-slate-500 text-sm text-center mb-6 leading-relaxed">
+                                确定要花费 <span className="font-black text-yellow-500 inline-flex items-center gap-0.5"><Icons.Star size={14} className="fill-yellow-500" />{kidCheckoutItem.price}</span> 兑换商品<br/>
+                                <span className="font-black text-slate-700 text-base mt-2 inline-block">「{kidCheckoutItem.name}」</span> 吗？
+                            </p>
+                            <div className="flex gap-3 pt-2">
+                                <button onClick={() => setKidCheckoutItem(null)} className="flex-1 py-3.5 sm:py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 active:scale-95 transition-all text-sm sm:text-base">再想想</button>
+                                <button onClick={async () => { 
+                                    const success = await buyItem(kidCheckoutItem);
+                                    if (success) setKidCheckoutItem(null);
+                                }} className="flex-1 py-3.5 sm:py-4 bg-rose-500 text-white font-black rounded-2xl hover:bg-rose-600 shadow-lg shadow-rose-500/30 active:scale-95 transition-all text-sm sm:text-base">确认兑换</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Full Transaction History Modal */}
+                {renderTransactionHistoryModal()}
             </div>
         );
     };
@@ -5714,8 +6536,50 @@ export default function App() {
                     </div>
                 )}
 
-                {parentTab === 'plans' && (
-                    <div className="animate-fade-in space-y-6">
+                {parentTab === 'plans' && (() => {
+                    const handlePointAction = (t, actionType) => {
+                        const now = Date.now();
+                        const TIME_WINDOW = 30000; // 30 seconds
+                        const amount = Math.abs(t.reward || 0);
+                        
+                        // Filter timestamps within the window
+                        const recentActions = pointActionTimings.filter(action => typeof action === 'object' && now - action.time < TIME_WINDOW);
+                        
+                        const recentPenalties = recentActions.filter(a => a.type === 'penalty');
+                        const totalPenaltyAmount = recentPenalties.reduce((sum, a) => sum + a.amount, 0);
+                        
+                        const isHighPenalty = actionType === 'penalty' && (totalPenaltyAmount + amount >= 40);
+                        const isTooFrequentPenalties = actionType === 'penalty' && recentPenalties.length >= 3;
+                        const isTooFrequentOverall = recentActions.length >= 5;
+                        
+                        if (isHighPenalty || isTooFrequentPenalties || isTooFrequentOverall) {
+                            setShowEmotionalReminderModal({
+                                type: actionType === 'penalty' ? 'anger' : 'frequent',
+                                amount: totalPenaltyAmount + amount
+                            });
+                            // Trigger 5-second unskippable cooldown
+                            setEmotionalCooldownSeconds(5);
+                            // Keep the previous timings so we stay blocked until it naturally expires
+                            return;
+                        }
+
+                        // Add current action timestamp
+                        setPointActionTimings([...recentActions, { time: now, type: actionType, amount }]);
+
+                        // Proceed with modal
+                        setPenaltyTaskContext(t);
+                        const initialSelectedKids = t.kidId !== 'all' ? [t.kidId] : (kids.length === 1 ? [kids[0].id] : []);
+                        setPenaltySelectedKidIds(initialSelectedKids);
+                        
+                        if (actionType === 'reward') {
+                            setShowRewardModal(true);
+                        } else {
+                            setShowPenaltyModal(true);
+                        }
+                    };
+
+                    return (
+                        <div className="animate-fade-in space-y-6">
                         {/* Glassmorphic Hero Section */}
                         <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[2.5rem] p-6 sm:p-8 shadow-xl shadow-emerald-500/20 relative overflow-hidden flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
@@ -5767,11 +6631,11 @@ export default function App() {
                                                     {t.reward > 0 ? '+' : ''}{t.reward} 家庭币
                                                 </div>
                                                 <div className="flex items-center gap-1.5">
-                                                    {t.reward < 0 && (() => {
+                                                    {(() => {
                                                         const todayStr = formatDate(new Date());
                                                         const kidHistory = t.history || {};
                                                         const todayHist = kidHistory[todayStr] || {};
-                                                        const maxAllowed = t.maxPerDay || 1;
+                                                        const maxAllowed = t.periodMaxPerDay || t.maxPerDay || 1;
                                                         
                                                         // Check if ALL assigned kids are maxed out
                                                         const targetKids = t.kidId === 'all' ? kids : kids.filter(k => k.id === t.kidId);
@@ -5780,7 +6644,13 @@ export default function App() {
                                                         for (const k of targetKids) {
                                                             const kidTodayData = t.kidId === 'all' ? (todayHist[k.id] || {}) : todayHist;
                                                             const attemptsToday = Array.isArray(kidTodayData) ? kidTodayData.length : (kidTodayData.status ? 1 : 0);
-                                                            if (attemptsToday < maxAllowed) {
+                                                            
+                                                            const isBlockedByFreq = attemptsToday >= maxAllowed;
+                                                            const isBlockedByBalance = (t.reward < 0) && (k.balances?.spend < Math.abs(t.reward));
+                                                            
+                                                            // If there is ANY kid who is NOT blocked by frequency AND NOT blocked by balance
+                                                            // then we shouldn't gray out the button.
+                                                            if (!isBlockedByFreq && !isBlockedByBalance) {
                                                                 allMaxed = false;
                                                                 break;
                                                             }
@@ -5788,25 +6658,22 @@ export default function App() {
 
                                                         if (allMaxed && targetKids.length > 0) {
                                                             return (
-                                                                <button disabled className="bg-slate-100 text-slate-400 px-3 py-1.5 rounded-xl text-xs font-black border border-slate-200 cursor-not-allowed">
+                                                                <button disabled className="bg-slate-100 text-slate-400 px-3 py-1.5 rounded-xl text-xs font-black border border-slate-200 cursor-not-allowed" title="所有分配的孩子今日均无操作资格(金额不足或到达上限)">
                                                                     已达记录上限
                                                                 </button>
                                                             );
                                                         }
 
-                                                        return (
-                                                            <button onClick={() => {
-                                                                setPenaltyTaskContext(t);
-                                                                if (t.kidId !== 'all') {
-                                                                    setPenaltySelectedKidIds([t.kidId]);
-                                                                } else if (kids.length === 1) {
-                                                                    setPenaltySelectedKidIds([kids[0].id]);
-                                                                } else {
-                                                                    setPenaltySelectedKidIds([]);
-                                                                }
-                                                                setShowPenaltyModal(true);
-                                                            }} className="bg-red-50 text-red-600 hover:bg-red-500 hover:text-white px-3 py-1.5 rounded-xl text-xs font-black transition-all border border-red-100 hover:border-transparent">记录扣分</button>
-                                                        );
+                                                        if (t.reward < 0) {
+                                                            return (
+                                                                <button onClick={() => handlePointAction(t, 'penalty')} className="bg-red-50 text-red-600 hover:bg-red-500 hover:text-white px-3 py-1.5 rounded-xl text-xs font-black transition-all border border-red-100 hover:border-transparent min-w-[72px] text-center">记录扣分</button>
+                                                            );
+                                                        } else if (t.reward > 0) {
+                                                            return (
+                                                                <button onClick={() => handlePointAction(t, 'reward')} className="bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white px-3 py-1.5 rounded-xl text-xs font-black transition-all border border-emerald-100 hover:border-transparent min-w-[72px] text-center">记录奖励</button>
+                                                            );
+                                                        }
+                                                        return null;
                                                     })()}
                                                     
                                                     <button onClick={() => {
@@ -5905,14 +6772,14 @@ export default function App() {
                                                         </div>
                                                     </div>
                                                 </div>
-                                            )
+                                            );
                                         })}
                                     </div>
                                 )}
                             </div>
                         </div>
                     </div>
-                )}
+                );})()}
 
                 {parentTab === 'wealth' && (
                     <div className="animate-fade-in space-y-6">
@@ -5931,15 +6798,12 @@ export default function App() {
 
                                 // Build income/expense history from transactions (exclude Habit logs)
                                 const kidTrans = transactions.filter(t => t.kidId === k.id && t.category !== 'habit');
-                                const incomeHistory = kidTrans.filter(t => t.type === 'income');
-                                const expenseHistory = kidTrans.filter(t => t.type === 'expense');
 
                                 return (
                                     <div key={k.id} className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
                                         {/* Header */}
                                         <div className="bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 p-6">
                                             <div className="flex items-center gap-3">
-                                                <span className="text-4xl">{k.avatar}</span>
                                                 <div>
                                                     <div className="font-black text-white text-xl">{k.name}</div>
                                                     <div className="text-yellow-100 text-sm font-bold">Lv.{k.level} · 总资产 {total} 家庭币</div>
@@ -5984,44 +6848,39 @@ export default function App() {
                                             </div>
                                         </div>
 
-                                        {/* Income History */}
-                                        <div className="border-t border-slate-100 p-6">
-                                            <h4 className="font-black text-slate-700 mb-3 flex items-center gap-2 text-sm"><Icons.TrendingUp size={16} className="text-emerald-500" /> 收入明细</h4>
-                                            {incomeHistory.length === 0 && <div className="text-center text-slate-400 text-sm py-4">暂无收入记录</div>}
-                                            <div className="space-y-2 max-h-40 overflow-y-auto">
-                                                {incomeHistory.slice(0, 10).map((item, idx) => (
-                                                    <div key={item.id} className="flex items-center justify-between py-2 px-3 bg-emerald-50/50 rounded-xl text-sm">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-emerald-500 font-bold">+</span>
-                                                            <span className="font-bold text-slate-700">{item.title}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-3">
-                                                            <span className="font-black text-emerald-600">+{item.amount} 家庭币</span>
-                                                            <span className="text-xs text-slate-400">{new Date(item.date).toLocaleDateString()}</span>
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                        {/* Unified Transaction History */}
+                                        <div className="border-t border-slate-100 p-6 bg-slate-50/30">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h4 className="font-black text-slate-700 flex items-center gap-2 text-sm"><Icons.List size={16} className="text-slate-500" /> 财务账单</h4>
+                                                <button onClick={() => setShowTransactionHistoryModal(true)} className="text-xs font-bold text-indigo-500 hover:text-indigo-600 flex items-center gap-0.5 transition-colors">
+                                                    全部流水 <Icons.ChevronRight size={12} />
+                                                </button>
                                             </div>
-                                        </div>
-
-                                        {/* Expense History */}
-                                        <div className="border-t border-slate-100 p-6 pt-4">
-                                            <h4 className="font-black text-slate-700 mb-3 flex items-center gap-2 text-sm"><Icons.ShoppingBag size={16} className="text-red-500" /> 消费明细</h4>
-                                            {expenseHistory.length === 0 && <div className="text-center text-slate-400 text-sm py-4">暂无消费记录</div>}
-                                            <div className="space-y-2 max-h-40 overflow-y-auto">
-                                                {expenseHistory.slice(0, 10).map((item, idx) => (
-                                                    <div key={item.id} className="flex items-center justify-between py-2 px-3 bg-red-50/50 rounded-xl text-sm">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-red-500 font-bold">-</span>
-                                                            <span className="font-bold text-slate-700">{item.title}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-3">
-                                                            <span className="font-black text-red-500">-{item.amount} 家庭币</span>
-                                                            <span className="text-xs text-slate-400">{new Date(item.date).toLocaleDateString()}</span>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
+                                            {kidTrans.length === 0 ? (
+                                                <div className="text-center text-slate-400 text-sm py-6">暂无明细记录</div>
+                                            ) : (
+                                                <div className="space-y-2 custom-scrollbar pr-2">
+                                                    {kidTrans.slice(0, 30).map((item) => {
+                                                        const isIncome = item.type === 'income';
+                                                        return (
+                                                            <div key={item.id} className="flex items-center justify-between py-3 px-4 bg-white/50 hover:bg-white transition-colors rounded-xl border border-slate-100/50 group">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-inner shrink-0 ${isIncome ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
+                                                                        {isIncome ? <Icons.TrendingUp size={16} /> : <Icons.ShoppingBag size={16} />}
+                                                                    </div>
+                                                                    <div>
+                                                                        <div className="font-bold text-slate-700 text-sm">{item.title}</div>
+                                                                        <div className="text-[11px] font-bold text-slate-400 mt-0.5">{new Date(item.date).toLocaleDateString()}</div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className={`font-black tracking-tight ${isIncome ? 'text-emerald-500' : 'text-slate-800'}`}>
+                                                                    {isIncome ? '+' : '-'}{item.amount}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 );
@@ -6101,7 +6960,10 @@ export default function App() {
                                             {/* Image Area (Icon) */}
                                             <div className={`h-32 sm:h-40 flex items-center justify-center text-6xl sm:text-7xl relative overflow-hidden bg-gradient-to-br ${item.type === 'privilege' ? 'from-purple-50 to-fuchsia-100' : 'from-indigo-50 to-blue-50'}`}>
                                                 <div className="absolute inset-0 bg-white/40 transform -skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700"></div>
-                                                <div className="transform group-hover:scale-110 transition-transform duration-500 drop-shadow-md relative z-10">
+                                                {item.image ? (
+                                                    <img src={item.image} alt={item.name} className="w-full h-full object-cover relative z-10 transform group-hover:scale-105 transition-transform duration-500" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
+                                                ) : null}
+                                                <div className={`transform group-hover:scale-110 transition-transform duration-500 drop-shadow-md relative z-10 ${item.image ? 'hidden' : ''}`}>
                                                     {item.iconEmoji}
                                                 </div>
                                             </div>
@@ -6673,7 +7535,7 @@ export default function App() {
         return createPortal(
             <nav className="fixed bottom-0 left-0 right-0 w-full bg-white/90 backdrop-blur-xl border-t border-slate-100 flex justify-around items-center px-2 py-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] z-[9999] md:hidden shadow-[0_-10px_20px_rgb(0,0,0,0.03)]" style={{ position: 'fixed', bottom: 0, isolation: 'isolate', transform: 'none' }}>
                 {mobileTabs.map(tab => {
-                    const isActive = isParent ? parentTab === tab.id : (tab.id === 'profile' ? showLevelModal : (!showLevelModal && kidTab === tab.id));
+                    const isActive = isParent ? parentTab === tab.id : kidTab === tab.id;
                     return (
                         <button 
                             key={tab.id} 
@@ -6681,12 +7543,7 @@ export default function App() {
                                 if (isParent) {
                                     setParentTab(tab.id);
                                 } else {
-                                    if (tab.id === 'profile') {
-                                        setShowLevelModal(true);
-                                    } else {
-                                        setKidTab(tab.id);
-                                        setShowLevelModal(false);
-                                    }
+                                    setKidTab(tab.id);
                                 }
                             }}
                         className={`flex flex-col items-center justify-center w-full py-1 gap-1 transition-all ${isActive ? 'text-indigo-600 scale-105' : 'text-slate-400 hover:text-slate-600'}`}
@@ -6744,6 +7601,9 @@ export default function App() {
             {renderCalendarModal()}
             {renderAddKidModal()}
             {renderPenaltyModal()}
+            {renderRewardModal()}
+            {renderEmotionalReminderModal()}
+            {renderRejectModal()}
             
             <CelebrationModal data={celebrationData} onClose={() => setCelebrationData(null)} />
             {renderQrScannerModal()}
