@@ -5143,12 +5143,10 @@ export default function App() {
 
                 {/* --- 专属头像选择器 Modal --- */}
                 {showAvatarPickerModal && (
-                    <div className="fixed inset-0 z-[250] flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 animate-fade-in">
-                        {/* Backdrop */}
-                        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowAvatarPickerModal(false)}></div>
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-fade-in">
                         
                         {/* Modal Container */}
-                        <div className="bg-white w-full max-w-sm rounded-t-[2rem] sm:rounded-[2rem] p-6 shadow-2xl relative flex flex-col max-h-[85vh] sm:max-h-[80vh] z-10 pb-10 sm:pb-6 animate-slide-up">
+                        <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative flex flex-col max-h-[80vh] w-full z-10">
                             
                             {/* Sticky Header */}
                             <h3 className="font-black text-xl text-slate-800 mb-4 shrink-0 text-center">选择新头像</h3>
