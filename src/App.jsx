@@ -104,6 +104,15 @@ const renderIcon = (name, size = 20, className = "") => {
     return <IconCmp size={size} className={className} />;
 };
 
+// 头像渲染逻辑封装
+const AvatarDisplay = ({ avatar }) => {
+    if (!avatar) return null;
+    if (avatar.startsWith('data:image/') || avatar.startsWith('http')) {
+        return <img src={avatar} alt="avatar" className="w-full h-full object-cover rounded-full" />;
+    }
+    return <>{avatar}</>;
+};
+
 // === 日期处理工具 ===
 const formatDate = (date) => {
     const d = new Date(date);
@@ -3851,7 +3860,7 @@ export default function App() {
                                                             }}
                                                             className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all flex items-center gap-1.5 ${isSelected && (planForm.targetKids && !planForm.targetKids.includes('all')) ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20' : ((!planForm.targetKids || planForm.targetKids.includes('all')) ? 'bg-blue-50 text-blue-400 border-blue-100' : 'bg-slate-50 text-slate-500 border-slate-100 hover:border-blue-200')}`}
                                                         >
-                                                            <span className="text-base">{k.avatar}</span> {k.name}
+                                                            <div className="w-5 h-5 flex flex-shrink-0 items-center justify-center rounded-full overflow-hidden"><AvatarDisplay avatar={k.avatar} /></div> <span className="truncate">{k.name}</span>
                                                         </button>
                                                     )
                                                 })}
@@ -3940,7 +3949,7 @@ export default function App() {
                                                                     }}
                                                                     className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all flex items-center gap-1.5 ${isSelected && (planForm.targetKids && !planForm.targetKids.includes('all')) ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20' : ((!planForm.targetKids || planForm.targetKids.includes('all')) ? 'bg-emerald-50 text-emerald-400 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100 hover:border-emerald-200')}`}
                                                                 >
-                                                                    <span className="text-base">{k.avatar}</span> {k.name}
+                                                                    <div className="w-5 h-5 flex flex-shrink-0 items-center justify-center rounded-full overflow-hidden"><AvatarDisplay avatar={k.avatar} /></div> <span className="truncate">{k.name}</span>
                                                                 </button>
                                                             )
                                                         })}
@@ -5070,7 +5079,7 @@ export default function App() {
                                 onClick={() => setShowKidSwitcher(!showKidSwitcher)}
                                 className="flex items-center gap-2 bg-slate-50 pl-1.5 pr-3 py-1.5 rounded-full hover:bg-slate-100 transition-colors border border-slate-200"
                             >
-                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-lg">{activeKid.avatar}</div>
+                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-lg overflow-hidden"><AvatarDisplay avatar={activeKid.avatar} /></div>
                                 <span className="text-sm font-bold text-slate-700">{activeKid.name}</span>
                                 <Icons.ChevronRight size={14} className={`text-slate-400 transition-transform ${showKidSwitcher ? 'rotate-90' : ''}`} />
                             </button>
@@ -5083,7 +5092,7 @@ export default function App() {
                                             className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors text-left ${k.id === activeKidId ? 'bg-indigo-50' : ''
                                                 }`}
                                         >
-                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-xl">{k.avatar}</div>
+                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-xl overflow-hidden"><AvatarDisplay avatar={k.avatar} /></div>
                                             <span className={`font-bold text-sm ${k.id === activeKidId ? 'text-indigo-600' : 'text-slate-700'}`}>{k.name}</span>
                                             {k.id === activeKidId && <Icons.Check size={14} className="text-indigo-500 ml-auto" />}
                                         </button>
@@ -5242,7 +5251,7 @@ export default function App() {
                             <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-3xl transform -translate-x-20 translate-y-20 pointer-events-none"></div>
                             
                             <div className="mt-8 w-28 h-28 rounded-full bg-white/20 p-2 backdrop-blur-md shadow-xl relative z-10 mb-5 border border-white/30">
-                                <div className="w-full h-full bg-white rounded-full flex items-center justify-center text-5xl">{activeKid.avatar}</div>
+                                <div className="w-full h-full bg-white rounded-full flex items-center justify-center text-5xl overflow-hidden"><AvatarDisplay avatar={activeKid.avatar} /></div>
                                 <div className="absolute -bottom-2 -right-2 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full flex items-center justify-center font-black border-2 border-white shadow-md text-sm tracking-wider">
                                     Lv.{activeKid.level}
                                 </div>
@@ -5361,7 +5370,7 @@ export default function App() {
                                             strokeDashoffset={289.02 - (289.02 * Math.max(0, activeKid.exp / nextLevelExp))}
                                         />
                                     </svg>
-                                    <div className="w-[72px] h-[72px] rounded-full bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center text-[40px] shadow-sm border-[4px] border-white relative z-10">{activeKid.avatar}</div>
+                                    <div className="w-[72px] h-[72px] rounded-full bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center text-[40px] shadow-sm border-[4px] border-white relative z-10 overflow-hidden"><AvatarDisplay avatar={activeKid.avatar} /></div>
                                 </div>
                                 <div>
                                     <h1 className="text-[22px] font-black text-slate-800 tracking-tight leading-tight">早上好，{activeKid.name}！</h1>
@@ -6118,7 +6127,7 @@ export default function App() {
                                         onClick={() => setParentKidFilter(k.id)} 
                                         className={`shrink-0 snap-start flex items-center justify-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-3 rounded-2xl transition-all border ${parentKidFilter === k.id ? 'bg-indigo-600 text-white border-indigo-500 shadow-[0_8px_20px_rgb(79,70,229,0.25)] ring-4 ring-indigo-600/20' : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200 shadow-sm'}`}
                                     >
-                                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-lg sm:text-xl shadow-inner ${parentKidFilter === k.id ? 'bg-white/20' : 'bg-slate-100'}`}>{k.avatar}</div>
+                                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-lg sm:text-xl shadow-inner overflow-hidden ${parentKidFilter === k.id ? 'bg-white/20' : 'bg-slate-100'}`}><AvatarDisplay avatar={k.avatar} /></div>
                                         <div className="text-left font-black">
                                             <div className={`text-[9px] sm:text-xs mb-0.5 ${parentKidFilter === k.id ? 'text-indigo-200' : 'text-slate-400'}`}>查看待办</div>
                                             <div className="text-xs sm:text-base leading-none">{k.name}</div>
@@ -6200,7 +6209,7 @@ export default function App() {
                                                         <div>
                                                             <div className="font-black text-slate-800 text-lg mb-1">{t.title}</div>
                                                             <div className="text-[11px] text-slate-500 font-bold flex items-center gap-1.5">
-                                                                <span className="bg-slate-100 px-1.5 py-0.5 rounded flex items-center gap-1">{kidInfo?.avatar} {kidInfo?.name}</span>
+                                                                <span className="bg-slate-100 px-1.5 py-0.5 rounded flex items-center gap-1.5"><div className="w-4 h-4 rounded-full overflow-hidden flex items-center justify-center shrink-0"><AvatarDisplay avatar={kidInfo?.avatar} /></div> {kidInfo?.name}</span>
                                                                 <span>·</span>
                                                                 <span>{date}</span>
                                                             </div>
@@ -6459,7 +6468,7 @@ export default function App() {
                                                     <div className="flex-1 flex flex-col pt-0.5">
                                                         <div className="flex flex-wrap items-center gap-2 mb-1">
                                                             <h3 className={`font-black text-lg md:text-xl leading-tight line-clamp-2 ${status === 'completed' ? 'text-slate-400' : 'text-slate-800'}`}>{t.title}</h3>
-                                                            <span className="bg-slate-100 text-slate-500 text-[9px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded whitespace-nowrap">{kidInfo?.avatar} {kidInfo?.name}</span>
+                                                            <span className="bg-slate-100 text-slate-500 text-[9px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded whitespace-nowrap flex items-center gap-1"><div className="w-3.5 h-3.5 rounded-full overflow-hidden flex items-center justify-center shrink-0"><AvatarDisplay avatar={kidInfo?.avatar} /></div> {kidInfo?.name}</span>
                                                         </div>
 
                                                         <div className="flex flex-wrap gap-2 items-center mt-2">
@@ -6923,7 +6932,7 @@ export default function App() {
                                         return (
                                             <div key={o.id} className="bg-slate-50 p-5 rounded-2xl border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-5">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-2xl shadow-sm border border-slate-100">{kid?.avatar}</div>
+                                                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-2xl shadow-sm border border-slate-100 overflow-hidden shrink-0"><AvatarDisplay avatar={kid?.avatar} /></div>
                                                     <div>
                                                         <div className="flex items-center gap-2">
                                                             <span className="font-black text-slate-800">{kid?.name}</span>
@@ -7085,7 +7094,7 @@ export default function App() {
                                         return (
                                             <div key={o.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-xl shadow-sm border border-slate-100">{kid?.avatar}</div>
+                                                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-xl shadow-sm border border-slate-100 overflow-hidden shrink-0"><AvatarDisplay avatar={kid?.avatar} /></div>
                                                     <div>
                                                         <div className="flex items-center gap-2">
                                                             <span className="font-bold text-slate-700 text-sm">{kid?.name}</span>
