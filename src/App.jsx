@@ -94,7 +94,8 @@ const Icons = {
     Gamepad2: (p) => <IconWrapper {...p}><line x1="6" x2="10" y1="12" y2="12" /><line x1="8" x2="8" y1="10" y2="14" /><line x1="15" x2="15.01" y1="13" y2="13" /><line x1="18" x2="18.01" y1="11" y2="11" /><rect width="20" height="12" x="2" y="6" rx="2" /></IconWrapper>,
     Palette: (p) => <IconWrapper {...p}><circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /><circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="7.5" r=".5" fill="currentColor" /><circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" /></IconWrapper>,
     ShieldAlert: (p) => <IconWrapper {...p}><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2-1 4-2 7-2 2.5 0 4.5 1 6 2a1 1 0 0 1 1 1v7z" /><path d="M12 8v4" /><path d="M12 16h.01" /></IconWrapper>,
-    User: (p) => <IconWrapper {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></IconWrapper>
+    User: (p) => <IconWrapper {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></IconWrapper>,
+    Camera: (p) => <IconWrapper {...p}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" /></IconWrapper>
 };
 
 // 图标渲染辅助方法
@@ -726,6 +727,16 @@ export default function App() {
     const [showCalendarModal, setShowCalendarModal] = useState(false);
     const [showParentPinModal, setShowParentPinModal] = useState(false);
     const [showKidSwitcher, setShowKidSwitcher] = useState(false);
+
+    // Prevent body scroll when avatar modal is open
+    useEffect(() => {
+        if (showAvatarPickerModal) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => { document.body.style.overflow = ''; };
+    }, [showAvatarPickerModal]);
 
     // 快速完成弹窗状态
     const [quickCompleteTask, setQuickCompleteTask] = useState(null);
@@ -5124,11 +5135,11 @@ export default function App() {
                 {/* --- 专属头像选择器 Modal --- */}
                 {showAvatarPickerModal && (
                     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-fade-in">
-                        <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative overflow-hidden flex flex-col items-center">
-                            <h3 className="font-black text-xl text-slate-800 mb-6">选择新头像</h3>
+                        <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative flex flex-col items-center max-h-[65vh] overflow-y-auto w-full">
+                            <h3 className="font-black text-xl text-slate-800 mb-6 shrink-0">选择新头像</h3>
                             
                             {/* Upload Button */}
-                            <div className="w-full mb-6">
+                            <div className="w-full mb-6 shrink-0">
                                 <input 
                                     type="file" 
                                     id="avatar-upload" 
@@ -5167,7 +5178,7 @@ export default function App() {
                                 </label>
                             </div>
 
-                            <div className="grid grid-cols-4 gap-4 mb-8 w-full">
+                            <div className="grid grid-cols-4 gap-4 mb-8 w-full shrink-0">
                                 {/* Special visual slot for base64 pending avatar if present and not an emoji */}
                                 <div className={`col-span-4 flex justify-center mb-2 ${pendingAvatar && pendingAvatar.startsWith('data:image/') ? 'block' : 'hidden'}`}>
                                     <div className="relative">
@@ -5191,7 +5202,7 @@ export default function App() {
                                     </button>
                                 ))}
                             </div>
-                            <div className="flex gap-3 w-full">
+                            <div className="flex gap-3 w-full shrink-0 mt-auto">
                                 <button onClick={() => { setShowAvatarPickerModal(false); setPendingAvatar(''); }} className="flex-1 py-3.5 bg-slate-100 text-slate-500 rounded-xl font-black text-sm hover:bg-slate-200 transition-colors">取消</button>
                                 <button 
                                     onClick={async () => {

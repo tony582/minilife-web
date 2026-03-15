@@ -219,10 +219,11 @@ app.post('/api/kids', authenticateToken, (req, res) => {
 });
 
 app.put('/api/kids/:id', authenticateToken, (req, res) => {
-    const { name, level, exp, balances, vault } = req.body;
+    const { name, avatar, level, exp, balances, vault } = req.body;
     let query = "UPDATE kids SET ";
     let params = [];
     if (name !== undefined) { query += "name = ?, "; params.push(name); }
+    if (avatar !== undefined) { query += "avatar = ?, "; params.push(avatar); }
     if (level !== undefined) { query += "level = ?, "; params.push(level); }
     if (exp !== undefined) { query += "exp = ?, "; params.push(exp); }
     if (balances) {
