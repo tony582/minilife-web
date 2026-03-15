@@ -5143,10 +5143,10 @@ export default function App() {
 
                 {/* --- 专属头像选择器 Modal --- */}
                 {showAvatarPickerModal && (
-                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-fade-in">
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[250] flex items-center justify-center p-4 pb-12 animate-fade-in">
                         
                         {/* Modal Container */}
-                        <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative flex flex-col max-h-[80vh] w-full z-10">
+                        <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative flex flex-col max-h-[75vh] md:max-h-[80vh] w-full z-10">
                             
                             {/* Sticky Header */}
                             <h3 className="font-black text-xl text-slate-800 mb-4 shrink-0 text-center">选择新头像</h3>
@@ -5211,7 +5211,7 @@ export default function App() {
                                         <button 
                                             key={emoji} 
                                             onClick={() => setPendingAvatar(emoji)}
-                                            className={`w-14 h-14 text-3xl flex items-center justify-center rounded-2xl transition-all ${pendingAvatar === emoji ? 'bg-indigo-100 border-[3px] border-indigo-400 scale-110 shadow-lg' : 'bg-slate-50 border border-slate-100 hover:bg-slate-100 hover:scale-105'} ${pendingAvatar?.startsWith('data:image/') ? 'opacity-50 grayscale' : ''}`}
+                                            className={`w-14 h-14 text-3xl flex items-center justify-center rounded-2xl transition-all flex-shrink-0 ${pendingAvatar === emoji ? 'bg-indigo-100 border-[3px] border-indigo-400 scale-110 shadow-lg' : 'bg-slate-50 border border-slate-100 hover:bg-slate-100 hover:scale-105'} ${pendingAvatar?.startsWith('data:image/') ? 'opacity-50 grayscale' : ''}`}
                                         >
                                             {emoji}
                                         </button>
