@@ -5143,75 +5143,86 @@ export default function App() {
 
                 {/* --- 专属头像选择器 Modal --- */}
                 {showAvatarPickerModal && (
-                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-fade-in">
-                        <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative flex flex-col items-center max-h-[65vh] overflow-y-auto w-full">
-                            <h3 className="font-black text-xl text-slate-800 mb-6 shrink-0">选择新头像</h3>
+                    <div className="fixed inset-0 z-[250] flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 animate-fade-in">
+                        {/* Backdrop */}
+                        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowAvatarPickerModal(false)}></div>
+                        
+                        {/* Modal Container */}
+                        <div className="bg-white w-full max-w-sm rounded-t-[2rem] sm:rounded-[2rem] p-6 shadow-2xl relative flex flex-col max-h-[85vh] sm:max-h-[80vh] z-10 pb-10 sm:pb-6 animate-slide-up">
                             
-                            {/* Upload Button */}
-                            <div className="w-full mb-6 shrink-0">
-                                <input 
-                                    type="file" 
-                                    id="avatar-upload" 
-                                    accept="image/*" 
-                                    className="hidden" 
-                                    onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (!file) return;
-                                        const reader = new FileReader();
-                                        reader.onload = (event) => {
-                                            const img = new Image();
-                                            img.onload = () => {
-                                                const canvas = document.createElement('canvas');
-                                                const MAX_SIZE = 256;
-                                                let width = img.width;
-                                                let height = img.height;
-                                                if (width > height) {
-                                                    if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
-                                                } else {
-                                                    if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
-                                                }
-                                                canvas.width = width;
-                                                canvas.height = height;
-                                                const ctx = canvas.getContext('2d');
-                                                ctx.drawImage(img, 0, 0, width, height);
-                                                setPendingAvatar(canvas.toDataURL('image/jpeg', 0.8));
+                            {/* Sticky Header */}
+                            <h3 className="font-black text-xl text-slate-800 mb-4 shrink-0 text-center">选择新头像</h3>
+                            
+                            {/* Scrollable Body */}
+                            <div className="flex-1 overflow-y-auto min-h-0 pr-2 -mr-2">
+                                {/* Upload Button */}
+                                <div className="w-full mb-6 mt-1">
+                                    <input 
+                                        type="file" 
+                                        id="avatar-upload" 
+                                        accept="image/*" 
+                                        className="hidden" 
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (!file) return;
+                                            const reader = new FileReader();
+                                            reader.onload = (event) => {
+                                                const img = new Image();
+                                                img.onload = () => {
+                                                    const canvas = document.createElement('canvas');
+                                                    const MAX_SIZE = 256;
+                                                    let width = img.width;
+                                                    let height = img.height;
+                                                    if (width > height) {
+                                                        if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+                                                    } else {
+                                                        if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+                                                    }
+                                                    canvas.width = width;
+                                                    canvas.height = height;
+                                                    const ctx = canvas.getContext('2d');
+                                                    ctx.drawImage(img, 0, 0, width, height);
+                                                    setPendingAvatar(canvas.toDataURL('image/jpeg', 0.8));
+                                                };
+                                                img.src = event.target.result;
                                             };
-                                            img.src = event.target.result;
-                                        };
-                                        reader.readAsDataURL(file);
-                                    }}
-                                />
-                                <label htmlFor="avatar-upload" className="w-full bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold py-3 rounded-2xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors active:scale-95">
-                                    <Icons.Camera size={24} className="text-slate-400" />
-                                    <span className="text-xs">拍照 / 上传相册图片</span>
-                                </label>
-                            </div>
-
-                            <div className="grid grid-cols-4 gap-4 mb-8 w-full shrink-0">
-                                {/* Special visual slot for base64 pending avatar if present and not an emoji */}
-                                <div className={`col-span-4 flex justify-center mb-2 ${pendingAvatar && pendingAvatar.startsWith('data:image/') ? 'block' : 'hidden'}`}>
-                                    <div className="relative">
-                                        <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border-[3px] border-indigo-400 shadow-lg scale-110">
-                                             <img src={pendingAvatar} alt="Pending Avatar" className="w-full h-full object-cover" />
-                                        </div>
-                                        <button onClick={() => setPendingAvatar('')} className="absolute -top-2 -right-2 bg-rose-500 text-white p-1 rounded-full shadow-md hover:bg-rose-600">
-                                            <Icons.X size={14} />
-                                        </button>
-                                    </div>
+                                            reader.readAsDataURL(file);
+                                        }}
+                                    />
+                                    <label htmlFor="avatar-upload" className="w-full bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold py-3 rounded-2xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors active:scale-95">
+                                        <Icons.Camera size={24} className="text-slate-400" />
+                                        <span className="text-xs">拍照 / 上传相册图片</span>
+                                    </label>
                                 </div>
 
-                                {/* Emoji presets */}
-                                {['👦', '👧', '🦁', '🦊', '🐱', '🐶', '🐰', '🐯', '🐼', '🐨', '🦖', '🚀'].map(emoji => (
-                                    <button 
-                                        key={emoji} 
-                                        onClick={() => setPendingAvatar(emoji)}
-                                        className={`w-14 h-14 text-3xl flex items-center justify-center rounded-2xl transition-all ${pendingAvatar === emoji ? 'bg-indigo-100 border-[3px] border-indigo-400 scale-110 shadow-lg' : 'bg-slate-50 border border-slate-100 hover:bg-slate-100 hover:scale-105'} ${pendingAvatar?.startsWith('data:image/') ? 'opacity-50 grayscale' : ''}`}
-                                    >
-                                        {emoji}
-                                    </button>
-                                ))}
+                                <div className="grid grid-cols-4 gap-4 pb-4">
+                                    {/* Special visual slot for base64 pending avatar if present and not an emoji */}
+                                    <div className={`col-span-4 flex justify-center mb-2 ${pendingAvatar && pendingAvatar.startsWith('data:image/') ? 'block' : 'hidden'}`}>
+                                        <div className="relative">
+                                            <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border-[3px] border-indigo-400 shadow-lg scale-110">
+                                                <img src={pendingAvatar} alt="Pending Avatar" className="w-full h-full object-cover" />
+                                            </div>
+                                            <button onClick={() => setPendingAvatar('')} className="absolute -top-2 -right-2 bg-rose-500 text-white p-1 rounded-full shadow-md hover:bg-rose-600">
+                                                <Icons.X size={14} />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Emoji presets */}
+                                    {['👦', '👧', '🦁', '🦊', '🐱', '🐶', '🐰', '🐯', '🐼', '🐨', '🦖', '🚀'].map(emoji => (
+                                        <button 
+                                            key={emoji} 
+                                            onClick={() => setPendingAvatar(emoji)}
+                                            className={`w-14 h-14 text-3xl flex items-center justify-center rounded-2xl transition-all ${pendingAvatar === emoji ? 'bg-indigo-100 border-[3px] border-indigo-400 scale-110 shadow-lg' : 'bg-slate-50 border border-slate-100 hover:bg-slate-100 hover:scale-105'} ${pendingAvatar?.startsWith('data:image/') ? 'opacity-50 grayscale' : ''}`}
+                                        >
+                                            {emoji}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                            <div className="flex gap-3 w-full shrink-0 mt-auto">
+
+                            {/* Sticky Footer */}
+                            <div className="shrink-0 mt-4 pt-4 border-t border-slate-100 bg-white flex gap-3">
                                 <button onClick={() => { setShowAvatarPickerModal(false); setPendingAvatar(''); }} className="flex-1 py-3.5 bg-slate-100 text-slate-500 rounded-xl font-black text-sm hover:bg-slate-200 transition-colors">取消</button>
                                 <button 
                                     onClick={async () => {
