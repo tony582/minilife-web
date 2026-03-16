@@ -4607,17 +4607,7 @@ export default function App() {
         const nextLevelExp = getLevelReq(activeKid.level);
 
         return (
-            <div className="space-y-6 animate-fade-in pb-10">
-                {/* --- 沉浸式顶部 Header --- */}
-                <div className="flex justify-between items-center bg-white/60 backdrop-blur-xl p-4 md:p-6 rounded-b-[2rem] shadow-sm z-30 sticky top-0 border-b border-white/50">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-600/30">
-                            M
-                        </div>
-                        <h1 className="text-xl font-black text-slate-800 tracking-tight">MiniLife</h1>
-                    </div>
-                </div>
-
+            <div className="space-y-6 animate-fade-in pb-10 pt-4">
                 {/* --- 专属个人名片与等级进度 --- */}
                 <div className="bg-white p-6 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative overflow-hidden group hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full blur-3xl -z-10 -translate-y-1/2 translate-x-1/2"></div>
