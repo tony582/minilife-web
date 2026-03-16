@@ -6405,7 +6405,7 @@ export default function App() {
                                                                                             </div>
                                                                                             {/* Replace QRCode with a highly styled div + icon for MVP if react-qr-code isn't available, but it is available in this project */}
                                                                                             <div className="bg-white p-2 border-2 border-slate-200 rounded-xl shadow-sm shrink-0">
-                                                                                                <QRCode value={o.redeemCode || o.id} size={64} level="H" fgColor="#334155" />
+                                                                                                <QRCodeSVG value={o.redeemCode || o.id} size={64} level="H" fgColor="#334155" />
                                                                                             </div>
                                                                                         </div>
                                                                                     ) : (
