@@ -6429,12 +6429,13 @@ export default function App() {
 
                         {/* Kid Filter Bar - NEW STANDALONE UI */}
                         {kids.length > 0 && (
-                            <div className="flex overflow-x-auto hide-scrollbar gap-2 sm:gap-3 mb-6 py-4 px-6 -mx-4 sm:-mx-6 snap-x">
+                            <div className="flex overflow-x-auto hide-scrollbar gap-2 sm:gap-3 mb-6 py-4 -mx-4 md:-mx-8">
+                                <div className="w-2 md:w-5 shrink-0"></div>
                                 {kids.map(k => (
                                      <button 
                                         key={k.id} 
                                         onClick={() => setParentKidFilter(k.id)} 
-                                        className={`shrink-0 snap-start flex items-center justify-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-3 rounded-full transition-all border ${parentKidFilter === k.id ? 'bg-indigo-600 text-white border-indigo-500 shadow-[0_8px_20px_rgb(79,70,229,0.25)] ring-4 ring-indigo-600/20' : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200 shadow-sm'}`}
+                                        className={`shrink-0 flex items-center justify-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-3 rounded-full transition-all border ${parentKidFilter === k.id ? 'bg-indigo-600 text-white border-indigo-500 shadow-[0_8px_20px_rgb(79,70,229,0.25)] ring-4 ring-indigo-600/20' : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200 shadow-sm'}`}
                                     >
                                         <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-lg sm:text-xl shadow-inner overflow-hidden ${parentKidFilter === k.id ? 'bg-white/20' : 'bg-slate-100'}`}><AvatarDisplay avatar={k.avatar} /></div>
                                         <div className="text-left font-black">
@@ -6443,6 +6444,7 @@ export default function App() {
                                         </div>
                                     </button>
                                 ))}
+                                <div className="w-2 md:w-5 shrink-0"></div>
                             </div>
                         )}
 
