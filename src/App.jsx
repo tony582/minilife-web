@@ -6362,8 +6362,9 @@ export default function App() {
                                                                     <div className="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-2">
                                                                         {orders.filter(o => o.kidId === activeKidId && (orderFilterStatus === 'all' || o.status === orderFilterStatus))
                                                                             .sort((a,b) => {
-                                                                                if (orderSortByDate === 'desc') return new Date(b.date) - new Date(a.date);
-                                                                                return new Date(a.date) - new Date(b.date);
+                                                                                if (orderSortByPrice === 'desc') return b.price - a.price;
+                                                                                if (orderSortByPrice === 'asc') return a.price - b.price;
+                                                                                return new Date(b.date) - new Date(a.date);
                                                                             })
                                                                             .map(o => (
                                                                             <div key={o.id} className="bg-slate-50 border border-slate-100 p-4 sm:p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-sm transition-all">
