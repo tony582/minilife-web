@@ -6367,31 +6367,61 @@ export default function App() {
                                                                                 return new Date(b.date) - new Date(a.date);
                                                                             })
                                                                             .map(o => (
-                                                                            <div key={o.id} className="bg-slate-50 border border-slate-100 p-4 sm:p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-sm transition-all">
-                                                                                <div>
+                                                                            <div key={o.id} className="bg-white border border-slate-100 p-5 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-6 shadow-sm hover:shadow-md transition-all">
+                                                                                <div className="flex-1 min-w-0">
                                                                                     <div className="flex items-center gap-3 mb-2">
-                                                                                        <div className="font-black text-slate-800 text-base">{o.itemName}</div>
-                                                                                        <div className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${o.status === 'completed' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
-                                                                                            {o.status === 'completed' ? '已核销' : '待核销'}
+                                                                                        <h4 className="font-black text-slate-800 text-lg sm:text-xl truncate">{o.itemName}</h4>
+                                                                                        <div className={`shrink-0 text-[10px] font-bold px-2.5 py-1 rounded-lg border ${o.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100/50' : 'bg-amber-50 text-amber-600 border-amber-100/50'}`}>
+                                                                                            {o.status === 'completed' ? '已核销完成' : '等待父母核销'}
                                                                                         </div>
                                                                                     </div>
-                                                                                    <div className="flex items-center gap-4 text-xs font-bold text-slate-400">
-                                                                                        <span className="flex items-center gap-1"><Icons.Clock size={12} /> {new Date(o.date).toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
-                                                                                        <span className="text-indigo-500">花费 {o.price} 币</span>
-                                                                                        {o.status === 'shipping' && <span className="bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded ml-2 select-all flex items-center gap-1"><Icons.Key size={10} /> {o.redeemCode || o.id.replace('ORD-','')}</span>}
+                                                                                    
+                                                                                    <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-xs font-bold text-slate-400">
+                                                                                        <div className="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-md">
+                                                                                            <Icons.Clock size={12} className="text-slate-400" />
+                                                                                            {new Date(o.date).toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                                                        </div>
+                                                                                        <div className="flex items-center gap-1 text-slate-500">
+                                                                                            <span>消费:</span>
+                                                                                            <span className="text-yellow-500 font-black">{o.price}</span>
+                                                                                            <span>家庭币</span>
+                                                                                        </div>
+                                                                                        {o.status === 'shipping' && (
+                                                                                            <div className="flex items-center gap-1.5 bg-indigo-50/50 text-indigo-600 px-2.5 py-1 rounded-md border border-indigo-100/50 select-all">
+                                                                                                <Icons.Key size={12} className="text-indigo-400" />
+                                                                                                <span className="font-mono">{o.redeemCode || o.id.replace('ORD-','')}</span>
+                                                                                            </div>
+                                                                                        )}
                                                                                     </div>
                                                                                 </div>
-                                                                                {o.status === 'completed' && !o.rating && (
-                                                                                    <button onClick={() => { setReviewOrderId(o.id); setReviewStars(5); setReviewComment(""); setShowReviewModal(true); }} className="px-4 py-2 bg-white border border-slate-200 text-slate-600 font-bold text-xs rounded-xl hover:bg-slate-50 shrink-0">
-                                                                                        评价晒单
-                                                                                    </button>
-                                                                                )}
-                                                                                {o.status === 'completed' && o.rating > 0 && (
-                                                                                    <div className="flex items-center gap-1 text-yellow-400 shrink-0">
-                                                                                        {[...Array(5)].map((_, i) => <Icons.Star key={i} size={14} className={i < o.rating ? 'fill-yellow-400' : 'text-slate-200'} />)}
-                                                                                    </div>
-                                                                                )}
 
+                                                                                {/* Actions / QR Code Area */}
+                                                                                <div className="flex items-center sm:justify-end gap-4 sm:gap-6 pt-4 sm:pt-0 border-t sm:border-t-0 border-slate-100/50 shrink-0">
+                                                                                    {o.status === 'shipping' ? (
+                                                                                        <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                                                                                            <div className="flex-1 sm:hidden">
+                                                                                                <div className="text-xs font-bold text-slate-400 mb-1">给父母扫码核销</div>
+                                                                                                <div className="text-sm font-black text-indigo-600">快速出示</div>
+                                                                                            </div>
+                                                                                            {/* Replace QRCode with a highly styled div + icon for MVP if react-qr-code isn't available, but it is available in this project */}
+                                                                                            <div className="bg-white p-2 border-2 border-slate-200 rounded-xl shadow-sm shrink-0">
+                                                                                                <QRCode value={o.redeemCode || o.id} size={64} level="H" fgColor="#334155" />
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    ) : (
+                                                                                        <div className="w-full sm:w-auto flex justify-end">
+                                                                                            {!o.rating ? (
+                                                                                                <button onClick={() => { setReviewOrderId(o.id); setReviewStars(5); setReviewComment(""); setShowReviewModal(true); }} className="w-full sm:w-auto px-6 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-black text-sm rounded-xl transition-colors border border-indigo-100 text-center">
+                                                                                                    评价晒单
+                                                                                                </button>
+                                                                                            ) : (
+                                                                                                <div className="flex items-center gap-1 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-100">
+                                                                                                    {[...Array(5)].map((_, i) => <Icons.Star key={i} size={16} className={i < o.rating ? 'fill-yellow-400 text-yellow-400' : 'text-yellow-200'} />)}
+                                                                                                </div>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
                                                                             </div>
                                                                         ))}
                                                                     </div>
