@@ -5074,20 +5074,27 @@ export default function App() {
                                 <Icons.ChevronRight size={14} className={`text-slate-400 transition-transform ${showKidSwitcher ? 'rotate-90' : ''}`} />
                             </button>
                             {showKidSwitcher && (
-                                <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 min-w-[160px] z-50 animate-fade-in">
-                                    {kids.map(k => (
-                                        <button
-                                            key={k.id}
-                                            onClick={() => switchKid(k.id)}
-                                            className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors text-left ${k.id === activeKidId ? 'bg-indigo-50' : ''
-                                                }`}
-                                        >
-                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-xl overflow-hidden"><AvatarDisplay avatar={k.avatar} /></div>
-                                            <span className={`font-bold text-sm ${k.id === activeKidId ? 'text-indigo-600' : 'text-slate-700'}`}>{k.name}</span>
-                                            {k.id === activeKidId && <Icons.Check size={14} className="text-indigo-500 ml-auto" />}
-                                        </button>
-                                    ))}
-                                </div>
+                                <>
+                                    {/* Transparent Backdrop for clicking outside */}
+                                    <div 
+                                        className="fixed inset-0 z-40" 
+                                        onClick={() => setShowKidSwitcher(false)}
+                                    ></div>
+                                    <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 min-w-[160px] z-50 animate-fade-in">
+                                        {kids.map(k => (
+                                            <button
+                                                key={k.id}
+                                                onClick={() => { switchKid(k.id); setShowKidSwitcher(false); }}
+                                                className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors text-left ${k.id === activeKidId ? 'bg-indigo-50' : ''
+                                                    }`}
+                                            >
+                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-xl overflow-hidden"><AvatarDisplay avatar={k.avatar} /></div>
+                                                <span className={`font-bold text-sm ${k.id === activeKidId ? 'text-indigo-600' : 'text-slate-700'}`}>{k.name}</span>
+                                                {k.id === activeKidId && <Icons.Check size={14} className="text-indigo-500 ml-auto" />}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </>
                             )}
                         </div>
 
