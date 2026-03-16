@@ -6284,7 +6284,7 @@ export default function App() {
                             };
 
                             return (
-                                <div className="flex flex-col gap-4 max-w-3xl mx-auto w-full pb-10">
+                                <div className="flex flex-col gap-4 w-full pb-10">
                                     
                                     {/* Advanced Filter & Sort Bar (Copied from Kid Portal) */}
                                     <div className="flex items-center justify-between bg-slate-50 border-b border-slate-200 pt-2 pb-3 mb-4">
