@@ -381,6 +381,10 @@ export default function App() {
     const [inventory, setInventory] = useState([]);
     const [orders, setOrders] = useState([]);
     const [transactions, setTransactions] = useState([]);
+    
+    // Shop Exchange State
+    const [shopTargetItem, setShopTargetItem] = useState(null);
+    const [showShopConfirmModal, setShowShopConfirmModal] = useState(false);
 
     const [isLoading, setIsLoading] = useState(true);
 
@@ -2641,6 +2645,114 @@ export default function App() {
                         <button onClick={handleQuickComplete} className="flex-[2] py-3.5 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-black rounded-xl shadow-lg shadow-emerald-200 hover:from-emerald-600 hover:to-green-600 transition-all flex items-center justify-center gap-2">
                             <Icons.CheckCircle size={18} /> 确认完成
                         </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const handleBuyItem = (item) => {
+        setShopTargetItem(item);
+        setShowShopConfirmModal(true);
+    };
+
+    const handleConfirmBuy = async () => {
+        if (!shopTargetItem) return;
+        const item = shopTargetItem;
+        const walletType = item.walletTarget === 'give' ? 'give' : 'spend';
+        const price = item.price;
+        const activeKid = kids.find(k => String(k.id) === String(activeKidId));
+        
+        if (!activeKid || (activeKid.balances[walletType] || 0) < price) {
+            notify("余额不足！", "error");
+            setShowShopConfirmModal(false);
+            return;
+        }
+
+        try {
+            // Deduct balance
+            const newBal = activeKid.balances[walletType] - price;
+            await apiFetch(`/api/kids/${activeKidId}`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ balances: { ...activeKid.balances, [walletType]: newBal } })
+            });
+
+            // Create Order
+            const newOrder = {
+                id: `order_${Date.now()}`,
+                kidId: activeKidId,
+                itemId: item.id,
+                itemName: item.name,
+                price: price,
+                date: new Date().toISOString(),
+                status: 'shipping', // pending parent approval/fulfillment
+                type: item.type, // single, multiple, privilege
+                walletUsed: walletType
+            };
+            await apiFetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newOrder) });
+
+            // Create Transaction Record
+            const newTrans = {
+                id: `trans_${Date.now()}`,
+                kidId: activeKidId,
+                type: 'expense',
+                amount: price,
+                title: `兑换商品: ${item.name}`,
+                date: new Date().toISOString(),
+                category: 'shop'
+            };
+            await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newTrans) });
+
+            // Update local state
+            setKids(kids.map(k => String(k.id) === String(activeKidId) ? { ...k, balances: { ...k.balances, [walletType]: newBal } } : k));
+            setOrders([...orders, newOrder]);
+            setTransactions([newTrans, ...transactions]);
+            
+            notify("兑换成功！在我的订单中查看", "success");
+            setShowShopConfirmModal(false);
+            setShopTargetItem(null);
+            
+            // Switch to orders tab to see it
+            setKidShopTab('orders');
+            
+        } catch (e) {
+            console.error(e);
+            notify("兑换失败，请重试", "error");
+        }
+    };
+
+    const renderShopConfirmModal = () => {
+        if (!showShopConfirmModal || !shopTargetItem) return null;
+        const item = shopTargetItem;
+        const isGive = item.walletTarget === 'give';
+        
+        return (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-fade-in">
+                <div className="bg-white rounded-[2rem] w-full max-w-sm overflow-hidden shadow-2xl scale-100 flex flex-col">
+                    <div className={`p-6 flex flex-col items-center justify-center text-center ${isGive ? 'bg-rose-50 text-rose-900' : 'bg-indigo-50 text-indigo-900'}`}>
+                        <div className="w-20 h-20 bg-white rounded-3xl shadow-sm flex items-center justify-center text-4xl mb-4 border-4 border-white">
+                            {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover rounded-2xl" /> : item.iconEmoji}
+                        </div>
+                        <h2 className="text-xl font-black mb-1">{item.name}</h2>
+                        <p className="text-sm opacity-80 font-bold px-4">{item.desc}</p>
+                    </div>
+                    
+                    <div className="p-6 pb-8">
+                        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex justify-between items-center mb-6">
+                            <span className="text-slate-500 font-bold text-sm">需要消耗</span>
+                            <div className={`text-2xl font-black flex items-baseline gap-1 ${isGive ? 'text-rose-600' : 'text-yellow-500'}`}>
+                                {isGive ? <Icons.Heart size={16} className="fill-rose-500 text-rose-500" /> : <Icons.Star size={16} className="fill-yellow-500 text-yellow-500" />}
+                                {item.price}
+                                <span className="text-[10px] text-slate-400 font-bold">家庭币</span>
+                            </div>
+                        </div>
+                        
+                        <div className="flex gap-3">
+                            <button onClick={() => setShowShopConfirmModal(false)} className="flex-1 py-3.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors">取消</button>
+                            <button onClick={handleConfirmBuy} className={`flex-1 py-3.5 text-white font-black rounded-xl shadow-lg transition-transform active:scale-95 ${isGive ? 'bg-rose-500 shadow-rose-200 hover:bg-rose-600' : 'bg-indigo-600 shadow-indigo-200 hover:bg-indigo-700'}`}>
+                                确定兑换
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -7954,6 +8066,7 @@ export default function App() {
             
             <CelebrationModal data={celebrationData} onClose={() => setCelebrationData(null)} />
             {renderQrScannerModal()}
+            {renderShopConfirmModal()}
 
             {/* Kid Checkout Confirmation Modal */}
             {kidCheckoutItem && (
