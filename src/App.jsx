@@ -5955,8 +5955,8 @@ export default function App() {
 
                 {/* Kid Checkout Confirmation Modal */}
                 {kidCheckoutItem && (
-                    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-fade-in">
-                        <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 sm:p-8 shadow-2xl scale-in group">
+                    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[200] flex items-center justify-center p-4 pb-12 sm:pb-4 animate-fade-in">
+                        <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 sm:p-8 shadow-2xl scale-in group overflow-y-auto max-h-[85vh]">
                             <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-5 text-rose-500 shadow-inner group-hover:scale-110 transition-transform relative">
                                 <Icons.ShoppingBag size={32} />
                             </div>
