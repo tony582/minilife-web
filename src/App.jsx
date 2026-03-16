@@ -3248,8 +3248,8 @@ export default function App() {
                                     disabled={isShort}
                                     className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${isSelected ? 'border-red-500 bg-red-50 shadow-inner' : (isShort ? 'border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed' : 'border-slate-100 hover:border-slate-200 bg-white')}`}
                                 >
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-2xl border ${isShort ? 'bg-slate-200 border-slate-300 opacity-50 grayscale' : 'bg-slate-100 border-slate-200 shadow-sm'} shrink-0`}>
-                                        {k.avatar}
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-2xl border ${isShort ? 'bg-slate-200 border-slate-300 opacity-50 grayscale' : 'bg-slate-100 border-slate-200 shadow-sm'} shrink-0 overflow-hidden`}>
+                                        <AvatarDisplay avatar={k.avatar} />
                                     </div>
                                     <div className="flex-1 flex flex-col items-start -mt-0.5">
                                         <span className={`font-black text-left ${isSelected ? 'text-red-700' : (isShort ? 'text-slate-400' : 'text-slate-700')}`}>{k.name}</span>
@@ -3328,8 +3328,8 @@ export default function App() {
                                     onClick={() => toggleKidSelectionPenalty(k.id)}
                                     className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${isSelected ? 'border-emerald-500 bg-emerald-50 shadow-inner' : 'border-slate-100 hover:border-slate-200 bg-white'}`}
                                 >
-                                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-2xl border border-slate-200 shadow-sm shrink-0">
-                                        {k.avatar}
+                                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-2xl border border-slate-200 shadow-sm shrink-0 overflow-hidden">
+                                        <AvatarDisplay avatar={k.avatar} />
                                     </div>
                                     <span className={`font-black text-left flex-1 ${isSelected ? 'text-emerald-700' : 'text-slate-700'}`}>{k.name}</span>
                                     <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center ${isSelected ? 'border-emerald-500 bg-emerald-500' : 'border-slate-300'}`}>
@@ -4554,7 +4554,7 @@ export default function App() {
                 {kids.map(k => (
                     <div key={k.id} onClick={() => { changeActiveKid(k.id); changeAppState('kid_app'); setKidTab('study'); }} className="group cursor-pointer flex flex-col items-center">
                         <div className="w-28 h-28 md:w-36 md:h-36 rounded-[2rem] bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-6xl shadow-xl group-hover:scale-105 group-hover:ring-4 ring-white/50 transition-all">
-                            {k.avatar}
+                            <AvatarDisplay avatar={k.avatar} />
                         </div>
                         <span className="text-slate-300 mt-4 text-xl font-bold group-hover:text-white transition-colors">{k.name}</span>
                     </div>
@@ -7223,7 +7223,7 @@ export default function App() {
                                 {kids.map(k => (
                                     <div key={k.id} className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex gap-4 items-center">
                                         <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center text-4xl shadow-sm border border-slate-200">
-                                            {k.avatar}
+                                            <AvatarDisplay avatar={k.avatar} />
                                         </div>
                                         <div className="flex-1">
                                             <div className="font-black text-slate-800 text-lg">{k.name}</div>
