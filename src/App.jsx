@@ -555,7 +555,13 @@ export default function App() {
     const [kidTab, setKidTab] = useState('study');
     const [kidShopTab, setKidShopTab] = useState('browse');
     const [parentTab, setParentTab] = useState('tasks');
-    const [parentKidFilter, setParentKidFilter] = useState('all');
+    const [parentKidFilter, setParentKidFilter] = useState('');
+
+    useEffect(() => {
+        if (kids.length > 0 && !parentKidFilter) {
+            setParentKidFilter(kids[0].id);
+        }
+    }, [kids, parentKidFilter]);
 
     // 日期控制状态
     const [currentViewDate, setCurrentViewDate] = useState(new Date());
@@ -6424,16 +6430,6 @@ export default function App() {
                         {/* Kid Filter Bar - NEW STANDALONE UI */}
                         {kids.length > 0 && (
                             <div className="flex overflow-x-auto hide-scrollbar gap-2 sm:gap-3 mb-6 py-2 px-2 -mx-2 snap-x">
-                                <button 
-                                    onClick={() => setParentKidFilter('all')} 
-                                    className={`shrink-0 snap-start flex items-center justify-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-3 rounded-2xl transition-all border ${parentKidFilter === 'all' ? 'bg-indigo-600 text-white border-indigo-500 shadow-[0_8px_20px_rgb(79,70,229,0.25)] ring-4 ring-indigo-600/20' : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200 shadow-sm'}`}
-                                >
-                                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-lg sm:text-xl shadow-inner ${parentKidFilter === 'all' ? 'bg-white/20' : 'bg-slate-100'}`}>🌐</div>
-                                    <div className="text-left font-black">
-                                        <div className={`text-[9px] sm:text-xs mb-0.5 ${parentKidFilter === 'all' ? 'text-indigo-200' : 'text-slate-400'}`}>查看所有</div>
-                                        <div className="text-xs sm:text-base leading-none">全部孩子</div>
-                                    </div>
-                                </button>
                                 {kids.map(k => (
                                      <button 
                                         key={k.id} 
