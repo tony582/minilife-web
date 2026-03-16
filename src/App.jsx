@@ -6429,19 +6429,22 @@ export default function App() {
 
                         {/* Kid Filter Bar - NEW STANDALONE UI */}
                         {kids.length > 0 && (
-                            <div className="flex overflow-x-auto hide-scrollbar gap-2 sm:gap-3 mb-6 py-4 -mx-4 md:-mx-8">
+                            <div className="flex overflow-x-auto hide-scrollbar gap-4 sm:gap-6 mb-6 py-3 -mx-4 md:-mx-8 items-center">
                                 <div className="w-2 md:w-5 shrink-0"></div>
                                 {kids.map(k => (
                                      <button 
                                         key={k.id} 
                                         onClick={() => setParentKidFilter(k.id)} 
-                                        className={`shrink-0 flex items-center justify-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-3 rounded-full transition-all border ${parentKidFilter === k.id ? 'bg-indigo-600 text-white border-indigo-500 shadow-[0_8px_20px_rgb(79,70,229,0.25)] ring-4 ring-indigo-600/20' : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200 shadow-sm'}`}
+                                        className="shrink-0 flex flex-col items-center gap-1.5 group transition-transform focus:outline-none"
                                     >
-                                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-lg sm:text-xl shadow-inner overflow-hidden ${parentKidFilter === k.id ? 'bg-white/20' : 'bg-slate-100'}`}><AvatarDisplay avatar={k.avatar} /></div>
-                                        <div className="text-left font-black">
-                                            <div className={`text-[9px] sm:text-xs mb-0.5 ${parentKidFilter === k.id ? 'text-indigo-200' : 'text-slate-400'}`}>查看待办</div>
-                                            <div className="text-xs sm:text-base leading-none">{k.name}</div>
+                                        <div className={`p-[3px] rounded-full transition-all duration-300 ${parentKidFilter === k.id ? 'bg-indigo-500 shadow-md shadow-indigo-200/50 scale-105' : 'bg-transparent hover:bg-slate-200'}`}>
+                                            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-slate-100 flex items-center justify-center text-2xl sm:text-3xl overflow-hidden ring-2 ring-white">
+                                                <AvatarDisplay avatar={k.avatar} />
+                                            </div>
                                         </div>
+                                        <span className={`text-[10px] sm:text-xs font-black tracking-wide transition-colors ${parentKidFilter === k.id ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                                            {k.name}
+                                        </span>
                                     </button>
                                 ))}
                                 <div className="w-2 md:w-5 shrink-0"></div>
