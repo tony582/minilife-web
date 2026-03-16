@@ -6429,7 +6429,7 @@ export default function App() {
 
                         {/* Kid Filter Bar - NEW STANDALONE UI */}
                         {kids.length > 0 && (
-                            <div className="flex overflow-x-auto hide-scrollbar gap-2 sm:gap-3 mb-6 py-2 px-4 -mx-4 snap-x">
+                            <div className="flex overflow-x-auto hide-scrollbar gap-2 sm:gap-3 mb-6 py-4 px-6 -mx-4 sm:-mx-6 snap-x">
                                 {kids.map(k => (
                                      <button 
                                         key={k.id} 
