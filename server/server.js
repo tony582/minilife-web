@@ -362,9 +362,9 @@ app.get('/api/inventory', authenticateToken, (req, res) => {
 });
 
 app.post('/api/inventory', authenticateToken, (req, res) => {
-    const { id, name, price, desc, iconEmoji, image, type } = req.body;
-    const insert = `INSERT INTO inventory (id, userId, name, price, desc, iconEmoji, image, type) VALUES (?,?,?,?,?,?,?,?)`;
-    db.run(insert, [id, req.user.id, name, price, desc, iconEmoji, image, type], function (err) {
+    const { id, name, price, desc, iconEmoji, image, type, walletTarget, charityTarget, maxExchanges, periodMaxType } = req.body;
+    const insert = `INSERT INTO inventory (id, userId, name, price, desc, iconEmoji, image, type, walletTarget, charityTarget, maxExchanges, periodMaxType) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`;
+    db.run(insert, [id, req.user.id, name, price, desc, iconEmoji, image, type, walletTarget || 'spend', charityTarget || '', maxExchanges || null, periodMaxType || null], function (err) {
         if (err) return res.status(500).json({ error: err.message });
         notifyUser(req.user.id);
         res.json({ id });
@@ -372,9 +372,9 @@ app.post('/api/inventory', authenticateToken, (req, res) => {
 });
 
 app.put('/api/inventory/:id', authenticateToken, (req, res) => {
-    const { name, price, desc, iconEmoji, image, type } = req.body;
-    const query = "UPDATE inventory SET name = ?, price = ?, desc = ?, iconEmoji = ?, image = ?, type = ? WHERE id = ? AND userId = ?";
-    db.run(query, [name, price, desc, iconEmoji, image, type, req.params.id, req.user.id], function (err) {
+    const { name, price, desc, iconEmoji, image, type, walletTarget, charityTarget, maxExchanges, periodMaxType } = req.body;
+    const query = "UPDATE inventory SET name = ?, price = ?, desc = ?, iconEmoji = ?, image = ?, type = ?, walletTarget = ?, charityTarget = ?, maxExchanges = ?, periodMaxType = ? WHERE id = ? AND userId = ?";
+    db.run(query, [name, price, desc, iconEmoji, image, type, walletTarget || 'spend', charityTarget || '', maxExchanges || null, periodMaxType || null, req.params.id, req.user.id], function (err) {
         if (err) return res.status(500).json({ error: err.message });
         notifyUser(req.user.id);
         res.json({ updatedID: req.params.id });

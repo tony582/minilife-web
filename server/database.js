@@ -107,7 +107,11 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 desc TEXT,
                 iconEmoji TEXT,
                 image TEXT,
-                type TEXT
+                type TEXT,
+                walletTarget TEXT DEFAULT 'spend',
+                charityTarget TEXT,
+                maxExchanges INTEGER,
+                periodMaxType TEXT
             )`);
 
             // Orders Table (Multi-tenant)
@@ -127,6 +131,10 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
             // Safe migrations for newly added columns
             db.run(`ALTER TABLE inventory ADD COLUMN image TEXT`, (err) => {});
+            db.run(`ALTER TABLE inventory ADD COLUMN walletTarget TEXT DEFAULT 'spend'`, (err) => {});
+            db.run(`ALTER TABLE inventory ADD COLUMN charityTarget TEXT`, (err) => {});
+            db.run(`ALTER TABLE inventory ADD COLUMN maxExchanges INTEGER`, (err) => {});
+            db.run(`ALTER TABLE inventory ADD COLUMN periodMaxType TEXT`, (err) => {});
             db.run(`ALTER TABLE orders ADD COLUMN itemImage TEXT`, (err) => {});
             db.run(`ALTER TABLE orders ADD COLUMN redeemCode TEXT`, (err) => {});
 
