@@ -6553,13 +6553,28 @@ export default function App() {
                                 parentTasks = parentTasks.filter(t => t.kidId === effectiveFilter || t.kidId === 'all');
                             }
 
-                            // Notice: We map to 'getTaskStatusOnDate' using the task's specific kidId when we are in 'all' view,
-                            // or fallback to validating against kid[0] if the task itself is meant for 'all'.
-                            // In real-world, a task for 'all' shouldn't exist as a generic state, 
-                            // but we process the query keeping the exact kid in context.
+                            // Dynamic Categories for Filter Menu
+                            const availableCategories = Array.from(new Set(tasks.filter(t => t.type === 'study' && isTaskDueOnDate(t, selectedDate) && (effectiveFilter === 'all' || t.kidId === effectiveFilter || t.kidId === 'all')).map(t => t.category || '计划'))).filter(Boolean);
+
+                            // Helper to evaluate aggregate status for shared tasks
                             const getDailyStatus = (t) => {
-                                let queryKidId = effectiveFilter === 'all' ? (t.kidId === 'all' ? kids[0]?.id : t.kidId) : effectiveFilter;
-                                return getTaskStatusOnDate(t, selectedDate, queryKidId);
+                                if (t.kidId === 'all' && effectiveFilter === 'all') {
+                                    // It's a shared task, and we're looking at all kids
+                                    // We need to check every active kid's status.
+                                    let statuses = kids.map(k => getTaskStatusOnDate(t, selectedDate, k.id));
+                                    if (statuses.length === 0) return 'todo';
+                                    
+                                    // Priority of statuses: failed > pending_approval > in_progress > todo > completed
+                                    if (statuses.includes('failed')) return 'failed';
+                                    if (statuses.includes('pending_approval')) return 'pending_approval';
+                                    if (statuses.includes('in_progress')) return 'in_progress';
+                                    if (statuses.includes('todo')) return 'todo';
+                                    return 'completed'; // Only completed if ALL kids completed it
+                                } else {
+                                    // We're either looking at a specific kid, or the task is for a specific kid
+                                    let queryKidId = effectiveFilter === 'all' ? t.kidId : effectiveFilter;
+                                    return getTaskStatusOnDate(t, selectedDate, queryKidId);
+                                }
                             };
                             
                             // Apply Subject Filters
@@ -6576,9 +6591,6 @@ export default function App() {
                                     return true;
                                 });
                             }
-
-                            // Dynamic Categories for Filter Menu
-                            const availableCategories = Array.from(new Set(tasks.filter(t => t.type === 'study' && isTaskDueOnDate(t, selectedDate) && (effectiveFilter === 'all' || t.kidId === effectiveFilter || t.kidId === 'all')).map(t => t.category || '计划'))).filter(Boolean);
 
                             // Apply Sorting
                             parentTasks.sort((a, b) => {
