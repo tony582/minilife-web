@@ -5952,32 +5952,6 @@ export default function App() {
                         </div>
                     )}
                 </div>
-
-                {/* Kid Checkout Confirmation Modal */}
-                {kidCheckoutItem && (
-                    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[200] flex items-center justify-center p-4 pb-12 sm:pb-4 animate-fade-in">
-                        <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 sm:p-8 shadow-2xl scale-in group overflow-y-auto max-h-[85vh]">
-                            <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-5 text-rose-500 shadow-inner group-hover:scale-110 transition-transform relative">
-                                <Icons.ShoppingBag size={32} />
-                            </div>
-                            <h3 className="text-xl sm:text-2xl font-black text-center text-slate-800 mb-2 tracking-tight">确认兑换</h3>
-                            <p className="text-slate-500 text-sm text-center mb-6 leading-relaxed">
-                                确定要花费 <span className="font-black text-yellow-500 inline-flex items-center gap-0.5"><Icons.Star size={14} className="fill-yellow-500" />{kidCheckoutItem.price}</span> 兑换商品<br/>
-                                <span className="font-black text-slate-700 text-base mt-2 inline-block">「{kidCheckoutItem.name}」</span> 吗？
-                            </p>
-                            <div className="flex gap-3 pt-2">
-                                <button onClick={() => setKidCheckoutItem(null)} className="flex-1 py-3.5 sm:py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 active:scale-95 transition-all text-sm sm:text-base">再想想</button>
-                                <button onClick={async () => { 
-                                    const success = await buyItem(kidCheckoutItem);
-                                    if (success) setKidCheckoutItem(null);
-                                }} className="flex-1 py-3.5 sm:py-4 bg-rose-500 text-white font-black rounded-2xl hover:bg-rose-600 shadow-lg shadow-rose-500/30 active:scale-95 transition-all text-sm sm:text-base">确认兑换</button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Full Transaction History Modal */}
-                {renderTransactionHistoryModal()}
             </div>
         );
     };
@@ -7633,6 +7607,32 @@ export default function App() {
             
             <CelebrationModal data={celebrationData} onClose={() => setCelebrationData(null)} />
             {renderQrScannerModal()}
+
+            {/* Kid Checkout Confirmation Modal */}
+            {kidCheckoutItem && (
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[200] flex items-center justify-center p-4 pb-12 sm:pb-4 animate-fade-in">
+                    <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 sm:p-8 shadow-2xl scale-in group overflow-y-auto max-h-[85vh]">
+                        <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-5 text-rose-500 shadow-inner group-hover:scale-110 transition-transform relative">
+                            <Icons.ShoppingBag size={32} />
+                        </div>
+                        <h3 className="text-xl sm:text-2xl font-black text-center text-slate-800 mb-2 tracking-tight">确认兑换</h3>
+                        <p className="text-slate-500 text-sm text-center mb-6 leading-relaxed">
+                            确定要花费 <span className="font-black text-yellow-500 inline-flex items-center gap-0.5"><Icons.Star size={14} className="fill-yellow-500" />{kidCheckoutItem.price}</span> 兑换商品<br/>
+                            <span className="font-black text-slate-700 text-base mt-2 inline-block">「{kidCheckoutItem.name}」</span> 吗？
+                        </p>
+                        <div className="flex gap-3 pt-2">
+                            <button onClick={() => setKidCheckoutItem(null)} className="flex-1 py-3.5 sm:py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 active:scale-95 transition-all text-sm sm:text-base">再想想</button>
+                            <button onClick={async () => { 
+                                const success = await buyItem(kidCheckoutItem);
+                                if (success) setKidCheckoutItem(null);
+                            }} className="flex-1 py-3.5 sm:py-4 bg-rose-500 text-white font-black rounded-2xl hover:bg-rose-600 shadow-lg shadow-rose-500/30 active:scale-95 transition-all text-sm sm:text-base">确认兑换</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Full Transaction History Modal */}
+            {renderTransactionHistoryModal()}
 
             {/* Delete Confirm Modal */}
             {deleteConfirmTask && (
