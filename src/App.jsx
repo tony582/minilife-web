@@ -605,6 +605,9 @@ export default function App() {
 
     // Parent header settings dropdown
     const [showParentSettingsDropdown, setShowParentSettingsDropdown] = useState(false);
+    const [showSettingsModal, setShowSettingsModal] = useState(false);
+    const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+    const [showSecurityParamsModal, setShowSecurityParamsModal] = useState(false);
 
     const kidFilterRef = useRef();
     const kidSortRef = useRef();
@@ -687,10 +690,9 @@ export default function App() {
     };
 
     // Derived states
+    const activeKid = kids.find(k => String(k.id) === String(activeKidId)) || kids[0];
     const [showTransferModal, setShowTransferModal] = useState(false);
     const [transferForm, setTransferForm] = useState({ amount: '', target: 'vault' });
-    const [showSettingsModal, setShowSettingsModal] = useState(false);
-    const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
     const [previewImageIndex, setPreviewImageIndex] = useState(0);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [showAddPlanModal, setShowAddPlanModal] = useState(false);
@@ -4922,7 +4924,7 @@ export default function App() {
                 <img src="/minilife_logo.png" className="w-10 h-10 rounded-2xl shadow-sm" alt="MiniLife Logo" /> <span className="font-black text-2xl tracking-widest text-[#2c3e50]">MiniLife</span>
             </div>
             <h1 className="text-white text-3xl font-black mb-12">是谁在使用呢？</h1>
-            <div className="flex flex-wrap justify-center gap-8 md:gap-12 max-w-3xl">
+            <div className="flex flex-wrap md:flex-nowrap justify-center gap-8 md:gap-12 max-w-5xl w-full px-4">
                 {kids.map(k => (
                     <div key={k.id} onClick={() => { changeActiveKid(k.id); changeAppState('kid_app'); setKidTab('study'); }} className="group cursor-pointer flex flex-col items-center">
                         <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-6xl shadow-xl group-hover:scale-105 group-hover:ring-4 ring-white/50 transition-all overflow-hidden border-4 border-white">
@@ -4933,19 +4935,18 @@ export default function App() {
                 ))}
 
                 {/* Add Kid Button (Netflix Style) */}
-                <div onClick={() => {
-                    if (kids.length >= 5) {
-                        return notify("目前最多支持添加5名家庭成员！", "warning");
-                    }
-                    changeActiveKid(null);
-                    setNewKidForm({ name: '', gender: 'boy', avatar: '👦', dob: '' });
-                    setShowAddKidModal(true);
-                }} className="group cursor-pointer flex flex-col items-center">
-                    <div className="w-28 h-28 md:w-36 md:h-36 rounded-[2rem] border-4 border-dashed border-slate-700 bg-slate-800/50 flex items-center justify-center text-5xl text-slate-500 shadow-xl group-hover:scale-105 group-hover:border-slate-500 group-hover:text-slate-400 transition-all">
-                        <Icons.Plus size={48} strokeWidth={3} />
+                {kids.length < 5 && (
+                    <div onClick={() => {
+                        changeActiveKid(null);
+                        setNewKidForm({ name: '', gender: 'boy', avatar: '👦', dob: '' });
+                        setShowAddKidModal(true);
+                    }} className="group cursor-pointer flex flex-col items-center">
+                        <div className="w-28 h-28 md:w-36 md:h-36 rounded-[2rem] border-4 border-dashed border-slate-700 bg-slate-800/50 flex items-center justify-center text-5xl text-slate-500 shadow-xl group-hover:scale-105 group-hover:border-slate-500 group-hover:text-slate-400 transition-all">
+                            <Icons.Plus size={48} strokeWidth={3} />
+                        </div>
+                        <span className="text-slate-500 mt-4 text-xl font-bold group-hover:text-slate-400 transition-colors">添加小朋友</span>
                     </div>
-                    <span className="text-slate-500 mt-4 text-xl font-bold group-hover:text-slate-400 transition-colors">添加小朋友</span>
-                </div>
+                )}
             </div>
             <button onClick={() => parentSettings.pinEnabled ? changeAppState('parent_pin') : changeAppState('parent_app')} className="absolute bottom-10 flex items-center gap-2 text-slate-400 hover:text-white transition-colors bg-white/5 px-6 py-3 rounded-full font-bold">
                 <Icons.Settings size={18} /> 家长管理入口
@@ -6675,7 +6676,7 @@ export default function App() {
 
                                 <div className="h-px bg-slate-100 my-1 mx-2"></div>
 
-                                <button onClick={() => { setShowParentSettingsDropdown(false); handleTogglePin(); }} className="flex items-center gap-3 px-3 py-3 rounded-2xl text-left hover:bg-slate-50 transition-colors group">
+                                <button onClick={() => { setShowParentSettingsDropdown(false); setShowSecurityParamsModal(true); }} className="flex items-center gap-3 px-3 py-3 rounded-2xl text-left hover:bg-slate-50 transition-colors group">
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 transition-all shrink-0 ${parentSettings.pinEnabled ? 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 group-hover:bg-slate-200'}`}>
                                         {parentSettings.pinEnabled ? <Icons.Lock size={18} /> : <Icons.Unlock size={18} />}
                                     </div>
@@ -7306,16 +7307,39 @@ export default function App() {
                                             </button>
                                         )}
                                     </div>
+                                    <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-2xl w-full sm:w-auto overflow-x-auto hide-scrollbar">
+                                        {[
+                                            { id: 'all', label: '全部' },
+                                            { id: 'income', label: '好习惯' },
+                                            { id: 'expense', label: '坏习惯' }
+                                        ].map(filter => (
+                                            <button
+                                                key={filter.id}
+                                                onClick={() => setHabitCardFilter(filter.id)}
+                                                className={`px-4 py-1.5 rounded-xl text-xs font-black transition-all whitespace-nowrap ${habitCardFilter === filter.id ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                            >
+                                                {filter.label}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-                                    {tasks.filter(t => t.type === 'habit' && (!searchPlanKeyword || t.title.toLowerCase().includes(searchPlanKeyword.toLowerCase()) || (t.desc && t.desc.toLowerCase().includes(searchPlanKeyword.toLowerCase())))).length === 0 ? (
+                                    {tasks.filter(t => t.type === 'habit' && (!searchPlanKeyword || t.title.toLowerCase().includes(searchPlanKeyword.toLowerCase()) || (t.desc && t.desc.toLowerCase().includes(searchPlanKeyword.toLowerCase())))).filter(t => {
+                                        if (habitCardFilter === 'income') return t.reward >= 0;
+                                        if (habitCardFilter === 'expense') return t.reward < 0;
+                                        return true;
+                                    }).length === 0 ? (
                                         <div className="col-span-full bg-white rounded-3xl border border-slate-100 p-12 text-center shadow-sm">
                                             <div className="w-16 h-16 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner"><Icons.SearchX size={28} /></div>
                                             <div className="text-slate-500 font-bold mb-1">未找到相关习惯</div>
                                             <div className="text-slate-400 text-sm">尝试更换搜索词或新建一个习惯吧</div>
                                         </div>
                                     ) : (
-                                        tasks.filter(t => t.type === 'habit' && (!searchPlanKeyword || t.title.toLowerCase().includes(searchPlanKeyword.toLowerCase()) || (t.desc && t.desc.toLowerCase().includes(searchPlanKeyword.toLowerCase())))).map(t => {
+                                        tasks.filter(t => t.type === 'habit' && (!searchPlanKeyword || t.title.toLowerCase().includes(searchPlanKeyword.toLowerCase()) || (t.desc && t.desc.toLowerCase().includes(searchPlanKeyword.toLowerCase())))).filter(t => {
+                                            if (habitCardFilter === 'income') return t.reward >= 0;
+                                            if (habitCardFilter === 'expense') return t.reward < 0;
+                                            return true;
+                                        }).map(t => {
                                             const kName = t.kidId === 'all' ? '全部孩子' : (kids.find(k => k.id === t.kidId)?.name || '未知');
                                             return (
                                                 <div key={t.id} className="bg-white p-5 rounded-[2rem] border border-slate-100/80 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all flex flex-col justify-between group">
@@ -7365,12 +7389,7 @@ export default function App() {
                                                                     <button
                                                                         onClick={() => {
                                                                             if (allMaxed) return;
-                                                                            // Reset UI states since we are entering a new flow
-                                                                            setPenaltySelectedKidIds(t.kidId === 'all' ? [] : [t.kidId]);
-                                                                            if (t.reward < 0) setPenaltyReason('');
-                                                                            setActiveHabitTask(t);
-                                                                            if (t.reward < 0) setShowPenaltyModal(true);
-                                                                            else setShowRewardModal(true);
+                                                                            handlePointAction(t, t.reward < 0 ? 'penalty' : 'reward');
                                                                         }}
                                                                         className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all shadow-sm ${allMaxed ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200' : (t.reward < 0 ? 'bg-red-50 text-red-600 hover:bg-red-500 hover:text-white border border-red-100 hover:border-red-500' : 'bg-amber-50 text-amber-600 hover:bg-emerald-500 hover:text-white border border-amber-100 hover:border-emerald-500')}`}
                                                                     >
@@ -7844,151 +7863,360 @@ export default function App() {
                     </div>
                 )}
 
-                {parentTab === 'settings' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
-                        <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
-                            <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
-                                <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-700"><Icons.Lock size={20} /></div>
-                                <h2 className="text-xl font-black text-slate-800">后台安全锁</h2>
-                            </div>
-                            <div className="space-y-6">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <div className="font-bold text-slate-800">开启家长密码锁</div>
-                                        <div className="text-xs text-slate-500 mt-1">防止孩子私自进入后台修改数据</div>
+                {parentTab === 'settings' && (!activeKid ? (
+                    <div className="animate-fade-in text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
+                        <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Icons.Users size={32} className="text-slate-300" />
+                        </div>
+                        <h2 className="text-xl font-black text-slate-800">欢迎来到我的宝贝数据中心</h2>
+                        <p className="text-slate-500 mt-2 text-sm font-bold">您还没有添加宝贝资料，请点击右上角设置添加。</p>
+                    </div>
+                ) : (
+                    <div className="animate-fade-in space-y-6">
+                        {/* --- Dashboard Header (Kid Info & Switcher) --- */}
+                        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-[2.5rem] p-6 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 group-hover:scale-110 transition-transform duration-700"></div>
+                            
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                                <div className="flex items-center gap-5">
+                                    <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center text-6xl shadow-inner border-4 border-white/20 shrink-0">
+                                        <AvatarDisplay avatar={activeKid.avatar} />
                                     </div>
-                                    <button onClick={() => setParentSettings(p => ({ ...p, pinEnabled: !p.pinEnabled }))} className={`w-14 h-8 rounded-full flex items-center p-1 transition-colors ${parentSettings.pinEnabled ? 'bg-emerald-500' : 'bg-slate-300'}`}>
-                                        <div className={`w-6 h-6 bg-white rounded-full shadow-sm transform transition-transform ${parentSettings.pinEnabled ? 'translate-x-6' : 'translate-x-0'}`}></div>
-                                    </button>
+                                    <div>
+                                        <div className="flex items-center gap-3 mb-1">
+                                            <h2 className="text-3xl font-black">{activeKid.name}</h2>
+                                            <div className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-xl text-sm font-bold border border-white/30 truncate max-w-[120px]">
+                                                {activeKid.title || '成长中'}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-indigo-100 font-medium">
+                                            <span className="bg-indigo-900/40 px-2 py-0.5 rounded text-sm">Lv.{activeKid.level}</span>
+                                            <span>学力值: {activeKid.exp}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                {parentSettings.pinEnabled && (
-                                    <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-2">修改 4 位密码 (默认1234)</label>
-                                        <input type="text" maxLength={4} value={parentSettings.pinCode} onChange={e => setParentSettings(p => ({ ...p, pinCode: e.target.value.replace(/\D/g, '') }))} className="w-full bg-slate-50 border-2 border-slate-200 p-3 rounded-xl font-mono text-xl tracking-[1em] outline-none focus:border-indigo-500" />
-                                    </div>
-                                )}
-                                <button onClick={() => notify("安全设置已保存", "success")} className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-black">保存安全设置</button>
+                                <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar bg-black/10 p-2 rounded-2xl w-full md:w-auto">
+                                    {kids.map(k => (
+                                        <button 
+                                            key={k.id} 
+                                            onClick={() => setActiveKidId(k.id)}
+                                            className={`relative shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-2xl transition-all ${activeKidId === k.id ? 'bg-white shadow-lg scale-110 z-10' : 'bg-white/20 hover:bg-white/40'}`}
+                                        >
+                                            <AvatarDisplay avatar={k.avatar} />
+                                            {activeKidId === k.id && <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-400 border-2 border-indigo-500 rounded-full"></div>}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
-                            <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
-                                <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center text-rose-500"><Icons.Award size={20} /></div>
-                                <h2 className="text-xl font-black text-slate-800">我的订阅体验</h2>
+                        {/* --- Daily Metrics Row --- */}
+                        <div className="grid grid-cols-3 gap-3">
+                            <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 flex flex-col items-center justify-center relative overflow-hidden group hover:shadow-md transition-all">
+                                <div className="absolute -right-4 -top-4 w-16 h-16 bg-emerald-50 rounded-full group-hover:scale-150 transition-transform duration-500 z-0"></div>
+                                <div className="text-slate-400 font-bold mb-1 relative z-10 text-xs sm:text-sm">今日获得</div>
+                                <div className="text-2xl sm:text-3xl font-black text-emerald-500 relative z-10 flex items-center gap-1">
+                                    + {transactions.filter(t => t.kidId === activeKidId && t.date === selectedDate && t.type === 'income').reduce((sum, t) => sum + t.amount, 0)}
+                                </div>
                             </div>
-                            <div className="space-y-6">
-                                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                    <div className="text-sm font-bold text-slate-500 mb-1">当前账号</div>
-                                    <div className="font-black text-slate-800">{user?.email}</div>
-                                    <div className="mt-3 text-sm font-bold text-slate-500 mb-1">服务有效期至</div>
-                                    <div className={`font-black ${new Date(user?.sub_end_date) < new Date() ? 'text-rose-500' : 'text-emerald-600'}`}>
-                                        {user?.sub_end_date ? new Date(user.sub_end_date).toLocaleDateString() : '永久有效'}
-                                    </div>
+                            <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 flex flex-col items-center justify-center relative overflow-hidden group hover:shadow-md transition-all">
+                                <div className="absolute -right-4 -top-4 w-16 h-16 bg-rose-50 rounded-full group-hover:scale-150 transition-transform duration-500 z-0"></div>
+                                <div className="text-slate-400 font-bold mb-1 relative z-10 text-xs sm:text-sm">今日支出/扣分</div>
+                                <div className="text-2xl sm:text-3xl font-black text-rose-500 relative z-10 flex items-center gap-1">
+                                    - {transactions.filter(t => t.kidId === activeKidId && t.date === selectedDate && t.type === 'expense').reduce((sum, t) => sum + Math.abs(t.amount), 0)}
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">输入兑换码续费</label>
-                                    <div className="flex gap-2">
-                                        <input type="text" value={settingsCode} onChange={e => setSettingsCode(e.target.value.toUpperCase())} className="flex-1 bg-white border-2 border-slate-200 p-3 rounded-xl font-black text-slate-800 tracking-wider outline-none focus:border-rose-500 uppercase placeholder:text-slate-300 placeholder:font-bold" placeholder="ACT-XXXXXX" />
-                                        <button onClick={async () => {
-                                            if (!settingsCode) return;
-                                            try {
-                                                const res = await apiFetch('/api/redeem-code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: settingsCode }) });
-                                                const data = await res.json();
-                                                if (!res.ok) return notify(data.error || "兑换失败", 'error');
-                                                notify("兑换成功！", 'success');
-                                                setUser(prev => ({ ...prev, sub_end_date: data.new_sub_end_date }));
-                                                setSettingsCode('');
-                                                apiFetch('/api/me/codes').then(r => r.json()).then(setUsedCodes).catch(console.error);
-                                            } catch (err) { notify("网络错误", "error"); }
-                                        }} className="bg-rose-500 text-white px-6 rounded-xl font-bold shadow-md shadow-rose-200 hover:bg-rose-600 transition-colors">兑换</button>
-                                    </div>
+                            </div>
+                            <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 flex flex-col items-center justify-center relative overflow-hidden group hover:shadow-md transition-all">
+                                <div className="absolute -right-4 -top-4 w-16 h-16 bg-amber-50 rounded-full group-hover:scale-150 transition-transform duration-500 z-0"></div>
+                                <div className="text-slate-400 font-bold mb-1 relative z-10 text-xs sm:text-sm">钱包余额</div>
+                                <div className="text-2xl sm:text-3xl font-black text-amber-500 relative z-10 flex items-center gap-1">
+                                    <Icons.Star size={18} className="fill-amber-400 hidden sm:block" /> {activeKid.money}
                                 </div>
-                                {usedCodes.length > 0 && (
-                                    <div className="mt-6">
-                                        <h3 className="text-sm font-black text-slate-700 mb-3 border-b border-slate-100 pb-2">兑换历史记录</h3>
-                                        <div className="max-h-32 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-                                            {usedCodes.map(c => (
-                                                <div key={c.code} className="flex justify-between items-center bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-xs shadow-sm">
-                                                    <div className="font-mono font-bold text-slate-600 bg-white px-2 py-1 rounded border border-slate-200">{c.code}</div>
-                                                    <div className="text-right">
-                                                        <span className="font-black text-emerald-600 block">+{c.duration_days} 天</span>
-                                                        <span className="text-[10px] text-slate-400 font-bold">{new Date(c.used_at).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+
+                        {/* --- Supermarket Logs (Full Width) --- */}
+                        <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex flex-col">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="font-black text-slate-800 text-lg flex items-center gap-2">
+                                    <div className="w-8 h-8 rounded-xl bg-pink-50 text-pink-500 flex items-center justify-center"><Icons.Package size={18} /></div>
+                                    家庭超市动态
+                                </h3>
+                            </div>
+                            <div className="flex-x overflow-x-auto pb-4 hide-scrollbar">
+                                <div className="flex gap-4">
+                                    {orders.filter(o => o.kidId === activeKidId).length === 0 ? (
+                                        <div className="w-full h-32 flex flex-col items-center justify-center opacity-50 bg-slate-50 rounded-2xl border border-slate-100 border-dashed">
+                                            <Icons.Inbox className="w-10 h-10 mb-2 text-slate-300" />
+                                            <span className="text-slate-400 font-bold text-sm">还没有去过超市购物哦</span>
+                                        </div>
+                                    ) : (
+                                        orders.filter(o => o.kidId === activeKidId).map(o => (
+                                            <div key={o.id} className="min-w-[240px] bg-slate-50 p-4 rounded-2xl border border-slate-200 shrink-0 hover:shadow-md transition-shadow">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div className="font-black text-slate-800 text-base">{o.itemName}</div>
+                                                    <div className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded text-[10px] font-bold">
+                                                        {o.status === 'completed' ? '已核销' : '待核销'}
                                                     </div>
                                                 </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
+                                                <div className="flex justify-between items-end mt-4">
+                                                    <div className="text-[10px] text-slate-400 font-mono">{o.date}</div>
+                                                    <div className="font-black text-rose-500">- {o.price}</div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
                             </div>
                         </div>
 
-                        {/* Child Growth Profile Management Card */}
-                        <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2rem] p-8 shadow-sm border border-indigo-400/30 text-white relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-                            <div className="flex items-center gap-3 mb-6 border-b border-indigo-400/30 pb-4 relative z-10">
-                                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white backdrop-blur-sm"><Icons.Star size={20} /></div>
-                                <h2 className="text-xl font-black text-white">儿童成长图鉴管理</h2>
+                        {/* --- Two Column Report Layout --- */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            
+                            {/* Task Column */}
+                            <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex flex-col h-[400px]">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="font-black text-slate-800 text-lg flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center"><Icons.Target size={18} /></div>
+                                        今日学习任务榜
+                                    </h3>
+                                </div>
+                                <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                                    {tasks.filter(t => t.type === 'study' && (t.kidId === 'all' || t.kidId === activeKidId) && (t.days || []).includes(new Date(selectedDate).getDay())).length === 0 ? (
+                                        <div className="h-full flex flex-col items-center justify-center opacity-50">
+                                            <Icons.Inbox className="w-12 h-12 mb-2 text-slate-300" />
+                                            <span className="text-slate-400 font-bold text-sm">今日空空如也</span>
+                                        </div>
+                                    ) : (
+                                        tasks.filter(t => t.type === 'study' && (t.kidId === 'all' || t.kidId === activeKidId) && (t.days || []).includes(new Date(selectedDate).getDay())).map(t => {
+                                            const entry = t.kidId === 'all' ? t.history?.[selectedDate]?.[activeKidId] : t.history?.[selectedDate];
+                                            const status = entry?.status || 'pending';
+                                            return (
+                                                <div key={t.id} className="bg-slate-50 p-3 rounded-2xl flex items-center gap-3 border border-slate-100">
+                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${status === 'completed' ? 'bg-emerald-500 text-white' : status === 'review' ? 'bg-amber-400 text-white' : 'bg-white text-slate-400 shadow-sm border border-slate-200'}`}>
+                                                        {status === 'completed' ? <Icons.Check size={20} /> : status === 'review' ? <Icons.Clock size={20} /> : <Icons.Target size={20} />}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="font-bold text-slate-800 truncate">{t.title}</div>
+                                                        <div className="text-[10px] font-bold text-slate-400 mt-0.5">{status === 'completed' ? '已完成' : status === 'review' ? '等待家长审核' : '待完成'}</div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
                             </div>
-                            <div className="space-y-4 relative z-10">
-                                <p className="text-indigo-100 text-sm leading-relaxed font-medium">配置儿童的等级称号、升级所需经验值以及专属头像框。等级系统能极大提升孩子的打卡动力。</p>
-                                <button onClick={() => setShowLevelModal(true)} className="w-full bg-white text-indigo-600 py-3.5 rounded-xl font-black hover:bg-slate-50 transition-colors shadow-lg shadow-indigo-900/20 active:scale-[0.98] flex items-center justify-center gap-2 group-hover:shadow-xl group-hover:shadow-indigo-900/30">
-                                    进入图鉴配置中心 <Icons.ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                                </button>
-                            </div>
-                        </div>
 
-                        <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
-                            <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
-                                <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-700"><Icons.Users size={20} /></div>
-                                <h2 className="text-xl font-black text-slate-800">孩子资料管理 <span className="text-sm font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md ml-1">{kids.length}/5人</span></h2>
-                            </div>
-                            <div className="space-y-4 mb-6">
-                                {kids.map(k => (
-                                    <div key={k.id} className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex gap-4 items-center">
-                                        <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center text-4xl shadow-sm border border-slate-200">
-                                            <AvatarDisplay avatar={k.avatar} />
+                            {/* Habit Column */}
+                            <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex flex-col h-[400px]">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="font-black text-slate-800 text-lg flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-500 flex items-center justify-center"><Icons.Zap size={18} /></div>
+                                        今日习惯足迹
+                                    </h3>
+                                </div>
+                                <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                                    {transactions.filter(t => t.kidId === activeKidId && t.date === selectedDate && t.category === 'habit').length === 0 ? (
+                                        <div className="h-full flex flex-col items-center justify-center opacity-50">
+                                            <Icons.Star className="w-12 h-12 mb-2 text-slate-300" />
+                                            <span className="text-slate-400 font-bold text-sm">今日未产生习惯足迹</span>
                                         </div>
-                                        <div className="flex-1">
-                                            <div className="font-black text-slate-800 text-lg">{k.name}</div>
-                                            <div className="text-xs font-bold text-slate-400">Lv.{k.level} · 学力 {k.exp}</div>
-                                        </div>
-                                        <button onClick={() => {
-                                            const boyAvatars = ['👦', '🧑‍🚀', '🦸‍♂️', '🕵️‍♂️', '👼'];
-                                            const gender = boyAvatars.includes(k.avatar) ? 'boy' : 'girl';
-                                            setNewKidForm({ id: k.id, name: k.name, gender, avatar: k.avatar });
-                                            setShowAddKidModal(true);
-                                        }} className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-500 hover:border-indigo-200 hover:bg-indigo-50 transition-colors">
-                                            <Icons.Edit3 size={18} />
-                                        </button>
-                                        <button onClick={async () => {
-                                            if (window.confirm(`确定要删除 ${k.name} 吗？与该孩子相关的所有任务、订单和记录都将被删除！此操作无法撤销。`)) {
-                                                try {
-                                                    await apiFetch(`/api/kids/${k.id}`, { method: 'DELETE' });
-                                                    setKids(kids.filter(kid => kid.id !== k.id));
-                                                    notify(`${k.name} 已被删除`, "success");
-                                                } catch (e) { notify("删除失败", "error"); }
-                                            }
-                                        }} className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-colors">
-                                            <Icons.Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                ))}
+                                    ) : (
+                                        transactions.filter(t => t.kidId === activeKidId && t.date === selectedDate && t.category === 'habit').map(tx => (
+                                            <div key={tx.id} className="bg-slate-50 p-3 rounded-2xl flex items-center justify-between border border-slate-100">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tx.type === 'income' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-500'}`}>
+                                                        {tx.type === 'income' ? <Icons.ArrowUpCircle size={18} /> : <Icons.ArrowRightLeft size={18} />}
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-bold text-slate-700 max-w-[120px] sm:max-w-xs truncate">{tx.desc}</div>
+                                                        <div className="text-[10px] text-slate-400 font-mono mt-0.5">{new Date(tx.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                                    </div>
+                                                </div>
+                                                <div className={`font-black tracking-wide ${tx.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                                    {tx.type === 'income' ? '+' : '-'}{Math.abs(tx.amount)}
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
                             </div>
-                            <button onClick={() => {
-                                if (kids.length >= 5) {
-                                    return notify("目前最多支持添加5名家庭成员！", "warning");
-                                }
-                                setNewKidForm({ id: null, name: '', gender: 'boy', avatar: '👦' });
-                                setShowAddKidModal(true);
-                            }} className="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 border-2 border-dashed border-slate-300 transition-colors flex items-center justify-center gap-2">
-                                <Icons.Plus size={18} className="text-slate-400" /> 添加家庭成员
-                            </button>
                         </div>
                     </div>
-                )}
+                ))}
             </div>
         </div>
     );
+
+    const renderParentSettingsModals = () => {
+        return (
+            <>
+                {/* Child Management Modal */}
+                {showSettingsModal && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[200] animate-fade-in">
+                        <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col max-h-[90vh]">
+                            <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10 shrink-0">
+                                <h2 className="text-xl font-black text-slate-800 flex items-center gap-2"><Icons.Users size={22} className="text-indigo-500" /> 孩子资料管理</h2>
+                                <button onClick={() => setShowSettingsModal(false)} className="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-full transition-colors"><Icons.X size={18} /></button>
+                            </div>
+                            <div className="p-6 overflow-y-auto overflow-x-hidden relative flex-1">
+                                <div className="space-y-4 mb-6">
+                                    {kids.map(k => (
+                                        <div key={k.id} className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex gap-4 items-center">
+                                            <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center text-4xl shadow-sm border border-slate-200 shrink-0">
+                                                <AvatarDisplay avatar={k.avatar} />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="font-black text-slate-800 text-lg truncate">{k.name}</div>
+                                                <div className="text-xs font-bold text-slate-400">Lv.{k.level} · 学力 {k.exp}</div>
+                                            </div>
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <button onClick={() => {
+                                                    const boyAvatars = ['👦', '🧑‍🚀', '🦸‍♂️', '🕵️‍♂️', '👼'];
+                                                    const gender = boyAvatars.includes(k.avatar) ? 'boy' : 'girl';
+                                                    setNewKidForm({ id: k.id, name: k.name, gender, avatar: k.avatar });
+                                                    setShowAddKidModal(true);
+                                                }} className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-500 hover:border-indigo-200 hover:bg-indigo-50 transition-colors">
+                                                    <Icons.Edit3 size={18} />
+                                                </button>
+                                                <button onClick={async () => {
+                                                    if (window.confirm(`确定要删除 ${k.name} 吗？与该孩子相关的所有任务、订单和记录都将被删除！此操作无法撤销。`)) {
+                                                        try {
+                                                            await apiFetch(`/api/kids/${k.id}`, { method: 'DELETE' });
+                                                            setKids(kids.filter(kid => kid.id !== k.id));
+                                                            notify(`${k.name} 已被删除`, "success");
+                                                        } catch (e) { notify("删除失败", "error"); }
+                                                    }
+                                                }} className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-colors">
+                                                    <Icons.Trash2 size={18} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <button onClick={() => {
+                                    if (kids.length >= 5) {
+                                        return notify("目前最多支持添加5名家庭成员！", "warning");
+                                    }
+                                    setNewKidForm({ id: null, name: '', gender: 'boy', avatar: '👦' });
+                                    setShowAddKidModal(true);
+                                }} className="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 border-2 border-dashed border-slate-300 transition-colors flex items-center justify-center gap-2">
+                                    <Icons.Plus size={18} className="text-slate-400" /> 添加家庭成员
+                                </button>
+                                
+                                {/* Child Growth Profile Management integrated block */}
+                                <div className="mt-8 pt-8 border-t border-slate-100">
+                                   <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl p-6 shadow-md text-white relative overflow-hidden group">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3"></div>
+                                        <div className="flex items-center gap-3 mb-4 relative z-10">
+                                            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white backdrop-blur-sm"><Icons.Star size={20} /></div>
+                                            <h2 className="text-lg font-black text-white">儿童成长图鉴配置</h2>
+                                        </div>
+                                        <div className="space-y-4 relative z-10">
+                                            <p className="text-indigo-100 text-xs leading-relaxed font-medium">配置儿童的等级称号、升级所需经验值以及专属头像框。等级系统能极大提升孩子的打卡动力。</p>
+                                            <button onClick={() => { setShowSettingsModal(false); setShowLevelModal(true); }} className="w-full bg-white text-indigo-600 py-3 rounded-xl font-black hover:bg-slate-50 transition-colors shadow-lg active:scale-[0.98] flex items-center justify-center gap-2">
+                                                进入图鉴配置中心 <Icons.ChevronRight size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Subscription Modal */}
+                {showSubscriptionModal && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[200] animate-fade-in">
+                        <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col max-h-[90vh]">
+                            <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10 shrink-0">
+                                <h2 className="text-xl font-black text-slate-800 flex items-center gap-2"><Icons.Award size={22} className="text-rose-500" /> 我的订阅体验</h2>
+                                <button onClick={() => setShowSubscriptionModal(false)} className="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-full transition-colors"><Icons.X size={18} /></button>
+                            </div>
+                            <div className="p-6 overflow-y-auto relative flex-1">
+                                <div className="space-y-6">
+                                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                                        <div className="text-sm font-bold text-slate-500 mb-1">当前账号</div>
+                                        <div className="font-black text-slate-800 text-lg">{user?.email}</div>
+                                        <div className="mt-4 text-sm font-bold text-slate-500 mb-1">服务有效期至</div>
+                                        <div className={`font-black text-lg ${new Date(user?.sub_end_date) < new Date() ? 'text-rose-500' : 'text-emerald-600'}`}>
+                                            {user?.sub_end_date ? new Date(user.sub_end_date).toLocaleDateString() : '永久有效'}
+                                        </div>
+                                    </div>
+                                    <div className="pt-2">
+                                        <label className="block text-sm font-bold text-slate-700 mb-2">输入兑换码续费</label>
+                                        <div className="flex gap-2">
+                                            <input type="text" value={settingsCode} onChange={e => setSettingsCode(e.target.value.toUpperCase())} className="flex-1 bg-white border-2 border-slate-200 p-3 rounded-xl font-black text-slate-800 tracking-wider outline-none focus:border-rose-500 uppercase placeholder:text-slate-300 placeholder:font-bold" placeholder="ACT-XXXXXX" />
+                                            <button onClick={async () => {
+                                                if (!settingsCode) return;
+                                                try {
+                                                    const res = await apiFetch('/api/redeem-code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: settingsCode }) });
+                                                    const data = await res.json();
+                                                    if (!res.ok) return notify(data.error || "兑换失败", 'error');
+                                                    notify("兑换成功！", 'success');
+                                                    setUser(prev => ({ ...prev, sub_end_date: data.new_sub_end_date }));
+                                                    setSettingsCode('');
+                                                    apiFetch('/api/me/codes').then(r => r.json()).then(setUsedCodes).catch(console.error);
+                                                } catch (err) { notify("网络错误", "error"); }
+                                            }} className="bg-rose-500 text-white px-6 rounded-xl font-bold shadow-md shadow-rose-200 hover:bg-rose-600 transition-colors shrink-0">兑换卡密</button>
+                                        </div>
+                                    </div>
+                                    {usedCodes.length > 0 && (
+                                        <div className="mt-6 pt-6 border-t border-slate-100">
+                                            <h3 className="text-sm font-black text-slate-700 mb-3 flex items-center gap-2"><Icons.Clock size={16}/> 兑换历史记录</h3>
+                                            <div className="max-h-40 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                                                {usedCodes.map(c => (
+                                                    <div key={c.code} className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100 shadow-sm">
+                                                        <div className="font-mono font-bold text-slate-700 bg-white px-2 py-1 rounded border border-slate-200 text-sm tracking-widest">{c.code}</div>
+                                                        <div className="text-right">
+                                                            <span className="font-black text-emerald-600 block text-sm">+{c.duration_days} 天</span>
+                                                            <span className="text-[10px] text-slate-400 font-bold block mt-0.5">{new Date(c.used_at).toLocaleDateString()}</span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Security PIN Modal */}
+                {showSecurityParamsModal && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[200] animate-fade-in">
+                        <div className="bg-white rounded-[2.5rem] w-full max-w-md shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col max-h-[90vh]">
+                            <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10 shrink-0">
+                                <h2 className="text-xl font-black text-slate-800 flex items-center gap-2"><Icons.Lock size={22} className="text-slate-600" /> 后台安全锁</h2>
+                                <button onClick={() => setShowSecurityParamsModal(false)} className="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-full transition-colors"><Icons.X size={18} /></button>
+                            </div>
+                            <div className="p-6 overflow-y-auto relative flex-1">
+                                <div className="space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <div className="font-bold text-slate-800">开启家长密码锁</div>
+                                            <div className="text-xs text-slate-500 mt-1">防止孩子私自进入后台修改数据</div>
+                                        </div>
+                                        <button onClick={() => setParentSettings(p => ({ ...p, pinEnabled: !p.pinEnabled }))} className={`w-14 h-8 rounded-full flex items-center p-1 transition-colors ${parentSettings.pinEnabled ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                                            <div className={`w-6 h-6 bg-white rounded-full shadow-sm transform transition-transform ${parentSettings.pinEnabled ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                                        </button>
+                                    </div>
+                                    {parentSettings.pinEnabled && (
+                                        <div className="animate-fade-in">
+                                            <label className="block text-sm font-bold text-slate-700 mb-2">修改 4 位密码 (默认1234)</label>
+                                            <input type="text" maxLength={4} value={parentSettings.pinCode} onChange={e => setParentSettings(p => ({ ...p, pinCode: e.target.value.replace(/\D/g, '') }))} className="w-full bg-slate-50 border-2 border-slate-200 p-3 rounded-xl font-mono text-xl tracking-[1em] outline-none focus:border-indigo-500 text-center" />
+                                        </div>
+                                    )}
+                                    <button onClick={() => { setShowSecurityParamsModal(false); notify("安全设置已保存", "success"); }} className="w-full bg-slate-900 text-white py-3.5 rounded-xl font-bold hover:bg-black transition-colors shadow-lg active:scale-[0.98]">完成设定</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </>
+        );
+    };
 
     if (authLoading) {
         return <div className="min-h-screen bg-slate-50 flex items-center justify-center font-black text-indigo-300 animate-pulse">加载中...</div>;
@@ -8265,7 +8493,7 @@ export default function App() {
             { id: 'plans', label: '习惯养成', icon: <Icons.CheckSquare size={22} strokeWidth={2.5} /> },
             { id: 'wealth', label: '财富中心', icon: <Icons.Landmark size={22} strokeWidth={2.5} /> },
             { id: 'shop_manage', label: '家庭超市', icon: <Icons.ShoppingBag size={22} strokeWidth={2.5} /> },
-            { id: 'settings', label: '我的', icon: <Icons.User size={22} strokeWidth={2.5} /> }
+            { id: 'settings', label: '我的宝贝', icon: <Icons.User size={22} strokeWidth={2.5} /> }
         ] : [
             { id: 'study', label: '学习任务', icon: <Icons.BookOpen size={22} strokeWidth={2.5} /> },
             { id: 'habit', label: '习惯养成', icon: <Icons.ShieldCheck size={22} strokeWidth={2.5} /> },
