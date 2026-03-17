@@ -1,4 +1,7 @@
-// src/utils/dateUtils.js
+export const isSameDay = (d1, d2) => {
+    if (!d1 || !d2) return false;
+    return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+};
 
 export const formatDate = (date) => {
     const d = new Date(date);
