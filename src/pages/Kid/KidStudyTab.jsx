@@ -1,4 +1,5 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuthContext } from '../../context/AuthContext.jsx';
 import { useDataContext } from '../../context/DataContext.jsx';
 import { useUIContext } from '../../context/UIContext.jsx';
@@ -46,6 +47,35 @@ export const KidStudyTab = () => {
     const [showSortDropdown, setShowSortDropdown] = useState(false);
 
     useOnClickOutside(kidFilterRef, () => setShowFilterDropdown(false));
+
+    // Sticky compact calendar logic — scroll-based detection
+    const calendarSentinelRef = useRef(null);
+    const [showCompactCalendar, setShowCompactCalendar] = useState(false);
+
+    useEffect(() => {
+        const sentinel = calendarSentinelRef.current;
+        if (!sentinel) return;
+
+        const onScroll = () => {
+            const rect = sentinel.getBoundingClientRect();
+            setShowCompactCalendar(rect.bottom < 10);
+        };
+
+        // Listen on window (document-level scroll) AND all scrollable ancestors
+        const targets = [window];
+        let el = sentinel.parentElement;
+        while (el) {
+            const style = getComputedStyle(el);
+            if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
+                targets.push(el);
+            }
+            el = el.parentElement;
+        }
+
+        targets.forEach(t => t.addEventListener('scroll', onScroll, { passive: true }));
+        onScroll();
+        return () => targets.forEach(t => t.removeEventListener('scroll', onScroll));
+    }, []);
 
     let myTasks = tasks.filter(t => (t.kidId === activeKidId || t.kidId === 'all') && t.type === 'study' && isTaskDueOnDate(t, selectedDate));
 
@@ -127,7 +157,50 @@ export const KidStudyTab = () => {
 
     return (
         <div className="animate-fade-in">
-            <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 mb-8 mx-4">
+            {/* === Compact Sticky Calendar (mobile only) — rendered via portal to bypass ancestor transforms === */}
+            {createPortal(
+                <div
+                    className={`fixed top-0 left-0 right-0 z-[9998] sm:hidden transition-all duration-300 ${
+                        showCompactCalendar ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'
+                    }`}
+                >
+                    <div className="bg-white/95 backdrop-blur-lg border-b border-slate-200/80 shadow-sm px-3 py-2" style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }}>
+                        <div className="flex items-center gap-1">
+                            {getDisplayDateArray(currentViewDate).map((day, i) => {
+                                const isSelected = selectedDate === day.dateStr;
+                                const isToday = day.dateStr === formatDate(new Date());
+                                const { count, total } = getIncompleteStudyTasksCount(day.dateStr);
+                                return (
+                                    <button
+                                        key={i}
+                                        onClick={() => setSelectedDate(day.dateStr)}
+                                        className={`flex-1 flex flex-col items-center py-1.5 rounded-xl transition-all ${
+                                            isSelected
+                                                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30'
+                                                : 'text-slate-500'
+                                        }`}
+                                    >
+                                        <span className={`text-[9px] font-bold ${isSelected ? 'text-indigo-200' : 'text-slate-400'}`}>{day.d}</span>
+                                        <span className={`text-sm font-black leading-tight ${isToday && !isSelected ? 'text-indigo-600' : ''}`}>{day.displayDate.split('/')[1]}</span>
+                                        <div className="mt-0.5 h-2 flex items-center justify-center">
+                                            {count > 0 ? (
+                                                <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-red-300' : 'bg-red-400'}`}></span>
+                                            ) : total > 0 ? (
+                                                <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-emerald-300' : 'bg-emerald-400'}`}></span>
+                                            ) : null}
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {/* === Full Calendar (scrolls away) === */}
+            <div ref={calendarSentinelRef}>
+            <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 mb-4 mx-4">
                 <div className="flex items-center justify-between mb-6 px-1">
                     <div className="flex items-center text-indigo-600 font-black text-sm sm:text-lg">
                         第{getWeekNumber(currentViewDate)[1]}周
@@ -185,6 +258,26 @@ export const KidStudyTab = () => {
                             </button>
                         );
                     })}
+                </div>
+            </div>
+            </div>
+
+            {/* === Search bar below calendar (mobile), inline on desktop === */}
+            <div className="sm:hidden px-4 mb-4">
+                <div className="relative">
+                    <Icons.Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                        type="text"
+                        placeholder="搜索任务名称..."
+                        value={searchKidTaskKeyword}
+                        onChange={(e) => setSearchKidTaskKeyword(e.target.value)}
+                        className="w-full bg-white border border-slate-200 text-sm font-bold rounded-2xl pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:font-normal placeholder:text-slate-400 shadow-sm"
+                    />
+                    {searchKidTaskKeyword && (
+                        <button onClick={() => setSearchKidTaskKeyword('')} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
+                            <Icons.X size={14} />
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -292,7 +385,7 @@ export const KidStudyTab = () => {
 
                     <div className="h-4 w-px bg-slate-200 hidden sm:block"></div>
 
-                    <div className="relative shrink-0 flex-1 sm:flex-none sm:w-48 transition-all">
+                    <div className="relative shrink-0 hidden sm:block sm:w-48 transition-all">
                         <Icons.Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                         <input
                             type="text"
