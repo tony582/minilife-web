@@ -73,7 +73,7 @@ function AppContent() {
           { id: 'plans', label: '习惯养成', icon: <Icons.CheckSquare size={22} strokeWidth={2.5} /> },
           { id: 'wealth', label: '财富中心', icon: <Icons.Landmark size={22} strokeWidth={2.5} /> },
           { id: 'shop_manage', label: '家庭超市', icon: <Icons.ShoppingBag size={22} strokeWidth={2.5} /> },
-          { id: 'settings', label: '我的宝贝', icon: <Icons.User size={22} strokeWidth={2.5} /> },
+          { id: 'more', label: '更多应用', icon: <Icons.LayoutGrid size={22} strokeWidth={2.5} /> },
         ]
       : [
           { id: 'study', label: '学习任务', icon: <Icons.BookOpen size={22} strokeWidth={2.5} /> },

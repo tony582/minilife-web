@@ -1,9 +1,18 @@
 import React from 'react';
-import { useDataContext } from '../../context/DataContext.jsx';
-import { useUIContext } from '../../context/UIContext.jsx';
-import { Icons, AvatarDisplay } from '../../utils/Icons';
+import { useDataContext } from '../../../context/DataContext.jsx';
+import { useUIContext } from '../../../context/UIContext.jsx';
+import { Icons, AvatarDisplay } from '../../../utils/Icons';
 
-export const ParentSettingsTab = () => {
+/**
+ * ParentDashboardApp - "我的宝贝" 数据面板
+ * 
+ * 显示当前选中孩子的数据概览：
+ * - 孩子信息头部（带切换器）
+ * - 今日数据（收入/支出/余额）
+ * - 家庭超市动态
+ * - 今日任务榜 & 习惯足迹
+ */
+export const ParentDashboardApp = () => {
     const {
         kids,
         transactions,
@@ -14,25 +23,23 @@ export const ParentSettingsTab = () => {
     } = useDataContext();
     const activeKid = kids.find(k => k.id === activeKidId);
 
-    const {
-        selectedDate,
-    } = useUIContext();
+    const { selectedDate } = useUIContext();
 
     if (!activeKid) {
         return (
-            <div className="animate-fade-in text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
+            <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
                 <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Icons.Users size={32} className="text-slate-300" />
                 </div>
-                <h2 className="text-xl font-black text-slate-800">欢迎来到我的宝贝数据中心</h2>
-                <p className="text-slate-500 mt-2 text-sm font-bold">您还没有添加宝贝资料，请点击右上角设置添加。</p>
+                <h2 className="text-xl font-black text-slate-800">欢迎来到 MiniLife</h2>
+                <p className="text-slate-500 mt-2 text-sm font-bold">请先添加宝贝资料，开始使用。</p>
             </div>
         );
     }
 
     return (
-        <div className="animate-fade-in space-y-6">
-            {/* --- Dashboard Header (Kid Info & Switcher) --- */}
+        <div className="space-y-6">
+            {/* --- 宝贝信息头部 --- */}
             <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-[2.5rem] p-6 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 group-hover:scale-110 transition-transform duration-700"></div>
                 
@@ -69,19 +76,19 @@ export const ParentSettingsTab = () => {
                 </div>
             </div>
 
-            {/* --- Daily Metrics Row --- */}
+            {/* --- 今日数据概览 --- */}
             <div className="grid grid-cols-3 gap-3">
                 <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 flex flex-col items-center justify-center relative overflow-hidden group hover:shadow-md transition-all">
                     <div className="absolute -right-4 -top-4 w-16 h-16 bg-emerald-50 rounded-full group-hover:scale-150 transition-transform duration-500 z-0"></div>
                     <div className="text-slate-400 font-bold mb-1 relative z-10 text-xs sm:text-sm">今日获得</div>
-                    <div className="text-2xl sm:text-3xl font-black text-emerald-500 relative z-10 flex items-center gap-1">
+                    <div className="text-2xl sm:text-3xl font-black text-emerald-500 relative z-10">
                         + {transactions.filter(t => t.kidId === activeKidId && t.date === selectedDate && t.type === 'income').reduce((sum, t) => sum + t.amount, 0)}
                     </div>
                 </div>
                 <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 flex flex-col items-center justify-center relative overflow-hidden group hover:shadow-md transition-all">
                     <div className="absolute -right-4 -top-4 w-16 h-16 bg-rose-50 rounded-full group-hover:scale-150 transition-transform duration-500 z-0"></div>
                     <div className="text-slate-400 font-bold mb-1 relative z-10 text-xs sm:text-sm">今日支出/扣分</div>
-                    <div className="text-2xl sm:text-3xl font-black text-rose-500 relative z-10 flex items-center gap-1">
+                    <div className="text-2xl sm:text-3xl font-black text-rose-500 relative z-10">
                         - {transactions.filter(t => t.kidId === activeKidId && t.date === selectedDate && t.type === 'expense').reduce((sum, t) => sum + Math.abs(t.amount), 0)}
                     </div>
                 </div>
@@ -94,15 +101,13 @@ export const ParentSettingsTab = () => {
                 </div>
             </div>
 
-            {/* --- Supermarket Logs (Full Width) --- */}
-            <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex flex-col">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-black text-slate-800 text-lg flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-pink-50 text-pink-500 flex items-center justify-center"><Icons.Package size={18} /></div>
-                        家庭超市动态
-                    </h3>
-                </div>
-                <div className="flex-x overflow-x-auto pb-4 hide-scrollbar">
+            {/* --- 家庭超市动态 --- */}
+            <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
+                <h3 className="font-black text-slate-800 text-lg flex items-center gap-2 mb-4">
+                    <div className="w-8 h-8 rounded-xl bg-pink-50 text-pink-500 flex items-center justify-center"><Icons.Package size={18} /></div>
+                    家庭超市动态
+                </h3>
+                <div className="overflow-x-auto pb-4 hide-scrollbar">
                     <div className="flex gap-4">
                         {orders.filter(o => o.kidId === activeKidId).length === 0 ? (
                             <div className="w-full h-32 flex flex-col items-center justify-center opacity-50 bg-slate-50 rounded-2xl border border-slate-100 border-dashed">
@@ -129,17 +134,13 @@ export const ParentSettingsTab = () => {
                 </div>
             </div>
 
-            {/* --- Two Column Report Layout --- */}
+            {/* --- 今日任务 & 习惯 --- */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                {/* Task Column */}
                 <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex flex-col h-[400px]">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-black text-slate-800 text-lg flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center"><Icons.Target size={18} /></div>
-                            今日学习任务榜
-                        </h3>
-                    </div>
+                    <h3 className="font-black text-slate-800 text-lg flex items-center gap-2 mb-4">
+                        <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center"><Icons.Target size={18} /></div>
+                        今日学习任务榜
+                    </h3>
                     <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
                         {tasks.filter(t => t.type === 'study' && (t.kidId === 'all' || t.kidId === activeKidId) && (t.days || []).includes(new Date(selectedDate).getDay())).length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center opacity-50">
@@ -166,14 +167,11 @@ export const ParentSettingsTab = () => {
                     </div>
                 </div>
 
-                {/* Habit Column */}
                 <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex flex-col h-[400px]">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-black text-slate-800 text-lg flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-500 flex items-center justify-center"><Icons.Zap size={18} /></div>
-                            今日习惯足迹
-                        </h3>
-                    </div>
+                    <h3 className="font-black text-slate-800 text-lg flex items-center gap-2 mb-4">
+                        <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-500 flex items-center justify-center"><Icons.Zap size={18} /></div>
+                        今日习惯足迹
+                    </h3>
                     <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
                         {transactions.filter(t => t.kidId === activeKidId && t.date === selectedDate && t.category === 'habit').length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center opacity-50">

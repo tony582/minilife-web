@@ -96,6 +96,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
             // Add safe migrations for existing instances
             db.run(`ALTER TABLE tasks ADD COLUMN periodMaxPerDay INTEGER`, (err) => {});
             db.run(`ALTER TABLE tasks ADD COLUMN periodMaxType TEXT`, (err) => {});
+            db.run(`ALTER TABLE tasks ADD COLUMN linkedClassId TEXT`, (err) => {});
 
 
             // Inventory Table (Multi-tenant)
@@ -149,6 +150,34 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 date TEXT,
                 category TEXT
             )`);
+
+            // Interest Classes Table (Multi-tenant)
+            db.run(`CREATE TABLE IF NOT EXISTS classes (
+                id TEXT PRIMARY KEY,
+                userId TEXT NOT NULL,
+                kidId TEXT NOT NULL,
+                name TEXT NOT NULL,
+                iconEmoji TEXT,
+                teacher TEXT,
+                location TEXT,
+                totalSessions INTEGER DEFAULT 0,
+                usedSessions INTEGER DEFAULT 0,
+                sessionsPerClass INTEGER DEFAULT 1,
+                scheduleDays TEXT,
+                timeStr TEXT,
+                startDate TEXT,
+                reward INTEGER DEFAULT 0,
+                checkinMode TEXT DEFAULT 'parent',
+                linkedTaskId TEXT,
+                notes TEXT,
+                status TEXT DEFAULT 'active',
+                checkinHistory TEXT DEFAULT '[]',
+                createdAt TEXT
+            )`);
+            
+            // Safe migrations for classes
+            db.run(`ALTER TABLE classes ADD COLUMN checkinMode TEXT DEFAULT 'parent'`, (err) => {});
+            db.run(`ALTER TABLE classes ADD COLUMN linkedTaskId TEXT`, (err) => {});
         });
     }
 });

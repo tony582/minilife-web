@@ -7,6 +7,7 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
     const [inventory, setInventory] = useState([]);
     const [orders, setOrders] = useState([]);
     const [transactions, setTransactions] = useState([]);
+    const [classes, setClasses] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [activeKidId, setActiveKidId] = useState(localStorage.getItem('minilife_activeKidId') || null);
 
@@ -55,12 +56,13 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
                     return r.json();
                 };
 
-                const [kidsData, tasksData, invData, ordersData, transData] = await Promise.all([
+                const [kidsData, tasksData, invData, ordersData, transData, classesData] = await Promise.all([
                     apiFetch('/api/kids').then(safeJson),
                     apiFetch('/api/tasks').then(safeJson),
                     apiFetch('/api/inventory').then(safeJson),
                     apiFetch('/api/orders').then(safeJson),
-                    apiFetch('/api/transactions').then(safeJson)
+                    apiFetch('/api/transactions').then(safeJson),
+                    apiFetch('/api/classes').then(safeJson)
                 ]);
 
                 if (Array.isArray(kidsData)) setKids(kidsData);
@@ -68,6 +70,7 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
                 if (Array.isArray(invData)) setInventory(invData);
                 if (Array.isArray(ordersData)) setOrders(ordersData);
                 if (Array.isArray(transData)) setTransactions(transData);
+                if (Array.isArray(classesData)) setClasses(classesData);
 
                 apiFetch('/api/me/codes').then(safeJson).then(setUsedCodes).catch(console.error);
             } catch (err) {
@@ -162,6 +165,7 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
         inventory, setInventory,
         orders, setOrders,
         transactions, setTransactions,
+        classes, setClasses,
         isLoading, setIsLoading,
         activeKidId, setActiveKidId,
         changeActiveKid,
