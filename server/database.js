@@ -178,6 +178,9 @@ const db = new sqlite3.Database(dbPath, (err) => {
             // Safe migrations for classes
             db.run(`ALTER TABLE classes ADD COLUMN checkinMode TEXT DEFAULT 'parent'`, (err) => {});
             db.run(`ALTER TABLE classes ADD COLUMN linkedTaskId TEXT`, (err) => {});
+            db.run(`ALTER TABLE classes ADD COLUMN classMode TEXT DEFAULT 'package'`, (err) => {});
+            db.run(`ALTER TABLE classes ADD COLUMN pricePerSession REAL DEFAULT 0`, (err) => {});
+            db.run(`ALTER TABLE classes ADD COLUMN settlementType TEXT DEFAULT 'manual'`, (err) => {});
         });
     }
 });

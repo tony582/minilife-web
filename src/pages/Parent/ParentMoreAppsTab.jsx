@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuthContext } from '../../context/AuthContext.jsx';
 import { useUIContext } from '../../context/UIContext.jsx';
 import { Icons } from '../../utils/Icons';
@@ -11,21 +12,12 @@ import { SubscriptionApp } from './apps/SubscriptionApp';
 import { SecurityApp } from './apps/SecurityApp';
 import { InterestClassApp } from './apps/InterestClassApp';
 
-/**
- * ParentMoreAppsTab - 应用启动器 (Launcher)
- * 
- * 默认显示 AppGrid，点击应用后切换到对应子视图。
- * 新增应用只需：
- *   1) 在 apps/ 下创建组件
- *   2) 在 appComponents 注册
- *   3) 在 apps 数组加一项
- */
 export const ParentMoreAppsTab = () => {
     const { handleLogout } = useAuthContext();
     const { parentSettings } = useUIContext();
 
-    // 当前打开的子应用，null = 显示应用列表
     const [currentApp, setCurrentApp] = useState(null);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
     // --- 子应用路由表 ---
     const appComponents = {
@@ -90,7 +82,7 @@ export const ParentMoreAppsTab = () => {
             label: '退出登录',
             color: 'text-rose-500',
             bgColor: 'bg-rose-50',
-            onClick: handleLogout,
+            onClick: () => setShowLogoutConfirm(true),
         },
     ];
 
@@ -121,6 +113,30 @@ export const ParentMoreAppsTab = () => {
             </h2>
             <p className="text-sm text-slate-400 font-medium mb-6">管理家庭、查看数据、探索更多功能</p>
             <AppGrid apps={apps} />
+
+            {/* 退出登录确认弹窗 */}
+            {showLogoutConfirm && createPortal(
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[9999] animate-fade-in">
+                    <div className="bg-white rounded-[2rem] w-full max-w-xs md:max-w-sm overflow-hidden shadow-2xl scale-100 animate-pop-in border border-white/20">
+                        <div className="p-8 text-center bg-gradient-to-b from-rose-50/50 to-white">
+                            <div className="w-20 h-20 bg-white shadow-xl shadow-rose-100 text-rose-500 rounded-[1.5rem] flex items-center justify-center mx-auto mb-5 border border-rose-50">
+                                <Icons.LogOut size={36} />
+                            </div>
+                            <h3 className="text-xl font-black text-slate-800 mb-2">退出登录</h3>
+                            <p className="text-sm font-bold text-slate-500 mt-2">
+                                确定要退出当前账号吗？<br/>
+                                <span className="text-slate-400">退出后需重新登录才能使用</span>
+                            </p>
+                        </div>
+                        <div className="flex border-t border-slate-100 bg-slate-50/50">
+                            <button onClick={() => setShowLogoutConfirm(false)} className="flex-1 py-4 font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors">取消</button>
+                            <div className="w-px bg-slate-200 my-4"></div>
+                            <button onClick={() => { setShowLogoutConfirm(false); handleLogout(); }} className="flex-1 py-4 font-black text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition-colors">确认退出</button>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
         </div>
     );
 };

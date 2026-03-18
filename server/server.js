@@ -357,8 +357,9 @@ app.put('/api/tasks/:id', authenticateToken, (req, res) => {
                         if (!cErr && classRow) {
                             const spc = classRow.sessionsPerClass || 1;
                             const newUsed = completedCount * spc;
-                            const cappedUsed = Math.min(newUsed, classRow.totalSessions);
-                            const newStatus = cappedUsed >= classRow.totalSessions ? 'completed' : 'active';
+                            const isTutor = classRow.classMode === 'tutor';
+                            const cappedUsed = isTutor ? newUsed : Math.min(newUsed, classRow.totalSessions);
+                            const newStatus = isTutor ? 'active' : (cappedUsed >= classRow.totalSessions ? 'completed' : 'active');
                             db.run("UPDATE classes SET usedSessions = ?, status = ? WHERE id = ?", [cappedUsed, newStatus, classRow.id], () => {
                                 notifyUser(req.user.id);
                             });
@@ -401,7 +402,8 @@ app.put('/api/tasks/:id/history', authenticateToken, (req, res) => {
                         const spc = classRow.sessionsPerClass || 1;
                         let newUsed = classRow.usedSessions + (isNowCompleted ? spc : -spc);
                         if (newUsed < 0) newUsed = 0;
-                        const newStatus = newUsed >= classRow.totalSessions ? 'completed' : 'active';
+                        const isTutor = classRow.classMode === 'tutor';
+                        const newStatus = isTutor ? 'active' : (newUsed >= classRow.totalSessions ? 'completed' : 'active');
                         db.run("UPDATE classes SET usedSessions = ?, status = ? WHERE id = ?", [newUsed, newStatus, classRow.id], () => {
                             notifyUser(req.user.id);
                         });
@@ -501,7 +503,8 @@ app.get('/api/classes', authenticateToken, (req, res) => {
             ...r,
             scheduleDays: r.scheduleDays ? JSON.parse(r.scheduleDays) : [],
             checkinHistory: r.checkinHistory ? JSON.parse(r.checkinHistory) : [],
-            autoCreateTask: r.autoCreateTask === 1
+            autoCreateTask: r.autoCreateTask === 1,
+            pricePerSession: r.pricePerSession || 0
         }));
         res.json(classes);
     });
@@ -509,7 +512,7 @@ app.get('/api/classes', authenticateToken, (req, res) => {
 
 app.post('/api/classes', authenticateToken, (req, res) => {
     const { id, kidId, name, iconEmoji, teacher, location, totalSessions, sessionsPerClass, scheduleDays, timeStr, startDate, reward, autoCreateTask, // old fallback
-        checkinMode, notes } = req.body;
+        checkinMode, notes, classMode, pricePerSession, settlementType } = req.body;
         
     const mode = checkinMode || (autoCreateTask ? 'kid' : 'parent');
     let linkedTaskId = null;
@@ -517,8 +520,8 @@ app.post('/api/classes', authenticateToken, (req, res) => {
         linkedTaskId = 'task_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
     }
 
-    const insert = `INSERT INTO classes (id, userId, kidId, name, iconEmoji, teacher, location, totalSessions, usedSessions, sessionsPerClass, scheduleDays, timeStr, startDate, reward, checkinMode, linkedTaskId, notes, status, checkinHistory, createdAt) VALUES (?,?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,'active','[]',?)`;
-    db.run(insert, [id, req.user.id, kidId, name, iconEmoji || '📚', teacher || '', location || '', totalSessions || 0, sessionsPerClass || 1, JSON.stringify(scheduleDays || []), timeStr || '', startDate || '', reward || 0, mode, linkedTaskId, notes || '', new Date().toISOString()], function (err) {
+    const insert = `INSERT INTO classes (id, userId, kidId, name, iconEmoji, teacher, location, totalSessions, usedSessions, sessionsPerClass, scheduleDays, timeStr, startDate, reward, checkinMode, linkedTaskId, notes, status, checkinHistory, classMode, pricePerSession, settlementType, createdAt) VALUES (?,?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,'active','[]',?,?,?,?)`;
+    db.run(insert, [id, req.user.id, kidId, name, iconEmoji || '📚', teacher || '', location || '', totalSessions || 0, sessionsPerClass || 1, JSON.stringify(scheduleDays || []), timeStr || '', startDate || '', reward || 0, mode, linkedTaskId, notes || '', classMode || 'package', pricePerSession || 0, settlementType || 'manual', new Date().toISOString()], function (err) {
         if (err) return res.status(500).json({ error: err.message });
         
         if (linkedTaskId) {
@@ -548,7 +551,7 @@ app.post('/api/classes', authenticateToken, (req, res) => {
 });
 
 app.put('/api/classes/:id', authenticateToken, (req, res) => {
-    const { name, iconEmoji, teacher, location, totalSessions, usedSessions, sessionsPerClass, scheduleDays, timeStr, startDate, reward, checkinMode, notes, status, checkinHistory } = req.body;
+    const { name, iconEmoji, teacher, location, totalSessions, usedSessions, sessionsPerClass, scheduleDays, timeStr, startDate, reward, checkinMode, notes, status, checkinHistory, classMode, pricePerSession, settlementType } = req.body;
     let query = "UPDATE classes SET ";
     let params = [];
     if (name !== undefined) { query += "name = ?, "; params.push(name); }
@@ -566,6 +569,9 @@ app.put('/api/classes/:id', authenticateToken, (req, res) => {
     if (notes !== undefined) { query += "notes = ?, "; params.push(notes); }
     if (status !== undefined) { query += "status = ?, "; params.push(status); }
     if (checkinHistory !== undefined) { query += "checkinHistory = ?, "; params.push(JSON.stringify(checkinHistory)); }
+    if (classMode !== undefined) { query += "classMode = ?, "; params.push(classMode); }
+    if (pricePerSession !== undefined) { query += "pricePerSession = ?, "; params.push(pricePerSession); }
+    if (settlementType !== undefined) { query += "settlementType = ?, "; params.push(settlementType); }
     if (params.length === 0) return res.status(400).json({ error: "No fields to update" });
     query = query.slice(0, -2) + " WHERE id = ? AND userId = ?";
     params.push(req.params.id, req.user.id);
