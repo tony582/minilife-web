@@ -6,3 +6,5 @@ export const getLevelTier = (level) => {
     if (level < 50) return { title: '黄金领主', emoji: '👑', bg: 'from-yellow-400 to-amber-500', color: 'text-amber-500' };
     return { title: '传说星耀', emoji: '🌟', bg: 'from-rose-400 to-fuchsia-600', color: 'text-rose-500' };
 };
+
+export const getLevelReq = (level) => level * 100;

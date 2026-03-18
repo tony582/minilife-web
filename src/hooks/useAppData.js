@@ -23,6 +23,9 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading) => {
     }, [user]);
 
     useEffect(() => {
+        let eventSource = null;
+        let reconnectTimeout = null;
+
         const checkAuthAndFetch = async () => {
             if (!token) {
                 setAuthLoading(false);
@@ -44,7 +47,10 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading) => {
                 }
 
                 const safeJson = async (r) => {
-                    if (!r.ok) return [];
+                    if (!r.ok) {
+                        try { const text = await r.text(); console.error("API Error", r.status, text); } catch (e) { }
+                        return [];
+                    }
                     return r.json();
                 };
 
@@ -64,7 +70,6 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading) => {
 
                 apiFetch('/api/me/codes').then(safeJson).then(setUsedCodes).catch(console.error);
             } catch (err) {
-                console.error(err);
                 localStorage.removeItem('minilife_token');
                 setToken(null);
             }
@@ -74,35 +79,19 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading) => {
 
         checkAuthAndFetch();
 
-        let eventSource = null;
-        let reconnectTimeout = null;
-
         const connectSSE = () => {
             if (eventSource) eventSource.close();
             if (!token) return;
 
-            console.log('Live Sync: Establishing connection...');
             eventSource = new EventSource(`/api/sync?token=${token}`);
-
-            eventSource.onopen = () => {
-                console.log('Live Sync Connected');
-                if (reconnectTimeout) clearTimeout(reconnectTimeout);
-            };
-
+            eventSource.onopen = () => { if (reconnectTimeout) clearTimeout(reconnectTimeout); };
             eventSource.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    if (data.action === 'sync') {
-                        console.log('Live Sync: Server update detected, fetching new data...');
-                        checkAuthAndFetch();
-                    }
-                } catch (err) {
-                    console.error('SSE Payload Error:', err);
-                }
+                    if (data.action === 'sync') checkAuthAndFetch();
+                } catch (err) {}
             };
-
-            eventSource.onerror = (err) => {
-                console.error('Live Sync connection lost, reconnecting...', err);
+            eventSource.onerror = () => {
                 eventSource.close();
                 reconnectTimeout = setTimeout(connectSSE, 3000);
             };
@@ -112,7 +101,6 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading) => {
 
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
-                console.log('App resumed, silently fetching fresh data and reconnecting sync...');
                 checkAuthAndFetch();
                 connectSSE();
             }
@@ -134,7 +122,7 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading) => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             window.removeEventListener('focus', handleVisibilityChange);
         };
-    }, [token, setToken, setUser, setAuthLoading]);
+    }, [token, setAuthLoading, setToken, setUser]);
 
     return {
         kids, setKids,
