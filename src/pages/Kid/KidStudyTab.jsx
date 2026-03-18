@@ -46,7 +46,7 @@ export const KidStudyTab = () => {
     const [showStatusDropdown, setShowStatusDropdown] = useState(false);
     const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-    useOnClickOutside(kidFilterRef, () => setShowFilterDropdown(false));
+    useOnClickOutside(kidFilterRef, () => { setShowFilterDropdown(false); setShowSortDropdown(false); });
 
     // Sticky compact calendar logic — scroll-based detection
     const calendarSentinelRef = useRef(null);
@@ -203,7 +203,7 @@ export const KidStudyTab = () => {
             <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 mb-4 mx-4">
                 <div className="flex items-center justify-between mb-6 px-1">
                     <div className="flex items-center text-indigo-600 font-black text-sm sm:text-lg">
-                        {currentViewDate.getMonth() + 1}月 · 第{getWeekNumber(currentViewDate)[1]}周
+                        {new Date(currentViewDate).getMonth() + 1}月 · 第{getWeekNumber(currentViewDate)[1]}周
                     </div>
                     <div className="flex items-center gap-1.5 sm:gap-3">
                         <button
