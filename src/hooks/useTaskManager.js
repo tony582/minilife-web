@@ -1381,7 +1381,7 @@ const handleSavePlan = async () => {
       },
       body: JSON.stringify(task)
     })));
-    setTasks([...tasks, ...newTasks]);
+    setTasks(prev => [...prev, ...newTasks]);
     if (planType === 'study' && planForm.timeSetting === 'range' && planForm.endTime) {
       setLastSavedEndTime(planForm.endTime);
     }

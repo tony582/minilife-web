@@ -9,6 +9,7 @@ import { formatDate, getDisplayDateArray, getWeekNumber } from '../../utils/date
 import { getCategoryGradient, getIconForCategory } from '../../utils/categoryUtils';
 import { isTaskDueOnDate } from '../../utils/taskUtils';
 import useOnClickOutside from '../../hooks/useOnClickOutside';
+import { ReorderableList } from '../../components/common/ReorderableList';
 
 export const KidStudyTab = () => {
     const kidFilterRef = useRef();
@@ -39,7 +40,7 @@ export const KidStudyTab = () => {
     const [taskStatusFilter, setTaskStatusFilter] = useState('all');
     const [taskSort, setTaskSort] = useState('default');
     
-    const [isReordering, setIsReordering] = useState(false);
+    const [showReorderModal, setShowReorderModal] = useState(false);
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
     const [showStatusDropdown, setShowStatusDropdown] = useState(false);
     const [showSortDropdown, setShowSortDropdown] = useState(false);
@@ -61,7 +62,14 @@ export const KidStudyTab = () => {
     }
 
     const sortedTasks = [...myTasks];
-    // Handle kid-friendly sort options
+    // Force default sort if reorder modal is open
+    if (showReorderModal) {
+        sortedTasks.sort((a, b) => {
+            if (a.order !== undefined && b.order !== undefined) return a.order - b.order;
+            return a.id.localeCompare(b.id);
+        });
+    } else {
+        // Handle kid-friendly sort options
     switch (taskSort) {
         case 'time_asc':
             // Sort by time (shorter time first). Assuming t.reward correlates with expected time, or parse t.timePreset...
@@ -94,6 +102,7 @@ export const KidStudyTab = () => {
                 return a.id.localeCompare(b.id);
             });
             break;
+        }
     }
     myTasks = sortedTasks;
     // Helper for reordering (via Drag/Drop or Mobile buttons)
@@ -179,9 +188,12 @@ export const KidStudyTab = () => {
                 </div>
             </div>
 
-            <div className="flex justify-between items-center mb-4 px-2">
-                <div className="text-xl font-black text-slate-800 border-l-4 border-green-500 pl-3 shrink-0">今日任务</div>
-                <div className="flex items-center justify-end gap-2 sm:gap-4 text-slate-500 text-xs sm:text-sm font-bold relative z-20 pb-2 sm:pb-0">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 px-2 gap-3">
+                <div className="flex items-center justify-between">
+                    <div className="text-xl font-black text-slate-800 border-l-4 border-green-500 pl-3 shrink-0">今日任务</div>
+                </div>
+                
+                <div className="flex flex-wrap items-center justify-start sm:justify-end gap-2 sm:gap-4 text-slate-500 text-xs sm:text-sm font-bold relative z-20 pb-2 sm:pb-0">
                     {/* 统一筛选下拉 (综合科目与状态) */}
                     <div className="relative shrink-0" ref={kidFilterRef}>
                         <button
@@ -245,7 +257,7 @@ export const KidStudyTab = () => {
                         {showSortDropdown && (
                             <div className="absolute top-full mt-2 w-48 transform -translate-x-1/2 left-1/2 sm:left-auto sm:right-0 sm:translate-x-0 bg-white border border-slate-100 shadow-xl rounded-2xl py-2 z-50 animate-fade-in origin-top">
                                 {[
-                                    { id: 'default', label: '默认排序 (可拖拽)', icon: Icons.List },
+                                    { id: 'default', label: '默认排序', icon: Icons.List },
                                     { id: 'time_asc', label: '预计耗时从短到长', icon: Icons.Clock },
                                     { id: 'category', label: '按科目分组', icon: Icons.LayoutGrid },
                                     { id: 'status', label: '按完成状态', icon: Icons.Activity },
@@ -267,39 +279,34 @@ export const KidStudyTab = () => {
                         )}
                     </div>
 
-                    <div className="h-4 w-px bg-slate-200 block sm:hidden"></div>
+                    <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
 
-                    <div className="relative shrink-0 w-32 sm:w-48 transition-all hidden sm:block">
+                    {/* 自定义排序按钮 */}
+                    <button
+                        onClick={() => setShowReorderModal(true)}
+                        className="flex items-center justify-center gap-1.5 h-10 px-3 rounded-xl sm:rounded-none sm:bg-transparent bg-white shadow-sm sm:shadow-none border border-slate-200 sm:border-transparent transition-colors hover:text-indigo-600 shrink-0"
+                    >
+                        <Icons.List size={16} className="sm:w-[14px] sm:h-[14px]" />
+                        <span className="hidden sm:inline">自定义排序</span>
+                    </button>
+
+                    <div className="h-4 w-px bg-slate-200 hidden sm:block"></div>
+
+                    <div className="relative shrink-0 flex-1 sm:flex-none sm:w-48 transition-all">
                         <Icons.Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                         <input
                             type="text"
                             placeholder="搜索任务名称..."
                             value={searchKidTaskKeyword}
                             onChange={(e) => setSearchKidTaskKeyword(e.target.value)}
-                            className="w-full bg-white border border-slate-200 text-sm font-bold rounded-2xl pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:font-normal placeholder:text-slate-400 shadow-sm"
+                            className="w-full bg-white border border-slate-200 text-sm font-bold rounded-2xl pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:font-normal placeholder:text-slate-400 shadow-sm"
                         />
                         {searchKidTaskKeyword && (
-                            <button onClick={() => setSearchKidTaskKeyword('')} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors">
+                            <button onClick={() => setSearchKidTaskKeyword('')} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
                                 <Icons.X size={14} />
                             </button>
                         )}
                     </div>
-                </div>
-
-                <div className="relative shrink-0 w-full transition-all sm:hidden mb-4 px-2">
-                    <Icons.Search size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 z-10" />
-                    <input
-                        type="text"
-                        placeholder="搜索任务名称..."
-                        value={searchKidTaskKeyword}
-                        onChange={(e) => setSearchKidTaskKeyword(e.target.value)}
-                        className="w-full bg-white border border-slate-200 text-sm font-bold rounded-2xl pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:font-normal placeholder:text-slate-400 shadow-sm"
-                    />
-                    {searchKidTaskKeyword && (
-                        <button onClick={() => setSearchKidTaskKeyword('')} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors">
-                            <Icons.X size={14} />
-                        </button>
-                    )}
                 </div>
             </div>
 
@@ -309,33 +316,12 @@ export const KidStudyTab = () => {
                 ) : myTasks.filter(t => !searchKidTaskKeyword || t.title.toLowerCase().includes(searchKidTaskKeyword.toLowerCase())).map((t, index) => (
                     <div
                         key={t.id}
-                        draggable={isReordering}
-                        onDragStart={(e) => { e.dataTransfer.setData('text/plain', index); e.currentTarget.classList.add('opacity-50'); }}
-                        onDragEnd={(e) => { e.currentTarget.classList.remove('opacity-50'); }}
-                        onDragOver={(e) => { e.preventDefault(); }}
-                        onDrop={(e) => {
-                            e.preventDefault();
-                            const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
-                            handleReorderTask(sourceIndex, index);
-                        }}
-                        className={`bg-white rounded-[2rem] p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/60 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 group flex flex-col sm:flex-row gap-4 relative overflow-hidden ${isReordering ? 'cursor-move ring-2 ring-indigo-300' : ''}`}
+                        className={`bg-white rounded-[2rem] p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/60 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 group flex flex-col sm:flex-row gap-4 relative overflow-hidden`}
                     >
-                        {!isReordering && <button onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className="absolute inset-0 z-0 cursor-pointer hidden sm:block" aria-label="查看任务详情"></button>}
-
-                        {isReordering && (
-                            <>
-                                <div className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-300 flex items-center justify-center p-2 z-10 hidden sm:flex">
-                                    <Icons.GripVertical size={20} />
-                                </div>
-                                <div className="absolute left-1 top-1/2 -translate-y-1/2 flex flex-col gap-1 z-20 sm:hidden">
-                                    <button onClick={(e) => { e.stopPropagation(); handleReorderTask(index, index - 1); }} disabled={index === 0} className="w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur hover:bg-slate-50 border border-slate-200/50 rounded-full text-slate-400 disabled:opacity-30 disabled:bg-slate-50 shadow-sm transition-all"><Icons.ChevronDown className="rotate-180" size={16} /></button>
-                                    <button onClick={(e) => { e.stopPropagation(); handleReorderTask(index, index + 1); }} disabled={index === myTasks.length - 1} className="w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur hover:bg-slate-50 border border-slate-200/50 rounded-full text-slate-400 disabled:opacity-30 disabled:bg-slate-50 shadow-sm transition-all"><Icons.ChevronDown size={16} /></button>
-                                </div>
-                            </>
-                        )}
+                        <button onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className="absolute inset-0 z-0 cursor-pointer hidden sm:block" aria-label="查看任务详情"></button>
 
                         {/* Left Section: Big Colorful Squircle Icon */}
-                        <div onClick={() => { if (!isReordering) { setPreviewTask(t); setShowPreviewModal(true); } }} className={`flex z-10 sm:w-auto items-start gap-4 flex-1 ${!isReordering ? 'cursor-pointer' : ''} ${isReordering ? 'sm:ml-6' : ''}`}>
+                        <div onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className={`flex z-10 sm:w-auto items-start gap-4 flex-1 cursor-pointer`}>
                             <div className={`w-16 h-16 shrink-0 rounded-[1.25rem] bg-gradient-to-br ${getCategoryGradient(t.category || '计划')} flex flex-col items-center justify-center text-white shadow-inner group-hover:scale-110 transition-transform duration-300`}>
                                 {renderIcon(t.iconName || getIconForCategory(t.category), 26)}
                                 <span className={`text-[11px] font-black mt-1 text-center w-full line-clamp-1 opacity-90 tracking-wide`}>{t.category || '计划'}</span>
@@ -406,6 +392,48 @@ export const KidStudyTab = () => {
                     </div>
                 ))}
             </div>
+            
+            {showReorderModal && (
+                <div className="fixed inset-0 bg-slate-50 z-[200] animate-slide-up flex flex-col">
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-white shrink-0 shadow-sm pt-safe">
+                        <button onClick={() => setShowReorderModal(false)} className="text-slate-500 hover:bg-slate-100 p-2 rounded-full transition-colors focus:outline-none">
+                            <Icons.X size={24} />
+                        </button>
+                        <h2 className="text-lg font-black text-slate-800 tracking-wide">调整日常任务顺序</h2>
+                        <button onClick={() => setShowReorderModal(false)} className="text-indigo-600 font-black px-4 py-2 hover:bg-indigo-50 rounded-full transition-colors focus:outline-none">
+                            完成
+                        </button>
+                    </div>
+                    {/* Body */}
+                    <div className="flex-1 overflow-y-auto p-4 pb-24 touch-pan-y custom-scrollbar">
+                        <div className="max-w-2xl mx-auto">
+                            <div className="bg-blue-50 text-blue-600 text-[13px] font-bold p-3 rounded-2xl mb-6 text-center border border-blue-100/50 shadow-sm">
+                                💡 长按拖动或点击右侧箭头可以调整任务出场顺序哦~
+                            </div>
+                            <ReorderableList
+                                items={myTasks}
+                                onReorder={handleReorderTask}
+                                keyExtractor={(t) => t.id}
+                                renderItem={(t, index) => (
+                                    <div className="bg-white/90 rounded-xl px-5 py-4 border border-slate-200/80 flex items-center gap-4 cursor-grab active:cursor-grabbing select-none group hover:border-indigo-300 hover:shadow-md transition-all">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1.5">
+                                                <span className="text-[11px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">{t.category || '计划'}</span>
+                                                <span className="text-[11px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">{t.frequency || '每天'}</span>
+                                            </div>
+                                            <div className="font-black text-slate-800 text-base truncate leading-snug">{t.title}</div>
+                                        </div>
+                                        <div className="text-slate-300 group-hover:text-slate-500 transition-colors shrink-0 p-1.5 rounded-lg hover:bg-slate-100">
+                                            <Icons.GripVertical size={20} />
+                                        </div>
+                                    </div>
+                                )}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

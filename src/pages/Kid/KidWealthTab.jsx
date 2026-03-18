@@ -154,10 +154,10 @@ export const KidWealthTab = () => {
                         <div className="text-center text-slate-400 text-sm py-8">暂无交易记录</div>
                     ) : (
                         <div className="space-y-3 custom-scrollbar pr-2">
-                            {transactions.filter(t => t.kidId === activeKidId && t.category !== 'habit').slice(0, 40).map(item => {
+                            {transactions.filter(t => t.kidId === activeKidId && t.category !== 'habit').slice(0, 40).map((item, idx) => {
                                 const isIncome = item.type === 'income';
                                 return (
-                                    <div key={item.id} className="flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100/50 transition-colors rounded-2xl border border-slate-100/50">
+                                    <div key={item.id || `wealth-tx-${idx}`} className="flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100/50 transition-colors rounded-2xl border border-slate-100/50">
                                         <div className="flex items-center gap-4">
                                             <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-inner shrink-0 ${isIncome ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
                                                 {isIncome ? <Icons.TrendingUp size={20} /> : <Icons.ShoppingBag size={20} />}

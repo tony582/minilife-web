@@ -85,10 +85,10 @@ export const ParentWealthTab = () => {
                                     <div className="text-center text-slate-400 text-sm py-6">暂无明细记录</div>
                                 ) : (
                                     <div className="space-y-2 custom-scrollbar pr-2">
-                                        {kidTrans.slice(0, 30).map((item) => {
+                                        {kidTrans.slice(0, 30).map((item, idx) => {
                                             const isIncome = item.type === 'income';
                                             return (
-                                                <div key={item.id} className="flex items-center justify-between py-3 px-4 bg-white/50 hover:bg-white transition-colors rounded-xl border border-slate-100/50 group">
+                                                <div key={item.id || `pw-tx-${idx}`} className="flex items-center justify-between py-3 px-4 bg-white/50 hover:bg-white transition-colors rounded-xl border border-slate-100/50 group">
                                                     <div className="flex items-center gap-3">
                                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-inner shrink-0 ${isIncome ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
                                                             {isIncome ? <Icons.TrendingUp size={16} /> : <Icons.ShoppingBag size={16} />}

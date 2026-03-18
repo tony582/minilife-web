@@ -306,7 +306,7 @@ export const ParentPlansTab = () => {
                             {/* Global Timeline Track */}
                             <div className="absolute left-[18px] top-4 bottom-4 w-0.5 bg-slate-100 rounded-full z-0"></div>
 
-                            {transactions.filter(t => t.category === 'habit').slice(0, 40).map(item => {
+                            {transactions.filter(t => t.category === 'habit').slice(0, 40).map((item, idx) => {
                                 const kName = kids.find(k => k.id === item.kidId)?.name || '未知';
                                 const isIncome = item.type === 'income';
 
@@ -315,7 +315,7 @@ export const ParentPlansTab = () => {
                                 const cleanTitle = item.title.replace(/\(Exp\)/i, '').trim();
 
                                 return (
-                                    <div key={item.id} className="relative pl-12 group z-10">
+                                    <div key={item.id || `plan-tx-${idx}`} className="relative pl-12 group z-10">
                                         {/* Timeline Dot */}
                                         <div className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-[14px] h-[14px] rounded-full border-2 border-white shadow-sm flex items-center justify-center ${isIncome ? 'bg-emerald-400' : 'bg-red-400'} z-20`}></div>
 

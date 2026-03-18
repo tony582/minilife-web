@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { useDataContext } from '../../context/DataContext.jsx';
 import { useAuthContext } from '../../context/AuthContext.jsx';
 import { useUIContext } from '../../context/UIContext.jsx';
@@ -8,6 +8,7 @@ import { isTaskDueOnDate } from '../../utils/taskUtils';
 import { getCategoryGradient, getIconForCategory } from '../../utils/categoryUtils';
 import { getWeekNumber, getDisplayDateArray, formatDate } from '../../utils/dateUtils';
 import useOnClickOutside from '../../hooks/useOnClickOutside';
+import { ReorderableList } from '../../components/common/ReorderableList';
 
 export const ParentTasksTab = () => {
     const authC = useAuthContext();
@@ -35,7 +36,7 @@ export const ParentTasksTab = () => {
     const [parentTaskStatusFilter, setParentTaskStatusFilter] = useState('all');
     const [parentTaskSort, setParentTaskSort] = useState('default');
 
-    const [isReordering, setIsReordering] = useState(false);
+    const [showReorderModal, setShowReorderModal] = useState(false);
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
     const [showSortDropdown, setShowSortDropdown] = useState(false);
 
@@ -94,7 +95,7 @@ export const ParentTasksTab = () => {
     }
 
     parentTasks.sort((a, b) => {
-        if (isReordering) return (a.order || 0) - (b.order || 0);
+        if (showReorderModal) return (a.order || 0) - (b.order || 0);
 
         if (parentTaskSort === 'time_asc') {
             const getMins = t => t.timeStr && t.timeStr.includes('分钟') ? parseInt(t.timeStr) : 999;
@@ -298,7 +299,7 @@ export const ParentTasksTab = () => {
             <div className="flex flex-col gap-4 w-full pb-10">
                 {/* Advanced Filter & Sort Bar */}
                 <div className="flex items-center justify-between bg-slate-50 border-b border-slate-200 pt-2 pb-3 mb-4">
-                    <div className="flex items-center gap-2 md:gap-4 flex-1 relative">
+                    <div className="flex flex-wrap items-center gap-2 md:gap-4 flex-1 relative">
                         {/* Filtering Button */}
                         <div className="relative shrink-0" ref={parentFilterRef}>
                             <button onClick={() => { setShowFilterDropdown(!showFilterDropdown); setShowSortDropdown(false); }} className={`flex items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-none sm:bg-transparent shadow-sm sm:shadow-none border sm:border-transparent transition-colors ${parentTaskFilter.length > 0 || parentTaskStatusFilter !== 'all' ? 'bg-indigo-600 text-white sm:text-indigo-600 sm:bg-transparent sm:border-transparent border-indigo-600' : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600'}`}>
@@ -390,9 +391,9 @@ export const ParentTasksTab = () => {
                         <div className="w-px h-4 bg-slate-200 shrink-0 hidden sm:block"></div>
 
                         {/* Reordering Toggle */}
-                        <button onClick={() => setIsReordering(!isReordering)} className={`shrink-0 flex items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-none sm:bg-transparent shadow-sm sm:shadow-none border sm:border-transparent transition-colors ${isReordering ? 'bg-indigo-600 text-white sm:text-indigo-600 sm:bg-transparent sm:border-transparent border-indigo-600' : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600'}`}>
-                            {isReordering ? <Icons.Check size={16} className="sm:w-[14px] sm:h-[14px]" /> : <Icons.List size={16} className="sm:w-[14px] sm:h-[14px]" />}
-                            <span className="hidden sm:inline font-bold text-sm">{isReordering ? '保存排序' : '自定义排序'}</span>
+                        <button onClick={() => setShowReorderModal(true)} className={`shrink-0 flex items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-none sm:bg-transparent shadow-sm sm:shadow-none border sm:border-transparent transition-colors bg-white border-slate-200 text-slate-500 hover:text-indigo-600`}>
+                            <Icons.List size={16} className="sm:w-[14px] sm:h-[14px]" />
+                            <span className="hidden sm:inline font-bold text-sm">自定义排序</span>
                         </button>
                     </div>
                 </div>
@@ -408,33 +409,12 @@ export const ParentTasksTab = () => {
                     return (
                         <div
                             key={t.id}
-                            draggable={isReordering}
-                            onDragStart={(e) => { e.dataTransfer.setData('text/plain', index); e.currentTarget.classList.add('opacity-50'); }}
-                            onDragEnd={(e) => { e.currentTarget.classList.remove('opacity-50'); }}
-                            onDragOver={(e) => { e.preventDefault(); }}
-                            onDrop={(e) => {
-                                e.preventDefault();
-                                const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
-                                handleParentReorderTask(sourceIndex, index);
-                            }}
-                            className={`bg-white rounded-[2rem] p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 group flex flex-col sm:flex-row gap-4 relative overflow-hidden mb-4 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] ${status === 'completed' ? 'border-2 border-emerald-100 shadow-[0_8px_30px_rgba(16,185,129,0.06)]' : 'border border-slate-100/60'} ${isReordering ? 'cursor-move ring-2 ring-indigo-300' : ''}`}
+                            className={`bg-white rounded-[2rem] p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 group flex flex-col sm:flex-row gap-4 relative overflow-hidden mb-4 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] ${status === 'completed' ? 'border-2 border-emerald-100 shadow-[0_8px_30px_rgba(16,185,129,0.06)]' : 'border border-slate-100/60'}`}
                         >
-                            {!isReordering && <button onClick={() => { setSelectedDate(selectedDate); setPreviewTask(t); setShowPreviewModal(true); }} className="absolute inset-0 z-0 cursor-pointer hidden sm:block" aria-label="查看任务详情"></button>}
-
-                            {isReordering && (
-                                <>
-                                    <div className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-300 flex items-center justify-center p-2 z-10 hidden sm:flex">
-                                        <Icons.GripVertical size={20} />
-                                    </div>
-                                    <div className="absolute left-1 top-1/2 -translate-y-1/2 flex flex-col gap-1 z-20 sm:hidden">
-                                        <button onClick={(e) => { e.stopPropagation(); handleParentReorderTask(index, index - 1); }} disabled={index === 0} className="w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur hover:bg-slate-50 border border-slate-200/50 rounded-full text-slate-400 disabled:opacity-30 disabled:bg-slate-50 shadow-sm transition-all"><Icons.ChevronDown className="rotate-180" size={16} /></button>
-                                        <button onClick={(e) => { e.stopPropagation(); handleParentReorderTask(index, index + 1); }} disabled={index === parentTasks.length - 1} className="w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur hover:bg-slate-50 border border-slate-200/50 rounded-full text-slate-400 disabled:opacity-30 disabled:bg-slate-50 shadow-sm transition-all"><Icons.ChevronDown size={16} /></button>
-                                    </div>
-                                </>
-                            )}
+                            <button onClick={() => { setSelectedDate(selectedDate); setPreviewTask(t); setShowPreviewModal(true); }} className="absolute inset-0 z-0 cursor-pointer hidden sm:block" aria-label="查看任务详情"></button>
 
                             {/* Left Section: Big Colorful Squircle Icon */}
-                            <div onClick={() => { if (!isReordering) { setPreviewTask(t); setShowPreviewModal(true); } }} className={`flex z-10 sm:w-auto items-start gap-4 flex-1 ${!isReordering ? 'cursor-pointer' : ''} ${isReordering ? 'sm:ml-6' : ''}`}>
+                            <div onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className={`flex z-10 sm:w-auto items-start gap-4 flex-1 cursor-pointer`}>
                                 <div className={`w-16 h-16 shrink-0 rounded-[1.25rem] bg-gradient-to-br ${getCategoryGradient(t.category || '计划')} flex flex-col items-center justify-center text-white shadow-inner group-hover:scale-110 transition-transform duration-300 relative`}>
                                     {renderIcon(t.iconName || getIconForCategory(t.category), 26)}
                                     <span className={`text-[11px] font-black mt-1 text-center w-full line-clamp-1 opacity-90 tracking-wide`}>{t.category || '计划'}</span>
@@ -533,6 +513,48 @@ export const ParentTasksTab = () => {
                     );
                 })}
             </div>
+
+            {showReorderModal && (
+                <div className="fixed inset-0 bg-slate-50 z-[200] animate-slide-up flex flex-col">
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-white shrink-0 shadow-sm">
+                        <button onClick={() => setShowReorderModal(false)} className="text-slate-500 hover:bg-slate-100 p-2 rounded-full transition-colors focus:outline-none">
+                            <Icons.X size={24} />
+                        </button>
+                        <h2 className="text-lg font-black text-slate-800 tracking-wide">调整日常任务顺序</h2>
+                        <button onClick={() => setShowReorderModal(false)} className="text-indigo-600 font-black px-4 py-2 hover:bg-indigo-50 rounded-full transition-colors focus:outline-none">
+                            完成
+                        </button>
+                    </div>
+                    {/* Body */}
+                    <div className="flex-1 overflow-y-auto p-4 pb-24 touch-pan-y custom-scrollbar">
+                        <div className="max-w-2xl mx-auto">
+                            <div className="bg-blue-50 text-blue-600 text-[13px] font-bold p-3 rounded-2xl mb-6 text-center border border-blue-100/50 shadow-sm">
+                                💡 长按拖动或点击右侧箭头可以调整任务出场顺序哦~
+                            </div>
+                            <ReorderableList
+                                items={parentTasks}
+                                onReorder={handleParentReorderTask}
+                                keyExtractor={(t) => t.id}
+                                renderItem={(t, index) => (
+                                    <div className="bg-white/90 rounded-xl px-5 py-4 border border-slate-200/80 flex items-center gap-4 cursor-grab active:cursor-grabbing select-none group hover:border-indigo-300 hover:shadow-md transition-all">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1.5">
+                                                <span className="text-[11px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">{t.category || '计划'}</span>
+                                                <span className="text-[11px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">{t.frequency || '每天'}</span>
+                                            </div>
+                                            <div className="font-black text-slate-800 text-base truncate leading-snug">{t.title}</div>
+                                        </div>
+                                        <div className="text-slate-300 group-hover:text-slate-500 transition-colors shrink-0 p-1.5 rounded-lg hover:bg-slate-100">
+                                            <Icons.GripVertical size={20} />
+                                        </div>
+                                    </div>
+                                )}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

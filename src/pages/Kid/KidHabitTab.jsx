@@ -250,14 +250,14 @@ export const KidHabitTab = () => {
                         <div className="space-y-4 max-h-[22rem] overflow-y-auto custom-scrollbar pr-2 relative">
                             <div className="absolute left-[18px] top-4 bottom-4 w-0.5 bg-slate-100 rounded-full z-0"></div>
 
-                            {transactions.filter(t => t.kidId === activeKidId && t.category === 'habit' && (historyFilter === 'all' || t.type === historyFilter)).slice(0, 30).map(item => {
+                            {transactions.filter(t => t.kidId === activeKidId && t.category === 'habit' && (historyFilter === 'all' || t.type === historyFilter)).slice(0, 30).map((item, idx) => {
                                 const isIncome = item.type === 'income';
                                 const displayAmount = isIncome ? `+${item.amount}` : `-${item.amount}`;
                                 // Clean up legacy titles: Remove (Exp) and prefix "记录成长: "
                                 const cleanTitle = item.title.replace(/\(Exp\)/i, '').replace(/^(记录成长[:：\s]*)+/u, '').trim();
 
                                 return (
-                                    <div key={item.id} className="relative pl-12 group z-10 mb-4 last:mb-0">
+                                    <div key={item.id || `habit-tx-${idx}`} className="relative pl-12 group z-10 mb-4 last:mb-0">
                                         {/* Timeline Dot */}
                                         <div className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-[14px] h-[14px] rounded-full border-2 border-white shadow-sm flex items-center justify-center ${isIncome ? 'bg-emerald-400' : 'bg-red-400'} z-20`}></div>
 

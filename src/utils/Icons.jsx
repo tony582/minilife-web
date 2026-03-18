@@ -103,7 +103,6 @@ export const Icons = {
     ArrowUpDown: (p) => <IconWrapper {...p}><path d="m7 15 5 5 5-5" /><path d="m7 9 5-5 5 5" /></IconWrapper>,
     GraduationCap: (p) => <IconWrapper {...p}><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.084a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" /><path d="M22 10v6" /><path d="M6 12.5V16c0 1 2.5 3 6 3s6-2 6-3v-3.5" /></IconWrapper>,
     MapPin: (p) => <IconWrapper {...p}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></IconWrapper>,
-    Calendar: (p) => <IconWrapper {...p}><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></IconWrapper>
 };
 
 export const renderIcon = (name, size = 20, className = "") => {

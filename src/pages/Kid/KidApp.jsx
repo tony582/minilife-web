@@ -221,7 +221,7 @@ export const KidApp = () => {
                                 <div className={`col-span-4 flex justify-center mb-2 ${pendingAvatar && pendingAvatar.startsWith('data:image/') ? 'block' : 'hidden'}`}>
                                     <div className="relative">
                                         <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border-[3px] border-indigo-400 shadow-lg scale-110">
-                                            <img src={pendingAvatar} alt="Pending Avatar" className="w-full h-full object-cover" />
+                                            {pendingAvatar && pendingAvatar.startsWith('data:image/') && <img src={pendingAvatar} alt="Pending Avatar" className="w-full h-full object-cover" />}
                                         </div>
                                         <button onClick={() => setPendingAvatar('')} className="absolute -top-2 -right-2 bg-rose-500 text-white p-1 rounded-full shadow-md hover:bg-rose-600">
                                             <Icons.X size={14} />
@@ -354,7 +354,7 @@ export const KidApp = () => {
                                     .filter(t => t.kidId === activeKid.id && t.type === 'income' && t.category === 'habit' && t.amount > 0)
                                     .slice(0, 5)
                                     .map((t, idx, arr) => (
-                                        <div key={t.id} className={`flex items-center justify-between text-sm ${idx !== arr.length - 1 ? 'border-b border-slate-50 pb-4' : ''}`}>
+                                        <div key={t.id || `exp-${idx}`} className={`flex items-center justify-between text-sm ${idx !== arr.length - 1 ? 'border-b border-slate-50 pb-4' : ''}`}>
                                             <div className="flex items-center gap-3 text-slate-700 font-bold truncate pr-3">
                                                 <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center flex-shrink-0 shadow-inner">
                                                     <Icons.ArrowUpRight size={18} strokeWidth={3} />
