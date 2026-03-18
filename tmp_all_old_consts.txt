@@ -1,0 +1,217 @@
+    const IconCmp = Icons[name] || Icons.Star;
+    const d = new Date(date);
+    const month = '' + (d.getMonth() + 1);
+    const day = '' + d.getDate();
+    const year = d.getFullYear();
+    const d = new Date(baseDate);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // 调整以周一为一周的第一天
+    const monday = new Date(d.setDate(diff));
+    const weekDays = [];
+    const dayNames = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+    const dotsArray = ['text-orange-500', 'transparent', 'transparent', 'text-blue-400', 'text-green-500', 'text-green-500', 'text-green-500']; // 仅为了保留原先的点样式，实际可以根据有无任务计算
+    const date = new Date(year, month, 1);
+    const days = [];
+    const firstDayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1; // 调整为周一为每周第一天
+    const prevMonthDays = new Date(year, month, 0).getDate();
+    const numDays = new Date(year, month + 1, 0).getDate();
+    const token = localStorage.getItem('minilife_token');
+    const res = await fetch(`${API_BASE}${url}`, options);
+    const isPositive = data.type === 'positive';
+    const [token, setToken] = useState(localStorage.getItem('minilife_token'));
+    const [user, setUser] = useState(null);
+    const [authLoading, setAuthLoading] = useState(true);
+    const [authMode, setAuthMode] = useState('login'); // 'login' | 'register'
+    const [authForm, setAuthForm] = useState({ email: '', password: '' });
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [activationCode, setActivationCode] = useState('');
+    const [appState, setAppState] = useState(localStorage.getItem('minilife_appState') || 'profiles'); // 'profiles' | 'parent_pin' | 'kid_app' | 'parent_app'
+    const [notifications, setNotifications] = useState([]);
+    const [showLevelModal, setShowLevelModal] = useState(false);
+    const [historyFilter, setHistoryFilter] = useState('all'); // 'all', 'income', 'expense'
+    const [habitCardFilter, setHabitCardFilter] = useState('all'); // 'all', 'income', 'expense', 'completed', 'pending'
+    const [celebrationData, setCelebrationData] = useState(null);
+    const [showPenaltyModal, setShowPenaltyModal] = useState(false);
+    const [penaltyTaskContext, setPenaltyTaskContext] = useState(null);
+    const [penaltySelectedKidIds, setPenaltySelectedKidIds] = useState([]);
+    const getLevelTier = (level) => {
+    const handleAuth = async (e) => {
+    const handleRedeem = async (e) => {
+    const handleLogout = () => {
+    const generateCodes = async (days) => {
+    const [kids, setKids] = useState([]);
+    const [activeKidId, setActiveKidId] = useState(localStorage.getItem('minilife_activeKidId') || 'kid_1');
+    const [parentSettings, setParentSettings] = useState({ pinEnabled: false, pinCode: '1234' });
+    const changeAppState = (newState) => {
+    const changeActiveKid = (newKidId) => {
+    const [tasks, setTasks] = useState([]);
+    const [inventory, setInventory] = useState([]);
+    const [orders, setOrders] = useState([]);
+    const [transactions, setTransactions] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [adminTab, setAdminTab] = useState('users'); // 'users' | 'codes'
+    const [adminUsers, setAdminUsers] = useState([]);
+    const [adminCodes, setAdminCodes] = useState([]);
+    const [usedCodes, setUsedCodes] = useState([]);
+    const [settingsCode, setSettingsCode] = useState('');
+    const [kidTab, setKidTab] = useState('study');
+    const [kidShopTab, setKidShopTab] = useState('browse');
+    const [parentTab, setParentTab] = useState('tasks');
+    const [parentKidFilter, setParentKidFilter] = useState('all');
+    const [currentViewDate, setCurrentViewDate] = useState(new Date());
+    const [selectedDate, setSelectedDate] = useState(formatDate(new Date()));
+    const [monthViewDate, setMonthViewDate] = useState(new Date());
+    const [taskFilter, setTaskFilter] = useState([]); 
+    const [taskStatusFilter, setTaskStatusFilter] = useState('all'); 
+    const [taskSort, setTaskSort] = useState('default');
+    const [parentTaskFilter, setParentTaskFilter] = useState([]);
+    const [parentTaskStatusFilter, setParentTaskStatusFilter] = useState('all');
+    const [parentTaskSort, setParentTaskSort] = useState('default');
+    const [isReordering, setIsReordering] = useState(false);
+    const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+    const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+    const [showSortDropdown, setShowSortDropdown] = useState(false);
+    const [showParentSettingsDropdown, setShowParentSettingsDropdown] = useState(false);
+    const kidFilterRef = useRef();
+    const kidSortRef = useRef();
+    const parentFilterRef = useRef();
+    const parentSortRef = useRef();
+    const parentSettingsRef = useRef();
+    const [taskToSubmit, setTaskToSubmit] = useState(null);
+    const [taskIdToEdit, setTaskIdToEdit] = useState(null);
+    const defaultCategories = ['语文', '数学', '英语', '物理', '化学', '生物', '历史', '地理', '政治', '道德与法治', '信息技术', '体育运动', '娱乐', '兴趣班', '其他'];
+    const allCategories = Array.from(new Set([...defaultCategories, ...tasks.filter(t => t.type === 'study' && t.category).map(t => t.category)]));
+    const getCategoryColor = (cat) => {
+    const getCategoryGradient = (cat) => {
+    const getIconForCategory = (cat) => {
+    const [showTransferModal, setShowTransferModal] = useState(false);
+    const [transferForm, setTransferForm] = useState({ amount: '', target: 'vault' });
+    const [showSettingsModal, setShowSettingsModal] = useState(false);
+    const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+    const [previewImageIndex, setPreviewImageIndex] = useState(0);
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [showAddPlanModal, setShowAddPlanModal] = useState(false);
+    const [showAddKidModal, setShowAddKidModal] = useState(false);
+    const [newKidForm, setNewKidForm] = useState({ name: '', gender: 'boy', avatar: '' });
+    const [showAddItemModal, setShowAddItemModal] = useState(false);
+    const [showQrScanner, setShowQrScanner] = useState(false);
+    const [orderHistoryFilterKid, setOrderHistoryFilterKid] = useState('all');
+    const [orderHistoryFilterTime, setOrderHistoryFilterTime] = useState('7'); // '7', '30', 'all'
+    const [showLevelRules, setShowLevelRules] = useState(false);
+    const [editingTask, setEditingTask] = useState(null);
+    const [deleteConfirmTask, setDeleteConfirmTask] = useState(null);
+    const [mallSortByPrice, setMallSortByPrice] = useState('none');
+    const [orderSortByPrice, setOrderSortByPrice] = useState('none');
+    const [orderFilterStatus, setOrderFilterStatus] = useState('all');
+    const [kidCheckoutItem, setKidCheckoutItem] = useState(null);
+    const [showAvatarPickerModal, setShowAvatarPickerModal] = useState(false);
+    const [pendingAvatar, setPendingAvatar] = useState('');
+    const [pointActionTimings, setPointActionTimings] = useState([]);
+    const [showEmotionalReminderModal, setShowEmotionalReminderModal] = useState(false);
+    const [emotionalCooldownSeconds, setEmotionalCooldownSeconds] = useState(0);
+    const [showRewardModal, setShowRewardModal] = useState(false);
+    const [showRejectModal, setShowRejectModal] = useState(false);
+    const [rejectingTaskInfo, setRejectingTaskInfo] = useState(null);
+    const [rejectReason, setRejectReason] = useState('');
+    const [showTransactionHistoryModal, setShowTransactionHistoryModal] = useState(false);
+    const [transactionHistoryFilterTime, setTransactionHistoryFilterTime] = useState('all'); // 'all', '7', '30', '90', 'custom'
+    const [transactionHistoryStartDate, setTransactionHistoryStartDate] = useState('');
+    const [transactionHistoryEndDate, setTransactionHistoryEndDate] = useState('');
+    const [transactionHistoryFilterType, setTransactionHistoryFilterType] = useState('all'); // 'all', 'income', 'expense'
+    const [showTimerModal, setShowTimerModal] = useState(false);
+    const [timerTargetId, setTimerTargetId] = useState(null);
+    const [timerMode, setTimerMode] = useState('select'); // 'select' | 'forward' | 'countdown' | 'pomodoro'
+    const [timerSeconds, setTimerSeconds] = useState(0);
+    const [timerTotalSeconds, setTimerTotalSeconds] = useState(0);
+    const [isTimerRunning, setIsTimerRunning] = useState(false);
+    const [timerPaused, setTimerPaused] = useState(false);
+    const [pomodoroSession, setPomodoroSession] = useState(1);
+    const [pomodoroIsBreak, setPomodoroIsBreak] = useState(false);
+    const timerRef = useRef(null);
+    const [showCalendarModal, setShowCalendarModal] = useState(false);
+    const [showParentPinModal, setShowParentPinModal] = useState(false);
+    const [showKidSwitcher, setShowKidSwitcher] = useState(false);
+    const [quickCompleteTask, setQuickCompleteTask] = useState(null);
+    const [qcTimeMode, setQcTimeMode] = useState('duration'); // 'duration' | 'actual'
+    const [qcHours, setQcHours] = useState(0);
+    const [qcMinutes, setQcMinutes] = useState(0);
+    const [qcSeconds, setQcSeconds] = useState(0);
+    const [qcStartTime, setQcStartTime] = useState('');
+    const [qcEndTime, setQcEndTime] = useState('');
+    const [qcNote, setQcNote] = useState('');
+    const [qcAttachments, setQcAttachments] = useState([]);
+    const [pinInput, setPinInput] = useState('');
+    const [reviewStars, setReviewStars] = useState(5);
+    const [reviewComment, setReviewComment] = useState("");
+    const [newItem, setNewItem] = useState({ name: '', desc: '', price: '', iconEmoji: '🧸', type: 'single' });
+    const [planType, setPlanType] = useState('study');
+    const [lastSavedEndTime, setLastSavedEndTime] = useState(''); // Record last used end time to chain tasks
+    const [planForm, setPlanForm] = useState({
+    const isTaskDueOnDate = (task, dateStr) => {
+    const [showPreviewModal, setShowPreviewModal] = useState(false);
+    const [previewTask, setPreviewTask] = useState(null); // Full task object for preview
+    const [showImagePreviewModal, setShowImagePreviewModal] = useState(false);
+    const [previewImages, setPreviewImages] = useState([]);
+    const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
+    const getWeeklyCompletionCount = (task, kidId, currentDStr) => {
+    const checkPeriodLimits = (task, kidId, selectedDStr) => {
+    const handleAttemptSubmit = async (task) => {
+    const getTaskStatusOnDate = (t, date, kidId) => {
+    const getTaskTimeSpent = (t, date, kidId) => {
+    const notify = (msg, type = 'info') => {
+    const playSuccessSound = () => {
+    const updateActiveKid = async (updates) => {
+    const updateKidData = async (targetKidId, updates) => {
+    const getLevelReq = (level) => level * 100;
+    const handleStartTask = (id) => {
+    const handleDeleteTask = async (id) => {
+    const confirmSubmitTask = async () => {
+    const openQuickComplete = (task) => {
+    const handleQcQuickDuration = (totalMinutes) => {
+    const handleQcFileUpload = (e) => {
+    const handleQuickComplete = async () => {
+    const handleExpChange = async (kidId, expChange) => {
+    const handleMarkHabitComplete = async (task, date) => {
+    const handleRejectTask = async (task, dateStr, kidId, reason = '') => {
+    const handleApproveTask = async (task, date, actualKidId) => {
+    const handleApproveAllTasks = async (approvalsList) => {
+    const confirmTransfer = async () => {
+    const buyItem = async (item) => {
+    const getDefaultTimeRange = () => {
+    const handleSavePlan = async () => {
+    const handlePinClick = (num) => {
+    const openParentFromKid = () => {
+    const switchKid = (kidId) => {
+    const confirmReceipt = async (orderId) => {
+    const submitReview = async (orderId, stars, text) => {
+    const handleSaveNewItem = async () => {
+    const renderTimerModal = () => {
+    const getIncompleteStudyTasksCount = (dateStr) => {
+    const renderCalendarModal = () => {
+    const renderTaskSubmitModal = () => {
+    const renderQuickCompleteModal = () => {
+    const renderTransactionHistoryModal = () => {
+    const renderTransferModal = () => {
+    const renderReviewModal = () => {
+    const handleVerifyOrder = async (orderIdOrCode) => {
+    const renderQrScannerModal = () => {
+    const renderAddItemModal = () => {
+    const renderImagePreviewModal = () => {
+    const confirmRejectTask = async () => {
+    const renderRejectModal = () => {
+    const confirmPenalty = () => {
+    const confirmReward = () => {
+    const toggleKidSelectionPenalty = (kidId) => {
+    const renderPenaltyModal = () => {
+    const renderRewardModal = () => {
+    const renderEmotionalReminderModal = () => {
+    const renderKidPreviewModal = () => {
+    const renderAddPlanModal = () => {
+    const renderAddKidModal = () => {
+    const renderProfileSelection = () => (
+    const renderParentPinScreen = () => (
+    const renderKidProfileTab = () => {
+    const renderStudyTab = () => {
+    const renderKidApp = () => {
+    const renderParentApp = () => (
+    const renderMobileNavigationBar = () => {

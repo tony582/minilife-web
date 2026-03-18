@@ -10,8 +10,11 @@ import { getLevelTier } from './utils/levelUtils';
 import { apiFetch, API_BASE } from './api/client';
 import { useToast } from './hooks/useToast';
 import { useAppState } from './hooks/useAppState';
-import { useAuth } from './hooks/useAuth';
-import { useAppData } from './hooks/useAppData';
+import { AuthProvider, useAuthContext } from './context/AuthContext.jsx';
+import { DataProvider, useDataContext } from './context/DataContext.jsx';
+import { UIProvider, useUIContext } from './context/UIContext.jsx';
+import { useTaskManager } from './hooks/useTaskManager';
+import { useShopManager } from './hooks/useShopManager';
 // === 钩子工具 ===
 const useOnClickOutside = (ref, handler) => {
   useEffect(() => {
@@ -1293,10 +1296,10 @@ function AppContent() {
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white font-bold text-xl">加载中...</div>;
   }
-  const contextValue = { ...authC, ...dataC, ...uiC };
+  
 
   return (
-    <AppContext.Provider value={contextValue}>
+    
             <div className="font-sans selection:bg-indigo-100">
             {appState === 'profiles' && <ProfileSelectionPage />}
             {appState === 'parent_pin' && <ParentPinPage />}
@@ -1333,7 +1336,7 @@ function AppContent() {
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       ` }} />
             </div>
-        </AppContext.Provider>);
+        );
 
 }
 
