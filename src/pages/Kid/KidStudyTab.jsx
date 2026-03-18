@@ -203,7 +203,7 @@ export const KidStudyTab = () => {
             <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 mb-4 mx-4">
                 <div className="flex items-center justify-between mb-6 px-1">
                     <div className="flex items-center text-indigo-600 font-black text-sm sm:text-lg">
-                        第{getWeekNumber(currentViewDate)[1]}周
+                        {currentViewDate.getMonth() + 1}月 · 第{getWeekNumber(currentViewDate)[1]}周
                     </div>
                     <div className="flex items-center gap-1.5 sm:gap-3">
                         <button
@@ -262,145 +262,128 @@ export const KidStudyTab = () => {
             </div>
             </div>
 
-            {/* === Search bar below calendar (mobile), inline on desktop === */}
-            <div className="sm:hidden px-4 mb-4">
-                <div className="relative">
-                    <Icons.Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            {/* === Unified search + action toolbar === */}
+            <div className="flex items-center gap-2 px-4 mb-4 relative z-20" ref={kidFilterRef}>
+                {/* Search input */}
+                <div className="relative flex-1 min-w-0">
+                    <Icons.Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                         type="text"
-                        placeholder="搜索任务名称..."
+                        placeholder="搜索任务..."
                         value={searchKidTaskKeyword}
                         onChange={(e) => setSearchKidTaskKeyword(e.target.value)}
-                        className="w-full bg-white border border-slate-200 text-sm font-bold rounded-2xl pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:font-normal placeholder:text-slate-400 shadow-sm"
+                        className="w-full bg-white border border-slate-200 text-sm font-bold rounded-xl pl-9 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:font-normal placeholder:text-slate-400 shadow-sm"
                     />
                     {searchKidTaskKeyword && (
-                        <button onClick={() => setSearchKidTaskKeyword('')} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
+                        <button onClick={() => setSearchKidTaskKeyword('')} className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600">
                             <Icons.X size={14} />
                         </button>
                     )}
                 </div>
-            </div>
 
-            <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 px-2 gap-3">
-                <div className="flex items-center justify-between">
-                    <div className="text-xl font-black text-slate-800 border-l-4 border-green-500 pl-3 shrink-0">今日任务</div>
-                </div>
-                
-                <div className="flex flex-wrap items-center justify-start sm:justify-end gap-2 sm:gap-4 text-slate-500 text-xs sm:text-sm font-bold relative z-20 pb-2 sm:pb-0">
-                    {/* 统一筛选下拉 (综合科目与状态) */}
-                    <div className="relative shrink-0" ref={kidFilterRef}>
-                        <button
-                            onClick={() => { setShowFilterDropdown(!showFilterDropdown); setShowStatusDropdown(false); setShowSortDropdown(false); }}
-                            className={`flex items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-none sm:bg-transparent transition-colors shadow-sm sm:shadow-none border sm:border-transparent ${showFilterDropdown || (Array.isArray(taskFilter) && taskFilter.length > 0) || taskStatusFilter !== 'all' ? 'text-indigo-600 bg-indigo-50 border-indigo-100' : 'bg-white border-slate-200 hover:text-indigo-600'}`}
-                        >
-                            <Icons.Filter size={16} className="sm:w-[14px] sm:h-[14px]" />
-                            <span className="hidden sm:inline">按条件筛选 {(Array.isArray(taskFilter) && taskFilter.length > 0) || taskStatusFilter !== 'all' ? '•' : ''}</span>
-                            <Icons.ChevronDown size={14} className={`hidden sm:block transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`} />
-                        </button>
-                        {showFilterDropdown && (
-                            <div className="absolute top-full mt-2 w-56 transform -translate-x-1/2 left-1/2 sm:left-0 sm:translate-x-0 bg-white border border-slate-100 shadow-2xl rounded-2xl py-3 z-50 animate-fade-in origin-top">
-                                <div className="px-4 pb-2 mb-2 text-xs font-black text-slate-400 border-b border-slate-50 uppercase tracking-widest">任务状态</div>
-                                <div className="flex gap-2 px-4 mb-4">
-                                    <button onClick={() => setTaskStatusFilter('all')} className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors ${taskStatusFilter === 'all' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}>全部</button>
-                                    <button onClick={() => setTaskStatusFilter('incomplete')} className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors ${taskStatusFilter === 'incomplete' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}>未完成</button>
-                                    <button onClick={() => setTaskStatusFilter('completed')} className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors ${taskStatusFilter === 'completed' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}>已完成</button>
-                                </div>
-                                <div className="px-4 pb-2 mb-2 text-xs font-black text-slate-400 border-b border-slate-50 uppercase tracking-widest flex justify-between items-center">
-                                    <span>科目</span>
-                                    {Array.isArray(taskFilter) && taskFilter.length > 0 && (
-                                        <button onClick={() => setTaskFilter([])} className="text-indigo-500 hover:text-indigo-700 capitalize text-[10px] bg-indigo-50 px-2 py-0.5 rounded-md">清除选择</button>
-                                    )}
-                                </div>
-                                <div className="max-h-48 overflow-y-auto px-2 space-y-1 custom-scrollbar">
-                                    {Array.from(new Set(tasks.filter(t => (t.kidId === activeKidId || t.kidId === 'all') && t.type === 'study' && isTaskDueOnDate(t, selectedDate)).map(t => t.category).filter(Boolean))).map(cat => (
-                                        <label key={cat} className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors w-full">
-                                            <input
-                                                type="checkbox"
-                                                checked={Array.isArray(taskFilter) && taskFilter.includes(cat)}
-                                                onChange={(e) => {
-                                                    const currentFilters = Array.isArray(taskFilter) ? taskFilter : [];
-                                                    if (e.target.checked) setTaskFilter([...currentFilters, cat]);
-                                                    else setTaskFilter(currentFilters.filter(c => c !== cat));
-                                                }}
-                                                className="w-4 h-4 rounded text-indigo-500 focus:ring-indigo-500 border-slate-300"
-                                            />
-                                            <span className="text-sm font-bold text-slate-600 flex-1 truncate">{cat}</span>
-                                        </label>
-                                    ))}
-                                    {Array.from(new Set(tasks.filter(t => (t.kidId === activeKidId || t.kidId === 'all') && t.type === 'study' && isTaskDueOnDate(t, selectedDate)).map(t => t.category).filter(Boolean))).length === 0 && (
-                                        <div className="text-center text-xs text-slate-400 py-4 font-bold">暂无可筛选的科目</div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
-
-                    {/* 排序按钮下拉 */}
-                    <div className="relative shrink-0">
-                        <button
-                            onClick={() => { setShowSortDropdown(!showSortDropdown); setShowFilterDropdown(false); setShowStatusDropdown(false); }}
-                            className={`flex items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-none sm:bg-transparent transition-colors shadow-sm sm:shadow-none border sm:border-transparent ${showSortDropdown || taskSort !== 'default' ? 'text-indigo-600 bg-indigo-50 border-indigo-100' : 'bg-white border-slate-200 hover:text-indigo-600'}`}
-                        >
-                            <Icons.ArrowUpDown size={16} className="sm:w-[14px] sm:h-[14px]" />
-                            <span className="hidden sm:inline">排序 {taskSort !== 'default' ? '•' : ''}</span>
-                            <Icons.ChevronDown size={14} className={`hidden sm:block transition-transform ${showSortDropdown ? 'rotate-180' : ''}`} />
-                        </button>
-                        {showSortDropdown && (
-                            <div className="absolute top-full mt-2 w-48 transform -translate-x-1/2 left-1/2 sm:left-auto sm:right-0 sm:translate-x-0 bg-white border border-slate-100 shadow-xl rounded-2xl py-2 z-50 animate-fade-in origin-top">
-                                {[
-                                    { id: 'default', label: '默认排序', icon: Icons.List },
-                                    { id: 'time_asc', label: '预计耗时从短到长', icon: Icons.Clock },
-                                    { id: 'category', label: '按科目分组', icon: Icons.LayoutGrid },
-                                    { id: 'status', label: '按完成状态', icon: Icons.Activity },
-                                    { id: 'created_desc', label: '最新创建', icon: Icons.Calendar },
-                                    { id: 'reward_desc', label: '金币奖励最多', icon: Icons.Star },
-                                    { id: 'reward_asc', label: '金币奖励最少', icon: Icons.StarHalf },
-                                ].map(option => (
-                                    <button
-                                        key={option.id}
-                                        onClick={() => { setTaskSort(option.id); setShowSortDropdown(false); }}
-                                        className={`w-full text-left px-4 py-2.5 text-sm font-bold flex items-center gap-3 transition-colors ${taskSort === option.id ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
-                                    >
-                                        <option.icon size={16} className={taskSort === option.id ? 'text-indigo-500' : 'text-slate-400'} />
-                                        {option.label}
-                                        {taskSort === option.id && <Icons.Check size={14} className="ml-auto" />}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
-
-                    {/* 自定义排序按钮 */}
+                {/* Filter button */}
+                <div className="relative">
                     <button
-                        onClick={() => setShowReorderModal(true)}
-                        className="flex items-center justify-center gap-1.5 h-10 px-3 rounded-xl sm:rounded-none sm:bg-transparent bg-white shadow-sm sm:shadow-none border border-slate-200 sm:border-transparent transition-colors hover:text-indigo-600 shrink-0"
+                        onClick={() => { setShowFilterDropdown(!showFilterDropdown); setShowSortDropdown(false); }}
+                        className={`flex items-center justify-center w-9 h-9 sm:w-auto sm:h-auto sm:px-3 sm:py-2 rounded-xl transition-colors border ${
+                            showFilterDropdown || (Array.isArray(taskFilter) && taskFilter.length > 0) || taskStatusFilter !== 'all'
+                                ? 'text-indigo-600 bg-indigo-50 border-indigo-200'
+                                : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600'
+                        }`}
                     >
-                        <Icons.List size={16} className="sm:w-[14px] sm:h-[14px]" />
-                        <span className="hidden sm:inline">自定义排序</span>
-                    </button>
-
-                    <div className="h-4 w-px bg-slate-200 hidden sm:block"></div>
-
-                    <div className="relative shrink-0 hidden sm:block sm:w-48 transition-all">
-                        <Icons.Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
-                            type="text"
-                            placeholder="搜索任务名称..."
-                            value={searchKidTaskKeyword}
-                            onChange={(e) => setSearchKidTaskKeyword(e.target.value)}
-                            className="w-full bg-white border border-slate-200 text-sm font-bold rounded-2xl pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:font-normal placeholder:text-slate-400 shadow-sm"
-                        />
-                        {searchKidTaskKeyword && (
-                            <button onClick={() => setSearchKidTaskKeyword('')} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
-                                <Icons.X size={14} />
-                            </button>
+                        <Icons.Filter size={15} />
+                        <span className="hidden sm:inline ml-1.5 text-sm font-bold">筛选</span>
+                        {((Array.isArray(taskFilter) && taskFilter.length > 0) || taskStatusFilter !== 'all') && (
+                            <span className="absolute -top-1 -right-1 sm:static sm:ml-1 w-2 h-2 sm:w-auto sm:h-auto bg-indigo-500 sm:bg-transparent rounded-full sm:rounded-none"><span className="hidden sm:inline text-indigo-500">•</span></span>
                         )}
-                    </div>
+                    </button>
+                    {showFilterDropdown && (
+                        <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-slate-100 shadow-2xl rounded-2xl py-3 z-50 animate-simple-fade origin-top-right">
+                            <div className="px-4 pb-2 mb-2 text-xs font-black text-slate-400 border-b border-slate-50 uppercase tracking-widest">任务状态</div>
+                            <div className="flex gap-2 px-4 mb-4">
+                                <button onClick={() => setTaskStatusFilter('all')} className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors ${taskStatusFilter === 'all' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}>全部</button>
+                                <button onClick={() => setTaskStatusFilter('incomplete')} className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors ${taskStatusFilter === 'incomplete' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}>未完成</button>
+                                <button onClick={() => setTaskStatusFilter('completed')} className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors ${taskStatusFilter === 'completed' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}>已完成</button>
+                            </div>
+                            <div className="px-4 pb-2 mb-2 text-xs font-black text-slate-400 border-b border-slate-50 uppercase tracking-widest flex justify-between items-center">
+                                <span>科目</span>
+                                {Array.isArray(taskFilter) && taskFilter.length > 0 && (
+                                    <button onClick={() => setTaskFilter([])} className="text-indigo-500 hover:text-indigo-700 capitalize text-[10px] bg-indigo-50 px-2 py-0.5 rounded-md">清除</button>
+                                )}
+                            </div>
+                            <div className="max-h-48 overflow-y-auto px-2 space-y-1 custom-scrollbar">
+                                {Array.from(new Set(tasks.filter(t => (t.kidId === activeKidId || t.kidId === 'all') && t.type === 'study' && isTaskDueOnDate(t, selectedDate)).map(t => t.category).filter(Boolean))).map(cat => (
+                                    <label key={cat} className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors w-full">
+                                        <input
+                                            type="checkbox"
+                                            checked={Array.isArray(taskFilter) && taskFilter.includes(cat)}
+                                            onChange={(e) => {
+                                                const currentFilters = Array.isArray(taskFilter) ? taskFilter : [];
+                                                if (e.target.checked) setTaskFilter([...currentFilters, cat]);
+                                                else setTaskFilter(currentFilters.filter(c => c !== cat));
+                                            }}
+                                            className="w-4 h-4 rounded text-indigo-500 focus:ring-indigo-500 border-slate-300"
+                                        />
+                                        <span className="text-sm font-bold text-slate-600 flex-1 truncate">{cat}</span>
+                                    </label>
+                                ))}
+                                {Array.from(new Set(tasks.filter(t => (t.kidId === activeKidId || t.kidId === 'all') && t.type === 'study' && isTaskDueOnDate(t, selectedDate)).map(t => t.category).filter(Boolean))).length === 0 && (
+                                    <div className="text-center text-xs text-slate-400 py-4 font-bold">暂无可筛选的科目</div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
+
+                {/* Sort button */}
+                <div className="relative">
+                    <button
+                        onClick={() => { setShowSortDropdown(!showSortDropdown); setShowFilterDropdown(false); }}
+                        className={`flex items-center justify-center w-9 h-9 sm:w-auto sm:h-auto sm:px-3 sm:py-2 rounded-xl transition-colors border ${
+                            showSortDropdown || taskSort !== 'default'
+                                ? 'text-indigo-600 bg-indigo-50 border-indigo-200'
+                                : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600'
+                        }`}
+                    >
+                        <Icons.ArrowUpDown size={15} />
+                        <span className="hidden sm:inline ml-1.5 text-sm font-bold">排序</span>
+                        {taskSort !== 'default' && (
+                            <span className="absolute -top-1 -right-1 sm:static sm:ml-1 w-2 h-2 sm:w-auto sm:h-auto bg-indigo-500 sm:bg-transparent rounded-full sm:rounded-none"><span className="hidden sm:inline text-indigo-500">•</span></span>
+                        )}
+                    </button>
+                    {showSortDropdown && (
+                        <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-slate-100 shadow-xl rounded-2xl py-2 z-50 animate-simple-fade origin-top-right">
+                            {[
+                                { id: 'default', label: '默认排序', icon: Icons.List },
+                                { id: 'time_asc', label: '耗时从短到长', icon: Icons.Clock },
+                                { id: 'category', label: '按科目分组', icon: Icons.LayoutGrid },
+                                { id: 'status', label: '按完成状态', icon: Icons.Activity },
+                                { id: 'created_desc', label: '最新创建', icon: Icons.Calendar },
+                                { id: 'reward_desc', label: '金币最多', icon: Icons.Star },
+                                { id: 'reward_asc', label: '金币最少', icon: Icons.StarHalf },
+                            ].map(option => (
+                                <button
+                                    key={option.id}
+                                    onClick={() => { setTaskSort(option.id); setShowSortDropdown(false); }}
+                                    className={`w-full text-left px-4 py-2.5 text-sm font-bold flex items-center gap-3 transition-colors ${taskSort === option.id ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
+                                >
+                                    <option.icon size={16} className={taskSort === option.id ? 'text-indigo-500' : 'text-slate-400'} />
+                                    {option.label}
+                                    {taskSort === option.id && <Icons.Check size={14} className="ml-auto" />}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Reorder button */}
+                <button
+                    onClick={() => setShowReorderModal(true)}
+                    className="flex items-center justify-center w-9 h-9 sm:w-auto sm:h-auto sm:px-3 sm:py-2 rounded-xl transition-colors border bg-white border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-200"
+                >
+                    <Icons.List size={15} />
+                    <span className="hidden sm:inline ml-1.5 text-sm font-bold">自定义</span>
+                </button>
             </div>
 
             <div className="space-y-4 px-4 sm:px-0">
