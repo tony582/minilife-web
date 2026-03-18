@@ -124,6 +124,13 @@ export default function App() {
     const [showPenaltyModal, setShowPenaltyModal] = useState(false);
     const [penaltyTaskContext, setPenaltyTaskContext] = useState(null);
     const [penaltySelectedKidIds, setPenaltySelectedKidIds] = useState([]);
+    
+    // Missing Modal States found
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [reviewOrderId, setReviewOrderId] = useState(null);
+    const [showShopConfirmModal, setShowShopConfirmModal] = useState(false);
+    const [shopTargetItem, setShopTargetItem] = useState(null);
+    const [qrModalValue, setQrModalValue] = useState(null);
     const kidFilterRef = useRef();
     const kidSortRef = useRef();
     const parentFilterRef = useRef();
