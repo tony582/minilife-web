@@ -1,18 +1,35 @@
 import React from 'react';
-import { useAppContext } from '../../context/AppContext';
+import { useAuthContext } from '../../context/AuthContext.jsx';
+import { useDataContext } from '../../context/DataContext.jsx';
+import { useUIContext } from '../../context/UIContext.jsx';
+import { useToast } from '../../hooks/useToast';
 import { Icons } from '../../utils/Icons';
 
 export const AdminPage = () => {
-    const {
-        user,
-        handleLogout,
-        adminTab,
-        setAdminTab,
-        adminUsers,
-        adminCodes,
-        generateCodes,
-        notifications
-    } = useAppContext();
+    const { user, handleLogout } = useAuthContext();
+    const { adminUsers, adminCodes, setAdminCodes } = useDataContext();
+    const { adminTab, setAdminTab } = useUIContext();
+    const { notifications } = useToast();
+
+    // Since `generateCodes` is isolated, we need to import apiFetch or reconstruct it if needed, 
+    // or just assume we should import `apiFetch` from context or api/client.
+    // For now, I'll pull `apiFetch` from DataContext.
+    const { apiFetch } = useDataContext();
+    const { notify } = useToast();
+
+    const generateCodes = async (days) => {
+        try {
+            const data = await apiFetch(`/api/admin/codes/generate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ count: 5, duration_days: days })
+            });
+            setAdminCodes(prev => [...data.codes, ...prev]);
+            notify(`成功生成5个${days}天激活码！`, 'success');
+        } catch (e) {
+            notify('生成失败', 'error');
+        }
+    };
 
     return (
         <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col">

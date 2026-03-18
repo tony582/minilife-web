@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { useAppContext } from '../../context/AppContext';
+import { useAuthContext } from '../../context/AuthContext.jsx';
+import { useUIContext } from '../../context/UIContext.jsx';
 import { Icons } from '../../utils/Icons';
 import { ParentTasksTab } from './ParentTasksTab';
 import { ParentPlansTab } from './ParentPlansTab';
@@ -8,6 +9,7 @@ import { ParentShopTab } from './ParentShopTab';
 import { ParentSettingsTab } from './ParentSettingsTab';
 
 export const ParentApp = () => {
+    const { handleLogout } = useAuthContext();
     const {
         changeAppState,
         parentSettings,
@@ -16,10 +18,9 @@ export const ParentApp = () => {
         setShowSettingsModal,
         setShowSubscriptionModal,
         setShowSecurityParamsModal,
-        handleLogout,
         parentTab,
         setParentTab
-    } = useAppContext();
+    } = useUIContext();
 
     const parentSettingsRef = useRef(null);
 

@@ -1,15 +1,35 @@
-import { useAuthContext } from '../context/AuthContext';
-import { useDataContext } from '../context/DataContext';
-import { useUIContext } from '../context/UIContext';
+import { useAuthContext } from '../context/AuthContext.jsx';
+import { useDataContext } from '../context/DataContext.jsx';
+import { useUIContext } from '../context/UIContext.jsx';
 import { getLevelTier, getLevelReq } from '../utils/levelUtils';
+import { getCategoryGradient, getIconForCategory } from '../utils/categoryUtils';
 import { apiFetch } from '../api/client';
+import { isTaskDueOnDate } from '../utils/taskUtils';
+
+let globalAudioCtx = null;
 
 export const useTaskManager = (authC, dataC, uiC) => {
     
     
     
     const context = { ...authC, ...dataC, ...uiC };
-    const { activeKidId, kids, setKids, tasks, setTasks, transactions, setTransactions, notify, setTimerTargetId, setTimerTotalSeconds, setTimerMode, setIsTimerRunning, setTimerPaused, setShowTimerModal, setDeleteConfirmTask, setTaskToSubmit, setCelebrationData, setQuickCompleteTask, setQcTimeMode, setQcHours, setQcMinutes, setQcSeconds, setQcStartTime, setQcEndTime, setQcNote, setQcAttachments, qcTimeMode, qcHours, qcMinutes, qcSeconds, qcStartTime, qcEndTime, quickCompleteTask, qcNote, qcAttachments, editingTask, setEditingTask, planType, planForm, setShowAddPlanModal, setPlanForm, setLastSavedEndTime, lastSavedEndTime } = context;
+    const { 
+        activeKidId, kids, setKids, tasks, setTasks, transactions, setTransactions, notify, 
+        setTimerTargetId, setTimerTotalSeconds, setTimerMode, setIsTimerRunning, setTimerPaused, 
+        setShowTimerModal, setDeleteConfirmTask, setTaskToSubmit, setCelebrationData, 
+        setQuickCompleteTask, setQcTimeMode, setQcHours, setQcMinutes, setQcSeconds, 
+        setQcStartTime, setQcEndTime, setQcNote, setQcAttachments, qcTimeMode, qcHours, 
+        qcMinutes, qcSeconds, qcStartTime, qcEndTime, quickCompleteTask, qcNote, qcAttachments, 
+        editingTask, setEditingTask, planType, planForm, setShowAddPlanModal, setPlanForm, 
+        setLastSavedEndTime, lastSavedEndTime, selectedDate, taskToSubmit,
+        setShowPenaltyModal, setPenaltyTaskContext, setPenaltySelectedKidIds, setShowRewardModal, 
+        setShowRejectModal, setRejectCode, setRejectingTaskInfo, setCelebrateKids, 
+        setShowPreviewModal, setPreviewTask
+    } = context;
+
+    const updateActiveKid = (updates) => {
+        setKids(prevKids => prevKids.map(k => k.id === activeKidId ? { ...k, ...updates } : k));
+    };
 
     // 任务列表控制
 // 任务列表控制 (Student)
@@ -284,11 +304,29 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
 
     // === 全局方法 ===
 const getTaskStatusOnDate = (t, date, kidId) => {
-  if (!t?.history) return 'todo';
-  let entry = t.kidId === 'all' ? t.history[date]?.[kidId] : t.history[date];
-  if (!entry) return 'todo';
-  return Array.isArray(entry) ? entry.length > 0 ? entry[0].status : 'todo' : entry.status || 'todo';
-};
+    let historyObj = {};
+    if (typeof t.history === 'string') {
+      try { historyObj = JSON.parse(t.history || '{}'); } catch (e) { }
+    } else {
+      historyObj = t.history || {};
+    }
+
+    if (t.kidId === 'all') {
+      return historyObj[date] && historyObj[date][kidId] ? historyObj[date][kidId].status : 'todo';
+    } else {
+      return historyObj[date] ? historyObj[date].status : 'todo';
+    }
+  };
+
+  const getIncompleteStudyTasksCount = (dateStr) => {
+    let myTasks = tasks.filter(t => (t.kidId === activeKidId || t.kidId === 'all') && t.type === 'study' && isTaskDueOnDate(t, dateStr));
+    let total = myTasks.length;
+    let count = myTasks.filter(t => {
+      const st = getTaskStatusOnDate(t, dateStr, activeKidId);
+      return st === 'todo' || st === 'in_progress' || st === 'failed';
+    }).length;
+    return { count, total };
+  };
 
     const getTaskTimeSpent = (t, date, kidId) => {
   if (!t?.history) return null;
@@ -1399,6 +1437,7 @@ const handleSavePlan = async () => {
         handleApproveTask,
         handleApproveAllTasks,
         handleSavePlan,
-        playSuccessSound
+        playSuccessSound,
+        getIncompleteStudyTasksCount
     };
 };

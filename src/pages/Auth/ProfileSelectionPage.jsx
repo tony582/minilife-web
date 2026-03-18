@@ -1,9 +1,11 @@
 import React from 'react';
-import { useAppContext } from '../../context/AppContext';
+import { useDataContext } from '../../context/DataContext.jsx';
+import { useUIContext } from '../../context/UIContext.jsx';
 import { Icons, AvatarDisplay } from '../../utils/Icons';
 
 export const ProfileSelectionPage = () => {
-    const { kids, changeActiveKid, changeAppState, setKidTab, parentSettings, setShowAddKidModal, setNewKidForm } = useAppContext();
+    const { kids, changeActiveKid } = useDataContext();
+    const { changeAppState, setKidTab, parentSettings, setShowAddKidModal, setNewKidForm } = useUIContext();
     
     return (
         <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 animate-fade-in relative">

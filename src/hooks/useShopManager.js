@@ -1,13 +1,29 @@
-import { useAuthContext } from '../context/AuthContext';
-import { useDataContext } from '../context/DataContext';
-import { useUIContext } from '../context/UIContext';
+import { useAuthContext } from '../context/AuthContext.jsx';
+import { useDataContext } from '../context/DataContext.jsx';
+import { useUIContext } from '../context/UIContext.jsx';
 import { apiFetch } from '../api/client';
 
 export const useShopManager = (authC, dataC, uiC) => {
     const context = { ...authC, ...dataC, ...uiC };
-    const { activeKidId, kids, setKids, inventory, setInventory, orders, setOrders, transactions, setTransactions, notify, setShowTransferModal, setTransferForm, setSelectedOrder, setReviewStars, setReviewComment, setShowAddItemModal, setNewItem } = context;
+    const { activeKidId, kids, setKids, inventory, setInventory, orders, setOrders, transactions, setTransactions, notify, setShowTransferModal, setTransferForm, setSelectedOrder, setReviewStars, setReviewComment, setShowAddItemModal, setNewItem, setShowQrScanner } = context;
 
-    // 快速完成功能 
+    const handleVerifyOrder = async (orderIdOrCode) => {
+        const order = orders.find(o => o.id === orderIdOrCode || o.redeemCode === orderIdOrCode);
+        if (!order) return notify("未找到该订单或核销码无效", "error");
+        if (order.status !== 'shipping') return notify("该订单已被核销或状态错误", "error");
+
+        try {
+            await apiFetch(`/api/orders/${order.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'completed' }) });
+            setOrders(orders.map(o => o.id === order.id ? { ...o, status: 'completed' } : o));
+            notify("扫码核销成功！", "success");
+            setShowQrScanner(false);
+        } catch (e) {
+            notify("核销网络请求失败", "error");
+        }
+    };
+
+// 快速完成功能 
+ 
 
 const confirmTransfer = async () => {
   const amount = parseInt(transferForm.amount);
@@ -271,6 +287,7 @@ const confirmTransfer = async () => {
         confirmReceipt,
         submitReview,
         handleSaveNewItem,
-        confirmTransfer
+        confirmTransfer,
+        handleVerifyOrder
     };
 };

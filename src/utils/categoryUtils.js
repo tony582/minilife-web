@@ -1,4 +1,5 @@
 export const defaultCategories = ['语文', '数学', '英语', '物理', '化学', '生物', '历史', '地理', '政治', '道德与法治', '信息技术', '体育运动', '娱乐', '兴趣班', '其他'];
+export const allCategories = defaultCategories;
 
 export const getCategoryColor = (cat) => {
     const colors = {

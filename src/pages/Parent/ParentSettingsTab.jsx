@@ -1,18 +1,22 @@
 import React from 'react';
-import { useAppContext } from '../../context/AppContext';
+import { useDataContext } from '../../context/DataContext.jsx';
+import { useUIContext } from '../../context/UIContext.jsx';
 import { Icons, AvatarDisplay } from '../../utils/Icons';
 
 export const ParentSettingsTab = () => {
     const {
-        activeKid,
         kids,
+        transactions,
+        orders,
+        tasks,
         activeKidId,
         setActiveKidId,
-        transactions,
+    } = useDataContext();
+    const activeKid = kids.find(k => k.id === activeKidId);
+
+    const {
         selectedDate,
-        orders,
-        tasks
-    } = useAppContext();
+    } = useUIContext();
 
     if (!activeKid) {
         return (

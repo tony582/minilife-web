@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { apiFetch } from '../api/client';
 
-export const useAppData = (token, setToken, user, setUser, setAuthLoading) => {
+export const useAppData = (token, setToken, user, setUser, setAuthLoading, notify) => {
     const [kids, setKids] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [inventory, setInventory] = useState([]);
     const [orders, setOrders] = useState([]);
     const [transactions, setTransactions] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [activeKidId, setActiveKidId] = useState(localStorage.getItem('minilife_activeKidId') || null);
 
     const [adminTab, setAdminTab] = useState('users');
     const [adminUsers, setAdminUsers] = useState([]);
@@ -124,6 +125,37 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading) => {
         };
     }, [token, setAuthLoading, setToken, setUser]);
 
+    // === Kid Management Functions ===
+    const changeActiveKid = (newKidId) => {
+        setActiveKidId(newKidId);
+        if (newKidId) localStorage.setItem('minilife_activeKidId', newKidId);
+        else localStorage.removeItem('minilife_activeKidId');
+    };
+
+    const updateActiveKid = async (updates) => {
+        try {
+            await apiFetch(`/api/kids/${activeKidId}`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updates)
+            });
+            setKids(prev => prev.map(k => k.id === activeKidId ? { ...k, ...updates } : k));
+        } catch (e) {
+            console.error(e);
+            if (notify) notify('网络请求失败', 'error');
+        }
+    };
+
+    const updateKidData = async (targetKidId, updates) => {
+        try {
+            await apiFetch(`/api/kids/${targetKidId}`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updates)
+            });
+            setKids(prev => prev.map(k => k.id === targetKidId ? { ...k, ...updates } : k));
+        } catch (e) {
+            console.error(e);
+            if (notify) notify('网络请求失败', 'error');
+        }
+    };
+
     return {
         kids, setKids,
         tasks, setTasks,
@@ -131,6 +163,10 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading) => {
         orders, setOrders,
         transactions, setTransactions,
         isLoading, setIsLoading,
+        activeKidId, setActiveKidId,
+        changeActiveKid,
+        updateActiveKid,
+        updateKidData,
         adminTab, setAdminTab,
         adminUsers, setAdminUsers,
         adminCodes, setAdminCodes,

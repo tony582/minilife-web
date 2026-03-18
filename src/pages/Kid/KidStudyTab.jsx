@@ -1,5 +1,8 @@
-import React, { useRef } from 'react';
-import { useAppContext } from '../../context/AppContext';
+import React, { useRef, useState } from 'react';
+import { useAuthContext } from '../../context/AuthContext.jsx';
+import { useDataContext } from '../../context/DataContext.jsx';
+import { useUIContext } from '../../context/UIContext.jsx';
+import { useTaskManager } from '../../hooks/useTaskManager';
 import { apiFetch } from '../../api/client';
 import { Icons, renderIcon } from '../../utils/Icons';
 import { formatDate, getDisplayDateArray, getWeekNumber } from '../../utils/dateUtils';
@@ -10,27 +13,36 @@ import useOnClickOutside from '../../hooks/useOnClickOutside';
 export const KidStudyTab = () => {
     const kidFilterRef = useRef();
 
+    const authC = useAuthContext();
+    const dataC = useDataContext();
+    const uiC = useUIContext();
+
+    const { tasks, setTasks, activeKidId } = dataC;
+
     const {
-        tasks, setTasks,
-        activeKidId,
         currentViewDate, setCurrentViewDate,
-        selectedDate, setSelectedDate,
-        taskFilter, setTaskFilter,
-        taskStatusFilter, setTaskStatusFilter,
-        taskSort, setTaskSort,
-        searchKidTaskKeyword, setSearchKidTaskKeyword,
-        isReordering,
-        showFilterDropdown, setShowFilterDropdown,
-        showStatusDropdown, setShowStatusDropdown,
-        showSortDropdown, setShowSortDropdown,
         setPreviewTask, setShowPreviewModal,
         setShowCalendarModal,
+        selectedDate, setSelectedDate
+    } = uiC;
+
+    const {
         handleStartTask,
         handleAttemptSubmit,
         getTaskStatusOnDate,
         getIncompleteStudyTasksCount,
         openQuickComplete
-    } = useAppContext();
+    } = useTaskManager(authC, dataC, uiC);
+
+    const [searchKidTaskKeyword, setSearchKidTaskKeyword] = useState('');
+    const [taskFilter, setTaskFilter] = useState([]);
+    const [taskStatusFilter, setTaskStatusFilter] = useState('all');
+    const [taskSort, setTaskSort] = useState('default');
+    
+    const [isReordering, setIsReordering] = useState(false);
+    const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+    const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+    const [showSortDropdown, setShowSortDropdown] = useState(false);
 
     useOnClickOutside(kidFilterRef, () => setShowFilterDropdown(false));
 

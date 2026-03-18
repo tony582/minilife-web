@@ -1,9 +1,11 @@
 import React from 'react';
-import { useAppContext } from '../../context/AppContext';
+import { useDataContext } from '../../context/DataContext.jsx';
+import { useUIContext } from '../../context/UIContext.jsx';
 import { Icons } from '../../utils/Icons';
 
 export const ParentWealthTab = () => {
-    const { kids, transactions, setShowTransactionHistoryModal } = useAppContext();
+    const { kids, transactions } = useDataContext();
+    const { setShowTransactionHistoryModal } = useUIContext();
 
     return (
         <div className="animate-fade-in space-y-6">

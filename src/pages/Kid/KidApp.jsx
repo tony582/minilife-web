@@ -1,6 +1,10 @@
 import React from 'react';
-import { useAppContext } from '../../context/AppContext';
-import { Icons, AvatarDisplay, getLevelTier, getLevelReq } from '../../utils/Icons';
+import { useDataContext } from '../../context/DataContext.jsx';
+import { useUIContext } from '../../context/UIContext.jsx';
+import { useToast } from '../../hooks/useToast';
+import { apiFetch } from '../../api/client';
+import { Icons, AvatarDisplay } from '../../utils/Icons';
+import { getLevelTier, getLevelReq } from '../../utils/levelUtils';
 import { KidStudyTab } from './KidStudyTab';
 import { KidHabitTab } from './KidHabitTab';
 import { KidWealthTab } from './KidWealthTab';
@@ -10,10 +14,16 @@ import { KidProfileTab } from './KidProfileTab';
 export const KidApp = () => {
     const {
         kids,
-        activeKidId,
         tasks,
         orders,
         transactions,
+        setKids,
+        activeKidId,
+        changeActiveKid,
+    } = useDataContext();
+
+    const {
+        changeAppState,
         showKidSwitcher,
         setShowKidSwitcher,
         showParentPinModal,
@@ -28,13 +38,10 @@ export const KidApp = () => {
         setShowLevelModal,
         kidTab,
         setKidTab,
-        changeActiveKid,
-        changeAppState,
         parentSettings,
-        setKids,
-        notify,
-        apiFetch
-    } = useAppContext();
+    } = useUIContext();
+
+    const { notify } = useToast();
 
     const activeKid = kids.find(k => k.id === activeKidId);
 

@@ -36,6 +36,11 @@ export const getDisplayDateArray = (baseDate) => {
 };
 
 export const getWeekNumber = (d) => {
+    // Ensure d is a Date object
+    if (!(d instanceof Date)) {
+        d = new Date(d);
+    }
+    // Create a copy to avoid mutating the original
     d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
     d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
     var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));

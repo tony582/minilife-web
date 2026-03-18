@@ -3,28 +3,14 @@ import React, { createContext, useContext, useState, useRef } from 'react';
 const UIContext = createContext(null);
 
 export const UIProvider = ({ children }) => {
-    // 任务列表控制 (Student)
-    const [taskFilter, setTaskFilter] = useState([]);
-    const [taskStatusFilter, setTaskStatusFilter] = useState('all');
-    const [taskSort, setTaskSort] = useState('default');
+    // App-level navigation state (shared across all components)
+    const [appState, setAppState] = useState(localStorage.getItem('minilife_appState') || 'profiles');
+    const changeAppState = (newState) => {
+        setAppState(newState);
+        localStorage.setItem('minilife_appState', newState);
+    };
 
     // 任务列表控制 (Parent)
-    const [parentTaskFilter, setParentTaskFilter] = useState([]);
-    const [parentTaskStatusFilter, setParentTaskStatusFilter] = useState('all');
-    const [parentTaskSort, setParentTaskSort] = useState('default');
-
-    // 搜索状态
-    const [searchPlanKeyword, setSearchPlanKeyword] = useState('');
-    const [searchShopKeyword, setSearchShopKeyword] = useState('');
-    const [searchKidTaskKeyword, setSearchKidTaskKeyword] = useState('');
-    const [searchKidShopKeyword, setSearchKidShopKeyword] = useState('');
-    const [searchKidHabitKeyword, setSearchKidHabitKeyword] = useState('');
-
-    const [isReordering, setIsReordering] = useState(false);
-    const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-    const [showStatusDropdown, setShowStatusDropdown] = useState(false);
-    const [showSortDropdown, setShowSortDropdown] = useState(false);
-
     // Parent header settings dropdown
     const [showParentSettingsDropdown, setShowParentSettingsDropdown] = useState(false);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -32,8 +18,16 @@ export const UIProvider = ({ children }) => {
     const [showSecurityParamsModal, setShowSecurityParamsModal] = useState(false);
 
     // Other missing UI filtering states
+    const [kidTab, setKidTab] = useState('study'); // 'study', 'habit', 'shop', 'wealth', 'profile'
+    const [kidShopTab, setKidShopTab] = useState('mall');
+    const [parentTab, setParentTab] = useState('tasks');
+    const [parentKidFilter, setParentKidFilter] = useState('all');
+    const [currentViewDate, setCurrentViewDate] = useState(new Date().toISOString().split('T')[0]);
+    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const [monthViewDate, setMonthViewDate] = useState(new Date());
+    const [parentSettings, setParentSettings] = useState({ pinEnabled: false, pinCode: '1234' });
+
     const [historyFilter, setHistoryFilter] = useState('all'); // 'all', 'income', 'expense'
-    const [habitCardFilter, setHabitCardFilter] = useState('all'); // 'all', 'income', 'expense', 'completed', 'pending'
     const [showLevelModal, setShowLevelModal] = useState(false);
     const [celebrationData, setCelebrationData] = useState(null);
     const [showPenaltyModal, setShowPenaltyModal] = useState(false);
@@ -59,8 +53,6 @@ export const UIProvider = ({ children }) => {
     const [newKidForm, setNewKidForm] = useState({ name: '', gender: 'boy', avatar: '' });
     const [showAddItemModal, setShowAddItemModal] = useState(false);
     const [showQrScanner, setShowQrScanner] = useState(false);
-    const [orderHistoryFilterKid, setOrderHistoryFilterKid] = useState('all');
-    const [orderHistoryFilterTime, setOrderHistoryFilterTime] = useState('7'); // '7', '30', 'all'
     const [showLevelRules, setShowLevelRules] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
     const [deleteConfirmTask, setDeleteConfirmTask] = useState(null);
@@ -150,21 +142,20 @@ export const UIProvider = ({ children }) => {
     const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
 
     const uiState = {
-        taskFilter, setTaskFilter, taskStatusFilter, setTaskStatusFilter, taskSort, setTaskSort,
-        parentTaskFilter, setParentTaskFilter, parentTaskStatusFilter, setParentTaskStatusFilter, parentTaskSort, setParentTaskSort,
-        searchPlanKeyword, setSearchPlanKeyword, searchShopKeyword, setSearchShopKeyword, searchKidTaskKeyword, setSearchKidTaskKeyword,
-        searchKidShopKeyword, setSearchKidShopKeyword, searchKidHabitKeyword, setSearchKidHabitKeyword,
-        isReordering, setIsReordering, showFilterDropdown, setShowFilterDropdown, showStatusDropdown, setShowStatusDropdown,
-        showSortDropdown, setShowSortDropdown, showParentSettingsDropdown, setShowParentSettingsDropdown, showSettingsModal, setShowSettingsModal,
+        appState, changeAppState,
+        kidTab, setKidTab, kidShopTab, setKidShopTab, parentTab, setParentTab, parentKidFilter, setParentKidFilter,
+        currentViewDate, setCurrentViewDate, selectedDate, setSelectedDate, monthViewDate, setMonthViewDate,
+        parentSettings, setParentSettings,
+        showParentSettingsDropdown, setShowParentSettingsDropdown, showSettingsModal, setShowSettingsModal,
         showSubscriptionModal, setShowSubscriptionModal, showSecurityParamsModal, setShowSecurityParamsModal,
-        historyFilter, setHistoryFilter, habitCardFilter, setHabitCardFilter, showLevelModal, setShowLevelModal,
+        historyFilter, setHistoryFilter, showLevelModal, setShowLevelModal,
         celebrationData, setCelebrationData, showPenaltyModal, setShowPenaltyModal, penaltyTaskContext, setPenaltyTaskContext,
         penaltySelectedKidIds, setPenaltySelectedKidIds, showReviewModal, setShowReviewModal, reviewOrderId, setReviewOrderId,
         showShopConfirmModal, setShowShopConfirmModal, shopTargetItem, setShopTargetItem, qrModalValue, setQrModalValue,
         taskToSubmit, setTaskToSubmit, taskIdToEdit, setTaskIdToEdit, showTransferModal, setShowTransferModal, transferForm, setTransferForm,
         previewImageIndex, setPreviewImageIndex, selectedOrder, setSelectedOrder, showAddPlanModal, setShowAddPlanModal,
         showAddKidModal, setShowAddKidModal, newKidForm, setNewKidForm, showAddItemModal, setShowAddItemModal, showQrScanner, setShowQrScanner,
-        orderHistoryFilterKid, setOrderHistoryFilterKid, orderHistoryFilterTime, setOrderHistoryFilterTime, showLevelRules, setShowLevelRules,
+        showLevelRules, setShowLevelRules,
         editingTask, setEditingTask, deleteConfirmTask, setDeleteConfirmTask, mallSortByPrice, setMallSortByPrice,
         orderSortByPrice, setOrderSortByPrice, orderFilterStatus, setOrderFilterStatus, kidCheckoutItem, setKidCheckoutItem,
         showAvatarPickerModal, setShowAvatarPickerModal, pendingAvatar, setPendingAvatar, pointActionTimings, setPointActionTimings,

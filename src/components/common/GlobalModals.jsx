@@ -1,23 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuthContext } from '../../context/AuthContext.jsx';
 import { useDataContext } from '../../context/DataContext.jsx';
 import { useUIContext } from '../../context/UIContext.jsx';
+import { useToast } from '../../hooks/useToast';
 import { useTaskManager } from '../../hooks/useTaskManager';
 import { useShopManager } from '../../hooks/useShopManager';
-import { Icons, AvatarDisplay } from '../../utils/Icons';
+import { Icons, AvatarDisplay, renderIcon } from '../../utils/Icons';
 import { getLevelReq, getLevelTier } from '../../utils/levelUtils';
+import { isSameDay, getDaysInMonth, formatDate } from '../../utils/dateUtils';
+import { getCategoryGradient, getCategoryColor, getIconForCategory, allCategories } from '../../utils/categoryUtils';
 import { apiFetch } from '../../api/client';
+
 
 export const GlobalModals = () => {
     const authC = useAuthContext();
     const dataC = useDataContext();
     const uiC = useUIContext();
+    const toastC = useToast();
     const taskM = useTaskManager(authC, dataC, uiC);
     const shopM = useShopManager(authC, dataC, uiC);
-    const context = { ...authC, ...dataC, ...uiC, ...taskM, ...shopM };
+    const context = { ...authC, ...dataC, ...uiC, ...taskM, ...shopM, ...toastC };
     const {
-        activeKidId, setActiveKidId, kidTab, setKidTab, kidShopTab, setKidShopTab, parentTab, setParentTab, parentKidFilter, setParentKidFilter, currentViewDate, setCurrentViewDate, selectedDate, setSelectedDate, monthViewDate, setMonthViewDate, taskFilter, setTaskFilter, taskStatusFilter, setTaskStatusFilter, taskSort, setTaskSort, parentTaskFilter, setParentTaskFilter, parentTaskStatusFilter, setParentTaskStatusFilter, parentTaskSort, setParentTaskSort, searchPlanKeyword, setSearchPlanKeyword, searchShopKeyword, setSearchShopKeyword, searchKidTaskKeyword, setSearchKidTaskKeyword, searchKidShopKeyword, setSearchKidShopKeyword, searchKidHabitKeyword, setSearchKidHabitKeyword, isReordering, setIsReordering, showFilterDropdown, setShowFilterDropdown, showStatusDropdown, setShowStatusDropdown, showSortDropdown, setShowSortDropdown, showParentSettingsDropdown, setShowParentSettingsDropdown, showSettingsModal, setShowSettingsModal, showSubscriptionModal, setShowSubscriptionModal, showSecurityParamsModal, setShowSecurityParamsModal, taskToSubmit, setTaskToSubmit, taskIdToEdit, setTaskIdToEdit, showTransferModal, setShowTransferModal, transferForm, setTransferForm, previewImageIndex, setPreviewImageIndex, selectedOrder, setSelectedOrder, showAddPlanModal, setShowAddPlanModal, showAddKidModal, setShowAddKidModal, newKidForm, setNewKidForm, showAddItemModal, setShowAddItemModal, showQrScanner, setShowQrScanner, orderHistoryFilterKid, setOrderHistoryFilterKid, orderHistoryFilterTime, setOrderHistoryFilterTime, historyFilter, setHistoryFilter, habitCardFilter, setHabitCardFilter, showLevelRules, setShowLevelRules, editingTask, setEditingTask, deleteConfirmTask, setDeleteConfirmTask, mallSortByPrice, setMallSortByPrice, orderSortByPrice, setOrderSortByPrice, orderFilterStatus, setOrderFilterStatus, kidCheckoutItem, setKidCheckoutItem, showAvatarPickerModal, setShowAvatarPickerModal, showPenaltyModal, setShowPenaltyModal, penaltyTaskContext, setPenaltyTaskContext, penaltySelectedKidIds, setPenaltySelectedKidIds, showReviewModal, setShowReviewModal, reviewOrderId, setReviewOrderId, showShopConfirmModal, setShowShopConfirmModal, shopTargetItem, setShopTargetItem, qrModalValue, setQrModalValue, showLevelModal, setShowLevelModal, pendingAvatar, setPendingAvatar, pointActionTimings, setPointActionTimings, showEmotionalReminderModal, setShowEmotionalReminderModal, emotionalCooldownSeconds, setEmotionalCooldownSeconds, showRewardModal, setShowRewardModal, showRejectModal, setShowRejectModal, rejectingTaskInfo, setRejectingTaskInfo, rejectReason, setRejectReason, showTransactionHistoryModal, setShowTransactionHistoryModal, transactionHistoryFilterTime, setTransactionHistoryFilterTime, transactionHistoryStartDate, setTransactionHistoryStartDate, transactionHistoryEndDate, setTransactionHistoryEndDate, transactionHistoryFilterType, setTransactionHistoryFilterType, showTimerModal, setShowTimerModal, timerTargetId, setTimerTargetId, timerMode, setTimerMode, timerSeconds, setTimerSeconds, timerTotalSeconds, setTimerTotalSeconds, isTimerRunning, setIsTimerRunning, timerPaused, setTimerPaused, pomodoroSession, setPomodoroSession, pomodoroIsBreak, setPomodoroIsBreak, showCalendarModal, setShowCalendarModal, showParentPinModal, setShowParentPinModal, showKidSwitcher, setShowKidSwitcher, showInterestDetailsModal, setShowInterestDetailsModal, quickCompleteTask, setQuickCompleteTask, qcTimeMode, setQcTimeMode, qcHours, setQcHours, qcMinutes, setQcMinutes, qcSeconds, setQcSeconds, qcStartTime, setQcStartTime, qcEndTime, setQcEndTime, qcNote, setQcNote, qcAttachments, setQcAttachments, pinInput, setPinInput, reviewStars, setReviewStars, reviewComment, setReviewComment, newItem, setNewItem, planType, setPlanType, lastSavedEndTime, setLastSavedEndTime, planForm, setPlanForm, parentSettings, setParentSettings, celebrationData, setCelebrationData, showPreviewModal, setShowPreviewModal, previewTask, setPreviewTask, showImagePreviewModal, setShowImagePreviewModal, previewImages, setPreviewImages, currentPreviewIndex, setCurrentPreviewIndex, notifications, notify, setNotifications, appState, changeAppState, token, setToken, user, setUser, authLoading, setAuthLoading, authMode, setAuthMode, authForm, setAuthForm, confirmPassword, setConfirmPassword, activationCode, setActivationCode, handleAuth, handleLogout, kids, setKids, tasks, setTasks, inventory, setInventory, orders, setOrders, transactions, setTransactions, isLoading, setIsLoading, adminTab, setAdminTab, adminUsers, setAdminUsers, adminCodes, setAdminCodes, usedCodes, setUsedCodes, settingsCode, setSettingsCode, changeActiveKid, updateActiveKid, updateKidData, handleExpChange, getTaskStatusOnDate, getTaskTimeSpent, handleDeleteTask, handleAttemptSubmit, handleMarkHabitComplete, handleRejectTask, handleApproveTask, handleApproveAllTasks, handleStartTask, handleContinueTask, confirmSubmitTask, confirmTransfer, buyItem, handleRedeem, generateCodes, getIncompleteStudyTasksCount
+        activeKidId, setActiveKidId, kidTab, setKidTab, kidShopTab, setKidShopTab, parentTab, setParentTab, parentKidFilter, setParentKidFilter, currentViewDate, setCurrentViewDate, selectedDate, setSelectedDate, monthViewDate, setMonthViewDate, showParentSettingsDropdown, setShowParentSettingsDropdown, showSettingsModal, setShowSettingsModal, showSubscriptionModal, setShowSubscriptionModal, showSecurityParamsModal, setShowSecurityParamsModal, taskToSubmit, setTaskToSubmit, taskIdToEdit, setTaskIdToEdit, showTransferModal, setShowTransferModal, transferForm, setTransferForm, previewImageIndex, setPreviewImageIndex, selectedOrder, setSelectedOrder, showAddPlanModal, setShowAddPlanModal, showAddKidModal, setShowAddKidModal, newKidForm, setNewKidForm, showAddItemModal, setShowAddItemModal, showQrScanner, setShowQrScanner, historyFilter, setHistoryFilter, showLevelRules, setShowLevelRules, editingTask, setEditingTask, deleteConfirmTask, setDeleteConfirmTask, mallSortByPrice, setMallSortByPrice, orderSortByPrice, setOrderSortByPrice, orderFilterStatus, setOrderFilterStatus, kidCheckoutItem, setKidCheckoutItem, showAvatarPickerModal, setShowAvatarPickerModal, showPenaltyModal, setShowPenaltyModal, penaltyTaskContext, setPenaltyTaskContext, penaltySelectedKidIds, setPenaltySelectedKidIds, showReviewModal, setShowReviewModal, reviewOrderId, setReviewOrderId, showShopConfirmModal, setShowShopConfirmModal, shopTargetItem, setShopTargetItem, qrModalValue, setQrModalValue, showLevelModal, setShowLevelModal, pendingAvatar, setPendingAvatar, pointActionTimings, setPointActionTimings, showEmotionalReminderModal, setShowEmotionalReminderModal, emotionalCooldownSeconds, setEmotionalCooldownSeconds, showRewardModal, setShowRewardModal, showRejectModal, setShowRejectModal, rejectingTaskInfo, setRejectingTaskInfo, rejectReason, setRejectReason, showTransactionHistoryModal, setShowTransactionHistoryModal, transactionHistoryFilterTime, setTransactionHistoryFilterTime, transactionHistoryStartDate, setTransactionHistoryStartDate, transactionHistoryEndDate, setTransactionHistoryEndDate, transactionHistoryFilterType, setTransactionHistoryFilterType, showTimerModal, setShowTimerModal, timerTargetId, setTimerTargetId, timerMode, setTimerMode, timerSeconds, setTimerSeconds, timerTotalSeconds, setTimerTotalSeconds, isTimerRunning, setIsTimerRunning, timerPaused, setTimerPaused, pomodoroSession, setPomodoroSession, pomodoroIsBreak, setPomodoroIsBreak, showCalendarModal, setShowCalendarModal, showParentPinModal, setShowParentPinModal, showKidSwitcher, setShowKidSwitcher, showInterestDetailsModal, setShowInterestDetailsModal, quickCompleteTask, setQuickCompleteTask, qcTimeMode, setQcTimeMode, qcHours, setQcHours, qcMinutes, setQcMinutes, qcSeconds, setQcSeconds, qcStartTime, setQcStartTime, qcEndTime, setQcEndTime, qcNote, setQcNote, qcAttachments, setQcAttachments, pinInput, setPinInput, reviewStars, setReviewStars, reviewComment, setReviewComment, newItem, setNewItem, planType, setPlanType, lastSavedEndTime, setLastSavedEndTime, planForm, setPlanForm, parentSettings, setParentSettings, celebrationData, setCelebrationData, showPreviewModal, setShowPreviewModal, previewTask, setPreviewTask, showImagePreviewModal, setShowImagePreviewModal, previewImages, setPreviewImages, currentPreviewIndex, setCurrentPreviewIndex, notifications, notify, setNotifications, appState, changeAppState, token, setToken, user, setUser, authLoading, setAuthLoading, authMode, setAuthMode, authForm, setAuthForm, confirmPassword, setConfirmPassword, activationCode, setActivationCode, handleAuth, handleLogout, kids, setKids, tasks, setTasks, inventory, setInventory, orders, setOrders, transactions, setTransactions, isLoading, setIsLoading, adminTab, setAdminTab, adminUsers, setAdminUsers, adminCodes, setAdminCodes, usedCodes, setUsedCodes, settingsCode, setSettingsCode, changeActiveKid, updateActiveKid, updateKidData, handleExpChange, getTaskStatusOnDate, getTaskTimeSpent, handleDeleteTask, handleAttemptSubmit, handleMarkHabitComplete, handleRejectTask, handleStartTask, confirmSubmitTask, confirmTransfer, buyItem, getIncompleteStudyTasksCount,
+        openQuickComplete, handleQcQuickDuration, handleQcFileUpload, handleQuickComplete, handleSavePlan, submitReview, handleSaveNewItem, confirmReceipt, checkPeriodLimits, playSuccessSound, handleVerifyOrder
     } = context;
 
     const activeKid = kids.find(k => k.id === activeKidId);
@@ -115,33 +121,6 @@ export const GlobalModals = () => {
                 </div>
             </div>
         );
-    };
-
-    const getIncompleteStudyTasksCount = (dateStr) => {
-        let count = 0;
-        let total = 0;
-        if (appState === 'kid_app') {
-            const dailyTasks = tasks.filter(t => (t.kidId === activeKidId || t.kidId === 'all') && t.type === 'study' && isTaskDueOnDate(t, dateStr));
-            count = dailyTasks.filter(t => getTaskStatusOnDate(t, dateStr, activeKidId) !== 'completed').length;
-            total = dailyTasks.length;
-        } else if (appState === 'parent_app') {
-            const dailyTasks = tasks.filter(t => {
-                if (parentKidFilter !== 'all' && t.kidId !== 'all' && t.kidId !== parentKidFilter) return false;
-                return t.type === 'study' && isTaskDueOnDate(t, dateStr);
-            });
-            total = dailyTasks.length;
-            dailyTasks.forEach(t => {
-                if (parentKidFilter === 'all') {
-                    const targetedKids = t.kidId === 'all' ? kids : [kids.find(k => k.id === t.kidId)].filter(Boolean);
-                    targetedKids.forEach(k => {
-                        if (getTaskStatusOnDate(t, dateStr, k.id) !== 'completed') count++;
-                    });
-                } else {
-                    if (getTaskStatusOnDate(t, dateStr, parentKidFilter) !== 'completed') count++;
-                }
-            });
-        }
-        return { count, total };
     };
 
     const renderCalendarModal = () => {
@@ -834,21 +813,6 @@ export const GlobalModals = () => {
                 </div>
             </div>
         );
-    };
-
-    const handleVerifyOrder = async (orderIdOrCode) => {
-        const order = orders.find(o => o.id === orderIdOrCode || o.redeemCode === orderIdOrCode);
-        if (!order) return notify("未找到该订单或核销码无效", "error");
-        if (order.status !== 'shipping') return notify("该订单已被核销或状态错误", "error");
-
-        try {
-            await apiFetch(`/api/orders/${order.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'completed' }) });
-            setOrders(orders.map(o => o.id === order.id ? { ...o, status: 'completed' } : o));
-            notify("扫码核销成功！", "success");
-            setShowQrScanner(false);
-        } catch (e) {
-            notify("核销网络请求失败", "error");
-        }
     };
 
     const renderQrScannerModal = () => {
@@ -2868,25 +2832,7 @@ export const GlobalModals = () => {
         );
     };
 
-    if (authLoading) {
-        return <div className="min-h-screen bg-slate-50 flex items-center justify-center font-black text-indigo-300 animate-pulse">加载中...</div>;
-    }
-
-    if (!token) {
-        return <AuthPage />;
-    }
-
-    if (user && new Date(user.sub_end_date) < new Date() && user.role !== 'admin') {
-        return <ExpiredPage />;
-    }
-
-    if (user?.role === 'admin') {
-        return <AdminPage />;
-    }
-
     // CelebrationModal has been correctly moved outside the App component body.
-
-
     return (
         <>
             {renderTaskSubmitModal()}

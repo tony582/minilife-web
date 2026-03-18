@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAppData } from '../hooks/useAppData';
 import { useAuthContext } from './AuthContext';
+import { useToast } from '../hooks/useToast';
 
 const DataContext = createContext(null);
 
 export const DataProvider = ({ children }) => {
     const { token, setToken, user, setUser, setAuthLoading } = useAuthContext();
-    const dataState = useAppData(token, setToken, user, setUser, setAuthLoading);
+    const { notify } = useToast();
+    const dataState = useAppData(token, setToken, user, setUser, setAuthLoading, notify);
 
     return <DataContext.Provider value={dataState}>{children}</DataContext.Provider>;
 };

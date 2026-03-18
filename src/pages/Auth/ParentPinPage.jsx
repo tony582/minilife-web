@@ -1,9 +1,11 @@
 import React from 'react';
-import { useAppContext } from '../../context/AppContext';
+import { useToast } from '../../hooks/useToast';
+import { useUIContext } from '../../context/UIContext.jsx';
 import { Icons } from '../../utils/Icons';
 
 export const ParentPinPage = () => {
-    const { changeAppState, pinInput, setPinInput, parentSettings, notify } = useAppContext();
+    const { notify } = useToast();
+    const { changeAppState, pinInput, setPinInput, parentSettings } = useUIContext();
 
     const handlePinClick = (num) => {
         if (pinInput.length < 4) {

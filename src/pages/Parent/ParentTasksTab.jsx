@@ -1,48 +1,43 @@
-import React, { useRef } from 'react';
-import { useAppContext } from '../../context/AppContext';
+import React, { useRef, useState } from 'react';
+import { useDataContext } from '../../context/DataContext.jsx';
+import { useAuthContext } from '../../context/AuthContext.jsx';
+import { useUIContext } from '../../context/UIContext.jsx';
+import { useTaskManager } from '../../hooks/useTaskManager';
 import { Icons, AvatarDisplay, renderIcon } from '../../utils/Icons';
+import { isTaskDueOnDate } from '../../utils/taskUtils';
 import { getCategoryGradient, getIconForCategory } from '../../utils/categoryUtils';
 import { getWeekNumber, getDisplayDateArray, formatDate } from '../../utils/dateUtils';
 import useOnClickOutside from '../../hooks/useOnClickOutside';
 
 export const ParentTasksTab = () => {
+    const authC = useAuthContext();
+    const dataC = useDataContext();
+    const uiC = useUIContext();
+    
+    const { kids, tasks, setTasks } = dataC;
     const {
-        kids,
-        tasks,
-        setTasks,
-        parentKidFilter,
-        setParentKidFilter,
-        currentViewDate,
-        setCurrentViewDate,
-        selectedDate,
-        setSelectedDate,
-        parentTaskFilter,
-        setParentTaskFilter,
-        parentTaskStatusFilter,
-        setParentTaskStatusFilter,
-        parentTaskSort,
-        setParentTaskSort,
-        isReordering,
-        setIsReordering,
-        showFilterDropdown,
-        setShowFilterDropdown,
-        showSortDropdown,
-        setShowSortDropdown,
+        selectedDate, setSelectedDate,
         setShowAddPlanModal,
-        setEditingTask,
-        setPlanType,
-        setPlanForm,
-        setPreviewTask,
-        setShowPreviewModal,
-        setDeleteConfirmTask,
-        setShowCalendarModal,
-        handleApproveAllTasks,
-        getIncompleteStudyTasksCount,
-        isTaskDueOnDate,
-        getTaskStatusOnDate,
-        lastSavedEndTime,
-        apiFetch
-    } = useAppContext();
+        setEditingTask, setPlanType, setPlanForm,
+        setPreviewTask, setShowPreviewModal,
+        setDeleteConfirmTask, setShowCalendarModal,
+        lastSavedEndTime, apiFetch,
+        parentKidFilter, setParentKidFilter,
+        currentViewDate, setCurrentViewDate
+    } = uiC;
+
+    const {
+        handleApproveAllTasks, getIncompleteStudyTasksCount,
+        getTaskStatusOnDate
+    } = useTaskManager(authC, dataC, uiC);
+
+    const [parentTaskFilter, setParentTaskFilter] = useState([]);
+    const [parentTaskStatusFilter, setParentTaskStatusFilter] = useState('all');
+    const [parentTaskSort, setParentTaskSort] = useState('default');
+
+    const [isReordering, setIsReordering] = useState(false);
+    const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+    const [showSortDropdown, setShowSortDropdown] = useState(false);
 
     const parentFilterRef = useRef(null);
     const parentSortRef = useRef(null);

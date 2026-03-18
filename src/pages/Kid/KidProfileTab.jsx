@@ -1,15 +1,15 @@
 import React from 'react';
-import { useAppContext } from '../../context/AppContext';
+import { useDataContext } from '../../context/DataContext.jsx';
+import { useUIContext } from '../../context/UIContext.jsx';
 import { Icons } from '../../utils/Icons';
 import { getLevelReq, getLevelTier } from '../../utils/levelUtils';
 
 export const KidProfileTab = () => {
+    const { kids, activeKidId } = useDataContext();
     const {
-        kids,
-        activeKidId,
         setShowAvatarPickerModal,
         setShowLevelModal
-    } = useAppContext();
+    } = useUIContext();
 
     const activeKid = kids.find(k => k.id === activeKidId);
     if (!activeKid) return null;

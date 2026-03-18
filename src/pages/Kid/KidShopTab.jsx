@@ -1,33 +1,16 @@
-import React from 'react';
-import { useAppContext } from '../../context/AppContext';
+import React, { useState } from 'react';
+import { useDataContext } from '../../context/DataContext.jsx';
+import { useUIContext } from '../../context/UIContext.jsx';
 import { Icons } from '../../utils/Icons';
 import { QRCodeSVG } from 'qrcode.react';
 import { isSameDay } from '../../utils/dateUtils';
 
 export const KidShopTab = () => {
-    const {
-        activeKid,
-        activeKidId,
-        kidShopTab,
-        setKidShopTab,
-        mallSortByPrice,
-        setMallSortByPrice,
-        orderFilterStatus,
-        setOrderFilterStatus,
-        orderSortByPrice,
-        setOrderSortByPrice,
-        searchKidShopKeyword,
-        setSearchKidShopKeyword,
-        inventory,
-        orders,
-        setShopTargetItem,
-        setShowShopConfirmModal,
-        setQrModalValue,
-        setReviewOrderId,
-        setReviewStars,
-        setReviewComment,
-        setShowReviewModal
-    } = useAppContext();
+    const { kidShopTab, setKidShopTab, mallSortByPrice, setMallSortByPrice, orderFilterStatus, setOrderFilterStatus, orderSortByPrice, setOrderSortByPrice, setShopTargetItem, setShowShopConfirmModal, setQrModalValue, setReviewOrderId, setReviewStars, setReviewComment, setShowReviewModal } = useUIContext();
+    const { inventory, orders, kids, activeKidId } = useDataContext();
+    const activeKid = kids.find(k => k.id === activeKidId);
+
+    const [searchKidShopKeyword, setSearchKidShopKeyword] = useState('');
 
     if (!activeKid) return null;
 

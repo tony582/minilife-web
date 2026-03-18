@@ -1,17 +1,17 @@
 import React from 'react';
-import { useAppContext } from '../../context/AppContext';
+import { useDataContext } from '../../context/DataContext.jsx';
+import { useUIContext } from '../../context/UIContext.jsx';
 import { Icons } from '../../utils/Icons';
 
 export const KidWealthTab = () => {
+    const { transactions, kids, activeKidId } = useDataContext();
+    const activeKid = kids.find(k => k.id === activeKidId);
     const {
-        activeKid,
-        activeKidId,
         setKidTab,
         setShowTransferModal,
         setShowInterestDetailsModal,
-        transactions,
         setShowTransactionHistoryModal
-    } = useAppContext();
+    } = useUIContext();
 
     if (!activeKid) return null;
 

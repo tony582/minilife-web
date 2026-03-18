@@ -1,5 +1,9 @@
-import React from 'react';
-import { useAppContext } from '../../context/AppContext';
+import React, { useState } from 'react';
+import { useDataContext } from '../../context/DataContext.jsx';
+import { useAuthContext } from '../../context/AuthContext.jsx';
+import { useUIContext } from '../../context/UIContext.jsx';
+import { useShopManager } from '../../hooks/useShopManager';
+import { useToast } from '../../hooks/useToast';
 import { Icons } from '../../utils/Icons';
 import { apiFetch } from '../../api/client';
 
@@ -13,18 +17,20 @@ const AvatarDisplay = ({ avatar, className = '' }) => {
 };
 
 export const ParentShopTab = () => {
-    const {
-        kids,
-        orders,
-        inventory, setInventory,
-        searchShopKeyword, setSearchShopKeyword,
-        setShowAddItemModal, setNewItem,
-        orderHistoryFilterKid, setOrderHistoryFilterKid,
-        orderHistoryFilterTime, setOrderHistoryFilterTime,
-        setShowQrScanner,
-        notify,
-        handleVerifyOrder
-    } = useAppContext();
+    const authC = useAuthContext();
+    const dataC = useDataContext();
+    const uiC = useUIContext();
+
+    const { kids, orders, inventory, setInventory } = dataC;
+    const { setShowAddItemModal, setNewItem, setShowQrScanner } = uiC;
+    
+    // Derived business methods
+    const { notify } = useToast();
+    const { handleVerifyOrder } = useShopManager(authC, dataC, uiC);
+
+    const [searchShopKeyword, setSearchShopKeyword] = useState('');
+    const [orderHistoryFilterKid, setOrderHistoryFilterKid] = useState('all');
+    const [orderHistoryFilterTime, setOrderHistoryFilterTime] = useState('7'); // '7', '30', 'all'
 
     return (
         <div className="space-y-6 animate-fade-in">

@@ -1,5 +1,6 @@
-import React from 'react';
-import { useAppContext } from '../../context/AppContext';
+import React, { useState } from 'react';
+import { useDataContext } from '../../context/DataContext.jsx';
+import { useUIContext } from '../../context/UIContext.jsx';
 import { Icons } from '../../utils/Icons';
 import { getCategoryGradient, getIconForCategory } from '../../utils/categoryUtils';
 import { formatDate } from '../../utils/dateUtils';
@@ -40,19 +41,18 @@ const getDefaultTimeRange = () => {
 };
 
 export const ParentPlansTab = () => {
+    const { kids, tasks, transactions } = useDataContext();
     const {
-        kids,
-        tasks,
-        transactions,
         pointActionTimings, setPointActionTimings,
         setShowEmotionalReminderModal, setEmotionalCooldownSeconds,
         setPenaltyTaskContext, setPenaltySelectedKidIds,
         setShowRewardModal, setShowPenaltyModal,
         setEditingTask, setPlanType, setPlanForm, setShowAddPlanModal,
-        searchPlanKeyword, setSearchPlanKeyword,
-        habitCardFilter, setHabitCardFilter,
         setDeleteConfirmTask
-    } = useAppContext();
+    } = useUIContext();
+
+    const [searchPlanKeyword, setSearchPlanKeyword] = useState('');
+    const [habitCardFilter, setHabitCardFilter] = useState('all');
 
     const handlePointAction = (t, actionType) => {
         const now = Date.now();

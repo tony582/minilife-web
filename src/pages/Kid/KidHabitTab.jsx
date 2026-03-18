@@ -1,22 +1,22 @@
-import React from 'react';
-import { useAppContext } from '../../context/AppContext';
+import React, { useState } from 'react';
+import { useDataContext } from '../../context/DataContext.jsx';
+import { useAuthContext } from '../../context/AuthContext.jsx';
+import { useUIContext } from '../../context/UIContext.jsx';
+import { useTaskManager } from '../../hooks/useTaskManager';
 import { getWeeklyCompletionCount } from '../../hooks/useTasks';
 import { Icons, renderIcon } from '../../utils/Icons';
 
 export const KidHabitTab = () => {
-    const { 
-        activeKidId, 
-        selectedDate, 
-        transactions, 
-        tasks, 
-        searchKidHabitKeyword, 
-        setSearchKidHabitKeyword, 
-        habitCardFilter, 
-        setHabitCardFilter, 
-        historyFilter, 
-        setHistoryFilter, 
-        handleAttemptSubmit
-    } = useAppContext();
+    const authC = useAuthContext();
+    const dataC = useDataContext();
+    const uiC = useUIContext();
+
+    const { transactions, tasks, activeKidId } = dataC;
+    const { selectedDate, historyFilter, setHistoryFilter } = uiC;
+    const { handleAttemptSubmit } = useTaskManager(authC, dataC, uiC);
+
+    const [searchKidHabitKeyword, setSearchKidHabitKeyword] = useState('');
+    const [habitCardFilter, setHabitCardFilter] = useState('all');
 
     const todayTransactions = transactions.filter(t => t.kidId === activeKidId && t.category === 'habit' && new Date(t.date).toDateString() === new Date().toDateString());
     const todayEarned = todayTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
