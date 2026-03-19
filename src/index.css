@@ -1,1 +1,14 @@
 @import "tailwindcss";
+
+/* Lock body scroll when any modal overlay is open (all modals use fixed+inset-0) */
+body:has(div.fixed.inset-0) {
+    overflow: hidden !important;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

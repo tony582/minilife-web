@@ -175,13 +175,13 @@ export const ParentTasksTab = () => {
     const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
     return (
-        <div className="animate-fade-in -mx-4 md:-mx-8 px-0 pb-8" style={{ background: C.bg, minHeight: '100vh' }}>
+        <div className="animate-fade-in -mx-4 md:-mx-8 px-0 pb-10" style={{ background: C.bg, minHeight: '100vh' }}>
           <div className="max-w-5xl mx-auto">
 
             {/* ═══ Hero Section with Orange Blob ═══ */}
-            <div className="relative overflow-hidden pt-2 pb-6 px-4">
-                <div className="absolute -top-20 -right-16 w-56 h-56 rounded-full opacity-20" style={{ background: C.orange }}></div>
-                <div className="absolute -top-10 -right-8 w-40 h-40 rounded-full opacity-10" style={{ background: C.yellow }}></div>
+            <div className="relative overflow-hidden pb-4 px-4">
+                <div className="absolute -top-32 -left-20 w-56 h-56 rounded-full opacity-15" style={{ background: C.orange }}></div>
+                <div className="absolute -top-20 -left-12 w-40 h-40 rounded-full opacity-10" style={{ background: C.yellow }}></div>
 
                 {/* Month + Week */}
                 <div className="relative z-10 flex items-center justify-between mb-5">
