@@ -83,37 +83,25 @@ export const KidApp = () => {
     const nextLevelExp = getLevelReq(activeKid.level);
 
     return (
-        <div className="min-h-screen bg-[#f4f7f9] font-sans pb-24 text-left animate-fade-in">
-            <div className="bg-white border-b border-slate-100 px-4 md:px-8 py-3 flex justify-between items-center sticky top-0 z-20 shadow-sm">
+        <div className="min-h-screen font-sans pb-24 text-left animate-fade-in" style={{ background: (kidTab === 'study' || kidTab === 'habit') ? '#FBF7F0' : '#f4f7f9' }}>
+            {/* Mobile navbar - unchanged */}
+            <div className="md:hidden bg-white border-b border-slate-100 px-4 py-3 flex justify-between items-center sticky top-0 z-20 shadow-sm">
                 <div className="flex items-center gap-2">
                     <img src="/minilife_logo.png" className="w-8 h-8 rounded-xl shadow-sm border border-slate-100/50" alt="Logo" /> <span className="font-black text-xl text-slate-800 tracking-tight">MiniLife</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    {/* 孩子切换器 */}
                     <div className="relative">
-                        <button
-                            onClick={() => setShowKidSwitcher(!showKidSwitcher)}
-                            className="flex items-center gap-2 bg-slate-50 pl-1.5 pr-3 py-1.5 rounded-full hover:bg-slate-100 transition-colors border border-slate-200"
-                        >
+                        <button onClick={() => setShowKidSwitcher(!showKidSwitcher)} className="flex items-center gap-2 bg-slate-50 pl-1.5 pr-3 py-1.5 rounded-full hover:bg-slate-100 transition-colors border border-slate-200">
                             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-lg overflow-hidden"><AvatarDisplay avatar={activeKid.avatar} /></div>
                             <span className="text-sm font-bold text-slate-700">{activeKid.name}</span>
                             <Icons.ChevronRight size={14} className={`text-slate-400 transition-transform ${showKidSwitcher ? 'rotate-90' : ''}`} />
                         </button>
                         {showKidSwitcher && (
                             <>
-                                {/* Transparent Backdrop for clicking outside */}
-                                <div
-                                    className="fixed inset-0 z-40"
-                                    onClick={() => setShowKidSwitcher(false)}
-                                ></div>
+                                <div className="fixed inset-0 z-40" onClick={() => setShowKidSwitcher(false)}></div>
                                 <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 min-w-[160px] z-50 animate-fade-in">
                                     {kids.map(k => (
-                                        <button
-                                            key={k.id}
-                                            onClick={() => switchKid(k.id)}
-                                            className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors text-left ${k.id === activeKidId ? 'bg-indigo-50' : ''
-                                                }`}
-                                        >
+                                        <button key={k.id} onClick={() => switchKid(k.id)} className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors text-left ${k.id === activeKidId ? 'bg-indigo-50' : ''}`}>
                                             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-xl overflow-hidden"><AvatarDisplay avatar={k.avatar} /></div>
                                             <span className={`font-bold text-sm ${k.id === activeKidId ? 'text-indigo-600' : 'text-slate-700'}`}>{k.name}</span>
                                             {k.id === activeKidId && <Icons.Check size={14} className="text-indigo-500 ml-auto" />}
@@ -123,14 +111,107 @@ export const KidApp = () => {
                             </>
                         )}
                     </div>
-
-                    {/* 家长入口 */}
-                    <button
-                        onClick={openParentFromKid}
-                        className="flex items-center gap-1.5 text-sm font-bold text-slate-500 bg-slate-50 px-3.5 py-2 rounded-full hover:bg-indigo-50 hover:text-indigo-600 transition-colors border border-slate-200"
-                    >
+                    <button onClick={openParentFromKid} className="flex items-center gap-1.5 text-sm font-bold text-slate-500 bg-slate-50 px-3.5 py-2 rounded-full hover:bg-indigo-50 hover:text-indigo-600 transition-colors border border-slate-200">
                         <Icons.Lock size={14} /> 家长
                     </button>
+                </div>
+            </div>
+
+            {/* PC unified header */}
+            <div className="hidden md:block sticky top-0 z-20 bg-white" style={{ borderBottom: '2px solid #f0ebe1' }}>
+                <div className="max-w-6xl mx-auto px-8">
+                    <div className="flex items-center h-14">
+                        {/* Logo */}
+                        <div className="flex items-center gap-2.5 flex-shrink-0 mr-8">
+                            <img src="/minilife_logo.png" className="w-7 h-7 rounded-lg" alt="Logo" />
+                            <span className="font-black text-lg tracking-tight text-slate-800">MiniLife</span>
+                        </div>
+
+                        {/* Underline Tabs — center */}
+                        <nav className="flex items-center gap-1 flex-1">
+                            {[
+                                { id: 'study', icon: <Icons.BookOpen size={16} />, label: "学习任务" },
+                                { id: 'habit', icon: <Icons.ShieldCheck size={16} />, label: "习惯养成" },
+                                { id: 'wealth', icon: <Icons.Wallet size={16} />, label: "财富中心" },
+                                { id: 'shop', icon: <Icons.ShoppingBag size={16} />, label: "家庭超市" }
+                            ].map(tab => (
+                                <button key={tab.id} onClick={() => setKidTab(tab.id)}
+                                    className="relative flex items-center gap-1.5 px-4 h-14 font-bold text-[13px] whitespace-nowrap transition-colors"
+                                    style={{ color: kidTab === tab.id ? '#FF8C42' : '#8896AB' }}>
+                                    {tab.icon} {tab.label}
+                                    {/* Active underline */}
+                                    {kidTab === tab.id && (
+                                        <div className="absolute bottom-0 left-2 right-2 h-[2.5px] rounded-full" style={{ background: '#FF8C42' }}></div>
+                                    )}
+                                </button>
+                            ))}
+                        </nav>
+
+                        {/* Right side: Avatar chip + 家长 */}
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                            {/* Avatar chip with level — opens level modal, dropdown for kid switch */}
+                            <div className="relative">
+                                <button onClick={() => setShowKidSwitcher(!showKidSwitcher)}
+                                    className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full transition-all hover:bg-slate-50"
+                                    style={{ border: '1px solid #eee' }}>
+                                    <div className="relative flex-shrink-0">
+                                        <svg className="absolute -inset-px w-[calc(100%+2px)] h-[calc(100%+2px)] -rotate-90 pointer-events-none" viewBox="0 0 100 100">
+                                            <circle cx="50" cy="50" r="44" fill="none" stroke="#f0f0f0" strokeWidth="8" />
+                                            <circle cx="50" cy="50" r="44" fill="none" stroke="#FF8C42" strokeWidth="8" strokeLinecap="round"
+                                                strokeDasharray="276.46" strokeDashoffset={276.46 - (276.46 * Math.max(0, activeKid.exp / nextLevelExp))} />
+                                        </svg>
+                                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-lg overflow-hidden relative z-10 bg-amber-50"><AvatarDisplay avatar={activeKid.avatar} /></div>
+                                    </div>
+                                    <div className="text-left">
+                                        <div className="text-xs font-bold text-slate-700 leading-tight">{activeKid.name}</div>
+                                        <div className="text-[9px] font-bold text-slate-400 leading-tight">LV.{activeKid.level} · {activeKid.exp}/{nextLevelExp}</div>
+                                    </div>
+                                    <Icons.ChevronDown size={12} className="text-slate-300" />
+                                </button>
+                                {showKidSwitcher && (
+                                    <>
+                                        <div className="fixed inset-0 z-40" onClick={() => setShowKidSwitcher(false)}></div>
+                                        <div className="absolute right-0 top-full mt-1.5 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 min-w-[200px] z-50 animate-fade-in">
+                                            {/* Level info card */}
+                                            <button onClick={() => { setShowKidSwitcher(false); setShowLevelModal(true); }}
+                                                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-left border-b border-slate-100">
+                                                <div className="w-10 h-10 rounded-full flex items-center justify-center text-2xl overflow-hidden bg-amber-50"><AvatarDisplay avatar={activeKid.avatar} /></div>
+                                                <div>
+                                                    <div className="font-black text-sm text-slate-800">{activeKid.name}</div>
+                                                    <div className="flex items-center gap-1 mt-0.5">
+                                                        <span className={`text-[9px] font-black text-white px-1.5 py-px rounded bg-gradient-to-r ${getLevelTier(activeKid.level).bg}`}>
+                                                            {getLevelTier(activeKid.level).emoji} LV.{activeKid.level} {getLevelTier(activeKid.level).title}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <Icons.ChevronRight size={14} className="text-slate-300 ml-auto" />
+                                            </button>
+                                            {/* Kid list */}
+                                            {kids.length > 1 && (
+                                                <div className="py-1">
+                                                    <div className="px-4 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">切换孩子</div>
+                                                    {kids.map(k => (
+                                                        <button key={k.id} onClick={() => switchKid(k.id)}
+                                                            className="w-full flex items-center gap-3 px-4 py-2 hover:bg-slate-50 transition-colors text-left"
+                                                            style={{ background: k.id === activeKidId ? '#FFF7ED' : 'transparent' }}>
+                                                            <div className="w-7 h-7 rounded-full flex items-center justify-center text-base overflow-hidden bg-amber-50"><AvatarDisplay avatar={k.avatar} /></div>
+                                                            <span className="font-bold text-sm" style={{ color: k.id === activeKidId ? '#FF8C42' : '#475569' }}>{k.name}</span>
+                                                            {k.id === activeKidId && <Icons.Check size={14} className="ml-auto" style={{ color: '#FF8C42' }} />}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                            <button onClick={openParentFromKid}
+                                className="flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-full transition-colors hover:bg-slate-50 text-slate-500"
+                                style={{ border: '1px solid #eee' }}>
+                                <Icons.Lock size={12} /> 家长
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -383,65 +464,25 @@ export const KidApp = () => {
                 </div>
             )}
 
-            <div className="bg-white border-b border-slate-100 p-5 md:p-8 hidden md:block">
-                <div className="max-w-5xl mx-auto">
-                    <button
-                        onClick={() => setShowLevelModal(true)}
-                        className="w-full flex items-center justify-between bg-transparent hover:bg-slate-50/80 p-3 -mx-3 rounded-3xl transition-colors group text-left relative overflow-hidden"
-                    >
-                        <div className="flex items-center gap-5">
-                            <div className="relative flex-shrink-0">
-                                {/* SVG Circular Progress Ring */}
-                                <svg className="absolute -inset-2 w-[calc(100%+1rem)] h-[calc(100%+1rem)] -rotate-90 pointer-events-none drop-shadow-sm" viewBox="0 0 100 100">
-                                    <circle cx="50" cy="50" r="46" fill="none" stroke="#f1f5f9" strokeWidth="6" />
-                                    <circle
-                                        cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="6"
-                                        strokeLinecap="round"
-                                        className={getLevelTier(activeKid.level).color}
-                                        strokeDasharray="289.02"
-                                        strokeDashoffset={289.02 - (289.02 * Math.max(0, activeKid.exp / nextLevelExp))}
-                                    />
-                                </svg>
-                                <div className="w-[72px] h-[72px] rounded-full bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center text-[40px] shadow-sm border-[4px] border-white relative z-10 overflow-hidden"><AvatarDisplay avatar={activeKid.avatar} /></div>
-                            </div>
-                            <div>
-                                <h1 className="text-[22px] font-black text-slate-800 tracking-tight leading-tight">早上好，{activeKid.name}！</h1>
-                                <div className="flex items-center gap-2 mt-2">
-                                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-black text-white shadow-sm bg-gradient-to-r ${getLevelTier(activeKid.level).bg}`}>
-                                        <span className="opacity-90 leading-none">{getLevelTier(activeKid.level).emoji}</span>
-                                        <span className="leading-none tracking-wider">LV.{activeKid.level} {getLevelTier(activeKid.level).title}</span>
-                                    </div>
-                                    <span className="text-[12px] font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">{activeKid.exp} / {nextLevelExp} EXP</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-indigo-500 transition-colors shadow-sm border border-slate-100 flex-shrink-0 transform md:translate-x-0 translate-x-2 opacity-50 group-hover:opacity-100 group-hover:scale-110 active:scale-95">
-                            <Icons.ChevronRight size={20} />
-                        </div>
-                    </button>
-                </div>
 
-                <div className="max-w-5xl mx-auto mt-6 hidden md:flex overflow-x-auto hide-scrollbar gap-3 pb-1">
-                    {[
-                        { id: 'study', icon: <Icons.BookOpen size={18} />, label: "学习任务" },
-                        { id: 'habit', icon: <Icons.ShieldCheck size={18} />, label: "习惯养成" },
-                        { id: 'wealth', icon: <Icons.Wallet size={18} />, label: "财富中心" },
-                        { id: 'shop', icon: <Icons.ShoppingBag size={18} />, label: "家庭超市" }
-                    ].map(tab => (
-                        <button key={tab.id} onClick={() => setKidTab(tab.id)} className={`flex-shrink-0 flex items-center gap-2 px-6 py-3 rounded-full font-black text-sm whitespace-nowrap transition-all shadow-sm ${kidTab === tab.id ? 'bg-indigo-600 text-white shadow-indigo-200' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200'}`}>
-                            {tab.icon} {tab.label}
-                        </button>
-                    ))}
-                </div>
-            </div>
 
-            <div className="max-w-5xl mx-auto p-4 md:p-8 pb-28 md:pb-8">
-                {kidTab === 'study' && <KidStudyTab />}
-                {kidTab === 'profile' && <KidProfileTab />}
-                {kidTab === 'habit' && <KidHabitTab />}
-                {kidTab === 'wealth' && <KidWealthTab />}
-                {kidTab === 'shop' && <KidShopTab />}
-            </div>
+            {kidTab === 'study' && (
+                <div className="px-4 md:px-8 pb-28 md:pb-8">
+                    <KidStudyTab />
+                </div>
+            )}
+            {kidTab !== 'study' && kidTab !== 'habit' && (
+                <div className="max-w-5xl mx-auto p-4 md:p-8 pb-28 md:pb-8">
+                    {kidTab === 'profile' && <KidProfileTab />}
+                    {kidTab === 'wealth' && <KidWealthTab />}
+                    {kidTab === 'shop' && <KidShopTab />}
+                </div>
+            )}
+            {kidTab === 'habit' && (
+                <div className="px-4 md:px-8 pt-4 pb-28 md:pb-8">
+                    <KidHabitTab />
+                </div>
+            )}
         </div>
     );
 };

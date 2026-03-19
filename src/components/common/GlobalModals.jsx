@@ -237,20 +237,20 @@ export const GlobalModals = () => {
 
         return (
             <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4 pb-[5rem] md:pb-4 animate-fade-in">
-                <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl text-left max-h-[75vh] md:max-h-[90vh] overflow-y-auto">
+                <div className="w-full max-w-md rounded-[2rem] shadow-2xl text-left max-h-[75vh] md:max-h-[90vh] overflow-y-auto" style={{ background: '#FBF7F0' }}>
                     {/* 头部 */}
-                    <div className="sticky top-0 bg-white z-10 p-6 pb-4 border-b border-slate-100 rounded-t-[2rem]">
+                    <div className="sticky top-0 z-10 p-6 pb-4 rounded-t-[2rem]" style={{ background: '#FBF7F0', borderBottom: '1px solid #F0EBE1' }}>
                         <div className="flex items-start justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-green-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-200">
+                                <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white" style={{ background: '#FF8C42', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }}>
                                     <Icons.CheckCircle size={24} />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-black text-slate-800">完成任务</h2>
-                                    <p className="text-sm text-slate-400 font-bold">{t.title}</p>
+                                    <h2 className="text-xl font-black" style={{ color: '#1B2E4B' }}>完成任务</h2>
+                                    <p className="text-sm font-bold" style={{ color: '#5A6E8A' }}>{t.title}</p>
                                 </div>
                             </div>
-                            <button onClick={() => setQuickCompleteTask(null)} className="text-slate-400 hover:text-slate-600 p-1 hover:bg-slate-100 rounded-full transition-colors">
+                            <button onClick={() => setQuickCompleteTask(null)} className="p-1 rounded-full transition-colors" style={{ color: '#9CAABE' }}>
                                 <Icons.X size={20} />
                             </button>
                         </div>
@@ -258,15 +258,15 @@ export const GlobalModals = () => {
 
                     <div className="p-6 pt-4 space-y-5">
                         {/* 任务信息卡 */}
-                        <div className="bg-gradient-to-r from-slate-50 to-indigo-50/30 p-4 rounded-2xl border border-slate-100">
+                        <div className="p-4 rounded-2xl" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
                             <div className="flex items-center gap-2 mb-2">
-                                <div className={`px-4 py-1.5 rounded-full text-xs font-black shadow-inner flex items-center gap-1.5 float-right ${getCategoryColor(t.category || '计划').replace('text-', 'bg-').replace('600', '500')} text-white`}>
+                                <div className="px-3 py-1 rounded-full text-xs font-black text-white" style={{ background: '#FF8C42' }}>
                                     {t.category || '任务'}
                                 </div>
-                                <span className="text-xs text-slate-400 font-bold">{selectedDate}</span>
+                                <span className="text-xs font-bold" style={{ color: '#9CAABE' }}>{selectedDate}</span>
                             </div>
-                            <div className="font-black text-slate-800 text-lg">{t.title}</div>
-                            {t.standards && <p className="text-xs text-slate-500 mt-1">{t.standards}</p>}
+                            <div className="font-black text-lg" style={{ color: '#1B2E4B' }}>{t.title}</div>
+                            {t.standards && <p className="text-xs mt-1" style={{ color: '#5A6E8A' }}>{t.standards}</p>}
                         </div>
 
                         {/* 耗时设置 */}
@@ -277,16 +277,18 @@ export const GlobalModals = () => {
                             </div>
 
                             {/* Tab 切换 */}
-                            <div className="flex bg-slate-100 rounded-xl p-1 mb-4">
+                            <div className="flex rounded-xl p-1 mb-4" style={{ background: '#F0EBE1' }}>
                                 <button
                                     onClick={() => setQcTimeMode('duration')}
-                                    className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${qcTimeMode === 'duration' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${qcTimeMode === 'duration' ? 'shadow-sm' : ''}`}
+                                    style={qcTimeMode === 'duration' ? { background: '#fff', color: '#FF8C42' } : { color: '#5A6E8A' }}
                                 >
                                     输入时长
                                 </button>
                                 <button
                                     onClick={() => setQcTimeMode('actual')}
-                                    className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${qcTimeMode === 'actual' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${qcTimeMode === 'actual' ? 'shadow-sm' : ''}`}
+                                    style={qcTimeMode === 'actual' ? { background: '#fff', color: '#FF8C42' } : { color: '#5A6E8A' }}
                                 >
                                     实际时间
                                 </button>
@@ -316,8 +318,8 @@ export const GlobalModals = () => {
                                     </div>
 
                                     {/* 总计 */}
-                                    <div className="text-center bg-indigo-50 rounded-xl py-2 mb-4 border border-indigo-100">
-                                        <span className="text-sm font-bold text-indigo-600">总计: {totalDisplay}</span>
+                                    <div className="text-center rounded-xl py-2 mb-4" style={{ background: '#FF8C4215', border: '1px solid #FF8C4230' }}>
+                                        <span className="text-sm font-bold" style={{ color: '#FF8C42' }}>总计: {totalDisplay}</span>
                                     </div>
 
                                     {/* 快捷时长 */}
@@ -414,11 +416,11 @@ export const GlobalModals = () => {
                     </div>
 
                     {/* 底部按钮 */}
-                    <div className="sticky bottom-0 bg-white border-t border-slate-100 p-4 flex gap-3 rounded-b-[2rem]">
-                        <button onClick={() => setQuickCompleteTask(null)} className="flex-1 py-3.5 text-slate-600 font-bold bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2">
+                    <div className="sticky bottom-0 p-4 flex gap-3 rounded-b-[2rem]" style={{ background: '#FBF7F0', borderTop: '1px solid #F0EBE1' }}>
+                        <button onClick={() => setQuickCompleteTask(null)} className="flex-1 py-3.5 font-bold rounded-xl transition-colors flex items-center justify-center gap-2" style={{ background: '#F0EBE1', color: '#5A6E8A' }}>
                             <Icons.X size={16} /> 取消
                         </button>
-                        <button onClick={handleQuickComplete} className="flex-[2] py-3.5 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-black rounded-xl shadow-lg shadow-emerald-200 hover:from-emerald-600 hover:to-green-600 transition-all flex items-center justify-center gap-2">
+                        <button onClick={handleQuickComplete} className="flex-[2] py-3.5 text-white font-black rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95" style={{ background: '#FF8C42', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }}>
                             <Icons.CheckCircle size={18} /> 确认完成
                         </button>
                     </div>
@@ -1592,16 +1594,16 @@ export const GlobalModals = () => {
         }
 
         return (
-            <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 pb-[5rem] md:pb-4 animate-fade-in overflow-y-auto">
-                <div className="bg-white w-full max-w-md rounded-[2rem] p-5 md:p-8 shadow-2xl relative overflow-hidden my-auto max-h-[75vh] md:max-h-[85vh] flex flex-col">
+            <div className="fixed inset-0 backdrop-blur-md z-[100] flex items-center justify-center p-4 pb-[5rem] md:pb-4 animate-fade-in overflow-y-auto" style={{ background: 'rgba(27,46,75,0.5)' }}>
+                <div className="w-full max-w-md rounded-[2rem] p-5 md:p-8 shadow-2xl relative overflow-hidden my-auto max-h-[75vh] md:max-h-[85vh] flex flex-col" style={{ background: '#FBF7F0' }}>
                     {/* Ultra-Compact Header */}
                     <div className="absolute top-3 right-3 z-50">
-                        <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); }} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors">
+                        <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); }} className="w-8 h-8 rounded-full flex items-center justify-center transition-colors" style={{ background: '#F0EBE1', color: '#5A6E8A' }}>
                             <Icons.X size={16} />
                         </button>
                     </div>
 
-                    <div className="relative z-10 flex items-start gap-3 shrink-0 mb-4 pr-10 border-b border-slate-100 pb-4">
+                    <div className="relative z-10 flex items-start gap-3 shrink-0 mb-4 pr-10 pb-4" style={{ borderBottom: '1px solid #F0EBE1' }}>
                         <div className={`w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br ${getCategoryGradient(previewTask.category || '计划任务')} flex items-center justify-center ${previewTask.type === 'habit' ? 'text-2xl' : 'text-white'} shadow-sm`}>
                             {previewTask.type === 'habit'
                                 ? (previewTask.iconEmoji || '⭐')
@@ -1610,11 +1612,11 @@ export const GlobalModals = () => {
                         </div>
                         <div className="flex flex-col min-w-0 pt-0.5 mt-[-2px]">
                             <div className="flex items-center mb-1">
-                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${previewTask.type === 'habit' ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500'}`}>
+                                <span className="text-[10px] font-black px-2 py-0.5 rounded-full text-white" style={{ background: '#FF8C42' }}>
                                     {previewTask.category || '计划任务'}
                                 </span>
                             </div>
-                            <h2 className="text-base font-black text-slate-800 leading-tight line-clamp-2">{previewTask.title}</h2>
+                            <h2 className="text-base font-black leading-tight line-clamp-2" style={{ color: '#1B2E4B' }}>{previewTask.title}</h2>
                         </div>
                     </div>
 
@@ -1671,7 +1673,7 @@ export const GlobalModals = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="w-full bg-slate-50 rounded-2xl p-4 border border-slate-100 text-left space-y-4 mb-6">
+                            <div className="w-full rounded-2xl p-4 text-left space-y-4 mb-6" style={{ background: '#fff', border: '1px solid #F0EBE1' }}>
                                 {/* 执行频次 */}
                                 <div className="flex items-start gap-3">
                                     <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><Icons.RefreshCw size={16} /></div>
@@ -1720,7 +1722,7 @@ export const GlobalModals = () => {
                                 <div className="w-6 h-6 rounded-md bg-indigo-100 text-indigo-600 flex items-center justify-center"><Icons.TrendingUp size={14} /></div>
                                 历史完成记录
                             </div>
-                            <div className="bg-white border-2 border-slate-100 rounded-2xl p-4 flex items-center justify-between shadow-sm mb-4">
+                            <div className="rounded-2xl p-4 flex items-center justify-between mb-4" style={{ background: '#fff', border: '1px solid #F0EBE1' }}>
                                 <div className="flex flex-col items-center flex-1">
                                     <span className="text-2xl font-black text-slate-800">{totalCompleted}</span>
                                     <span className="text-[10px] font-bold text-slate-400 mt-1">累计完成(次)</span>
@@ -1800,11 +1802,11 @@ export const GlobalModals = () => {
                                 <>
                                     {pStatus === 'todo' && (
                                         <div className="flex gap-3 w-full">
-                                            <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); openQuickComplete(previewTask); }} className="flex-1 bg-slate-100 text-slate-600 rounded-2xl py-4 font-black hover:bg-slate-200 transition-colors">
+                                            <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); openQuickComplete(previewTask); }} className="flex-1 rounded-2xl py-4 font-black transition-colors flex items-center justify-center gap-1" style={{ background: '#F0EBE1', color: '#5A6E8A' }}>
                                                 <Icons.Check className="inline-block mr-1" size={18} /> 快速打卡
                                             </button>
-                                            <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleStartTask(previewTask.id); }} className="flex-[2] bg-blue-600 text-white rounded-2xl py-4 font-black shadow-lg shadow-blue-600/30 hover:bg-blue-700 hover:scale-[1.02] transition-all">
-                                                <Icons.Play className="inline-block mr-1 text-blue-200" size={18} fill="currentColor" /> 开始计时
+                                            <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleStartTask(previewTask.id); }} className="flex-[2] text-white rounded-2xl py-4 font-black transition-all active:scale-95 flex items-center justify-center gap-1" style={{ background: '#FF8C42', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }}>
+                                                <Icons.Play className="inline-block mr-1" size={18} fill="currentColor" /> 开始计时
                                             </button>
                                         </div>
                                     )}
@@ -2855,6 +2857,66 @@ export const GlobalModals = () => {
             {renderTransactionHistoryModal()}
             {renderImagePreviewModal && renderImagePreviewModal()}
             {renderParentSettingsModals()}
+
+            {/* ═══ Celebration Modal (Habit check-in feedback) ═══ */}
+            {celebrationData && (() => {
+                const isPositive = celebrationData.type === 'positive';
+                const accent = isPositive ? '#4ECDC4' : '#FF6B6B';
+                const bgGradient = isPositive
+                    ? 'linear-gradient(135deg, #E0FFF9 0%, #F0FFF4 100%)'
+                    : 'linear-gradient(135deg, #FFF0F0 0%, #FFF5F5 100%)';
+                const emoji = isPositive ? '🎉' : '🛡️';
+                const reward = celebrationData.task?.reward || 0;
+                // Auto-dismiss after 3 seconds
+                setTimeout(() => setCelebrationData(null), 3000);
+                return (
+                    <div className="fixed inset-0 z-[500] flex items-center justify-center p-6 animate-fade-in"
+                        style={{ background: 'rgba(27,46,75,0.25)', backdropFilter: 'blur(8px)' }}
+                        onClick={() => setCelebrationData(null)}>
+                        {/* Confetti particles */}
+                        {Array.from({ length: 12 }).map((_, i) => (
+                            <div key={i} className="absolute w-2 h-2 rounded-full animate-bounce"
+                                style={{
+                                    background: [accent, '#FFD93D', '#FF8C42', '#A78BFA', '#60A5FA'][i % 5],
+                                    top: `${10 + Math.random() * 30}%`,
+                                    left: `${10 + Math.random() * 80}%`,
+                                    animationDelay: `${i * 0.1}s`,
+                                    animationDuration: `${0.6 + Math.random() * 0.8}s`,
+                                    opacity: 0.7,
+                                }} />
+                        ))}
+                        <div className="relative max-w-sm w-full rounded-3xl p-8 text-center animate-bounce-in"
+                            style={{ background: bgGradient, boxShadow: `0 25px 60px ${accent}30` }}
+                            onClick={e => e.stopPropagation()}>
+                            {/* Top glow */}
+                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-24 h-24 rounded-full opacity-30" style={{ background: accent, filter: 'blur(30px)' }}></div>
+
+                            <div className="text-6xl mb-4">{emoji}</div>
+                            <div className="text-xl font-black mb-2" style={{ color: '#1B2E4B' }}>
+                                {isPositive ? '太棒了！' : '勇于坦白！'}
+                            </div>
+                            <div className="text-sm font-bold mb-4 leading-relaxed px-2" style={{ color: '#5A6E8A' }}>
+                                {celebrationData.message}
+                            </div>
+
+                            {/* Reward badge */}
+                            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-black text-base"
+                                style={{ background: `${accent}20`, color: accent }}>
+                                {isPositive ? (
+                                    <><Icons.TrendingUp size={18} /> +{Math.abs(reward)} 家庭币</>
+                                ) : (
+                                    <><Icons.TrendingDown size={18} /> -{Math.abs(reward)} 家庭币</>
+                                )}
+                            </div>
+
+                            {/* Dismiss hint */}
+                            <div className="mt-4 text-[10px] font-bold" style={{ color: '#9CAABE' }}>
+                                点击任意位置关闭
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
         </>
     );
 };

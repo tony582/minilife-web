@@ -7,6 +7,19 @@ import { ParentWealthTab } from './ParentWealthTab';
 import { ParentShopTab } from './ParentShopTab';
 import { ParentMoreAppsTab } from './ParentMoreAppsTab';
 
+const C = {
+    bg: '#FBF7F0', bgCard: '#FFFFFF', bgLight: '#F0EBE1',
+    orange: '#FF8C42', textPrimary: '#1B2E4B', textSoft: '#5A6E8A', textMuted: '#9CAABE',
+};
+
+const tabs = [
+    { id: 'tasks', label: '学习任务', icon: Icons.BookOpen },
+    { id: 'plans', label: '习惯养成', icon: Icons.Target },
+    { id: 'wealth', label: '财富中心', icon: Icons.Wallet },
+    { id: 'shop_manage', label: '家庭超市', icon: Icons.ShoppingBag },
+    { id: 'more', label: '更多应用', icon: Icons.LayoutGrid },
+];
+
 export const ParentApp = () => {
     const {
         changeAppState,
@@ -15,28 +28,64 @@ export const ParentApp = () => {
     } = useUIContext();
 
     return (
-        <div className="min-h-screen bg-[#f4f7f9] font-sans pb-24 text-left animate-fade-in">
-            <div className="bg-slate-900 border-b border-slate-800 px-4 md:px-6 py-3 md:py-4 flex justify-between items-center sticky top-0 z-[110]">
-                <div className="flex items-center gap-2 md:gap-3">
-                    <button onClick={() => changeAppState('profiles')} className="group flex items-center gap-1.5 md:gap-2 text-slate-300 hover:text-white transition-colors bg-slate-800/80 hover:bg-slate-700/80 rounded-full px-3 py-1.5 md:px-4 md:py-2 border border-slate-700/50 hover:border-slate-600/50 shadow-sm backdrop-blur-sm">
-                        <Icons.ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
-                        <span className="font-bold text-xs md:text-sm">切换角色</span>
-                    </button>
-                    <div className="flex items-center gap-2.5 ml-1 pl-3 md:pl-4 border-l border-slate-800/80">
-                        <img src="/minilife_logo.png" className="w-8 h-8 md:w-10 md:h-10 rounded-xl shadow-sm" alt="Logo" /> <span className="font-black text-lg md:text-xl text-white tracking-tight">MiniLife 家庭版</span>
+        <div className="min-h-screen font-sans pb-24 text-left animate-fade-in" style={{ background: C.bg }}>
+            {/* ═══ Unified PC Header ═══ */}
+            <div className="sticky top-0 z-[110] hidden md:block" style={{ background: C.bgCard, borderBottom: `1px solid ${C.bgLight}` }}>
+                <div className="max-w-5xl mx-auto flex items-center h-14 px-4 md:px-8">
+                    {/* Left: Logo */}
+                    <div className="flex items-center gap-2.5 shrink-0 mr-8">
+                        <img src="/minilife_logo.png" className="w-8 h-8 rounded-lg" alt="Logo" />
+                        <span className="font-black text-base tracking-tight" style={{ color: C.textPrimary }}>MiniLife</span>
                     </div>
+
+                    {/* Center: Tabs */}
+                    <nav className="flex-1 flex items-center justify-center gap-1">
+                        {tabs.map(t => {
+                            const active = parentTab === t.id;
+                            const TabIcon = t.icon;
+                            return (
+                                <button key={t.id} onClick={() => setParentTab(t.id)}
+                                    className="relative flex items-center gap-1.5 px-3 py-3.5 text-sm font-bold transition-colors"
+                                    style={{ color: active ? C.orange : C.textMuted }}
+                                >
+                                    <TabIcon size={15} />
+                                    {t.label}
+                                    {active && (
+                                        <div className="absolute bottom-0 left-2 right-2 h-[3px] rounded-full" style={{ background: C.orange }}></div>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </nav>
+
+                    {/* Right: Switch role */}
+                    <button onClick={() => changeAppState('profiles')}
+                        className="shrink-0 flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all active:scale-95"
+                        style={{ background: C.bgLight, color: C.textSoft }}>
+                        <Icons.ArrowLeft size={14} />
+                        切换角色
+                    </button>
+                </div>
+            </div>
+
+            {/* ═══ Mobile Header ═══ */}
+            <div className="md:hidden sticky top-0 z-[110]" style={{ background: C.bgCard, borderBottom: `1px solid ${C.bgLight}` }}>
+                <div className="flex items-center justify-between px-4 py-3">
+                    <button onClick={() => changeAppState('profiles')}
+                        className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all"
+                        style={{ background: C.bgLight, color: C.textSoft }}>
+                        <Icons.ArrowLeft size={14} />
+                        切换
+                    </button>
+                    <div className="flex items-center gap-2">
+                        <img src="/minilife_logo.png" className="w-7 h-7 rounded-lg" alt="Logo" />
+                        <span className="font-black text-base" style={{ color: C.textPrimary }}>MiniLife</span>
+                    </div>
+                    <div className="w-16"></div>
                 </div>
             </div>
 
             <div className="max-w-5xl mx-auto p-4 md:p-8">
-                <div className="hidden md:flex gap-4 border-b border-slate-200 mb-8 overflow-x-auto hide-scrollbar">
-                    <button onClick={() => setParentTab('tasks')} className={`pb-3 px-2 font-black text-sm whitespace-nowrap transition-all border-b-4 ${parentTab === 'tasks' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>学习任务</button>
-                    <button onClick={() => setParentTab('plans')} className={`pb-3 px-2 font-black text-sm whitespace-nowrap transition-all border-b-4 ${parentTab === 'plans' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>习惯养成</button>
-                    <button onClick={() => setParentTab('wealth')} className={`pb-3 px-2 font-black text-sm whitespace-nowrap transition-all border-b-4 ${parentTab === 'wealth' ? 'border-amber-600 text-amber-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>财富中心</button>
-                    <button onClick={() => setParentTab('shop_manage')} className={`pb-3 px-2 font-black text-sm whitespace-nowrap transition-all border-b-4 ${parentTab === 'shop_manage' ? 'border-purple-600 text-purple-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>家庭超市</button>
-                    <button onClick={() => setParentTab('more')} className={`pb-3 px-2 font-black text-sm whitespace-nowrap transition-all border-b-4 ${parentTab === 'more' ? 'border-slate-800 text-slate-800' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>更多应用</button>
-                </div>
-
                 {parentTab === 'tasks' && <ParentTasksTab />}
                 {parentTab === 'plans' && <ParentPlansTab />}
                 {parentTab === 'wealth' && <ParentWealthTab />}

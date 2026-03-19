@@ -69,37 +69,63 @@ function AppContent() {
 
     const mobileTabs = isParent
       ? [
-          { id: 'tasks', label: '学习任务', icon: <Icons.Target size={22} strokeWidth={2.5} /> },
-          { id: 'plans', label: '习惯养成', icon: <Icons.CheckSquare size={22} strokeWidth={2.5} /> },
-          { id: 'wealth', label: '财富中心', icon: <Icons.Landmark size={22} strokeWidth={2.5} /> },
-          { id: 'shop_manage', label: '家庭超市', icon: <Icons.ShoppingBag size={22} strokeWidth={2.5} /> },
-          { id: 'more', label: '更多应用', icon: <Icons.LayoutGrid size={22} strokeWidth={2.5} /> },
+          { id: 'tasks', label: '任务', icon: Icons.Target },
+          { id: 'plans', label: '习惯', icon: Icons.CheckSquare },
+          { id: 'wealth', label: '财富', icon: Icons.Wallet },
+          { id: 'shop_manage', label: '超市', icon: Icons.ShoppingBag },
+          { id: 'more', label: '更多', icon: Icons.LayoutGrid },
         ]
       : [
-          { id: 'study', label: '学习任务', icon: <Icons.BookOpen size={22} strokeWidth={2.5} /> },
-          { id: 'habit', label: '习惯养成', icon: <Icons.ShieldCheck size={22} strokeWidth={2.5} /> },
-          { id: 'wealth', label: '财富中心', icon: <Icons.Wallet size={22} strokeWidth={2.5} /> },
-          { id: 'shop', label: '家庭超市', icon: <Icons.ShoppingBag size={22} strokeWidth={2.5} /> },
-          { id: 'profile', label: '我的', icon: <Icons.User size={22} strokeWidth={2.5} /> },
+          { id: 'study', label: '任务', icon: Icons.BookOpen },
+          { id: 'habit', label: '习惯', icon: Icons.ShieldCheck },
+          { id: 'wealth', label: '财富', icon: Icons.Wallet },
+          { id: 'shop', label: '超市', icon: Icons.ShoppingBag },
+          { id: 'profile', label: '我的', icon: Icons.User },
         ];
 
     return createPortal(
       <nav
-        className="fixed bottom-0 left-0 right-0 w-full bg-white/90 backdrop-blur-xl border-t border-slate-100 flex justify-around items-center px-2 py-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] z-[9999] md:hidden shadow-[0_-10px_20px_rgb(0,0,0,0.03)]"
-        style={{ position: 'fixed', bottom: 0, isolation: 'isolate', transform: 'none' }}
+        className="fixed bottom-0 left-0 right-0 w-full flex justify-around items-end px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.4rem)] z-[9999] md:hidden"
+        style={{
+          position: 'fixed', bottom: 0, isolation: 'isolate', transform: 'none',
+          background: 'rgba(255,253,248,0.88)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          borderTop: '1px solid rgba(240,235,225,0.8)',
+          boxShadow: '0 -8px 32px rgba(27,46,75,0.06)',
+        }}
       >
         {mobileTabs.map((tab) => {
           const isActive = isParent ? parentTab === tab.id : kidTab === tab.id;
+          const TabIcon = tab.icon;
           return (
             <button
               key={tab.id}
               onClick={() => (isParent ? setParentTab(tab.id) : setKidTab(tab.id))}
-              className={`flex flex-col items-center justify-center w-full py-1 gap-1 transition-all ${isActive ? 'text-indigo-600 scale-105' : 'text-slate-400 hover:text-slate-600'}`}
+              className="flex flex-col items-center justify-center py-1 gap-0.5 transition-all duration-200"
+              style={{ flex: 1, WebkitTapHighlightColor: 'transparent' }}
             >
-              <div className={`relative flex items-center justify-center transition-all ${isActive ? 'bg-indigo-50 w-12 h-8 rounded-full' : 'h-8'}`}>
-                {tab.icon}
+              <div
+                className="relative flex items-center justify-center transition-all duration-300"
+                style={isActive ? {
+                  width: 48, height: 30, borderRadius: 20,
+                  background: 'linear-gradient(135deg, #FF8C42, #FFB347)',
+                  boxShadow: '0 4px 12px rgba(255,140,66,0.35)',
+                  transform: 'translateY(-2px)',
+                } : {
+                  width: 48, height: 30, borderRadius: 20,
+                }}
+              >
+                <TabIcon size={19} strokeWidth={2.5} style={{ color: isActive ? '#fff' : '#9CAABE' }} />
               </div>
-              <span className={`text-[10px] font-black tracking-wider transition-all ${isActive ? 'text-indigo-600' : 'text-slate-400'}`}>
+              <span
+                className="font-black transition-all duration-200"
+                style={{
+                  fontSize: 10, letterSpacing: '0.02em',
+                  color: isActive ? '#FF8C42' : '#9CAABE',
+                  transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                }}
+              >
                 {tab.label}
               </span>
             </button>
