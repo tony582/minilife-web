@@ -19,7 +19,7 @@ import { GlobalModals } from './components/common/GlobalModals';
 function AppContent() {
   const { token, user, authLoading } = useAuthContext();
   const { kids, setKids, transactions, setTransactions, isLoading } = useDataContext();
-  const { appState, kidTab, setKidTab, parentTab, setParentTab } = useUIContext();
+  const { appState, kidTab, setKidTab, parentTab, setParentTab, showTransactionHistoryModal } = useUIContext();
   const { notifications, notify, setNotifications } = useToast();
 
   // --- 每日利息计算 (时光金库) ---
@@ -65,6 +65,7 @@ function AppContent() {
   // --- 移动端底部导航 ---
   const renderMobileNavigationBar = () => {
     if (appState !== 'kid_app' && appState !== 'parent_app') return null;
+    if (showTransactionHistoryModal) return null;
     const isParent = appState === 'parent_app';
 
     const mobileTabs = isParent

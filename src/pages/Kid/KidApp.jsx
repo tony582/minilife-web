@@ -83,7 +83,7 @@ export const KidApp = () => {
     const nextLevelExp = getLevelReq(activeKid.level);
 
     return (
-        <div className="min-h-screen font-sans pb-24 text-left animate-fade-in" style={{ background: (kidTab === 'study' || kidTab === 'habit') ? '#FBF7F0' : '#f4f7f9' }}>
+        <div className="min-h-screen font-sans pb-24 text-left animate-fade-in" style={{ background: (kidTab === 'study' || kidTab === 'habit' || kidTab === 'wealth') ? '#FBF7F0' : '#f4f7f9' }}>
             {/* Mobile navbar - unchanged */}
             <div className="md:hidden bg-white border-b border-slate-100 px-4 py-3 flex justify-between items-center sticky top-0 z-20 shadow-sm">
                 <div className="flex items-center gap-2">
@@ -471,11 +471,15 @@ export const KidApp = () => {
                     <KidStudyTab />
                 </div>
             )}
-            {kidTab !== 'study' && kidTab !== 'habit' && (
+            {kidTab !== 'study' && kidTab !== 'habit' && kidTab !== 'wealth' && (
                 <div className="max-w-5xl mx-auto p-4 md:p-8 pb-28 md:pb-8">
                     {kidTab === 'profile' && <KidProfileTab />}
-                    {kidTab === 'wealth' && <KidWealthTab />}
                     {kidTab === 'shop' && <KidShopTab />}
+                </div>
+            )}
+            {kidTab === 'wealth' && (
+                <div className="px-4 md:px-8 pb-28 md:pb-8">
+                    <KidWealthTab />
                 </div>
             )}
             {kidTab === 'habit' && (

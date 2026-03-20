@@ -560,7 +560,26 @@ export const GlobalModals = () => {
     const renderTransactionHistoryModal = () => {
         if (!showTransactionHistoryModal) return null;
 
-        // Use all transactions for the kid except habits (similar to the summary logic)
+        // Theme constants matching KidWealthTab
+        const _C = {
+            bg: '#FBF7F0', bgCard: '#FFFFFF', bgLight: '#F0EBE1', bgMuted: '#E8E0D4',
+            orange: '#FF8C42', teal: '#4ECDC4', coral: '#FF6B6B', green: '#10B981',
+            textPrimary: '#1B2E4B', textSoft: '#5A6E8A', textMuted: '#9CAABE',
+        };
+
+        // Transaction icon/color mapping
+        const _txMeta = (item) => {
+            if (item.category === 'interest' || item.title?.includes('利息') || item.title?.includes('生息'))
+                return { icon: 'Sparkles', color: _C.teal, label: '利息' };
+            if (item.category === 'charity' || item.category === 'give' || item.title?.includes('爱心') || item.title?.includes('公益') || item.title?.includes('捐'))
+                return { icon: 'Heart', color: '#EC4899', label: '爱心' };
+            if (item.category === 'purchase' || item.category === 'shop')
+                return { icon: 'ShoppingBag', color: _C.coral, label: '兑换' };
+            if (item.type === 'income')
+                return { icon: 'TrendingUp', color: _C.green, label: '收入' };
+            return { icon: 'ShoppingBag', color: _C.coral, label: '消费' };
+        };
+
         let filteredTrans = transactions.filter(t => t.kidId === activeKidId && t.category !== 'habit');
 
         // Apply Time Filter
@@ -588,6 +607,7 @@ export const GlobalModals = () => {
         // Calculate Statistics
         const totalIncome = filteredTrans.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0);
         const totalExpense = filteredTrans.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0);
+        const netChange = totalIncome - totalExpense;
 
         // Group by Date
         const groupedTrans = filteredTrans.reduce((acc, t) => {
@@ -596,145 +616,185 @@ export const GlobalModals = () => {
             acc[dStr].push(t);
             return acc;
         }, {});
-
-        // Sort dates descending
         const sortedDates = Object.keys(groupedTrans).sort((a, b) => new Date(b) - new Date(a));
 
+        // Time range label
+        const rangeLabels = { 'all': '全部', '7': '近7天', '30': '近30天', '90': '近90天', 'custom': '自定义' };
+
         return (
-            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[200] flex justify-end animate-fade-in">
-                <div className="bg-[#f4f7f9] w-full md:w-[600px] h-full shadow-2xl flex flex-col translate-x-0 overflow-hidden">
-                    {/* Header */}
-                    <div className="bg-white border-b border-slate-100 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-                        <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
-                            <Icons.FileText className="text-indigo-500" />
-                            积分历史记录
-                        </h2>
-                        <button onClick={() => setShowTransactionHistoryModal(false)} className="w-10 h-10 bg-slate-50 text-slate-400 hover:text-slate-600 rounded-full flex items-center justify-center hover:bg-slate-100 transition-colors">
-                            <Icons.X size={20} />
+            <div className="fixed inset-0 z-[300] flex items-end md:items-center justify-center animate-fade-in" onClick={() => setShowTransactionHistoryModal(false)}>
+                {/* Backdrop */}
+                <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+
+                {/* Panel: mobile=full-screen, md+=centered floating card */}
+                <div className="relative w-full h-full md:w-[640px] md:h-auto md:max-h-[85vh] md:rounded-3xl shadow-2xl flex flex-col overflow-hidden" style={{ background: _C.bg }} onClick={e => e.stopPropagation()}>
+
+                    {/* ═══ Header ═══ */}
+                    <div className="px-5 py-4 flex items-center justify-between shrink-0" style={{ background: _C.bgCard, borderBottom: `1px solid ${_C.bgLight}` }}>
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${_C.orange}12` }}>
+                                <Icons.List size={16} style={{ color: _C.orange }} />
+                            </div>
+                            <div>
+                                <h2 className="font-black text-base" style={{ color: _C.textPrimary }}>交易记录</h2>
+                                <div className="text-[10px] font-bold" style={{ color: _C.textMuted }}>查看你的家庭币收支明细</div>
+                            </div>
+                        </div>
+                        <button onClick={() => setShowTransactionHistoryModal(false)}
+                            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-90"
+                            style={{ background: _C.bgLight, color: _C.textMuted }}>
+                            <Icons.X size={18} />
                         </button>
                     </div>
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar">
-                        <div className="p-4 md:p-6 space-y-6">
-                            {/* Summary Statistics */}
-                            <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex gap-4 divide-x divide-slate-100">
-                                <div className="flex-1 text-center">
-                                    <div className="text-xs font-bold text-emerald-500 mb-1 flex items-center justify-center gap-1"><Icons.TrendingUp size={14} /> 赚取总计</div>
-                                    <div className="text-2xl font-black text-emerald-600">+{totalIncome}</div>
+                        <div className="p-4 space-y-3.5">
+
+                            {/* ═══ 4-Stat Summary Grid ═══ */}
+                            <div className="grid grid-cols-4 gap-2">
+                                {[
+                                    { label: '时段获得', value: totalIncome, color: _C.green, icon: 'TrendingUp', prefix: '+' },
+                                    { label: '时段消费', value: totalExpense, color: _C.coral, icon: 'ShoppingBag', prefix: '-' },
+                                    { label: '净变化', value: netChange, color: _C.teal, icon: 'Activity', prefix: netChange >= 0 ? '+' : '' },
+                                    { label: '记录条数', value: filteredTrans.length, color: _C.orange, icon: 'Clock', prefix: '' },
+                                ].map((s, i) => {
+                                    const IC = Icons[s.icon] || Icons.Star;
+                                    return (
+                                        <div key={i} className="rounded-2xl p-3 text-center" style={{ background: _C.bgCard, border: `1px solid ${_C.bgLight}` }}>
+                                            <div className="w-7 h-7 rounded-lg flex items-center justify-center mx-auto mb-1.5" style={{ background: `${s.color}10` }}>
+                                                <IC size={13} style={{ color: s.color }} />
+                                            </div>
+                                            <div className="text-[9px] font-bold mb-0.5" style={{ color: _C.textMuted }}>{s.label}</div>
+                                            <div className="text-xs font-black" style={{ color: s.color }}>{s.prefix}{s.value.toLocaleString()}</div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* ═══ Filters ═══ */}
+                            <div className="rounded-2xl p-4" style={{ background: _C.bgCard, border: `1px solid ${_C.bgLight}` }}>
+                                <div className="text-[10px] font-bold mb-2" style={{ color: _C.textMuted }}>统计时段</div>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {[
+                                        { id: 'all', label: '全部' },
+                                        { id: '7', label: '近7天' },
+                                        { id: '30', label: '近30天' },
+                                        { id: '90', label: '近90天' },
+                                        { id: 'custom', label: '自定义' }
+                                    ].map(f => (
+                                        <button key={f.id} onClick={() => setTransactionHistoryFilterTime(f.id)}
+                                            className="px-3.5 py-1.5 rounded-lg text-[11px] font-bold transition-all"
+                                            style={{
+                                                background: transactionHistoryFilterTime === f.id ? _C.orange : _C.bg,
+                                                color: transactionHistoryFilterTime === f.id ? '#fff' : _C.textMuted,
+                                            }}>
+                                            {f.label}
+                                        </button>
+                                    ))}
                                 </div>
-                                <div className="flex-1 text-center">
-                                    <div className="text-xs font-bold text-rose-500 mb-1 flex items-center justify-center gap-1"><Icons.ShoppingBag size={14} /> 消费总计</div>
-                                    <div className="text-2xl font-black text-rose-600">-{totalExpense}</div>
+                                {transactionHistoryFilterTime === 'custom' && (
+                                    <div className="flex items-center gap-2 mt-3 p-2.5 rounded-xl" style={{ background: _C.bg, border: `1px solid ${_C.bgLight}` }}>
+                                        <input type="date" value={transactionHistoryStartDate} onChange={e => setTransactionHistoryStartDate(e.target.value)}
+                                            className="flex-1 rounded-lg px-2.5 py-1.5 text-xs font-bold outline-none"
+                                            style={{ background: _C.bgCard, border: `1px solid ${_C.bgLight}`, color: _C.textPrimary }} />
+                                        <span className="text-xs font-bold" style={{ color: _C.textMuted }}>至</span>
+                                        <input type="date" value={transactionHistoryEndDate} onChange={e => setTransactionHistoryEndDate(e.target.value)}
+                                            className="flex-1 rounded-lg px-2.5 py-1.5 text-xs font-bold outline-none"
+                                            style={{ background: _C.bgCard, border: `1px solid ${_C.bgLight}`, color: _C.textPrimary }} />
+                                    </div>
+                                )}
+
+                                <div className="text-[10px] font-bold mt-3 mb-2" style={{ color: _C.textMuted }}>交易类型</div>
+                                <div className="flex gap-1.5">
+                                    {[
+                                        { id: 'all', label: '全部记录' },
+                                        { id: 'income', label: '收入' },
+                                        { id: 'expense', label: '支出' },
+                                    ].map(f => (
+                                        <button key={f.id} onClick={() => setTransactionHistoryFilterType(f.id)}
+                                            className="flex-1 py-1.5 rounded-lg text-[11px] font-bold transition-all"
+                                            style={{
+                                                background: transactionHistoryFilterType === f.id ? _C.orange : _C.bg,
+                                                color: transactionHistoryFilterType === f.id ? '#fff' : _C.textMuted,
+                                            }}>
+                                            {f.label}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
 
-                            {/* Filters */}
-                            <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 space-y-4">
-                                <div>
-                                    <div className="text-xs font-bold text-slate-400 mb-2">时间范围</div>
-                                    <div className="flex flex-wrap gap-2">
-                                        {[
-                                            { id: 'all', label: '全部' },
-                                            { id: '7', label: '近7天' },
-                                            { id: '30', label: '近30天' },
-                                            { id: '90', label: '近90天' },
-                                            { id: 'custom', label: '自定义' }
-                                        ].map(f => (
-                                            <button
-                                                key={f.id}
-                                                onClick={() => setTransactionHistoryFilterTime(f.id)}
-                                                className={`px-4 py-1.5 rounded-full text-sm font-bold transition-colors ${transactionHistoryFilterTime === f.id ? 'bg-indigo-500 text-white shadow-md shadow-indigo-200' : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-100'}`}
-                                            >
-                                                {f.label}
-                                            </button>
-                                        ))}
+                            {/* ═══ Flat Transaction List — date dividers, no nested cards ═══ */}
+                            {sortedDates.length === 0 ? (
+                                <div className="text-center py-14 rounded-2xl" style={{ background: _C.bgCard, border: `1px solid ${_C.bgLight}` }}>
+                                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: _C.bg }}>
+                                        <Icons.Wallet size={24} style={{ color: _C.textMuted }} />
                                     </div>
-                                    {transactionHistoryFilterTime === 'custom' && (
-                                        <div className="flex items-center gap-2 mt-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                            <input type="date" value={transactionHistoryStartDate} onChange={e => setTransactionHistoryStartDate(e.target.value)} className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm font-bold text-slate-700 outline-none focus:border-indigo-400" />
-                                            <span className="text-slate-400 font-bold">至</span>
-                                            <input type="date" value={transactionHistoryEndDate} onChange={e => setTransactionHistoryEndDate(e.target.value)} className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm font-bold text-slate-700 outline-none focus:border-indigo-400" />
-                                        </div>
-                                    )}
+                                    <div className="text-sm font-black" style={{ color: _C.textSoft }}>暂无交易记录</div>
+                                    <div className="text-[11px] font-bold mt-1" style={{ color: _C.textMuted }}>调整筛选条件试试</div>
                                 </div>
-                                <div>
-                                    <div className="text-xs font-bold text-slate-400 mb-2">流向</div>
-                                    <div className="flex gap-2">
-                                        {[
-                                            { id: 'all', label: '全部分类' },
-                                            { id: 'income', label: '仅看收入' },
-                                            { id: 'expense', label: '仅看消费' }
-                                        ].map(f => (
-                                            <button
-                                                key={f.id}
-                                                onClick={() => setTransactionHistoryFilterType(f.id)}
-                                                className={`flex-1 py-1.5 rounded-full text-sm font-bold transition-colors ${transactionHistoryFilterType === f.id ? 'bg-indigo-50 text-indigo-600 border border-indigo-200' : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-100'}`}
-                                            >
-                                                {f.label}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Grouped List */}
-                            <div className="space-y-6 pb-8">
-                                {sortedDates.length === 0 ? (
-                                    <div className="text-center py-12 text-slate-400 bg-white rounded-3xl border border-slate-100 border-dashed">
-                                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-300">
-                                            <Icons.Inbox size={24} />
-                                        </div>
-                                        <p className="font-bold">查询不到相关流水记录</p>
-                                    </div>
-                                ) : (
-                                    sortedDates.map(dateStr => {
-                                        // Calculate daily summary
+                            ) : (
+                                <div className="pb-6">
+                                    {sortedDates.map(dateStr => {
                                         const dailyIncome = groupedTrans[dateStr].filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0);
                                         const dailyExpense = groupedTrans[dateStr].filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0);
-
-                                        const dObj = new Date(dateStr);
-                                        const isToday = dObj.toDateString() === new Date().toDateString();
+                                        const isToday = new Date(dateStr).toDateString() === now.toDateString();
 
                                         return (
-                                            <div key={dateStr} className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                                                {/* Date Header Segment */}
-                                                <div className="bg-slate-50/80 px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-                                                    <div className="font-bold text-slate-700 text-sm flex items-center gap-2">
-                                                        <Icons.Calendar size={14} className="text-slate-400" />
-                                                        {dateStr} {isToday && <span className="text-[10px] bg-indigo-100 text-indigo-600 px-1.5 rounded">今天</span>}
+                                            <React.Fragment key={dateStr}>
+                                                {/* Simple date divider — not a card */}
+                                                <div className="flex items-center justify-between px-1 pt-4 pb-2">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="text-[11px] font-black" style={{ color: _C.textSoft }}>{dateStr}</span>
+                                                        {isToday && (
+                                                            <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md" style={{ background: `${_C.orange}12`, color: _C.orange }}>今天</span>
+                                                        )}
                                                     </div>
-                                                    <div className="flex items-center gap-3 text-xs font-bold font-mono">
-                                                        {dailyIncome > 0 && <span className="text-emerald-500">入:{dailyIncome}</span>}
-                                                        {dailyExpense > 0 && <span className="text-rose-500">出:{dailyExpense}</span>}
+                                                    <div className="flex items-center gap-2 text-[10px] font-black">
+                                                        {dailyIncome > 0 && <span style={{ color: _C.green }}>+{dailyIncome.toLocaleString()}</span>}
+                                                        {dailyExpense > 0 && <span style={{ color: _C.coral }}>-{dailyExpense.toLocaleString()}</span>}
                                                     </div>
                                                 </div>
 
-                                                <div className="divide-y divide-slate-50">
-                                                    {groupedTrans[dateStr].map(item => {
-                                                        const isIncome = item.type === 'income';
-                                                        return (
-                                                            <div key={item.id} className="flex items-center justify-between py-4 px-4 hover:bg-slate-50/50 transition-colors group">
-                                                                <div className="flex items-center gap-4">
-                                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-inner shrink-0 ${isIncome ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
-                                                                        {isIncome ? <Icons.TrendingUp size={16} /> : <Icons.ShoppingBag size={16} />}
-                                                                    </div>
-                                                                    <div>
-                                                                        <div className="font-bold text-slate-700 text-sm leading-tight mb-0.5">{item.title}</div>
-                                                                        <div className="text-[10px] font-bold text-slate-400">{new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                                                                    </div>
+                                                {/* Flat items — directly on bg, no wrapper card */}
+                                                {groupedTrans[dateStr].map((item, idx) => {
+                                                    const isIncome = item.type === 'income';
+                                                    const meta = _txMeta(item);
+                                                    const IconCmp = Icons[meta.icon] || Icons.Star;
+                                                    return (
+                                                        <div key={item.id || `tx-${idx}`}
+                                                            className="flex items-center justify-between px-3 py-2.5 rounded-xl mb-1"
+                                                            style={{ background: _C.bgCard }}>
+                                                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                                                                    style={{ background: `${meta.color}10` }}>
+                                                                    <IconCmp size={15} style={{ color: meta.color }} />
                                                                 </div>
-                                                                <div className={`font-black tracking-tight text-lg ${isIncome ? 'text-emerald-500' : 'text-slate-800'}`}>
-                                                                    {isIncome ? '+' : '-'}{item.amount}
+                                                                <div className="min-w-0 flex-1">
+                                                                    <div className="font-bold text-xs leading-tight truncate" style={{ color: _C.textPrimary }}>
+                                                                        {item.title}
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                                                        <span className="text-[8px] font-bold px-1.5 py-0.5 rounded"
+                                                                            style={{ background: `${meta.color}08`, color: meta.color }}>
+                                                                            {meta.label}
+                                                                        </span>
+                                                                        <span className="text-[9px] font-bold" style={{ color: _C.textMuted }}>
+                                                                            {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                        </span>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
+                                                            <div className="font-black text-sm shrink-0 ml-3" style={{ color: isIncome ? _C.green : _C.textPrimary }}>
+                                                                {isIncome ? '+' : '-'}{Number(item.amount).toLocaleString()}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </React.Fragment>
                                         );
-                                    })
-                                )}
-                            </div>
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
