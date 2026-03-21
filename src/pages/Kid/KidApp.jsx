@@ -83,7 +83,7 @@ export const KidApp = () => {
     const nextLevelExp = getLevelReq(activeKid.level);
 
     return (
-        <div className="min-h-screen font-sans pb-24 text-left animate-fade-in" style={{ background: (kidTab === 'study' || kidTab === 'habit' || kidTab === 'wealth') ? '#FBF7F0' : '#f4f7f9' }}>
+        <div className="min-h-screen font-sans pb-24 text-left animate-fade-in" style={{ background: (kidTab === 'study' || kidTab === 'habit' || kidTab === 'wealth' || kidTab === 'profile') ? '#FBF7F0' : '#f4f7f9' }}>
             {/* Mobile navbar - unchanged */}
             <div className="md:hidden bg-white border-b border-slate-100 px-4 py-3 flex justify-between items-center sticky top-0 z-20 shadow-sm">
                 <div className="flex items-center gap-2">
@@ -133,7 +133,8 @@ export const KidApp = () => {
                                 { id: 'study', icon: <Icons.BookOpen size={16} />, label: "学习任务" },
                                 { id: 'habit', icon: <Icons.ShieldCheck size={16} />, label: "习惯养成" },
                                 { id: 'wealth', icon: <Icons.Wallet size={16} />, label: "财富中心" },
-                                { id: 'shop', icon: <Icons.ShoppingBag size={16} />, label: "家庭超市" }
+                                { id: 'shop', icon: <Icons.ShoppingBag size={16} />, label: "家庭超市" },
+                                { id: 'profile', icon: <Icons.User size={16} />, label: "我的" }
                             ].map(tab => (
                                 <button key={tab.id} onClick={() => setKidTab(tab.id)}
                                     className="relative flex items-center gap-1.5 px-4 h-14 font-bold text-[13px] whitespace-nowrap transition-colors"
@@ -471,10 +472,14 @@ export const KidApp = () => {
                     <KidStudyTab />
                 </div>
             )}
-            {kidTab !== 'study' && kidTab !== 'habit' && kidTab !== 'wealth' && (
+            {kidTab === 'profile' && (
+                <div className="px-4 md:px-8 pb-28 md:pb-8">
+                    <KidProfileTab />
+                </div>
+            )}
+            {kidTab === 'shop' && (
                 <div className="max-w-5xl mx-auto p-4 md:p-8 pb-28 md:pb-8">
-                    {kidTab === 'profile' && <KidProfileTab />}
-                    {kidTab === 'shop' && <KidShopTab />}
+                    <KidShopTab />
                 </div>
             )}
             {kidTab === 'wealth' && (
