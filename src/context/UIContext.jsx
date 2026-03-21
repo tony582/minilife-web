@@ -74,6 +74,7 @@ export const UIProvider = ({ children }) => {
     const [rejectReason, setRejectReason] = useState('');
     // Transaction History Modal States
     const [showTransactionHistoryModal, setShowTransactionHistoryModal] = useState(false);
+    const [transactionHistoryKidId, setTransactionHistoryKidId] = useState(null); // null = use activeKidId
     const [transactionHistoryFilterTime, setTransactionHistoryFilterTime] = useState('all'); // 'all', '7', '30', '90', 'custom'
     const [transactionHistoryStartDate, setTransactionHistoryStartDate] = useState('');
     const [transactionHistoryEndDate, setTransactionHistoryEndDate] = useState('');
@@ -161,7 +162,7 @@ export const UIProvider = ({ children }) => {
         showAvatarPickerModal, setShowAvatarPickerModal, pendingAvatar, setPendingAvatar, pointActionTimings, setPointActionTimings,
         showEmotionalReminderModal, setShowEmotionalReminderModal, emotionalCooldownSeconds, setEmotionalCooldownSeconds,
         showRewardModal, setShowRewardModal, showRejectModal, setShowRejectModal, rejectingTaskInfo, setRejectingTaskInfo,
-        rejectReason, setRejectReason, showTransactionHistoryModal, setShowTransactionHistoryModal, transactionHistoryFilterTime, setTransactionHistoryFilterTime,
+        rejectReason, setRejectReason, showTransactionHistoryModal, setShowTransactionHistoryModal, transactionHistoryKidId, setTransactionHistoryKidId, transactionHistoryFilterTime, setTransactionHistoryFilterTime,
         transactionHistoryStartDate, setTransactionHistoryStartDate, transactionHistoryEndDate, setTransactionHistoryEndDate,
         transactionHistoryFilterType, setTransactionHistoryFilterType, showTimerModal, setShowTimerModal, timerTargetId, setTimerTargetId,
         timerMode, setTimerMode, timerSeconds, setTimerSeconds, timerTotalSeconds, setTimerTotalSeconds, isTimerRunning, setIsTimerRunning,

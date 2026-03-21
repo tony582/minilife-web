@@ -5,7 +5,7 @@ import { apiFetch } from '../api/client';
 
 export const useShopManager = (authC, dataC, uiC) => {
     const context = { ...authC, ...dataC, ...uiC };
-    const { activeKidId, kids, setKids, inventory, setInventory, orders, setOrders, transactions, setTransactions, notify, setShowTransferModal, setTransferForm, setSelectedOrder, setReviewStars, setReviewComment, setShowAddItemModal, setNewItem, setShowQrScanner } = context;
+    const { activeKidId, kids, setKids, inventory, setInventory, orders, setOrders, transactions, setTransactions, notify, setShowTransferModal, setTransferForm, setSelectedOrder, setReviewStars, setReviewComment, setShowAddItemModal, newItem, setNewItem, setShowQrScanner } = context;
 
     const handleVerifyOrder = async (orderIdOrCode) => {
         const order = orders.find(o => o.id === orderIdOrCode || o.redeemCode === orderIdOrCode);

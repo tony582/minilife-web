@@ -7,268 +7,421 @@ import { useToast } from '../../hooks/useToast';
 import { Icons } from '../../utils/Icons';
 import { apiFetch } from '../../api/client';
 
-// Simple AvatarDisplay component (we can extract this fully later)
-const AvatarDisplay = ({ avatar, className = '' }) => {
-    if (!avatar) return <Icons.User className={`w-full h-full text-slate-300 p-2 ${className}`} />;
-    if (avatar.type === 'emoji') {
-        return <div className={`w-full h-full flex items-center justify-center text-4xl bg-gradient-to-br from-indigo-50 leading-none to-purple-50 ${className}`}>{avatar.value || avatar.url}</div>;
-    }
-    return <img src={avatar.url || avatar.value} alt="avatar" className={`w-full h-full object-cover ${className}`} />;
+const C = {
+    bg: '#FBF7F0', bgCard: '#FFFFFF', bgLight: '#F0EBE1', bgMuted: '#E8E0D4',
+    accent: '#7C5CFC', accentHot: '#6344E0', accentSoft: '#EDE9FE',
+    teal: '#4ECDC4', coral: '#FF6B6B', green: '#10B981', pink: '#EC4899',
+    textPrimary: '#1B2E4B', textSoft: '#5A6E8A', textMuted: '#9CAABE',
+};
+
+const pastels = [
+    'linear-gradient(160deg, #FFF5EB 0%, #FFE0C2 100%)',
+    'linear-gradient(160deg, #EDE9FE 0%, #DDD6FE 100%)',
+    'linear-gradient(160deg, #E0F2FE 0%, #BAE6FD 100%)',
+    'linear-gradient(160deg, #FCE7F3 0%, #FBCFE8 100%)',
+    'linear-gradient(160deg, #ECFCCB 0%, #D9F99D 100%)',
+    'linear-gradient(160deg, #FEF3C7 0%, #FDE68A 100%)',
+];
+
+/* ─── Inventory Card (parent admin) ─── */
+const ShopItemCard = ({ item, idx, onEdit, onDelete }) => {
+    const isCharity = item.walletTarget === 'give';
+    const heights = ['140px', '170px', '130px', '190px', '150px', '160px'];
+    const emojiH = heights[idx % heights.length];
+
+    return (
+        <div className="break-inside-avoid mb-2.5">
+            <div className="overflow-hidden transition-all duration-300 hover:-translate-y-0.5 cursor-pointer group"
+                style={{ background: C.bgCard, borderRadius: '12px 12px 4px 4px', boxShadow: '0 1px 4px rgba(27,46,75,0.04)' }}
+                onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 16px rgba(27,46,75,0.08)'}
+                onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 4px rgba(27,46,75,0.04)'}>
+
+                {/* Image */}
+                <div className="relative overflow-hidden">
+                    {item.image ? (
+                        <img src={item.image} alt={item.name}
+                            className="w-full object-cover block"
+                            style={{ maxHeight: '240px' }}
+                            onError={e => { e.target.style.display = 'none'; if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex'; }} />
+                    ) : null}
+                    <div className={`w-full flex items-center justify-center ${item.image ? 'hidden' : ''}`}
+                        style={{ height: emojiH, background: pastels[idx % pastels.length] }}>
+                        <span className="text-5xl sm:text-6xl drop-shadow-md">{item.iconEmoji}</span>
+                    </div>
+
+                    {/* Tag overlay */}
+                    <div className="absolute top-2.5 left-2.5 flex flex-col gap-1">
+                        <span className="text-[11px] font-extrabold px-2.5 py-1 rounded-lg text-white backdrop-blur-sm"
+                            style={{ background: item.type === 'single' ? 'rgba(124,92,252,0.85)' : item.type === 'multiple' ? 'rgba(78,205,196,0.85)' : 'rgba(139,92,246,0.85)' }}>
+                            {item.type === 'single' ? '单次' : item.type === 'multiple' ? '多次' : '特权'}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Card footer */}
+                <div className="px-3 pt-2.5 pb-3">
+                    <h3 className="font-bold text-[13px] leading-snug line-clamp-2 mb-1" style={{ color: C.textPrimary }}>
+                        {item.name}
+                    </h3>
+                    {item.desc && (
+                        <p className="text-[11px] leading-relaxed line-clamp-1 mb-1.5" style={{ color: C.textMuted }}>{item.desc}</p>
+                    )}
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1">
+                            {isCharity
+                                ? <Icons.Heart size={14} className="fill-pink-500 text-pink-500" />
+                                : <Icons.Star size={14} className="fill-yellow-500 text-yellow-500" />}
+                            <span className="font-black text-sm" style={{ color: isCharity ? C.pink : C.accent }}>{item.price}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <button onClick={e => { e.stopPropagation(); onEdit(item); }}
+                                className="w-7 h-7 rounded-lg flex items-center justify-center transition-all active:scale-90"
+                                style={{ background: C.accentSoft }}>
+                                <Icons.Settings size={12} style={{ color: C.accent }} />
+                            </button>
+                            <button onClick={e => { e.stopPropagation(); onDelete(item); }}
+                                className="w-7 h-7 rounded-lg flex items-center justify-center transition-all active:scale-90"
+                                style={{ background: '#FEE2E2' }}>
+                                <Icons.Trash2 size={12} style={{ color: C.coral }} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export const ParentShopTab = () => {
     const authC = useAuthContext();
     const dataC = useDataContext();
     const uiC = useUIContext();
-
-    const { kids, orders, inventory, setInventory } = dataC;
-    const { setShowAddItemModal, setNewItem, setShowQrScanner } = uiC;
-    
-    // Derived business methods
+    const { kids, orders, inventory, setInventory, setOrders } = dataC;
+    const { setShowAddItemModal, setNewItem } = uiC;
     const { notify } = useToast();
     const { handleVerifyOrder } = useShopManager(authC, dataC, uiC);
 
-    const [searchShopKeyword, setSearchShopKeyword] = useState('');
-    const [orderHistoryFilterKid, setOrderHistoryFilterKid] = useState('all');
-    const [orderHistoryFilterTime, setOrderHistoryFilterTime] = useState('7'); // '7', '30', 'all'
+    const [searchKeyword, setSearchKeyword] = useState('');
+    const [activeTab, setActiveTab] = useState('inventory');
+    const [filterKid, setFilterKid] = useState('all');
+    const [showAllHistory, setShowAllHistory] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [revokeTarget, setRevokeTarget] = useState(null);
 
-    return (
-        <div className="space-y-6 animate-fade-in">
-            {/* Parent Fulfilling Orders Section */}
-            {orders.filter(o => o.status === 'shipping').length > 0 && (
-                <div className="bg-white rounded-[2rem] shadow-sm border border-orange-200 overflow-hidden">
-                    <div className="p-6 border-b border-orange-100 bg-orange-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600"><Icons.CheckSquare size={20} /></div>
-                            <div>
-                                <h2 className="font-black text-slate-800 text-lg">核销中心 - 待处理兑换</h2>
-                                <p className="text-xs text-slate-500 mt-0.5">请扫描孩子的二维码，或手动点击一键核销</p>
-                            </div>
-                        </div>
-                        <button onClick={() => setShowQrScanner(true)} className="w-full sm:w-auto px-6 py-3 bg-indigo-500 text-white rounded-xl text-sm font-black shadow-lg shadow-indigo-200 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
-                            <Icons.Eye size={18} /> 打开扫码摄像头
-                        </button>
+    const filteredItems = inventory.filter(item =>
+        !searchKeyword || item.name.toLowerCase().includes(searchKeyword.toLowerCase()) || (item.desc && item.desc.toLowerCase().includes(searchKeyword.toLowerCase()))
+    );
+
+    const handleEdit = (item) => {
+        setNewItem({ ...item, price: item.price.toString() });
+        setShowAddItemModal(true);
+    };
+
+    const handleDelete = (item) => setDeleteTarget(item);
+
+    const confirmDelete = async () => {
+        if (!deleteTarget) return;
+        try {
+            await apiFetch(`/api/inventory/${deleteTarget.id}`, { method: 'DELETE' });
+            setInventory(inventory.filter(i => i.id !== deleteTarget.id));
+            notify("商品已下架", "success");
+        } catch (e) { notify("下架失败", "error"); }
+        setDeleteTarget(null);
+    };
+
+    const confirmRevoke = async () => {
+        if (!revokeTarget) return;
+        try {
+            await apiFetch(`/api/orders/${revokeTarget.id}`, { method: 'DELETE' });
+            setOrders(orders.filter(o => o.id !== revokeTarget.id));
+            // Refund the balance
+            const kid = kids.find(k => String(k.id) === String(revokeTarget.kidId));
+            if (kid) {
+                const newBal = (kid.balances?.spend || 0) + (revokeTarget.price || 0);
+                await apiFetch(`/api/kids/${kid.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ balances: { ...kid.balances, spend: newBal } }) }).catch(() => {});
+            }
+            notify("已撤销并退回金币", "success");
+        } catch (e) { notify("撤销失败", "error"); }
+        setRevokeTarget(null);
+    };
+
+    /* ─── Exchange History ─── */
+    const renderHistory = () => {
+        const filtered = orders
+            .filter(o => filterKid === 'all' || String(o.kidId) === String(filterKid))
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        const totalSpent = filtered.reduce((s, o) => s + (o.price || 0), 0);
+
+        // Kid filter pills — always visible
+        const kidFilterPills = kids.length > 1 ? (
+            <div className="flex gap-1.5 mb-3 flex-wrap">
+                <button onClick={() => { setFilterKid('all'); setShowAllHistory(false); }}
+                    className="px-3 py-1.5 rounded-full text-[11px] font-bold transition-all"
+                    style={{ background: filterKid === 'all' ? C.accent : C.bgCard, color: filterKid === 'all' ? '#fff' : C.textMuted }}>
+                    全部
+                </button>
+                {kids.map(k => (
+                    <button key={k.id} onClick={() => { setFilterKid(k.id); setShowAllHistory(false); }}
+                        className="px-3 py-1.5 rounded-full text-[11px] font-bold transition-all"
+                        style={{ background: filterKid === k.id ? C.accent : C.bgCard, color: filterKid === k.id ? '#fff' : C.textMuted }}>
+                        {k.name}
+                    </button>
+                ))}
+            </div>
+        ) : null;
+
+        if (filtered.length === 0) return (
+            <div>
+                {kidFilterPills}
+                <div className="text-center rounded-2xl py-14" style={{ background: C.bgCard }}>
+                    <div className="text-3xl mb-1.5">📋</div>
+                    <div className="text-xs font-bold" style={{ color: C.textMuted }}>暂无兑换记录</div>
+                </div>
+            </div>
+        );
+
+        // Group by day
+        const today = new Date(); today.setHours(0,0,0,0);
+        const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+        const groups = {};
+        filtered.forEach(o => {
+            const d = new Date(o.date); d.setHours(0,0,0,0);
+            const key = d.getTime();
+            let label;
+            if (key === today.getTime()) label = '今天';
+            else if (key === yesterday.getTime()) label = '昨天';
+            else label = d.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' });
+            if (!groups[key]) groups[key] = { label, items: [] };
+            groups[key].items.push(o);
+        });
+        const groupKeys = Object.keys(groups).sort((a, b) => b - a);
+
+        const MAX_VISIBLE = 8;
+        const totalCount = filtered.length;
+        const hasMore = totalCount > MAX_VISIBLE && !showAllHistory;
+        let remaining = showAllHistory ? Infinity : MAX_VISIBLE;
+        const visibleGroups = [];
+        for (const key of groupKeys) {
+            if (remaining <= 0) break;
+            const g = groups[key];
+            const items = g.items.slice(0, remaining);
+            visibleGroups.push({ key, label: g.label, items });
+            remaining -= items.length;
+        }
+
+        return (
+            <div>
+                {/* Summary */}
+                <div className="rounded-2xl p-4 mb-4 flex items-center justify-between" style={{ background: C.bgCard }}>
+                    <div>
+                        <div className="text-[10px] font-bold mb-0.5" style={{ color: C.textMuted }}>总兑换次数</div>
+                        <div className="text-lg font-black" style={{ color: C.textPrimary }}>{filtered.length} 次</div>
                     </div>
-                    <div className="p-4 sm:p-6 bg-white space-y-4">
-                        {orders.filter(o => o.status === 'shipping').map(o => {
-                            const kid = kids.find(k => k.id === o.kidId);
-                            return (
-                                <div key={o.id} className="bg-slate-50 p-5 rounded-2xl border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-5">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-2xl shadow-sm border border-slate-100 overflow-hidden shrink-0"><AvatarDisplay avatar={kid?.avatar} /></div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-black text-slate-800">{kid?.name}</span>
-                                                <span className="text-xs text-slate-400">待核销</span>
+                    <div className="text-right">
+                        <div className="text-[10px] font-bold mb-0.5" style={{ color: C.textMuted }}>总消耗金币</div>
+                        <div className="flex items-center gap-1 justify-end">
+                            <Icons.Star size={14} className="fill-yellow-500 text-yellow-500" />
+                            <span className="text-lg font-black" style={{ color: C.accent }}>{totalSpent}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {kidFilterPills}
+
+                {/* Day groups */}
+                {visibleGroups.map(g => (
+                    <div key={g.key} className="mb-3">
+                        <div className="text-[11px] font-bold mb-1.5 px-1" style={{ color: C.textMuted }}>{g.label}</div>
+                        <div className="space-y-1.5">
+                            {g.items.map(o => {
+                                const kid = kids.find(k => String(k.id) === String(o.kidId));
+                                const matchItem = inventory.find(i => String(i.id) === String(o.itemId));
+                                return (
+                                    <div key={o.id} className="rounded-xl p-3 flex gap-3 items-center" style={{ background: C.bgCard }}>
+                                        <div className="w-10 h-10 rounded-lg shrink-0 overflow-hidden flex items-center justify-center text-base" style={{ background: C.accentSoft }}>
+                                            {matchItem?.image ? <img src={matchItem.image} alt="" className="w-full h-full object-cover" /> : <span>{matchItem?.iconEmoji || '🎁'}</span>}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-1.5 mb-0.5">
+                                                <span className="font-bold text-xs truncate" style={{ color: C.textPrimary }}>{o.itemName}</span>
+                                                {kids.length > 1 && kid && (
+                                                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0" style={{ background: C.accentSoft, color: C.accent }}>
+                                                        {kid.name}
+                                                    </span>
+                                                )}
                                             </div>
-                                            <div className="font-black text-indigo-600 text-lg mt-0.5">{o.itemName}</div>
-                                            <div className="text-[10px] text-slate-400 font-mono mt-1">单号: {o.id} | 核销码: <span className="text-slate-600 font-bold max-w-[80px] truncate inline-block align-bottom">{o.redeemCode || 'N/A'}</span></div>
+                                            <div className="text-[10px] font-medium" style={{ color: C.textMuted }}>
+                                                {new Date(o.date).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+                                            </div>
+                                        </div>
+                                        <div className="shrink-0 flex items-center gap-2">
+                                            <div className="flex items-center gap-1">
+                                                <Icons.Star size={11} className="fill-yellow-500 text-yellow-500" />
+                                                <span className="text-sm font-black" style={{ color: C.accent }}>-{o.price}</span>
+                                            </div>
+                                            <button onClick={() => setRevokeTarget(o)}
+                                                className="text-[10px] font-bold px-2 py-1 rounded-lg transition-all active:scale-95"
+                                                style={{ background: '#FEE2E2', color: C.coral }}>
+                                                撤销
+                                            </button>
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={() => handleVerifyOrder(o.id)}
-                                        className="w-full md:w-auto px-6 py-3 bg-slate-800 text-white rounded-xl text-sm font-black shadow-lg shadow-slate-200 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
-                                    >
-                                        <Icons.Check size={18} /> 一键手动核销
-                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ))}
+
+                {hasMore && (
+                    <button onClick={() => setShowAllHistory(true)}
+                        className="w-full py-3 rounded-xl text-xs font-bold transition-all"
+                        style={{ background: C.bgCard, color: C.accent }}>
+                        查看更多（还有 {totalCount - MAX_VISIBLE} 条记录）
+                    </button>
+                )}
+            </div>
+        );
+    };
+
+    return (
+        <div className="animate-fade-in -mx-4 md:-mx-8 px-0 pb-10" style={{ background: C.bg, minHeight: '100vh' }}>
+          <div className="max-w-5xl mx-auto">
+
+            {/* Hero with blob decorations */}
+            <div className="relative overflow-hidden pb-4 px-4">
+                <div className="absolute -top-32 -left-20 w-56 h-56 rounded-full opacity-15" style={{ background: C.accent }}></div>
+                <div className="absolute -top-20 -left-12 w-40 h-40 rounded-full opacity-10" style={{ background: '#A78BFA' }}></div>
+
+                <div className="relative z-10">
+                    <h1 className="text-2xl font-black" style={{ color: C.textPrimary }}>家庭超市</h1>
+                    <p className="text-sm font-bold mt-0.5" style={{ color: C.textSoft }}>管理奖励商品，查看兑换记录</p>
+                </div>
+            </div>
+
+            <div className="px-4">
+
+                {/* Segmented control */}
+                <div className="grid grid-cols-2 p-1 rounded-xl mb-4" style={{ background: C.bgLight }}>
+                    <button onClick={() => setActiveTab('inventory')}
+                        className="py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all"
+                        style={{ background: activeTab === 'inventory' ? C.bgCard : 'transparent', color: activeTab === 'inventory' ? C.accent : C.textMuted,
+                            boxShadow: activeTab === 'inventory' ? '0 1px 4px rgba(0,0,0,0.06)' : 'none' }}>
+                        <Icons.ShoppingBag size={14} /> 商品管理
+                    </button>
+                    <button onClick={() => setActiveTab('history')}
+                        className="py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all"
+                        style={{ background: activeTab === 'history' ? C.bgCard : 'transparent', color: activeTab === 'history' ? C.accent : C.textMuted,
+                            boxShadow: activeTab === 'history' ? '0 1px 4px rgba(0,0,0,0.06)' : 'none' }}>
+                        <Icons.Package size={14} /> 兑换记录
+                    </button>
+                </div>
+
+                {activeTab === 'inventory' ? (
+                    <>
+                        {/* Search + Add */}
+                        <div className="flex gap-2 mb-4">
+                            <div className="flex-1 relative">
+                                <Icons.Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: C.textMuted }} />
+                                <input type="text" placeholder="搜索商品..." value={searchKeyword} onChange={e => setSearchKeyword(e.target.value)}
+                                    className="w-full text-xs font-bold rounded-xl pl-9 pr-3 py-2.5 border-none outline-none"
+                                    style={{ background: C.bgCard, color: C.textPrimary, caretColor: C.accent }} />
+                            </div>
+                            <button onClick={() => setShowAddItemModal(true)}
+                                className="px-4 py-2.5 rounded-xl text-xs font-black text-white flex items-center gap-1.5 transition-all active:scale-95 shrink-0"
+                                style={{ background: `linear-gradient(135deg, ${C.accent}, ${C.accentHot})`, boxShadow: '0 4px 14px rgba(124,92,252,0.3)' }}>
+                                <Icons.Plus size={14} /> 添加商品
+                            </button>
+                        </div>
+
+                        {/* Inventory grid — waterfall */}
+                        {filteredItems.length === 0 ? (
+                            <div className="text-center rounded-2xl py-14" style={{ background: C.bgCard }}>
+                                <div className="text-3xl mb-1.5">🛒</div>
+                                <div className="text-xs font-bold" style={{ color: C.textMuted }}>
+                                    {searchKeyword ? '没有匹配的商品' : '货架空空如也，快添加商品吧'}
                                 </div>
-                            );
-                        })}
+                            </div>
+                        ) : (
+                            <div style={{ columnWidth: '165px', columnGap: '10px' }}>
+                                {filteredItems.map((item, idx) => (
+                                    <ShopItemCard key={item.id} item={item} idx={idx} onEdit={handleEdit} onDelete={handleDelete} />
+                                ))}
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    renderHistory()
+                )}
+            </div>
+
+            {/* Delete confirm modal */}
+            {deleteTarget && (
+                <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-[25vh] p-4" style={{ background: 'rgba(27,46,75,0.4)', top: 0, left: 0, right: 0, bottom: 0 }}
+                    onClick={() => setDeleteTarget(null)}>
+                    <div className="rounded-2xl p-6 w-full max-w-xs text-center shadow-2xl" style={{ background: C.bg }}
+                        onClick={e => e.stopPropagation()}>
+                        <div className="w-16 h-16 rounded-2xl mx-auto mb-4 overflow-hidden flex items-center justify-center text-3xl"
+                            style={{ background: C.accentSoft }}>
+                            {deleteTarget.image
+                                ? <img src={deleteTarget.image} alt="" className="w-full h-full object-cover" />
+                                : <span>{deleteTarget.iconEmoji || '🎁'}</span>}
+                        </div>
+                        <div className="text-sm font-black mb-1" style={{ color: C.textPrimary }}>确定要下架吗？</div>
+                        <div className="text-xs font-bold mb-5" style={{ color: C.textMuted }}>
+                            【{deleteTarget.name}】将从货架移除
+                        </div>
+                        <div className="flex gap-2">
+                            <button onClick={() => setDeleteTarget(null)}
+                                className="flex-1 py-3 rounded-xl text-xs font-black transition-all active:scale-95"
+                                style={{ background: C.bgLight, color: C.textSoft }}>
+                                再想想
+                            </button>
+                            <button onClick={confirmDelete}
+                                className="flex-1 py-3 rounded-xl text-xs font-black text-white transition-all active:scale-95"
+                                style={{ background: C.coral, boxShadow: '0 4px 14px rgba(255,107,107,0.3)' }}>
+                                确认下架
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
 
-            {/* Existing Inventory Grid */}
-            <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
-                <div className="p-6 border-b border-slate-100 bg-purple-50/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="flex-1">
-                        <h2 className="font-black text-slate-800 text-xl">家庭超市货架配置</h2>
-                        <p className="text-sm text-slate-500 mt-1">设置吸引人的奖励，激发孩子的动力</p>
-                    </div>
-                    <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-                        <div className="relative w-full sm:w-64 shrink-0">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Icons.Search size={16} className="text-slate-400" />
-                            </div>
-                            <input
-                                type="text"
-                                placeholder="搜索商品名称..."
-                                value={searchShopKeyword}
-                                onChange={(e) => setSearchShopKeyword(e.target.value)}
-                                className="w-full bg-white border border-slate-200 text-sm font-bold rounded-2xl pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:font-normal placeholder:text-slate-400 shadow-sm"
-                            />
-                            {searchShopKeyword && (
-                                <button onClick={() => setSearchShopKeyword('')} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors">
-                                    <Icons.X size={14} />
-                                </button>
-                            )}
+            {/* Revoke confirm modal */}
+            {revokeTarget && (
+                <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-[25vh] p-4" style={{ background: 'rgba(27,46,75,0.4)', top: 0, left: 0, right: 0, bottom: 0 }}
+                    onClick={() => setRevokeTarget(null)}>
+                    <div className="rounded-2xl p-6 w-full max-w-xs text-center shadow-2xl" style={{ background: C.bg }}
+                        onClick={e => e.stopPropagation()}>
+                        <div className="w-16 h-16 rounded-2xl mx-auto mb-4 overflow-hidden flex items-center justify-center text-3xl"
+                            style={{ background: '#FEE2E2' }}>
+                            ↩️
                         </div>
-                        <button onClick={() => setShowAddItemModal(true)} className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-6 py-2.5 rounded-2xl text-sm font-black flex items-center justify-center gap-2 shadow-lg shadow-purple-200 hover:scale-105 active:scale-95 transition-all whitespace-nowrap">
-                            <Icons.Plus size={18} /> 添加愿望商品
-                        </button>
-                    </div>
-                </div>
-                <div className="p-4 sm:p-6 bg-slate-50/50">
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5">
-                        {inventory.filter(item => !searchShopKeyword || item.name.toLowerCase().includes(searchShopKeyword.toLowerCase()) || (item.desc && item.desc.toLowerCase().includes(searchShopKeyword.toLowerCase()))).length === 0 ? (
-                            <div className="col-span-full bg-white rounded-3xl border border-slate-100 p-12 text-center shadow-sm">
-                                <div className="w-16 h-16 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner"><Icons.SearchX size={28} /></div>
-                                <div className="text-slate-500 font-bold mb-1">未找到相关商品</div>
-                                <div className="text-slate-400 text-sm">尝试更换搜索词或添加新商品吧</div>
-                            </div>
-                        ) : (
-                            inventory.filter(item => !searchShopKeyword || item.name.toLowerCase().includes(searchShopKeyword.toLowerCase()) || (item.desc && item.desc.toLowerCase().includes(searchShopKeyword.toLowerCase()))).map(item => (
-                                <div key={item.id} className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 transition-all flex flex-col group relative">
-                                    {/* Top Banner/Badge */}
-                                    <div className="absolute top-3 inset-x-3 flex justify-between items-start z-10 pointer-events-none">
-                                        <div className={`text-[10px] font-black px-2 py-1 rounded-lg backdrop-blur-md shadow-sm border ${item.type === 'single' ? 'bg-orange-500/90 text-white border-orange-400' : item.type === 'multiple' ? 'bg-blue-500/90 text-white border-blue-400' : 'bg-purple-500/90 text-white border-purple-400'}`}>
-                                            {item.type === 'single' ? '单次兑换' : item.type === 'multiple' ? '多次兑换' : '永久特权'}
-                                        </div>
-                                    </div>
-
-                                    {/* Image Area (Icon) */}
-                                    <div className={`h-32 sm:h-40 flex items-center justify-center text-6xl sm:text-7xl relative overflow-hidden bg-gradient-to-br ${item.walletTarget === 'give' ? 'from-rose-50 to-pink-100' : item.type === 'privilege' ? 'from-purple-50 to-fuchsia-100' : 'from-indigo-50 to-blue-50'}`}>
-                                        <div className="absolute inset-0 bg-white/40 transform -skew-x-12 translate-x-full group-hover:-translate-x-full transition-transform duration-700"></div>
-                                        {item.image ? (
-                                            <img src={item.image} alt={item.name} className="w-full h-full object-cover relative z-10 transform group-hover:scale-105 transition-transform duration-500" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
-                                        ) : null}
-                                        <div className={`transform group-hover:scale-110 transition-transform duration-500 drop-shadow-md relative z-10 ${item.image ? 'hidden' : ''}`}>
-                                            {item.iconEmoji}
-                                        </div>
-                                    </div>
-
-                                    {/* Details Area */}
-                                    <div className="p-4 sm:p-5 flex flex-col flex-1 bg-white">
-                                        <h3 className="font-black text-slate-800 text-sm sm:text-base line-clamp-2 leading-tight mb-2 group-hover:text-purple-600 transition-colors">{item.name}</h3>
-                                        <p className="text-slate-400 text-[11px] sm:text-xs mb-4 flex-1 line-clamp-2 leading-relaxed">{item.desc}</p>
-
-                                        <div className="flex justify-between items-end mt-auto pt-3 border-t border-slate-50">
-                                            <div className="flex flex-col">
-                                                <span className="text-[9px] text-slate-400 font-bold mb-0.5">{item.walletTarget === 'give' ? (item.charityTarget ? `❤️ ${item.charityTarget}` : '爱心基金') : '定价'}</span>
-                                                <div className={`flex items-baseline gap-1 ${item.walletTarget === 'give' ? 'text-rose-500' : 'text-slate-700'}`}>
-                                                    {item.walletTarget === 'give' && <Icons.Heart size={12} className="fill-rose-500" />}
-                                                    <span className="text-lg sm:text-xl font-black tracking-tight">{item.price}</span>
-                                                    <span className="text-[9px] sm:text-[10px] font-bold">{item.walletTarget === 'give' ? '' : '家庭币'}</span>
-                                                </div>
-                                            </div>
-
-                                            {/* Admin Actions */}
-                                            <div className="flex items-center gap-1.5 opacity-100 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={() => { setNewItem({ ...item, price: item.price.toString() }); setShowAddItemModal(true); }} className="w-8 h-8 sm:w-10 sm:h-10 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-indigo-600 rounded-xl flex items-center justify-center transition-colors">
-                                                    <Icons.Settings size={16} className="sm:w-5 sm:h-5" />
-                                                </button>
-                                                <button onClick={async () => {
-                                                    if (!window.confirm(`确定要下架商品 【${item.name}】 吗？`)) return;
-                                                    try {
-                                                        await apiFetch(`/api/inventory/${item.id}`, { method: 'DELETE' });
-                                                        setInventory(inventory.filter(i => i.id !== item.id));
-                                                        notify("商品已下架", "success");
-                                                    } catch (e) { notify("网络下架失败", "error"); }
-                                                }} className="w-8 h-8 sm:w-10 sm:h-10 bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-rose-500 rounded-xl flex items-center justify-center transition-colors">
-                                                    <Icons.Trash2 size={16} className="sm:w-5 sm:h-5" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )))}
-                        {inventory.filter(item => !searchShopKeyword || item.name.toLowerCase().includes(searchShopKeyword.toLowerCase()) || (item.desc && item.desc.toLowerCase().includes(searchShopKeyword.toLowerCase()))).length === 0 && (
-                            <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-5 bg-white rounded-[2rem] border-2 border-slate-100 border-dashed flex flex-col items-center justify-center py-12 shadow-sm">
-                                <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-3xl mb-3 grayscale opacity-50">🛒</div>
-                                <div className="text-slate-400 font-bold text-sm">货架空空如也，快添加一些商品吧</div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* Order History Section */}
-            <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden mt-6">
-                <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500"><Icons.Clock size={20} /></div>
-                        <div>
-                            <h2 className="font-black text-slate-800 text-lg">兑换记录明细</h2>
-                            <p className="text-xs text-slate-500 mt-0.5">查看孩子们的历史兑换及核销记录</p>
+                        <div className="text-sm font-black mb-1" style={{ color: C.textPrimary }}>确定要撤销吗？</div>
+                        <div className="text-xs font-bold mb-1" style={{ color: C.textMuted }}>
+                            【{revokeTarget.itemName}】将被撤销
+                        </div>
+                        <div className="text-[11px] font-bold mb-5 flex items-center justify-center gap-1" style={{ color: C.accent }}>
+                            <Icons.Star size={11} className="fill-yellow-500 text-yellow-500" />
+                            {revokeTarget.price} 金币将退还给孩子
+                        </div>
+                        <div className="flex gap-2">
+                            <button onClick={() => setRevokeTarget(null)}
+                                className="flex-1 py-3 rounded-xl text-xs font-black transition-all active:scale-95"
+                                style={{ background: C.bgLight, color: C.textSoft }}>
+                                取消
+                            </button>
+                            <button onClick={confirmRevoke}
+                                className="flex-1 py-3 rounded-xl text-xs font-black text-white transition-all active:scale-95"
+                                style={{ background: C.coral, boxShadow: '0 4px 14px rgba(255,107,107,0.3)' }}>
+                                确认撤销
+                            </button>
                         </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                        <select
-                            value={orderHistoryFilterKid}
-                            onChange={(e) => setOrderHistoryFilterKid(e.target.value)}
-                            className="bg-white border text-sm font-bold border-slate-200 text-slate-700 rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 min-w-[120px]"
-                        >
-                            <option value="all">全部孩子</option>
-                            {kids.map(k => (
-                                <option key={k.id} value={k.id}>{k.name}</option>
-                            ))}
-                        </select>
-                        <select
-                            value={orderHistoryFilterTime}
-                            onChange={(e) => setOrderHistoryFilterTime(e.target.value)}
-                            className="bg-white border text-sm font-bold border-slate-200 text-slate-700 rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 min-w-[120px]"
-                        >
-                            <option value="7">最近 7 天</option>
-                            <option value="30">最近 30 天</option>
-                            <option value="all">全部时间</option>
-                        </select>
-                    </div>
                 </div>
-                <div className="p-4 sm:p-6 bg-white space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar">
-                    {(() => {
-                        const filteredOrders = orders.filter(o => {
-                            if (o.status !== 'completed') return false;
-                            if (orderHistoryFilterKid !== 'all' && o.kidId !== orderHistoryFilterKid) return false;
+            )}
 
-                            if (orderHistoryFilterTime !== 'all') {
-                                const daysNum = parseInt(orderHistoryFilterTime);
-                                const orderDate = new Date(o.date);
-                                const diffTime = Math.abs(new Date() - orderDate);
-                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                                if (diffDays > daysNum) return false;
-                            }
-                            return true;
-                        });
-
-                        if (filteredOrders.length === 0) {
-                            return (
-                                <div className="text-center py-10">
-                                    <Icons.FileText size={48} className="mx-auto text-slate-200 mb-3" />
-                                    <p className="text-slate-400 font-bold text-sm">没有匹配的兑换记录</p>
-                                </div>
-                            );
-                        }
-
-                        return filteredOrders.map(o => {
-                            const kid = kids.find(k => k.id === o.kidId);
-                            return (
-                                <div key={o.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-xl shadow-sm border border-slate-100 overflow-hidden shrink-0"><AvatarDisplay avatar={kid?.avatar} /></div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-bold text-slate-700 text-sm">{kid?.name}</span>
-                                                <span className="text-xs text-slate-400">核销了</span>
-                                            </div>
-                                            <div className="font-black text-slate-800">{o.itemName}</div>
-                                            <div className="text-[10px] text-slate-400 font-mono mt-0.5">{o.date}</div>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-4 border-t md:border-t-0 border-slate-200 pt-3 md:pt-0">
-                                        <div className="flex flex-col text-right">
-                                            <span className="text-[10px] text-slate-400 font-bold mb-0.5">花费</span>
-                                            <span className="font-black text-rose-500">{o.price} 金币</span>
-                                        </div>
-                                        <div className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-bold border border-emerald-100 flex items-center gap-1 min-w-max">
-                                            <Icons.CheckCircle size={12} /> 已核销
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        });
-                    })()}
-                </div>
-            </div>
+          </div>
         </div>
     );
 };

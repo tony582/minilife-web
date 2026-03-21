@@ -128,6 +128,15 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
         };
     }, [token, setAuthLoading, setToken, setUser]);
 
+    // Auto-select first kid if none selected (e.g. new device / LAN access)
+    useEffect(() => {
+        if (kids.length > 0 && (!activeKidId || !kids.find(k => k.id === activeKidId))) {
+            const firstKid = kids[0].id;
+            setActiveKidId(firstKid);
+            localStorage.setItem('minilife_activeKidId', firstKid);
+        }
+    }, [kids, activeKidId]);
+
     // === Kid Management Functions ===
     const changeActiveKid = (newKidId) => {
         setActiveKidId(newKidId);

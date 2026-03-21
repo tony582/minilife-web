@@ -19,7 +19,7 @@ import { GlobalModals } from './components/common/GlobalModals';
 function AppContent() {
   const { token, user, authLoading } = useAuthContext();
   const { kids, setKids, transactions, setTransactions, isLoading } = useDataContext();
-  const { appState, kidTab, setKidTab, parentTab, setParentTab, showTransactionHistoryModal } = useUIContext();
+  const { appState, kidTab, setKidTab, parentTab, setParentTab, showTransactionHistoryModal, showAddItemModal, showShopConfirmModal, showReviewModal, showAddPlanModal, showAddKidModal, showSettingsModal, showLevelModal, qrModalValue, showTimerModal } = useUIContext();
   const { notifications, notify, setNotifications } = useToast();
 
   // --- 每日利息计算 (时光金库) ---
@@ -33,22 +33,7 @@ function AppContent() {
     const newTransactions = [...transactions];
 
     newKids.forEach((kid) => {
-      if (!kid.vault) kid.vault = { lockedAmount: 0, lastInterestDate: null, totalInterest: 0 };
-      if (kid.vault.lockedAmount > 0 && kid.vault.lastInterestDate !== todayStr) {
-        const dailyInterest = Math.max(1, Math.floor(kid.vault.lockedAmount * 0.01));
-        kid.vault.lockedAmount += dailyInterest;
-        kid.vault.totalInterest = (kid.vault.totalInterest || 0) + dailyInterest;
-        kid.vault.lastInterestDate = todayStr;
-        needsUpdate = true;
-        const interestTx = {
-          id: `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          kidId: kid.id, type: 'income', amount: dailyInterest, category: 'interest',
-          title: `✨ 时光金库自动生息 (+${dailyInterest}币)`, date: now.toISOString()
-        };
-        newTransactions.push(interestTx);
-        promises.push(apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(interestTx) }));
-        promises.push(apiFetch(`/api/kids/${kid.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ vault: kid.vault }) }));
-      }
+      // Vault interest auto-calculation removed — vault concept deprecated
     });
 
     if (needsUpdate) {
@@ -65,7 +50,8 @@ function AppContent() {
   // --- 移动端底部导航 ---
   const renderMobileNavigationBar = () => {
     if (appState !== 'kid_app' && appState !== 'parent_app') return null;
-    if (showTransactionHistoryModal) return null;
+    // Hide bottom nav when any modal is open (it has z-[9999] which blocks modal buttons)
+    if (showTransactionHistoryModal || showAddItemModal || showShopConfirmModal || showReviewModal || showAddPlanModal || showAddKidModal || showSettingsModal || showLevelModal || qrModalValue || showTimerModal) return null;
     const isParent = appState === 'parent_app';
 
     const mobileTabs = isParent

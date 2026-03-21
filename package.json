@@ -21,7 +21,8 @@
     "jsonwebtoken": "^9.0.3",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "recharts": "^3.8.0"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",

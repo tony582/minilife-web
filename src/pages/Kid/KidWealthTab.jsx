@@ -46,8 +46,7 @@ export const KidWealthTab = () => {
 
     // Unified balance
     const totalBalance = activeKid.balances?.spend || 0;
-    const vaultAmount = activeKid.vault?.lockedAmount || 0;
-    const dailyInterest = Math.max(1, Math.floor(vaultAmount * 0.01));
+
 
     // Today's tasks summary — how many can still earn coins
     const todayStr = formatDate(new Date());
@@ -277,29 +276,14 @@ export const KidWealthTab = () => {
                                 </div>
                             </div>
 
-                            {/* Interest income */}
-                            {vaultAmount > 0 && (
-                                <div className="flex items-center justify-between py-2.5 px-3 rounded-xl" style={{ background: C.bg }}>
-                                    <div className="flex items-center gap-2.5">
-                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                                            style={{ background: `${C.teal}10` }}>
-                                            <Icons.Sparkles size={14} style={{ color: C.teal }} />
-                                        </div>
-                                        <div>
-                                            <div className="text-xs font-bold" style={{ color: C.textPrimary }}>金库利息</div>
-                                            <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>自动生息中</div>
-                                        </div>
-                                    </div>
-                                    <span className="text-xs font-black" style={{ color: C.green }}>+{dailyInterest.toLocaleString()} /天</span>
-                                </div>
-                            )}
+
 
                             {/* Full attendance bonus hint */}
                             {totalPending > 0 && (
                                 <div className="flex items-center gap-2 pt-2 px-1">
                                     <Icons.Award size={13} style={{ color: C.orange }} />
                                     <span className="text-[11px] font-bold" style={{ color: C.orange }}>
-                                        今天最多还能获得 <span className="font-black">{totalPending + (vaultAmount > 0 ? dailyInterest : 0)}</span> 家庭币
+                                        今天最多还能获得 <span className="font-black">{totalPending}</span> 家庭币
                                     </span>
                                 </div>
                             )}
@@ -307,62 +291,7 @@ export const KidWealthTab = () => {
                     </div>
                 </div>
 
-                {/* ═══ Interest Card — Clear mechanism explanation ═══ */}
-                {vaultAmount > 0 && (
-                    <div className="mx-4 mb-4 rounded-2xl p-5 relative overflow-hidden"
-                        style={{ background: C.bgCard, border: `1px solid ${C.bgLight}`, boxShadow: '0 2px 12px rgba(27,46,75,0.04)' }}>
-                        <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full opacity-[0.06]" style={{ background: C.teal }}></div>
 
-                        <div className="relative z-10">
-                            {/* Header */}
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-                                        style={{ background: `${C.teal}12` }}>
-                                        <Icons.PiggyBank size={18} style={{ color: C.teal }} />
-                                    </div>
-                                    <div>
-                                        <div className="font-black text-sm" style={{ color: C.textPrimary }}>金库 · 自动生息</div>
-                                        <div className="text-[11px] font-bold mt-0.5" style={{ color: C.textMuted }}>存款越多，利息越高</div>
-                                    </div>
-                                </div>
-                                <button onClick={() => setShowInterestDetailsModal(true)}
-                                    className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95"
-                                    style={{ background: `${C.teal}10`, color: C.teal }}>
-                                    明细 <Icons.ChevronRight size={12} />
-                                </button>
-                            </div>
-
-                            {/* Stats row */}
-                            <div className="flex gap-3">
-                                <div className="flex-1 p-3 rounded-xl" style={{ background: C.bg }}>
-                                    <div className="text-[10px] font-bold mb-1" style={{ color: C.textMuted }}>每日利息</div>
-                                    <div className="text-xl font-black" style={{ color: C.green }}>+{dailyInterest.toLocaleString()}</div>
-                                    <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>币/天</div>
-                                </div>
-                                <div className="flex-1 p-3 rounded-xl" style={{ background: C.bg }}>
-                                    <div className="text-[10px] font-bold mb-1" style={{ color: C.textMuted }}>金库存款</div>
-                                    <div className="text-xl font-black" style={{ color: C.textPrimary }}>{vaultAmount.toLocaleString()}</div>
-                                    <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>家庭币</div>
-                                </div>
-                                <div className="flex-1 p-3 rounded-xl" style={{ background: C.bg }}>
-                                    <div className="text-[10px] font-bold mb-1" style={{ color: C.textMuted }}>年化利率</div>
-                                    <div className="text-xl font-black" style={{ color: C.orange }}>1%</div>
-                                    <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>日计息</div>
-                                </div>
-                            </div>
-
-                            {/* Mechanism tip */}
-                            <div className="mt-3 flex items-start gap-2 px-3 py-2.5 rounded-xl"
-                                style={{ background: `${C.orange}06`, border: `1px solid ${C.orange}12` }}>
-                                <Icons.Info size={14} className="shrink-0 mt-0.5" style={{ color: C.orange }} />
-                                <span className="text-[11px] font-bold leading-relaxed" style={{ color: C.textSoft }}>
-                                    完成任务和打卡升级后，金库会自动每天产生利息。等级越高，利息越多！
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 {/* ═══ 4-stat Summary Grid ═══ */}
                 <div className="grid grid-cols-4 gap-2.5 px-4 mb-4">

@@ -11,6 +11,7 @@ import { KidSettingsApp } from './apps/KidSettingsApp';
 import { SubscriptionApp } from './apps/SubscriptionApp';
 import { SecurityApp } from './apps/SecurityApp';
 import { InterestClassApp } from './apps/InterestClassApp';
+import { TaskPrintApp } from './apps/TaskPrintApp';
 
 export const ParentMoreAppsTab = () => {
     const { handleLogout } = useAuthContext();
@@ -26,6 +27,7 @@ export const ParentMoreAppsTab = () => {
         subscription: <SubscriptionApp />,
         security: <SecurityApp />,
         interest_classes: <InterestClassApp />,
+        task_print: <TaskPrintApp />,
     };
 
     // --- 应用注册表 ---
@@ -75,6 +77,15 @@ export const ParentMoreAppsTab = () => {
             color: 'text-pink-600',
             bgColor: 'bg-pink-50',
             onClick: () => setCurrentApp('interest_classes'),
+        },
+        {
+            id: 'task_print',
+            icon: <Icons.Printer size={22} />,
+            label: '任务打印',
+            desc: '打印每日任务清单',
+            color: 'text-amber-600',
+            bgColor: 'bg-amber-50',
+            onClick: () => setCurrentApp('task_print'),
         },
         {
             id: 'logout',
