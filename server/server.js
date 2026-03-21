@@ -1,9 +1,11 @@
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const db = require('./database');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
 app.use(cors());
@@ -74,6 +76,10 @@ const requireAdmin = (req, res, next) => {
     if (req.user.role !== 'admin') return res.status(403).json({ error: "Admin access required" });
     next();
 };
+
+// --- AI Routes ---
+const aiRoutes = require('./aiRoutes');
+app.use('/api/ai', authenticateToken, aiRoutes);
 
 // --- Auth & Subscription API ---
 
@@ -184,12 +190,69 @@ app.get('/api/admin/codes', authenticateToken, requireAdmin, (req, res) => {
 });
 
 app.get('/api/admin/users', authenticateToken, requireAdmin, (req, res) => {
-    db.all("SELECT id, email, role, trial_start, sub_end_date, created_at FROM users", [], (err, rows) => {
+    db.all("SELECT id, email, role, trial_start, sub_end_date, created_at, ai_quota FROM users", [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
 });
 
+// --- Admin AI Config API ---
+app.get('/api/admin/ai-config', authenticateToken, requireAdmin, (req, res) => {
+    db.get("SELECT * FROM ai_config WHERE id = 1", [], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row) {
+            // Insert default row if not exists
+            db.run("INSERT OR IGNORE INTO ai_config (id, provider, model_name, default_quota, updated_at) VALUES (1, 'gemini', 'gemini-2.0-flash', 50, ?)",
+                [new Date().toISOString()], function() {
+                    db.get("SELECT * FROM ai_config WHERE id = 1", [], (e, r) => {
+                        res.json(r || { provider: 'gemini', api_key: '', model_name: 'gemini-2.0-flash', base_url: '', default_quota: 50 });
+                    });
+                });
+        } else {
+            res.json(row);
+        }
+    });
+});
+
+app.put('/api/admin/ai-config', authenticateToken, requireAdmin, (req, res) => {
+    const { provider, api_key, model_name, base_url, default_quota } = req.body;
+    db.run(`INSERT OR REPLACE INTO ai_config (id, provider, api_key, model_name, base_url, default_quota, updated_at)
+            VALUES (1, ?, ?, ?, ?, ?, ?)`,
+        [provider || 'gemini', api_key || '', model_name || 'gemini-2.0-flash', base_url || '', default_quota || 50, new Date().toISOString()],
+        function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ success: true });
+        });
+});
+
+app.get('/api/admin/ai-usage', authenticateToken, requireAdmin, (req, res) => {
+    // Get current month's usage count per user
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+    const monthStr = monthStart.toISOString();
+
+    db.all(`SELECT u.id, u.email, u.ai_quota,
+                   (SELECT COUNT(*) FROM ai_usage_log l WHERE l.user_id = u.id AND l.created_at >= ?) as used_this_month,
+                   (SELECT default_quota FROM ai_config WHERE id = 1) as global_quota
+            FROM users u WHERE u.role != 'admin' ORDER BY u.email`,
+        [monthStr], (err, rows) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json(rows.map(r => ({
+                ...r,
+                quota: r.ai_quota !== null ? r.ai_quota : (r.global_quota || 50),
+                remaining: (r.ai_quota !== null ? r.ai_quota : (r.global_quota || 50)) - r.used_this_month
+            })));
+        });
+});
+
+app.put('/api/admin/users/:id/ai-quota', authenticateToken, requireAdmin, (req, res) => {
+    const { quota } = req.body; // null to reset to global default
+    db.run("UPDATE users SET ai_quota = ? WHERE id = ?", [quota, req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true });
+    });
+});
 
 // --- Kids API ---
 app.get('/api/kids', authenticateToken, (req, res) => {

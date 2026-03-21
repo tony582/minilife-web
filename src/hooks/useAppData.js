@@ -14,6 +14,8 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
     const [adminTab, setAdminTab] = useState('users');
     const [adminUsers, setAdminUsers] = useState([]);
     const [adminCodes, setAdminCodes] = useState([]);
+    const [adminAiConfig, setAdminAiConfig] = useState(null);
+    const [adminAiUsage, setAdminAiUsage] = useState([]);
     const [usedCodes, setUsedCodes] = useState([]);
     const [settingsCode, setSettingsCode] = useState('');
 
@@ -21,6 +23,8 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
         if (user?.role === 'admin') {
             apiFetch('/api/admin/users').then(r => r.json()).then(setAdminUsers).catch(console.error);
             apiFetch('/api/admin/codes').then(r => r.json()).then(setAdminCodes).catch(console.error);
+            apiFetch('/api/admin/ai-config').then(r => r.json()).then(setAdminAiConfig).catch(console.error);
+            apiFetch('/api/admin/ai-usage').then(r => r.json()).then(setAdminAiUsage).catch(console.error);
         }
     }, [user]);
 
@@ -183,6 +187,8 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
         adminTab, setAdminTab,
         adminUsers, setAdminUsers,
         adminCodes, setAdminCodes,
+        adminAiConfig, setAdminAiConfig,
+        adminAiUsage, setAdminAiUsage,
         usedCodes, setUsedCodes,
         settingsCode, setSettingsCode
     };

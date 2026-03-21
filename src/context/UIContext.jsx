@@ -49,6 +49,7 @@ export const UIProvider = ({ children }) => {
     const [previewImageIndex, setPreviewImageIndex] = useState(0);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [showAddPlanModal, setShowAddPlanModal] = useState(false);
+    const [showAiTaskCreator, setShowAiTaskCreator] = useState(false);
     const [showAddKidModal, setShowAddKidModal] = useState(false);
     const [newKidForm, setNewKidForm] = useState({ name: '', gender: 'boy', avatar: '' });
     const [showAddItemModal, setShowAddItemModal] = useState(false);
@@ -136,6 +137,7 @@ export const UIProvider = ({ children }) => {
         requireApproval: true // True by default for tasks granting coins
     });
 
+
     const [showPreviewModal, setShowPreviewModal] = useState(false);
     const [previewTask, setPreviewTask] = useState(null);
     const [showImagePreviewModal, setShowImagePreviewModal] = useState(false);
@@ -155,6 +157,7 @@ export const UIProvider = ({ children }) => {
         showShopConfirmModal, setShowShopConfirmModal, shopTargetItem, setShopTargetItem, qrModalValue, setQrModalValue,
         taskToSubmit, setTaskToSubmit, taskIdToEdit, setTaskIdToEdit, showTransferModal, setShowTransferModal, transferForm, setTransferForm,
         previewImageIndex, setPreviewImageIndex, selectedOrder, setSelectedOrder, showAddPlanModal, setShowAddPlanModal,
+        showAiTaskCreator, setShowAiTaskCreator,
         showAddKidModal, setShowAddKidModal, newKidForm, setNewKidForm, showAddItemModal, setShowAddItemModal, showQrScanner, setShowQrScanner,
         showLevelRules, setShowLevelRules,
         editingTask, setEditingTask, deleteConfirmTask, setDeleteConfirmTask, mallSortByPrice, setMallSortByPrice,

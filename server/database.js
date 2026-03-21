@@ -181,6 +181,29 @@ const db = new sqlite3.Database(dbPath, (err) => {
             db.run(`ALTER TABLE classes ADD COLUMN classMode TEXT DEFAULT 'package'`, (err) => {});
             db.run(`ALTER TABLE classes ADD COLUMN pricePerSession REAL DEFAULT 0`, (err) => {});
             db.run(`ALTER TABLE classes ADD COLUMN settlementType TEXT DEFAULT 'manual'`, (err) => {});
+
+            // AI Config Table (singleton — admin maintains 1 row)
+            db.run(`CREATE TABLE IF NOT EXISTS ai_config (
+                id INTEGER PRIMARY KEY DEFAULT 1,
+                provider TEXT DEFAULT 'gemini',
+                api_key TEXT DEFAULT '',
+                model_name TEXT DEFAULT 'gemini-2.0-flash',
+                base_url TEXT DEFAULT '',
+                default_quota INTEGER DEFAULT 50,
+                updated_at TEXT
+            )`);
+
+            // AI Usage Log Table
+            db.run(`CREATE TABLE IF NOT EXISTS ai_usage_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL,
+                action TEXT DEFAULT 'parse-homework',
+                tokens_used INTEGER DEFAULT 0,
+                created_at TEXT NOT NULL
+            )`);
+
+            // Per-user AI quota (NULL = use global default)
+            db.run(`ALTER TABLE users ADD COLUMN ai_quota INTEGER DEFAULT NULL`, (err) => {});
         });
     }
 });

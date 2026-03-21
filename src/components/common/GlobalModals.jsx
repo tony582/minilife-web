@@ -11,6 +11,7 @@ import { getLevelReq, getLevelTier } from '../../utils/levelUtils';
 import { isSameDay, getDaysInMonth, formatDate } from '../../utils/dateUtils';
 import { getCategoryGradient, getCategoryColor, getIconForCategory, allCategories } from '../../utils/categoryUtils';
 import { apiFetch } from '../../api/client';
+import AiPlanCreator from './AiPlanCreator';
 
 
 export const GlobalModals = () => {
@@ -27,7 +28,7 @@ export const GlobalModals = () => {
     } = context;
 
     const activeKid = kids.find(k => k.id === activeKidId);
-
+    const { showAiTaskCreator, setShowAiTaskCreator } = uiC;
     
     const renderTimerModal = () => {
         if (!showTimerModal) return null;
@@ -2351,6 +2352,8 @@ export const GlobalModals = () => {
 
                         {/* — Scrollable Body — */}
                         <div className="flex-1 overflow-y-auto p-5 space-y-5 min-h-0">
+
+
                             {planType === 'study' && (
                                 <div className="space-y-5 animate-fade-in relative z-0">
 
@@ -3060,6 +3063,18 @@ export const GlobalModals = () => {
             {renderTransactionHistoryModal()}
             {renderImagePreviewModal && renderImagePreviewModal()}
             {renderParentSettingsModals()}
+
+            {/* ═══ AI Task Creator ═══ */}
+            <AiPlanCreator
+                isOpen={showAiTaskCreator}
+                onClose={() => setShowAiTaskCreator(false)}
+                kids={kids}
+                planForm={planForm}
+                setPlanForm={setPlanForm}
+                setTasks={setTasks}
+                notify={notify}
+                setShowAddPlanModal={setShowAddPlanModal}
+            />
 
             {/* ═══ Celebration Modal (Habit check-in feedback) ═══ */}
             {celebrationData && (() => {

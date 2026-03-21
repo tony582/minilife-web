@@ -18,7 +18,7 @@ export const ParentTasksTab = () => {
     const { kids, tasks, setTasks } = dataC;
     const {
         selectedDate, setSelectedDate,
-        setShowAddPlanModal,
+        setShowAddPlanModal, setShowAiTaskCreator,
         setEditingTask, setPlanType, setPlanForm,
         setPreviewTask, setShowPreviewModal,
         setDeleteConfirmTask, setShowCalendarModal,
@@ -298,6 +298,11 @@ export const ParentTasksTab = () => {
                             <div className="text-xs mt-0.5" style={{ color: C.textSoft }}>已完成 {completedCount} / {totalCount} 个任务</div>
                         </div>
                         {progressPct === 100 && <div className="text-2xl">🎉</div>}
+                        <button onClick={() => setShowAiTaskCreator(true)}
+                            className="rounded-full py-2 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
+                            style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', boxShadow: '0 4px 14px rgba(102,126,234,0.3)' }}>
+                            ✨ AI
+                        </button>
                         <button onClick={() => {
                             const defaultTimes = getDefaultTimeRange();
                             setEditingTask(null);
@@ -313,6 +318,11 @@ export const ParentTasksTab = () => {
                 {totalCount === 0 && (
                     <div className="flex items-center justify-between mb-4">
                         <div className="text-sm font-bold" style={{ color: C.textSoft }}>暂无任务</div>
+                        <button onClick={() => setShowAiTaskCreator(true)}
+                            className="rounded-full py-2 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1.5"
+                            style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', boxShadow: '0 4px 14px rgba(102,126,234,0.3)' }}>
+                            ✨ AI
+                        </button>
                         <button onClick={() => {
                             const defaultTimes = getDefaultTimeRange();
                             setEditingTask(null);
