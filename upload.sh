@@ -3,6 +3,8 @@
 # MiniLife 上传部署脚本 (在 Mac 上运行)
 # 用法: bash upload.sh <服务器IP>
 # 示例: bash upload.sh 47.100.123.45
+#
+# ⚠️ 安全规则: 只允许从 main 分支部署到生产环境
 # ═══════════════════════════════════════════════════
 
 set -e
@@ -15,12 +17,40 @@ if [ -z "$SERVER_IP" ]; then
     exit 1
 fi
 
+# ─── 安全检查: 只允许 main 分支部署 ───
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$CURRENT_BRANCH" != "main" ]; then
+    echo ""
+    echo "🚫 部署被阻止！"
+    echo "═══════════════════════════════════════"
+    echo "   当前分支: $CURRENT_BRANCH"
+    echo "   只允许从 main 分支部署到生产环境！"
+    echo ""
+    echo "   请先合并到 main 分支:"
+    echo "     git checkout main"
+    echo "     git merge $CURRENT_BRANCH"
+    echo "     bash upload.sh $SERVER_IP"
+    echo "═══════════════════════════════════════"
+    exit 1
+fi
+
+# ─── 检查是否有未提交的更改 ───
+if ! git diff --quiet HEAD 2>/dev/null; then
+    echo ""
+    echo "⚠️  检测到未提交的代码更改！"
+    echo "   请先 git add && git commit 后再部署。"
+    echo ""
+    exit 1
+fi
+
 APP_DIR="/opt/minilife"
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "🚀 MiniLife 上传部署"
 echo "═══════════════════════════════════════"
 echo "   服务器: root@$SERVER_IP"
+echo "   分支:   $CURRENT_BRANCH ✅"
+echo "   提交:   $(git log --oneline -1)"
 echo "   项目目录: $PROJECT_DIR"
 echo "═══════════════════════════════════════"
 
