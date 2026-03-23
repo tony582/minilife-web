@@ -108,14 +108,12 @@ export const ReorderableList = ({ items, onReorder, renderItem, keyExtractor }) 
     }, [onReorder]);
 
     // ============ TOUCH DRAG (native event listeners) ============
-    // These are registered via useEffect with { passive: false } so
-    // preventDefault() actually prevents the browser scroll.
+    // Key insight: we must NOT register a non-passive touchmove on the container
+    // during normal operation, or mobile browsers will block scrolling.
+    // Instead, we add the touchmove listener only when drag actually starts.
 
     const touchStartHandler = useCallback((e) => {
-        // Only initiate drag from the grip handle, not the entire card
-        const handleEl = e.target.closest('.drag-handle');
-        if (!handleEl) return; // Allow normal scroll when not touching handle
-        const itemEl = handleEl.closest('[data-ri]');
+        const itemEl = e.target.closest('[data-ri]');
         if (!itemEl) return;
         const index = parseInt(itemEl.getAttribute('data-ri'), 10);
 
@@ -123,7 +121,17 @@ export const ReorderableList = ({ items, onReorder, renderItem, keyExtractor }) 
         s.startY = e.touches[0].clientY;
         s.active = false;
 
+        // Cancel long-press if user scrolls before timer fires
+        const cancelOnScroll = (me) => {
+            if (Math.abs(me.touches[0].clientY - s.startY) > 8) {
+                clearTimeout(s.timer);
+                document.removeEventListener('touchmove', cancelOnScroll);
+            }
+        };
+        document.addEventListener('touchmove', cancelOnScroll, { passive: true });
+
         s.timer = setTimeout(() => {
+            document.removeEventListener('touchmove', cancelOnScroll);
             s.active = true;
             s.dragIdx = index;
             s.insertIdx = index;
@@ -131,7 +139,6 @@ export const ReorderableList = ({ items, onReorder, renderItem, keyExtractor }) 
             setInsertIdx(index);
             captureRects();
 
-            // Create floating clone
             const rect = itemEl.getBoundingClientRect();
             const clone = itemEl.cloneNode(true);
             clone.style.cssText = `
@@ -146,40 +153,33 @@ export const ReorderableList = ({ items, onReorder, renderItem, keyExtractor }) 
             s.clone = clone;
             s.cloneStartTop = rect.top;
 
+            document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+
             if (navigator.vibrate) navigator.vibrate(25);
         }, 300);
     }, [captureRects]);
 
     const touchMoveHandler = useCallback((e) => {
         const s = stateRef.current;
-        if (!s.active) {
-            // Cancel long-press if finger moved too much
-            if (Math.abs(e.touches[0].clientY - s.startY) > 8) {
-                clearTimeout(s.timer);
-            }
-            return;
-        }
+        if (!s.active) return;
 
-        // *** THIS is the key line — must be non-passive to work ***
         e.preventDefault();
 
         const clientY = e.touches[0].clientY;
         const dy = clientY - s.startY;
 
-        // Move clone
         if (s.clone) {
             s.clone.style.top = `${s.cloneStartTop + dy}px`;
         }
 
-        // Auto-scroll the modal body
-        const scrollEl = containerRef.current?.closest('.overflow-y-auto');
+        // Auto-scroll the scrollable parent
+        const scrollEl = containerRef.current?.closest('[style*="overflow"]') || containerRef.current?.closest('.overflow-y-auto');
         if (scrollEl) {
             const sr = scrollEl.getBoundingClientRect();
             if (clientY < sr.top + 50) scrollEl.scrollTop -= 6;
             else if (clientY > sr.bottom - 50) scrollEl.scrollTop += 6;
         }
 
-        // Calculate insert position
         const rects = s.rects;
         const curDragIdx = s.dragIdx;
         let newInsert = curDragIdx;
@@ -197,6 +197,9 @@ export const ReorderableList = ({ items, onReorder, renderItem, keyExtractor }) 
         clearTimeout(s.timer);
         if (s.clone) { s.clone.remove(); s.clone = null; }
 
+        // Remove the touchmove listener we added during drag
+        document.removeEventListener('touchmove', touchMoveHandler);
+
         if (s.active && s.dragIdx !== null && s.insertIdx !== null && s.insertIdx !== s.dragIdx && s.insertIdx !== s.dragIdx + 1) {
             const targetIdx = s.insertIdx > s.dragIdx ? s.insertIdx - 1 : s.insertIdx;
             onReorder(s.dragIdx, targetIdx);
@@ -207,23 +210,23 @@ export const ReorderableList = ({ items, onReorder, renderItem, keyExtractor }) 
         s.insertIdx = null;
         setDragIdx(null);
         setInsertIdx(null);
-    }, [onReorder]);
+    }, [onReorder, touchMoveHandler]);
 
-    // Register native touch + dragover listeners with { passive: false }
+    // Register only touchstart/end on container (passive — won't block scroll)
+    // touchmove is added/removed dynamically only during active drag
     useEffect(() => {
         const el = containerRef.current;
         if (!el) return;
         el.addEventListener('touchstart', touchStartHandler, { passive: true });
-        el.addEventListener('touchmove', touchMoveHandler, { passive: false });
         el.addEventListener('touchend', touchEndHandler, { passive: true });
         el.addEventListener('touchcancel', touchEndHandler, { passive: true });
         el.addEventListener('dragover', handleDragOver, { passive: false });
         return () => {
             el.removeEventListener('touchstart', touchStartHandler);
-            el.removeEventListener('touchmove', touchMoveHandler);
             el.removeEventListener('touchend', touchEndHandler);
             el.removeEventListener('touchcancel', touchEndHandler);
             el.removeEventListener('dragover', handleDragOver);
+            document.removeEventListener('touchmove', touchMoveHandler);
         };
     }, [touchStartHandler, touchMoveHandler, touchEndHandler, handleDragOver]);
 
@@ -243,7 +246,7 @@ export const ReorderableList = ({ items, onReorder, renderItem, keyExtractor }) 
     return (
         <div
             ref={containerRef}
-            style={isDragging ? { touchAction: 'none' } : undefined}
+            style={{ touchAction: isDragging ? 'none' : 'pan-y' }}
         >
             {items.map((item, index) => {
                 const key = keyExtractor(item);
