@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# SQLite WAL files (must not be deployed to production)
+*.sqlite-shm
+*.sqlite-wal

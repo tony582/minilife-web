@@ -187,23 +187,23 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
         ...t,
         history: newHistory
       } : t));
-      const targetKid = kids.find(k => k.id === activeKidId);
-      let newExp = targetKid ? targetKid.exp : 0;
-      let newBals = targetKid ? {
-        ...targetKid.balances
-      } : {};
-      if (targetKid) {
-        const expDiff = Math.ceil((task.reward || 0) * 1.5);
-        newExp = Math.max(0, targetKid.exp + expDiff);
-        newBals = {
-          ...targetKid.balances,
-          spend: Math.max(0, targetKid.balances.spend + (task.reward || 0))
-        };
-        setKids(kids.map(k => k.id === activeKidId ? {
-          ...k,
-          exp: newExp,
-          balances: newBals
-        } : k));
+      // Use atomic server-side reward to avoid stale closure reads
+      const expDiff = Math.ceil((task.reward || 0) * 1.5);
+      if (task.reward !== 0) {
+        const rewardRes = await apiFetch(`/api/kids/${activeKidId}/reward`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ coins: task.reward, exp: expDiff })
+        });
+        if (rewardRes.ok) {
+          const rewardData = await rewardRes.json();
+          setKids(prev => prev.map(k => k.id === activeKidId ? {
+            ...k,
+            balances: { ...k.balances, spend: rewardData.spend },
+            exp: rewardData.exp,
+            level: rewardData.level
+          } : k));
+        }
       }
       if (task.reward !== 0) {
         setTransactions(prev => [{
@@ -279,18 +279,6 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
             title: `记录成长: ${task.title}`,
             date: new Date().toISOString(),
             category: 'habit'
-          })
-        }).catch(e => console.error(e));
-      }
-      if (targetKid) {
-        apiFetch(`/api/kids/${activeKidId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            exp: newExp,
-            balances: newBals
           })
         }).catch(e => console.error(e));
       }
@@ -756,42 +744,44 @@ const handleQuickComplete = async () => {
         });
         setTransactions([newTrans, expTrans, ...transactions]);
 
-        // Atomic update: combine balances + EXP + level in a single call
-        const newBals = {
-          ...targetKid.balances,
-          spend: targetKid.balances.spend + task.reward
-        };
-        let newExp = targetKid.exp + expGained;
-        let newLevel = targetKid.level;
-        while (newExp >= getLevelReq(newLevel)) {
-          newExp -= getLevelReq(newLevel);
-          newLevel++;
-          notify(`太棒了！${targetKid.name} 升到了 Lv.${newLevel}！`, "success");
-        }
-        await updateActiveKid({
-          balances: newBals,
-          exp: newExp,
-          level: newLevel
+        // Use atomic server-side reward to avoid stale closure reads
+        const rewardRes = await apiFetch(`/api/kids/${task.kidId}/reward`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ coins: task.reward, exp: expGained })
         });
+        if (rewardRes.ok) {
+          const rewardData = await rewardRes.json();
+          setKids(prev => prev.map(k => k.id === task.kidId ? {
+            ...k,
+            balances: { ...k.balances, spend: rewardData.spend },
+            exp: rewardData.exp,
+            level: rewardData.level
+          } : k));
+          if (rewardData.level > targetKid.level) {
+            notify(`太棒了！${targetKid.name} 升到了 Lv.${rewardData.level}！`, "success");
+          }
+        }
         notify(`打卡成功！已奖励 ${targetKid.name} ${task.reward} 家庭币 和 ${expGained} 经验！`, "success");
       } else {
-        // Penalty: Deduct EXP and Coins
+        // Penalty: Deduct EXP and Coins atomically
         const absPenalty = Math.abs(task.reward);
         const expPenalty = Math.ceil(absPenalty * 1.5);
 
-        // Atomic update: combine balances + EXP in a single call
-        const newBals = {
-          ...targetKid.balances,
-          spend: Math.max(0, targetKid.balances.spend - absPenalty)
-        };
-        let newExp = Math.max(0, targetKid.exp - expPenalty);
-        let newLevel = targetKid.level;
-        // Level doesn't decrease on penalty, but ensure exp is valid
-        await updateActiveKid({
-          balances: newBals,
-          exp: newExp,
-          level: newLevel
+        const rewardRes = await apiFetch(`/api/kids/${task.kidId}/reward`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ coins: task.reward, exp: -expPenalty })
         });
+        if (rewardRes.ok) {
+          const rewardData = await rewardRes.json();
+          setKids(prev => prev.map(k => k.id === task.kidId ? {
+            ...k,
+            balances: { ...k.balances, spend: rewardData.spend },
+            exp: rewardData.exp,
+            level: rewardData.level
+          } : k));
+        }
 
         const refundTrans = {
           id: `trans_${Date.now()}_penalty`,
@@ -870,28 +860,21 @@ const handleQuickComplete = async () => {
       const isStudy = task.type === 'study';
       let absReward = Math.abs(task.reward || 0);
       if (isStudy && absReward > 0) {
-        const targetKid = kids.find(k => String(k.id) === String(kidId));
-        if (targetKid) {
-          const newBal = Math.max(0, targetKid.balances.spend - absReward);
-          await apiFetch(`/api/kids/${kidId}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              balances: {
-                ...targetKid.balances,
-                spend: newBal
-              }
-            })
-          });
-          setKids(kids.map(k => String(k.id) === String(kidId) ? {
+        // Study task reversal: deduct coins atomically
+        const rewardRes = await apiFetch(`/api/kids/${kidId}/reward`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ coins: -absReward, exp: 0 })
+        });
+        if (rewardRes.ok) {
+          const rewardData = await rewardRes.json();
+          setKids(prev => prev.map(k => String(k.id) === String(kidId) ? {
             ...k,
-            balances: {
-              ...k.balances,
-              spend: newBal
-            }
+            balances: { ...k.balances, spend: rewardData.spend },
+            exp: rewardData.exp,
+            level: rewardData.level
           } : k));
+        }
           // Create negative transaction to balance ledger
           const refundTrans = {
             id: `trans_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
@@ -904,43 +887,30 @@ const handleQuickComplete = async () => {
           };
           await apiFetch('/api/transactions', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(refundTrans)
           });
           setTransactions([refundTrans, ...transactions]);
-        }
       } else if (!isStudy) {
         const absReward = Math.abs(task.reward || 0);
-        const targetKid = kids.find(k => String(k.id) === String(kidId));
-        if (targetKid) {
-          if (task.reward > 0) {
-            // Reverse positive habit logic: Deduct Coins & EXP
-            const newBal = Math.max(0, targetKid.balances.spend - absReward);
-            const newExp = Math.max(0, targetKid.exp - Math.ceil(absReward * 1.5));
-            await apiFetch(`/api/kids/${kidId}`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                balances: {
-                  ...targetKid.balances,
-                  spend: newBal
-                },
-                exp: newExp
-              })
+        if (task.reward > 0) {
+            // Reverse positive habit: Deduct Coins & EXP atomically
+            const expDeduct = -Math.ceil(absReward * 1.5);
+            const rewardRes = await apiFetch(`/api/kids/${kidId}/reward`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ coins: -absReward, exp: expDeduct })
             });
-            setKids(kids.map(k => String(k.id) === String(kidId) ? {
-              ...k,
-              balances: {
-                ...k.balances,
-                spend: newBal
-              },
-              exp: newExp
-            } : k));
-            // Negative reversed transaction
+            if (rewardRes.ok) {
+              const rewardData = await rewardRes.json();
+              setKids(prev => prev.map(k => String(k.id) === String(kidId) ? {
+                ...k,
+                balances: { ...k.balances, spend: rewardData.spend },
+                exp: rewardData.exp,
+                level: rewardData.level
+              } : k));
+            }
+            // Negative reversed transactions
             const refundTrans = {
               id: `trans_${Date.now()}_reversed_coin`,
               kidId: kidId,
@@ -961,44 +931,32 @@ const handleQuickComplete = async () => {
             };
             await apiFetch('/api/transactions', {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(refundTrans)
             });
             await apiFetch('/api/transactions', {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(expRefundTrans)
             });
             setTransactions([refundTrans, expRefundTrans, ...transactions]);
           } else {
-            // Reverse penalty: Refund Coins & EXP
-            const newBal = targetKid.balances.spend + absReward;
-            const newExp = targetKid.exp + Math.ceil(absReward * 1.5);
-            await apiFetch(`/api/kids/${kidId}`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                balances: {
-                  ...targetKid.balances,
-                  spend: newBal
-                },
-                exp: newExp
-              })
+            // Reverse penalty: Refund Coins & EXP atomically
+            const expRefund = Math.ceil(absReward * 1.5);
+            const rewardRes = await apiFetch(`/api/kids/${kidId}/reward`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ coins: absReward, exp: expRefund })
             });
-            setKids(kids.map(k => String(k.id) === String(kidId) ? {
-              ...k,
-              balances: {
-                ...k.balances,
-                spend: newBal
-              },
-              exp: newExp
-            } : k));
+            if (rewardRes.ok) {
+              const rewardData = await rewardRes.json();
+              setKids(prev => prev.map(k => String(k.id) === String(kidId) ? {
+                ...k,
+                balances: { ...k.balances, spend: rewardData.spend },
+                exp: rewardData.exp,
+                level: rewardData.level
+              } : k));
+            }
             // Positive refund transaction
             const refundTrans = {
               id: `trans_${Date.now()}_refund_coin`,
@@ -1036,7 +994,6 @@ const handleQuickComplete = async () => {
           }
         }
       }
-    } // ADDED MISSING CLOSING BRACE
     if (editingTask && editingTask.id === task.id) {
       setEditingTask({
         ...task,

@@ -312,15 +312,15 @@ app.put('/api/kids/:id', authenticateToken, (req, res) => {
 // Atomic reward: increment balance + exp without reading stale client state
 app.post('/api/kids/:id/reward', authenticateToken, (req, res) => {
     const { coins, exp } = req.body;
-    if (!coins && !exp) return res.status(400).json({ error: "No reward specified" });
+    if (coins === undefined && exp === undefined) return res.status(400).json({ error: "No reward specified" });
     
-    // First read current state to compute level-ups
+    // Read current state, apply delta, clamp to 0
     db.get("SELECT * FROM kids WHERE id = ? AND userId = ?", [req.params.id, req.user.id], (err, kid) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!kid) return res.status(404).json({ error: "Kid not found" });
         
-        const newSpend = kid.balance_spend + (coins || 0);
-        let newExp = kid.exp + (exp || 0);
+        const newSpend = Math.max(0, kid.balance_spend + (coins || 0));
+        let newExp = Math.max(0, kid.exp + (exp || 0));
         let newLevel = kid.level;
         
         // Level-up calculation (same formula as frontend)
