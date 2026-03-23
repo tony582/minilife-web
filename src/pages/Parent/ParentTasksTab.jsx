@@ -626,7 +626,7 @@ export const ParentTasksTab = () => {
             </div>
 
             {showReorderModal && (
-                <div className="fixed inset-0 z-[200] animate-slide-up flex flex-col" style={{ background: C.bg }}>
+                <div className="fixed inset-0 z-[200] animate-slide-up flex flex-col" style={{ background: C.bg, height: '100vh', maxHeight: '100vh' }}>
                     <div className="flex items-center justify-between p-4 shrink-0" style={{ borderBottom: `1px solid ${C.bgLight}` }}>
                         <button onClick={() => setShowReorderModal(false)} className="p-2 rounded-full" style={{ color: C.textSoft }}><Icons.X size={24} /></button>
                         <h2 className="text-lg font-black" style={{ color: C.textPrimary }}>调整任务顺序</h2>
