@@ -4,7 +4,8 @@ import { useUIContext } from '../../../context/UIContext.jsx';
 import { Icons, AvatarDisplay } from '../../../utils/Icons';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-    PieChart, Pie, Cell, AreaChart, Area, LineChart, Line, Legend
+    PieChart, Pie, Cell, AreaChart, Area, LineChart, Line, Legend,
+    ResponsiveContainer
 } from 'recharts';
 import { isTaskDueOnDate } from '../../../utils/taskUtils';
 
@@ -218,25 +219,23 @@ export const ParentDashboardApp = () => {
 
             {/* Hero */}
             <div className="relative overflow-hidden pb-4 px-4">
-                <div className="absolute -top-32 -left-20 w-56 h-56 rounded-full opacity-15" style={{ background: C.orange }}></div>
-                <div className="absolute -top-20 -left-12 w-40 h-40 rounded-full opacity-10" style={{ background: C.yellow }}></div>
 
                 {/* Kid switcher */}
-                <div className="relative z-10 flex items-center justify-between mb-4">
+                <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                     <div className="flex items-center gap-3">
-                        <div className="w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center text-4xl ring-3 ring-white shadow-lg" style={{ background: C.bgLight }}>
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden flex items-center justify-center text-3xl sm:text-4xl ring-3 ring-white shadow-lg shrink-0" style={{ background: C.bgLight }}>
                             <AvatarDisplay avatar={activeKid.avatar} />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-black" style={{ color: C.textPrimary }}>{activeKid.name}的周报</h1>
-                            <p className="text-sm font-bold" style={{ color: C.textSoft }}>Lv.{activeKid.level} · {activeKid.title || '成长中'}</p>
+                            <h1 className="text-lg sm:text-2xl font-black" style={{ color: C.textPrimary }}>{activeKid.name}的周报</h1>
+                            <p className="text-xs sm:text-sm font-bold" style={{ color: C.textSoft }}>Lv.{activeKid.level} · {activeKid.title || '成长中'}</p>
                         </div>
                     </div>
                     {kids.length > 1 && (
-                        <div className="flex gap-1.5">
+                        <div className="flex gap-1.5 ml-15 sm:ml-0">
                             {kids.map(k => (
                                 <button key={k.id} onClick={() => setActiveKidId(k.id)}
-                                    className="w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-all"
+                                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-lg sm:text-xl transition-all"
                                     style={{
                                         background: activeKidId === k.id ? C.orange : C.bgCard,
                                         boxShadow: activeKidId === k.id ? `0 4px 14px ${C.orange}50` : C.cardShadow,
@@ -286,11 +285,11 @@ export const ParentDashboardApp = () => {
                         { emoji: '🛒', label: '超市兑换', value: `${shopStats.count} 次`, sub: `-${shopStats.totalSpent} 金币`, color: C.purple },
                         { emoji: '💰', label: '财务净值', value: financeStats.net >= 0 ? `+${financeStats.net}` : `${financeStats.net}`, sub: `余额 ${activeKid.money || activeKid.balances?.spend || 0}`, color: financeStats.net >= 0 ? C.green : C.coral },
                     ].map((c, i) => (
-                        <div key={i} className="rounded-2xl p-4 relative overflow-hidden" style={{ background: C.bgCard, boxShadow: C.cardShadow }}>
+                        <div key={i} className="rounded-2xl p-3 sm:p-4 relative overflow-hidden" style={{ background: C.bgCard, boxShadow: C.cardShadow }}>
                             <div className="absolute -right-3 -top-3 w-12 h-12 rounded-full opacity-10" style={{ background: c.color }}></div>
-                            <div className="text-2xl mb-2">{c.emoji}</div>
+                            <div className="text-xl sm:text-2xl mb-1 sm:mb-2">{c.emoji}</div>
                             <div className="text-[10px] font-bold mb-0.5" style={{ color: C.textMuted }}>{c.label}</div>
-                            <div className="text-xl font-black" style={{ color: c.color }}>{c.value}</div>
+                            <div className="text-lg sm:text-xl font-black" style={{ color: c.color }}>{c.value}</div>
                             <div className="text-[10px] font-bold mt-0.5" style={{ color: C.textSoft }}>{c.sub}</div>
                         </div>
                     ))}
@@ -303,14 +302,16 @@ export const ParentDashboardApp = () => {
                         学习任务分析
                     </h3>
                     <div className="h-48 mb-4">
-                        <BarChart data={taskStats.dailyData} barSize={16} width={500} height={190} style={{ width: '100%', height: '100%' }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke={C.bgLight} vertical={false} />
-                            <XAxis dataKey="name" tick={{ fontSize: 11, fill: C.textMuted, fontWeight: 700 }} axisLine={false} tickLine={false} />
-                            <YAxis tick={{ fontSize: 10, fill: C.textMuted }} axisLine={false} tickLine={false} allowDecimals={false} />
-                            <Tooltip content={<ChartTooltipContent />} />
-                            <Bar dataKey="total" name="总任务" fill={C.bgMuted} radius={[4, 4, 0, 0]} />
-                            <Bar dataKey="completed" name="已完成" fill={C.orange} radius={[4, 4, 0, 0]} />
-                        </BarChart>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={taskStats.dailyData} barSize={16}>
+                                <CartesianGrid strokeDasharray="3 3" stroke={C.bgLight} vertical={false} />
+                                <XAxis dataKey="name" tick={{ fontSize: 11, fill: C.textMuted, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fontSize: 10, fill: C.textMuted }} axisLine={false} tickLine={false} allowDecimals={false} width={30} />
+                                <Tooltip content={<ChartTooltipContent />} />
+                                <Bar dataKey="total" name="总任务" fill={C.bgMuted} radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="completed" name="已完成" fill={C.orange} radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
                     </div>
 
                     {/* Category breakdown */}
@@ -338,14 +339,16 @@ export const ParentDashboardApp = () => {
                         习惯养成分析
                     </h3>
                     <div className="h-48 mb-4">
-                        <LineChart data={habitStats.dailyData} width={500} height={190} style={{ width: '100%', height: '100%' }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke={C.bgLight} vertical={false} />
-                            <XAxis dataKey="name" tick={{ fontSize: 11, fill: C.textMuted, fontWeight: 700 }} axisLine={false} tickLine={false} />
-                            <YAxis tick={{ fontSize: 10, fill: C.textMuted }} axisLine={false} tickLine={false} allowDecimals={false} />
-                            <Tooltip content={<ChartTooltipContent />} />
-                            <Line type="monotone" dataKey="checkins" name="打卡次数" stroke={C.teal} strokeWidth={2.5} dot={{ r: 4, fill: C.teal }} activeDot={{ r: 6 }} />
-                            <Line type="monotone" dataKey="points" name="获得金币" stroke={C.orange} strokeWidth={2} dot={{ r: 3, fill: C.orange }} strokeDasharray="5 5" />
-                        </LineChart>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={habitStats.dailyData}>
+                                <CartesianGrid strokeDasharray="3 3" stroke={C.bgLight} vertical={false} />
+                                <XAxis dataKey="name" tick={{ fontSize: 11, fill: C.textMuted, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fontSize: 10, fill: C.textMuted }} axisLine={false} tickLine={false} allowDecimals={false} width={30} />
+                                <Tooltip content={<ChartTooltipContent />} />
+                                <Line type="monotone" dataKey="checkins" name="打卡次数" stroke={C.teal} strokeWidth={2.5} dot={{ r: 4, fill: C.teal }} activeDot={{ r: 6 }} />
+                                <Line type="monotone" dataKey="points" name="获得金币" stroke={C.orange} strokeWidth={2} dot={{ r: 3, fill: C.orange }} strokeDasharray="5 5" />
+                            </LineChart>
+                        </ResponsiveContainer>
                     </div>
 
                     {/* Habit detail list */}
@@ -380,22 +383,24 @@ export const ParentDashboardApp = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* Pie chart */}
                             <div className="h-52 flex items-center justify-center">
-                                <PieChart width={250} height={200} style={{ width: '100%', height: '100%' }}>
-                                    <Pie
-                                        data={shopStats.items}
-                                        dataKey="spent"
-                                        nameKey="name"
-                                        cx="50%" cy="50%"
-                                        innerRadius={45} outerRadius={75}
-                                        paddingAngle={3}
-                                        strokeWidth={0}
-                                    >
-                                        {shopStats.items.map((_, i) => (
-                                            <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip content={<ChartTooltipContent />} />
-                                </PieChart>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={shopStats.items}
+                                            dataKey="spent"
+                                            nameKey="name"
+                                            cx="50%" cy="50%"
+                                            innerRadius={45} outerRadius={75}
+                                            paddingAngle={3}
+                                            strokeWidth={0}
+                                        >
+                                            {shopStats.items.map((_, i) => (
+                                                <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip content={<ChartTooltipContent />} />
+                                    </PieChart>
+                                </ResponsiveContainer>
                             </div>
                             {/* Item list */}
                             <div className="space-y-1.5">
@@ -421,24 +426,26 @@ export const ParentDashboardApp = () => {
                         财务趋势
                     </h3>
                     <div className="h-52 mb-4">
-                        <AreaChart data={financeStats.dailyData} width={500} height={200} style={{ width: '100%', height: '100%' }}>
-                            <defs>
-                                <linearGradient id="gradIncome" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor={C.green} stopOpacity={0.3} />
-                                    <stop offset="100%" stopColor={C.green} stopOpacity={0} />
-                                </linearGradient>
-                                <linearGradient id="gradExpense" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor={C.coral} stopOpacity={0.3} />
-                                    <stop offset="100%" stopColor={C.coral} stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke={C.bgLight} vertical={false} />
-                            <XAxis dataKey="name" tick={{ fontSize: 11, fill: C.textMuted, fontWeight: 700 }} axisLine={false} tickLine={false} />
-                            <YAxis tick={{ fontSize: 10, fill: C.textMuted }} axisLine={false} tickLine={false} />
-                            <Tooltip content={<ChartTooltipContent />} />
-                            <Area type="monotone" dataKey="income" name="收入" stroke={C.green} strokeWidth={2} fill="url(#gradIncome)" dot={{ r: 3, fill: C.green }} />
-                            <Area type="monotone" dataKey="expense" name="支出" stroke={C.coral} strokeWidth={2} fill="url(#gradExpense)" dot={{ r: 3, fill: C.coral }} />
-                        </AreaChart>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={financeStats.dailyData}>
+                                <defs>
+                                    <linearGradient id="gradIncome" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor={C.green} stopOpacity={0.3} />
+                                        <stop offset="100%" stopColor={C.green} stopOpacity={0} />
+                                    </linearGradient>
+                                    <linearGradient id="gradExpense" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor={C.coral} stopOpacity={0.3} />
+                                        <stop offset="100%" stopColor={C.coral} stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke={C.bgLight} vertical={false} />
+                                <XAxis dataKey="name" tick={{ fontSize: 11, fill: C.textMuted, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fontSize: 10, fill: C.textMuted }} axisLine={false} tickLine={false} width={30} />
+                                <Tooltip content={<ChartTooltipContent />} />
+                                <Area type="monotone" dataKey="income" name="收入" stroke={C.green} strokeWidth={2} fill="url(#gradIncome)" dot={{ r: 3, fill: C.green }} />
+                                <Area type="monotone" dataKey="expense" name="支出" stroke={C.coral} strokeWidth={2} fill="url(#gradExpense)" dot={{ r: 3, fill: C.coral }} />
+                            </AreaChart>
+                        </ResponsiveContainer>
                     </div>
 
                     {/* Summary row */}

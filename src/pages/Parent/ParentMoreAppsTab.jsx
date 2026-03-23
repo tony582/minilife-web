@@ -99,16 +99,30 @@ export const ParentMoreAppsTab = () => {
 
     // --- 子视图模式 ---
     if (currentApp && appComponents[currentApp]) {
+        const appInfo = apps.find(a => a.id === currentApp);
         return (
-            <div className="animate-fade-in">
-                <button
-                    onClick={() => setCurrentApp(null)}
-                    className="group flex items-center gap-2 text-slate-500 hover:text-indigo-600 font-bold text-sm mb-6 transition-colors"
-                >
-                    <Icons.ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
-                    返回更多应用
-                </button>
-                {appComponents[currentApp]}
+            <div className="animate-fade-in -mx-4 md:-mx-8">
+                {/* Sub-app Header */}
+                <div className="sticky top-0 z-30 px-4 py-3 flex items-center gap-3 backdrop-blur-xl"
+                    style={{ background: 'rgba(251,247,240,0.92)', borderBottom: '1px solid #E8E0D4' }}>
+                    <button
+                        onClick={() => setCurrentApp(null)}
+                        className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90 shrink-0"
+                        style={{ background: '#F0EBE1', color: '#5A6E8A' }}>
+                        <Icons.ArrowLeft size={18} />
+                    </button>
+                    {appInfo && (
+                        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${appInfo.bgColor} ${appInfo.color}`}>
+                                {React.cloneElement(appInfo.icon, { size: 16 })}
+                            </div>
+                            <span className="font-black text-sm truncate" style={{ color: '#1B2E4B' }}>{appInfo.label}</span>
+                        </div>
+                    )}
+                </div>
+                <div className="px-4 md:px-8 py-4">
+                    {appComponents[currentApp]}
+                </div>
             </div>
         );
     }

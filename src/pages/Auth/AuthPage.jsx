@@ -1,6 +1,5 @@
 import React from 'react';
 import { useAuthContext } from '../../context/AuthContext.jsx';
-import { useToast } from '../../hooks/useToast';
 import { Icons } from '../../utils/Icons';
 
 export const AuthPage = () => {
@@ -12,8 +11,8 @@ export const AuthPage = () => {
         confirmPassword,
         setConfirmPassword,
         handleAuth,
+        notifications,
     } = useAuthContext();
-    const { notifications } = useToast();
 
     const themeSettings = authMode === 'login'
         ? {

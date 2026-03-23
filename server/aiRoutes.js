@@ -11,11 +11,16 @@ const catEmojiMap = {
     '背诵': '🗣️', '练习': '📋', '默写': '✍️', '预习': '📕'
 };
 
-const SYSTEM_PROMPT = `将作业内容拆解为具体学习任务。
+const SYSTEM_PROMPT = `将作业内容拆解为具体学习任务，并智能判断任务安排。
 分类限选: 语文/数学/英语/科学/编程/阅读/写作/音乐/美术/体育/技能/复习/背诵/练习/默写/预习
 时长10-120分钟。奖励: 简单5-10分, 中等10-20, 难20-30。模糊作业要拆具体步骤。
+任务安排规则:
+- schedule="today": 一次性作业(如"完成XX卷子""明天交的作业")
+- schedule="daily": 每天都要做的(如"每天练字""每天背单词""坚持XX")
+- schedule="weekly": 每周固定几天做的(如"周三周五练琴""每周二上课")，需附weeklyDays数组(1=周一..7=周日)
+- 如无法判断，默认"today"
 仅返回JSON数组:
-[{"title":"任务标题","category":"分类","desc":"具体标准","reward":分数,"durationPreset":分钟}]`;
+[{"title":"任务标题","category":"分类","desc":"具体标准","reward":分数,"durationPreset":分钟,"schedule":"today/daily/weekly","weeklyDays":[]}]`;
 
 // Helper: get AI config from DB, fallback to env
 const getAiConfig = () => new Promise((resolve, reject) => {
@@ -178,18 +183,36 @@ router.post('/parse-homework', async (req, res) => {
 
     // Call AI
     try {
+        const hasImage = parts.some(p => p.inlineData);
+        console.log(`[AI] Calling ${config.provider}/${config.model_name} | parts: ${parts.length} | hasImage: ${hasImage} | textLen: ${text?.length || 0}`);
         const responseText = await callAI(config, parts);
 
         if (!responseText) {
             return res.status(500).json({ error: 'AI 返回为空' });
         }
 
-        // Extract JSON from response
+        // Extract JSON from response — robust handling for AI quirks
         let jsonStr = responseText;
         const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)```/);
         if (jsonMatch) jsonStr = jsonMatch[1].trim();
-        const arrayMatch = jsonStr.match(/\[[\s\S]*?\]/);
-        if (arrayMatch) jsonStr = arrayMatch[0];
+
+        // Find outermost array using bracket depth (handles nested arrays like weeklyDays)
+        const start = jsonStr.indexOf('[');
+        if (start !== -1) {
+            let depth = 0;
+            let end = start;
+            for (let i = start; i < jsonStr.length; i++) {
+                if (jsonStr[i] === '[') depth++;
+                else if (jsonStr[i] === ']') { depth--; if (depth === 0) { end = i; break; } }
+            }
+            jsonStr = jsonStr.substring(start, end + 1);
+        }
+
+        // Clean up common AI formatting issues
+        jsonStr = jsonStr
+            .replace(/\/\/[^\n]*/g, '')       // remove line comments
+            .replace(/,\s*([}\]])/g, '$1')    // remove trailing commas
+            .replace(/[\x00-\x1f]/g, ' ');    // remove control chars
 
         const tasks = JSON.parse(jsonStr);
 

@@ -43,7 +43,7 @@ const authenticateToken = (req, res, next) => {
     if (token == null) return res.status(401).json({ error: "No token provided" });
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ error: "Invalid token" });
+        if (err) return res.status(403).json({ error: "登录已过期，请重新登录" });
         req.user = user; // { id, role }
         next();
     });
@@ -113,10 +113,10 @@ app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
     db.get("SELECT * FROM users WHERE email = ?", [email], async (err, user) => {
         if (err) return res.status(500).json({ error: err.message });
-        if (!user) return res.status(400).json({ error: "User not found" });
+        if (!user) return res.status(400).json({ error: "该邮箱未注册" });
 
         const validPassword = await bcrypt.compare(password, user.password_hash);
-        if (!validPassword) return res.status(400).json({ error: "Invalid password" });
+        if (!validPassword) return res.status(400).json({ error: "密码错误，请重新输入" });
 
         const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
         res.json({ token, user: { id: user.id, email: user.email, role: user.role, sub_end_date: user.sub_end_date } });
@@ -126,7 +126,7 @@ app.post('/api/login', (req, res) => {
 app.get('/api/me', authenticateToken, (req, res) => {
     db.get("SELECT id, email, role, trial_start, sub_end_date, created_at FROM users WHERE id = ?", [req.user.id], (err, user) => {
         if (err) return res.status(500).json({ error: err.message });
-        if (!user) return res.status(404).json({ error: "User not found" });
+        if (!user) return res.status(404).json({ error: "用户不存在" });
         res.json(user);
     });
 });
@@ -135,7 +135,7 @@ app.post('/api/redeem-code', authenticateToken, (req, res) => {
     const { code } = req.body;
     db.get("SELECT * FROM activation_codes WHERE code = ?", [code], (err, codeRow) => {
         if (err) return res.status(500).json({ error: err.message });
-        if (!codeRow) return res.status(400).json({ error: "Invalid code" });
+        if (!codeRow) return res.status(400).json({ error: "激活码无效" });
         if (codeRow.status !== 'active') return res.status(400).json({ error: "Code already used" });
 
         db.get("SELECT sub_end_date FROM users WHERE id = ?", [req.user.id], (err, user) => {
@@ -445,7 +445,7 @@ app.put('/api/tasks/:id/history', authenticateToken, (req, res) => {
     const { date, status, timeSpent, note } = req.body;
     db.get("SELECT history, linkedClassId FROM tasks WHERE id = ? AND userId = ?", [req.params.id, req.user.id], (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
-        if (!row) return res.status(404).json({ error: "Task not found" });
+        if (!row) return res.status(404).json({ error: "任务不存在" });
 
         let history = {};
         try { if (row.history) history = JSON.parse(row.history); } catch (e) { }
@@ -689,7 +689,7 @@ app.post('/api/classes/:id/checkin', authenticateToken, (req, res) => {
     const { date, note } = req.body;
     db.get("SELECT * FROM classes WHERE id = ? AND userId = ?", [req.params.id, req.user.id], (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
-        if (!row) return res.status(404).json({ error: "Class not found" });
+        if (!row) return res.status(404).json({ error: "课程不存在" });
         const sessionsPerClass = row.sessionsPerClass || 1;
         const newUsed = (row.usedSessions || 0) + sessionsPerClass;
         let history = [];

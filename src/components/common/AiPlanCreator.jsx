@@ -88,6 +88,25 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
             const allNewTasks = [];
 
             for (const task of parsedTasks) {
+                // Determine schedule from AI output
+                const schedule = task.schedule || 'today';
+                let frequency = '仅当天';
+                let repeatConfig = { type: 'today' };
+                let dates = [today];
+                let weeklyDays = task.weeklyDays || [1, 2, 3, 4, 5];
+
+                if (schedule === 'daily') {
+                    frequency = '每天';
+                    repeatConfig = { type: 'daily' };
+                    dates = undefined; // daily tasks don't use dates array
+                } else if (schedule === 'weekly') {
+                    const dayNames = ['', '一', '二', '三', '四', '五', '六', '日'];
+                    const dayLabels = weeklyDays.sort().map(d => '周' + dayNames[d]).join('、');
+                    frequency = `每${dayLabels}`;
+                    repeatConfig = { type: 'weekly_custom', weeklyDays };
+                    dates = undefined;
+                }
+
                 const baseTask = {
                     id: `${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
                     title: task.title,
@@ -99,13 +118,13 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                     standards: task.desc || '',
                     category: task.category || '技能',
                     catColor: getCategoryGradient(task.category),
-                    frequency: '仅当天',
+                    frequency,
                     timeStr: task.durationPreset ? `${task.durationPreset}分钟` : '--:--',
                     startDate: today,
                     pointRule: 'default',
                     requireApproval: true,
-                    dates: [today],
-                    repeatConfig: { type: 'today' },
+                    ...(dates ? { dates } : {}),
+                    repeatConfig,
                     history: {},
                     attachments: [],
                     timeSetting: task.durationPreset ? 'duration' : 'none',
@@ -322,6 +341,12 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                                                 </span>
                                                 <span className="text-[9px] font-bold" style={{ color: '#FF8C42' }}>
                                                     ⭐ {task.reward}分
+                                                </span>
+                                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{
+                                                    background: task.schedule === 'daily' ? '#DBEAFE' : task.schedule === 'weekly' ? '#E0E7FF' : '#F0EBE1',
+                                                    color: task.schedule === 'daily' ? '#2563EB' : task.schedule === 'weekly' ? '#4F46E5' : '#9CAABE'
+                                                }}>
+                                                    {task.schedule === 'daily' ? '🔄 每天' : task.schedule === 'weekly' ? `📆 每周${(task.weeklyDays || []).map(d => ['','一','二','三','四','五','六','日'][d]).join('、')}` : '📅 仅今天'}
                                                 </span>
                                             </div>
                                             {task.desc && (

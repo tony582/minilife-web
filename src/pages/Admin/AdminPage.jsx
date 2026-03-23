@@ -8,7 +8,7 @@ import { apiFetch } from '../../api/client';
 const PROVIDERS = [
     { id: 'gemini', name: 'Google Gemini', color: '#4285F4', icon: '✨', models: ['gemini-2.0-flash', 'gemini-2.0-pro', 'gemini-1.5-flash'] },
     { id: 'deepseek', name: 'DeepSeek', color: '#5B6EF5', icon: '🔮', models: ['deepseek-chat', 'deepseek-reasoner'] },
-    { id: 'qwen', name: '通义千问', color: '#FF6A00', icon: '🤖', models: ['qwen-turbo', 'qwen-plus', 'qwen-max'] },
+    { id: 'qwen', name: '通义千问', color: '#FF6A00', icon: '🤖', models: ['qwen-turbo', 'qwen-plus', 'qwen-max', 'qwen-vl-plus', 'qwen-vl-max'] },
     { id: 'custom', name: '自定义 (OpenAI兼容)', color: '#10B981', icon: '⚙️', models: [] },
 ];
 
