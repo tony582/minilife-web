@@ -627,13 +627,13 @@ export const ParentTasksTab = () => {
             </div>
 
             {showReorderModal && ReactDOM.createPortal(
-                <div className="fixed inset-0 z-[200] animate-slide-up flex flex-col overflow-hidden" style={{ background: C.bg }}>
-                    <div className="flex items-center justify-between p-4 shrink-0" style={{ borderBottom: `1px solid ${C.bgLight}` }}>
+                <div className="z-[200]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: C.bg }}>
+                    <div className="flex items-center justify-between p-4" style={{ borderBottom: `1px solid ${C.bgLight}` }}>
                         <button onClick={() => setShowReorderModal(false)} className="p-2 rounded-full" style={{ color: C.textSoft }}><Icons.X size={24} /></button>
                         <h2 className="text-lg font-black" style={{ color: C.textPrimary }}>调整任务顺序</h2>
                         <button onClick={() => setShowReorderModal(false)} className="font-black px-4 py-2 rounded-full" style={{ color: C.orange }}>完成</button>
                     </div>
-                    <div className="flex-1 min-h-0 overflow-y-auto p-4 pb-24 touch-pan-y">
+                    <div style={{ position: 'absolute', top: 57, left: 0, right: 0, bottom: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '1rem', paddingBottom: '6rem' }}>
                         <div className="max-w-2xl mx-auto">
                             <div className="text-[13px] font-bold p-3 rounded-2xl mb-5 text-center" style={{ background: C.bgCard, color: C.textSoft, boxShadow: C.cardShadow }}>
                                 💡 长按拖动调整任务顺序
