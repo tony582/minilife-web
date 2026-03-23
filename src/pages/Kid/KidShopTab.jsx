@@ -183,10 +183,10 @@ export const KidShopTab = () => {
 
             {/* ═══ Hero with blob decorations ═══ */}
             <div className="relative pb-4 px-4">
-                <div className="absolute -top-20 -left-20 w-56 h-56 rounded-full opacity-15" style={{ background: C.accent }}></div>
-                <div className="absolute -top-10 -left-12 w-40 h-40 rounded-full opacity-10" style={{ background: '#A78BFA' }}></div>
+                <div className="absolute -top-16 -left-16 w-48 h-48 rounded-full opacity-15 z-0" style={{ background: C.accent }}></div>
+                <div className="absolute -top-8 -left-8 w-36 h-36 rounded-full opacity-10 z-0" style={{ background: '#A78BFA' }}></div>
 
-                <div className="relative z-10 flex items-center justify-between pt-1">
+                <div className="relative z-10 flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-black" style={{ color: C.textPrimary }}>奖品橱窗</h1>
                         <p className="text-sm font-bold mt-0.5" style={{ color: C.textSoft }}>完成任务赚金币，兑换心愿奖品</p>
@@ -199,7 +199,7 @@ export const KidShopTab = () => {
                 </div>
             </div>
 
-            <div className="px-4">
+            <div className="px-4 relative z-10">
 
             {/* ═══ Segmented Control ═══ */}
             <div className="rounded-2xl p-1 mb-4 grid grid-cols-2 gap-1" style={{ background: C.bgLight }}>
