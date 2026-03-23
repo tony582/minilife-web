@@ -93,6 +93,8 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
 
         checkAuthAndFetch();
 
+        let sseSyncDebounce = null;
+
         const connectSSE = () => {
             if (eventSource) eventSource.close();
             if (!token) return;
@@ -102,7 +104,15 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
             eventSource.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    if (data.action === 'sync') checkAuthAndFetch();
+                    if (data.action === 'sync') {
+                        // Debounce: a single user action (e.g. habit check-in) triggers
+                        // multiple API writes, each sending a sync event. Wait for all
+                        // writes to finish before refetching.
+                        if (sseSyncDebounce) clearTimeout(sseSyncDebounce);
+                        sseSyncDebounce = setTimeout(() => {
+                            checkAuthAndFetch();
+                        }, 3000);
+                    }
                 } catch (err) {}
             };
             eventSource.onerror = () => {
