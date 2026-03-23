@@ -633,7 +633,7 @@ export const ParentTasksTab = () => {
                         <h2 className="text-lg font-black" style={{ color: C.textPrimary }}>调整任务顺序</h2>
                         <button onClick={() => setShowReorderModal(false)} className="font-black px-4 py-2 rounded-full" style={{ color: C.orange }}>完成</button>
                     </div>
-                    <div style={{ position: 'absolute', top: 57, left: 0, right: 0, bottom: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '1rem', paddingBottom: '6rem' }}>
+                    <div style={{ position: 'absolute', top: 57, left: 0, right: 0, bottom: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '1rem', paddingBottom: '10rem' }}>
                         <div className="max-w-2xl mx-auto">
                             <div className="text-[13px] font-bold p-3 rounded-2xl mb-5 text-center" style={{ background: C.bgCard, color: C.textSoft, boxShadow: C.cardShadow }}>
                                 💡 长按拖动调整任务顺序
@@ -652,7 +652,9 @@ export const ParentTasksTab = () => {
                                             <div className="text-[10px] font-bold mb-0.5" style={{ color: C.textMuted }}>{t.category || '计划'} · {t.frequency || '每天'}</div>
                                             <div className="font-black text-sm truncate" style={{ color: C.textPrimary }}>{t.title}</div>
                                         </div>
-                                        <Icons.GripVertical size={18} style={{ color: C.textMuted }} />
+                                        <div className="drag-handle p-2 -m-2 cursor-grab active:cursor-grabbing">
+                                            <Icons.GripVertical size={18} style={{ color: C.textMuted }} />
+                                        </div>
                                     </div>
                                 )}
                             />

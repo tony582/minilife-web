@@ -112,8 +112,10 @@ export const ReorderableList = ({ items, onReorder, renderItem, keyExtractor }) 
     // preventDefault() actually prevents the browser scroll.
 
     const touchStartHandler = useCallback((e) => {
-        // Find which item was touched
-        const itemEl = e.target.closest('[data-ri]');
+        // Only initiate drag from the grip handle, not the entire card
+        const handleEl = e.target.closest('.drag-handle');
+        if (!handleEl) return; // Allow normal scroll when not touching handle
+        const itemEl = handleEl.closest('[data-ri]');
         if (!itemEl) return;
         const index = parseInt(itemEl.getAttribute('data-ri'), 10);
 
@@ -145,7 +147,7 @@ export const ReorderableList = ({ items, onReorder, renderItem, keyExtractor }) 
             s.cloneStartTop = rect.top;
 
             if (navigator.vibrate) navigator.vibrate(25);
-        }, 200);
+        }, 300);
     }, [captureRects]);
 
     const touchMoveHandler = useCallback((e) => {
