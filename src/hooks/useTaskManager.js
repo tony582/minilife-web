@@ -1328,8 +1328,10 @@ const handleSavePlan = async () => {
   }
   // === CREATE MODE: Create new tasks ===
   let newTasks = [];
+  const maxOrder = tasks.reduce((max, t) => Math.max(max, t.order ?? 0), 0);
   const baseTask = {
     id: Date.now().toString(),
+    order: maxOrder + 1,
     title: planForm.title,
     desc: planForm.desc,
     reward: planType === 'habit' ? rewardNum : Math.abs(rewardNum),
