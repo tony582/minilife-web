@@ -15,6 +15,7 @@ import { AuthPage } from './pages/Auth/AuthPage';
 import { ExpiredPage } from './pages/Auth/ExpiredPage';
 import { AdminPage } from './pages/Admin/AdminPage';
 import { GlobalModals } from './components/common/GlobalModals';
+import { SmartInstallBanner } from './components/common/SmartInstallBanner';
 
 function AppContent() {
   const { token, user, authLoading } = useAuthContext();
@@ -188,12 +189,15 @@ function AppContent() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <DataProvider>
-        <UIProvider>
-          <AppContent />
-        </UIProvider>
-      </DataProvider>
-    </AuthProvider>
+    <>
+      <SmartInstallBanner />
+      <AuthProvider>
+        <DataProvider>
+          <UIProvider>
+            <AppContent />
+          </UIProvider>
+        </DataProvider>
+      </AuthProvider>
+    </>
   );
 }
