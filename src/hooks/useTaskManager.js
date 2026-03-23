@@ -182,7 +182,7 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
         newHistory[selectedDate].push(newRecord);
       }
       // Optimistic UI updates
-      setTasks(tasks.map(t => t.id === task.id ? {
+      setTasks(prev => prev.map(t => t.id === task.id ? {
         ...t,
         history: newHistory
       } : t));
@@ -388,7 +388,7 @@ const getTaskStatusOnDate = (t, date, kidId) => {
     await apiFetch(`/api/tasks/${id}`, {
       method: 'DELETE'
     });
-    setTasks(tasks.filter(t => t.id !== id));
+    setTasks(prev => prev.filter(t => t.id !== id));
     setDeleteConfirmTask(null);
     notify('任务已删除', 'success');
   } catch (e) {
@@ -425,7 +425,7 @@ const getTaskStatusOnDate = (t, date, kidId) => {
         history: newHistory
       })
     });
-    setTasks(tasks.map(t => t.id === taskToSubmit.id ? {
+    setTasks(prev => prev.map(t => t.id === taskToSubmit.id ? {
       ...t,
       history: newHistory
     } : t));
@@ -569,7 +569,7 @@ const handleQuickComplete = async () => {
         history: newHistory
       })
     });
-    setTasks(tasks.map(t => t.id === taskToSubmit.id ? {
+    setTasks(prev => prev.map(t => t.id === taskToSubmit.id ? {
       ...t,
       history: newHistory
     } : t));
@@ -668,7 +668,7 @@ const handleQuickComplete = async () => {
         status: 'completed'
       })
     });
-    setTasks(tasks.map(t => {
+    setTasks(prev => prev.map(t => {
       if (t.id === task.id) {
         let dateHist = t.history?.[date] || [];
         if (!Array.isArray(dateHist)) {
@@ -816,7 +816,7 @@ const handleQuickComplete = async () => {
         history: histUpdates
       })
     });
-    setTasks(tasks.map(t => t.id === task.id ? {
+    setTasks(prev => prev.map(t => t.id === task.id ? {
       ...t,
       history: histUpdates
     } : t));
@@ -1058,7 +1058,7 @@ const handleQuickComplete = async () => {
         history: newHistory
       })
     });
-    setTasks(tasks.map(t => t.id === task.id ? {
+    setTasks(prev => prev.map(t => t.id === task.id ? {
       ...t,
       history: newHistory
     } : t));
@@ -1310,7 +1310,7 @@ const handleSavePlan = async () => {
         },
         body: JSON.stringify(updates)
       });
-      setTasks(tasks.map(t => t.id === editingTask.id ? {
+      setTasks(prev => prev.map(t => t.id === editingTask.id ? {
         ...t,
         ...updates
       } : t));
