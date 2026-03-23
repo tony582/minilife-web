@@ -1777,15 +1777,19 @@ export const GlobalModals = () => {
                                                     <div className="mt-2">
                                                         <span className="text-slate-400 text-xs font-bold mr-2 block mb-2">图片/视频证据:</span>
                                                         <div className="flex flex-wrap gap-2">
-                                                            {hr.attachments.map((url, i) => (
-                                                                <div key={i} onClick={(e) => { e.stopPropagation(); setPreviewImages(hr.attachments); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-white shadow-md cursor-pointer hover:border-orange-300 hover:scale-105 transition-all">
-                                                                    {(typeof url === 'string' && (url.endsWith('.mp4') || url.endsWith('.webm'))) ? (
-                                                                        <video src={url} className="w-full h-full object-cover" />
+                                                            {hr.attachments.map((att, i) => {
+                                                                const src = typeof att === 'string' ? att : (att.data || att.url || '');
+                                                                const isVideo = (typeof att === 'string' && (att.endsWith('.mp4') || att.endsWith('.webm'))) || (att.type && att.type.startsWith('video/'));
+                                                                return (
+                                                                <div key={i} onClick={(e) => { e.stopPropagation(); setPreviewImages(hr.attachments.map(a => typeof a === 'string' ? a : (a.data || a.url || ''))); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-white shadow-md cursor-pointer hover:border-orange-300 hover:scale-105 transition-all">
+                                                                    {isVideo ? (
+                                                                        <video src={src} className="w-full h-full object-cover" />
                                                                     ) : (
-                                                                        <img src={typeof url === 'string' ? url : (url.url || url)} className="w-full h-full object-cover" alt="证据" />
+                                                                        <img src={src} className="w-full h-full object-cover" alt="证据" />
                                                                     )}
                                                                 </div>
-                                                            ))}
+                                                                );
+                                                            })}
                                                         </div>
                                                     </div>
                                                 )}
@@ -1888,7 +1892,7 @@ export const GlobalModals = () => {
                                                             <div
                                                                 key={idx}
                                                                 onClick={() => {
-                                                                    setPreviewImages(record.attachments);
+                                                                    setPreviewImages(record.attachments.map(a => typeof a === 'string' ? a : (a.data || a.url || '')));
                                                                     setCurrentPreviewIndex(idx);
                                                                     setShowImagePreviewModal(true);
                                                                 }}
