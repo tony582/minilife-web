@@ -73,6 +73,8 @@ echo "📤 [3/4] 上传后端文件..."
 rsync -avz --delete \
     --exclude 'node_modules' \
     --exclude 'minilife.sqlite' \
+    --exclude 'minilife.sqlite-shm' \
+    --exclude 'minilife.sqlite-wal' \
     "$PROJECT_DIR/server/" root@$SERVER_IP:$APP_DIR/server/
 
 # 上传 .env 和 package.json
