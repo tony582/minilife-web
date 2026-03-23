@@ -153,9 +153,10 @@ export const KidStudyTab = () => {
     const handleReorderTask = (si, ti) => {
         if (si === ti || ti < 0 || ti >= myTasks.length) return;
         const u = [...myTasks]; const [r] = u.splice(si, 1); u.splice(ti, 0, r);
-        u.forEach((t, i) => t.order = i);
-        const ng = [...tasks]; u.forEach(t => { const gi = ng.findIndex(g => g.id === t.id); if (gi > -1) ng[gi].order = t.order; apiFetch(`/api/tasks/${t.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order: t.order }) }).catch(console.error); });
-        setTasks(ng);
+        const orderMap = {};
+        u.forEach((t, i) => { orderMap[t.id] = i; });
+        setTasks(prev => prev.map(t => orderMap[t.id] !== undefined ? { ...t, order: orderMap[t.id] } : t));
+        u.forEach((t, i) => { apiFetch(`/api/tasks/${t.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order: i }) }).catch(console.error); });
     };
 
     const completedCount = myTasks.filter(t => getDailyStatus(t) === 'completed').length;

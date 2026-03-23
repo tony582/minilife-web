@@ -119,15 +119,19 @@ export const ParentTasksTab = () => {
         const [removed] = updatedSubList.splice(sourceIndex, 1);
         updatedSubList.splice(targetIndex, 0, removed);
 
-        updatedSubList.forEach((task, idx) => task.order = idx);
+        // Build a map of id -> new order
+        const orderMap = {};
+        updatedSubList.forEach((task, idx) => { orderMap[task.id] = idx; });
 
-        const newGlobalTasks = [...tasks];
-        updatedSubList.forEach(task => {
-            const globalIndex = newGlobalTasks.findIndex(g => g.id === task.id);
-            if (globalIndex > -1) newGlobalTasks[globalIndex].order = task.order;
-            apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order: task.order }) }).catch(console.error);
+        // Immutable state update with new object references
+        setTasks(prev => prev.map(t =>
+            orderMap[t.id] !== undefined ? { ...t, order: orderMap[t.id] } : t
+        ));
+
+        // Persist to server
+        updatedSubList.forEach((task, idx) => {
+            apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order: idx }) }).catch(console.error);
         });
-        setTasks(newGlobalTasks);
     };
 
     const pendingApprovals = tasks.flatMap(t => {
