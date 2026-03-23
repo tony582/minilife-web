@@ -1963,7 +1963,7 @@ export const GlobalModals = () => {
                                         <button onClick={() => { setShowPreviewModal(false); setRejectingTaskInfo({ task: previewTask, dateStr: selectedDate, kidId: resolvedKidId }); setShowRejectModal(true); }} className="flex-1 bg-rose-50 text-rose-600 rounded-xl py-4 font-black hover:bg-rose-100 active:scale-95 transition-all flex items-center justify-center gap-1.5 border border-rose-200">
                                             <Icons.X size={18} strokeWidth={3} /> 打回
                                         </button>
-                                        <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleApproveTask(previewTask, selectedDate, resolvedKidId); }} className="flex-[2] bg-emerald-500 text-white rounded-xl py-4 font-black shadow-lg shadow-emerald-200 hover:bg-emerald-600 active:scale-95 transition-all flex items-center justify-center gap-1.5">
+                                        <button onClick={async () => { const t = previewTask; const d = selectedDate; const k = resolvedKidId; setShowPreviewModal(false); setPreviewTask(null); await handleApproveTask(t, d, k); }} className="flex-[2] bg-emerald-500 text-white rounded-xl py-4 font-black shadow-lg shadow-emerald-200 hover:bg-emerald-600 active:scale-95 transition-all flex items-center justify-center gap-1.5">
                                             <Icons.Check size={20} strokeWidth={3} /> 确认通过
                                         </button>
                                     </>
