@@ -2,7 +2,7 @@ import React from 'react';
 import {
     DndContext,
     closestCenter,
-    PointerSensor,
+    MouseSensor,
     TouchSensor,
     useSensor,
     useSensors,
@@ -56,7 +56,7 @@ const SortableItem = ({ id, children }) => {
  */
 export const ReorderableList = ({ items, onReorder, renderItem, keyExtractor }) => {
     const sensors = useSensors(
-        useSensor(PointerSensor, {
+        useSensor(MouseSensor, {
             activationConstraint: { distance: 8 },
         }),
         useSensor(TouchSensor, {
