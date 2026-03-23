@@ -485,21 +485,21 @@ export const KidStudyTab = () => {
             </div>
 
             {/* ═══ Reorder Modal ═══ */}
-            {showReorderModal && (
-                <div className="fixed inset-0 z-[200] animate-slide-up flex flex-col" style={{ background: C.bg }}>
-                    <div className="flex items-center justify-between p-4 shrink-0 pt-safe" style={{ borderBottom: `1px solid ${C.bgLight}` }}>
+            {showReorderModal && createPortal(
+                <div className="z-[200]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: C.bg }}>
+                    <div className="flex items-center justify-between p-4" style={{ borderBottom: `1px solid ${C.bgLight}` }}>
                         <button onClick={() => setShowReorderModal(false)} className="p-2 rounded-full" style={{ color: C.textSoft }}><Icons.X size={24} /></button>
                         <h2 className="text-lg font-black" style={{ color: C.textPrimary }}>调整顺序</h2>
                         <button onClick={() => setShowReorderModal(false)} className="font-black px-4 py-2 rounded-full" style={{ color: C.orange }}>完成</button>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-4 pb-24 touch-pan-y">
+                    <div style={{ position: 'absolute', top: 57, left: 0, right: 0, bottom: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '1rem', paddingBottom: '10rem' }}>
                         <div className="max-w-2xl mx-auto">
                             <div className="text-[13px] font-bold p-3 rounded-2xl mb-5 text-center" style={{ background: C.bgCard, color: C.textSoft, boxShadow: C.cardShadow }}>
                                 💡 长按拖动调整任务顺序
                             </div>
                             <ReorderableList items={myTasks} onReorder={handleReorderTask} keyExtractor={(t) => t.id}
                                 renderItem={(t) => (
-                                    <div className="rounded-xl px-4 py-3.5 flex items-center gap-3 cursor-grab active:cursor-grabbing select-none transition-all"
+                                    <div className="rounded-xl px-4 py-3.5 flex items-center gap-3 select-none transition-all"
                                         style={{ background: C.bgCard }}>
                                         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0" style={{ background: getCatColor(t.category) }}>
                                             {renderIcon(t.iconName || getIconForCategory(t.category), 16)}
@@ -514,7 +514,8 @@ export const KidStudyTab = () => {
                             />
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
           </div>
         </div>
