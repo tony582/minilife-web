@@ -1,4 +1,5 @@
 import React, { useRef, useState, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 import { useDataContext } from '../../context/DataContext.jsx';
 import { useAuthContext } from '../../context/AuthContext.jsx';
 import { useUIContext } from '../../context/UIContext.jsx';
@@ -118,15 +119,19 @@ export const ParentTasksTab = () => {
         const [removed] = updatedSubList.splice(sourceIndex, 1);
         updatedSubList.splice(targetIndex, 0, removed);
 
-        updatedSubList.forEach((task, idx) => task.order = idx);
+        // Build a map of id -> new order
+        const orderMap = {};
+        updatedSubList.forEach((task, idx) => { orderMap[task.id] = idx; });
 
-        const newGlobalTasks = [...tasks];
-        updatedSubList.forEach(task => {
-            const globalIndex = newGlobalTasks.findIndex(g => g.id === task.id);
-            if (globalIndex > -1) newGlobalTasks[globalIndex].order = task.order;
-            apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order: task.order }) }).catch(console.error);
+        // Immutable state update with new object references
+        setTasks(prev => prev.map(t =>
+            orderMap[t.id] !== undefined ? { ...t, order: orderMap[t.id] } : t
+        ));
+
+        // Persist to server
+        updatedSubList.forEach((task, idx) => {
+            apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order: idx }) }).catch(console.error);
         });
-        setTasks(newGlobalTasks);
     };
 
     const pendingApprovals = tasks.flatMap(t => {
@@ -600,7 +605,7 @@ export const ParentTasksTab = () => {
                                                 endTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[1] : '',
                                                 durationPreset: t.timeStr && String(t.timeStr).includes('分钟') ? parseInt(String(t.timeStr)) : 25,
                                                 pointRule: (t.pointRule && t.pointRule === 'custom') || (t.type === 'habit') ? 'custom' : 'default',
-                                                reward: String(t.reward || ''),
+                                                reward: String(t.reward ?? ''),
                                                 iconEmoji: t.iconEmoji || '📚',
                                                 habitColor: t.catColor || 'from-blue-400 to-blue-500',
                                                 habitType: t.habitType || 'daily_once',
@@ -625,14 +630,14 @@ export const ParentTasksTab = () => {
                 })}
             </div>
 
-            {showReorderModal && (
-                <div className="fixed inset-0 z-[200] animate-slide-up flex flex-col" style={{ background: C.bg }}>
-                    <div className="flex items-center justify-between p-4 shrink-0" style={{ borderBottom: `1px solid ${C.bgLight}` }}>
+            {showReorderModal && ReactDOM.createPortal(
+                <div className="z-[200]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: C.bg }}>
+                    <div className="flex items-center justify-between p-4" style={{ borderBottom: `1px solid ${C.bgLight}` }}>
                         <button onClick={() => setShowReorderModal(false)} className="p-2 rounded-full" style={{ color: C.textSoft }}><Icons.X size={24} /></button>
                         <h2 className="text-lg font-black" style={{ color: C.textPrimary }}>调整任务顺序</h2>
                         <button onClick={() => setShowReorderModal(false)} className="font-black px-4 py-2 rounded-full" style={{ color: C.orange }}>完成</button>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-4 pb-24 touch-pan-y">
+                    <div style={{ position: 'absolute', top: 57, left: 0, right: 0, bottom: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '1rem', paddingBottom: '10rem' }}>
                         <div className="max-w-2xl mx-auto">
                             <div className="text-[13px] font-bold p-3 rounded-2xl mb-5 text-center" style={{ background: C.bgCard, color: C.textSoft, boxShadow: C.cardShadow }}>
                                 💡 长按拖动调整任务顺序
@@ -642,7 +647,7 @@ export const ParentTasksTab = () => {
                                 onReorder={handleParentReorderTask}
                                 keyExtractor={(t) => t.id}
                                 renderItem={(t, index) => (
-                                    <div className="rounded-xl px-4 py-3.5 flex items-center gap-3 cursor-grab active:cursor-grabbing select-none transition-all"
+                                    <div className="rounded-xl px-4 py-3.5 flex items-center gap-3 select-none transition-all"
                                         style={{ background: C.bgCard }}>
                                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0 bg-gradient-to-br ${getCategoryGradient(t.category || '计划')}`}>
                                             {renderIcon(t.iconName || getIconForCategory(t.category), 16)}
@@ -657,7 +662,8 @@ export const ParentTasksTab = () => {
                             />
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
           </div>

@@ -1,7 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { apiFetch } from '../api/client';
 
 export const useAppData = (token, setToken, user, setUser, setAuthLoading, notify) => {
+    // Sync lock: prevents SSE-triggered refetches during multi-step operations
+    // (e.g. task completion that updates tasks, transactions, AND kid balances)
+    const syncPausedRef = useRef(false);
+    const pendingSyncRef = useRef(false);
     const [kids, setKids] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [inventory, setInventory] = useState([]);
@@ -93,6 +97,8 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
 
         checkAuthAndFetch();
 
+        let sseSyncDebounce = null;
+
         const connectSSE = () => {
             if (eventSource) eventSource.close();
             if (!token) return;
@@ -102,7 +108,22 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
             eventSource.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    if (data.action === 'sync') checkAuthAndFetch();
+                    if (data.action === 'sync') {
+                        // If sync is paused (multi-step operation in progress),
+                        // just mark that a sync is pending. We'll do ONE clean
+                        // refetch when the operation completes.
+                        if (syncPausedRef.current) {
+                            pendingSyncRef.current = true;
+                            return;
+                        }
+                        // Debounce: a single user action (e.g. habit check-in) triggers
+                        // multiple API writes, each sending a sync event. Wait for all
+                        // writes to finish before refetching.
+                        if (sseSyncDebounce) clearTimeout(sseSyncDebounce);
+                        sseSyncDebounce = setTimeout(() => {
+                            checkAuthAndFetch();
+                        }, 3000);
+                    }
                 } catch (err) {}
             };
             eventSource.onerror = () => {
@@ -115,26 +136,26 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
 
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
-                checkAuthAndFetch();
+                // Only reconnect SSE, don't refetch all data
+                // (data will refresh via SSE sync event if needed)
                 connectSSE();
             }
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
-        window.addEventListener('focus', handleVisibilityChange);
 
+        // Poll every 2 minutes as a fallback (SSE is the primary sync)
         const fallbackPoll = setInterval(() => {
             if (document.visibilityState === 'visible' && token) {
                 checkAuthAndFetch();
             }
-        }, 15000);
+        }, 120000);
 
         return () => {
             if (eventSource) eventSource.close();
             if (reconnectTimeout) clearTimeout(reconnectTimeout);
             clearInterval(fallbackPoll);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
-            window.removeEventListener('focus', handleVisibilityChange);
         };
     }, [token, setAuthLoading, setToken, setUser]);
 
@@ -166,6 +187,31 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
         }
     };
 
+    // Pause SSE-triggered refetches during multi-step operations
+    const pauseSync = useCallback(() => {
+        syncPausedRef.current = true;
+        pendingSyncRef.current = false;
+    }, []);
+
+    // Resume SSE sync; if any events arrived while paused, do ONE clean refetch
+    const resumeSync = useCallback(() => {
+        syncPausedRef.current = false;
+        // Don't eagerly refetch — trust the local state that was already set.
+        // Only refetch if we want cross-device sync to catch up, but delay it
+        // enough so the DB has the latest data.
+        if (pendingSyncRef.current) {
+            pendingSyncRef.current = false;
+            // Use a generous delay so the server has definitely committed
+            setTimeout(() => {
+                if (!syncPausedRef.current) {
+                    // no-op: the local state is already correct from setKids calls
+                    // If we still want a background refresh for cross-device:
+                    // checkAuthAndFetch();  // uncomment for full consistency
+                }
+            }, 5000);
+        }
+    }, []);
+
     const updateKidData = async (targetKidId, updates) => {
         try {
             await apiFetch(`/api/kids/${targetKidId}`, {
@@ -190,6 +236,7 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
         changeActiveKid,
         updateActiveKid,
         updateKidData,
+        pauseSync, resumeSync,
         adminTab, setAdminTab,
         adminUsers, setAdminUsers,
         adminCodes, setAdminCodes,

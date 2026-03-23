@@ -178,13 +178,13 @@ export const KidShopTab = () => {
     const handleBuyItem = (item) => { setShopTargetItem(item); setShowShopConfirmModal(true); };
 
     return (
-        <div className="animate-fade-in -mx-4 md:-mx-8 px-0 pb-10" style={{ background: C.bg, minHeight: '100vh' }}>
+        <div className="animate-fade-in -mx-4 md:-mx-8 px-0 pb-10 overflow-hidden" style={{ background: C.bg, minHeight: '100vh' }}>
           <div className="max-w-5xl mx-auto">
 
             {/* ═══ Hero with blob decorations ═══ */}
-            <div className="relative overflow-hidden pb-4 px-4">
-                <div className="absolute -top-32 -left-20 w-56 h-56 rounded-full opacity-15" style={{ background: C.accent }}></div>
-                <div className="absolute -top-20 -left-12 w-40 h-40 rounded-full opacity-10" style={{ background: '#A78BFA' }}></div>
+            <div className="relative pb-4 px-4">
+                <div className="absolute -top-16 -left-16 w-48 h-48 rounded-full opacity-15 z-0" style={{ background: C.accent }}></div>
+                <div className="absolute -top-8 -left-8 w-36 h-36 rounded-full opacity-10 z-0" style={{ background: '#A78BFA' }}></div>
 
                 <div className="relative z-10 flex items-center justify-between">
                     <div>
@@ -199,7 +199,7 @@ export const KidShopTab = () => {
                 </div>
             </div>
 
-            <div className="px-4">
+            <div className="px-4 relative z-10">
 
             {/* ═══ Segmented Control ═══ */}
             <div className="rounded-2xl p-1 mb-4 grid grid-cols-2 gap-1" style={{ background: C.bgLight }}>

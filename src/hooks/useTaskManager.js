@@ -15,6 +15,7 @@ export const useTaskManager = (authC, dataC, uiC) => {
     const context = { ...authC, ...dataC, ...uiC };
     const { 
         activeKidId, kids, setKids, tasks, setTasks, transactions, setTransactions, notify, 
+        pauseSync, resumeSync,
         setTimerTargetId, setTimerTotalSeconds, setTimerMode, setIsTimerRunning, setTimerPaused, 
         setShowTimerModal, setDeleteConfirmTask, setTaskToSubmit, setCelebrationData, 
         setQuickCompleteTask, setQcTimeMode, setQcHours, setQcMinutes, setQcSeconds, 
@@ -182,7 +183,7 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
         newHistory[selectedDate].push(newRecord);
       }
       // Optimistic UI updates
-      setTasks(tasks.map(t => t.id === task.id ? {
+      setTasks(prev => prev.map(t => t.id === task.id ? {
         ...t,
         history: newHistory
       } : t));
@@ -388,7 +389,7 @@ const getTaskStatusOnDate = (t, date, kidId) => {
     await apiFetch(`/api/tasks/${id}`, {
       method: 'DELETE'
     });
-    setTasks(tasks.filter(t => t.id !== id));
+    setTasks(prev => prev.filter(t => t.id !== id));
     setDeleteConfirmTask(null);
     notify('任务已删除', 'success');
   } catch (e) {
@@ -425,7 +426,7 @@ const getTaskStatusOnDate = (t, date, kidId) => {
         history: newHistory
       })
     });
-    setTasks(tasks.map(t => t.id === taskToSubmit.id ? {
+    setTasks(prev => prev.map(t => t.id === taskToSubmit.id ? {
       ...t,
       history: newHistory
     } : t));
@@ -559,6 +560,7 @@ const handleQuickComplete = async () => {
   } else {
     newHistory[selectedDate] = histUpdate;
   }
+  pauseSync(); // Prevent SSE refetch from overwriting in-flight balance updates
   try {
     await apiFetch(`/api/tasks/${taskToSubmit.id}`, {
       method: 'PUT',
@@ -569,7 +571,7 @@ const handleQuickComplete = async () => {
         history: newHistory
       })
     });
-    setTasks(tasks.map(t => t.id === taskToSubmit.id ? {
+    setTasks(prev => prev.map(t => t.id === taskToSubmit.id ? {
       ...t,
       history: newHistory
     } : t));
@@ -595,17 +597,31 @@ const handleQuickComplete = async () => {
       setTransactions(prev => [newTrans, ...prev]);
       const targetKid = kids.find(k => k.id === activeKidId);
       if (targetKid) {
+        let expGained = 0;
+        let newExp = targetKid.exp;
+        let newLevel = targetKid.level;
         const newBals = {
           ...targetKid.balances,
           spend: targetKid.balances.spend + (taskToSubmit.reward || 0)
         };
-        await updateActiveKid({
-          balances: newBals
-        });
-        // NEW DUAL REWARDS LOGIC: Gain EXP on task completion
+
         if (taskToSubmit.reward > 0) {
-          const expGained = Math.ceil(taskToSubmit.reward * 1.5);
-          await handleExpChange(activeKidId, expGained);
+          expGained = Math.ceil(taskToSubmit.reward * 1.5);
+          newExp += expGained;
+          while (newExp >= getLevelReq(newLevel)) {
+            newExp -= getLevelReq(newLevel);
+            newLevel++;
+            notify(`太棒了！${targetKid.name} 升到了 Lv.${newLevel}！`, "success");
+          }
+        }
+
+        await updateActiveKid({
+          balances: newBals,
+          exp: newExp,
+          level: newLevel
+        });
+
+        if (taskToSubmit.reward > 0) {
           notify(`打卡成功！获得 ${taskToSubmit.reward} 家庭币 和 ${expGained} 经验值！`, 'success');
           return; // Exit early to use combined notification
         }
@@ -616,6 +632,8 @@ const handleQuickComplete = async () => {
     }
   } catch (e) {
     notify('提交失败', 'error');
+  } finally {
+    resumeSync(); // Always unlock SSE sync
   }
 };
 
@@ -657,6 +675,7 @@ const handleQuickComplete = async () => {
 };
 
     const handleMarkHabitComplete = async (task, date) => {
+  pauseSync(); // Prevent SSE refetch from overwriting in-flight balance updates
   try {
     await apiFetch(`/api/tasks/${task.id}/history`, {
       method: 'PUT',
@@ -668,7 +687,7 @@ const handleQuickComplete = async () => {
         status: 'completed'
       })
     });
-    setTasks(tasks.map(t => {
+    setTasks(prev => prev.map(t => {
       if (t.id === task.id) {
         let dateHist = t.history?.[date] || [];
         if (!Array.isArray(dateHist)) {
@@ -729,26 +748,44 @@ const handleQuickComplete = async () => {
           body: JSON.stringify(expTrans)
         });
         setTransactions([newTrans, expTrans, ...transactions]);
+
+        // Atomic update: combine balances + EXP + level in a single call
         const newBals = {
           ...targetKid.balances,
           spend: targetKid.balances.spend + task.reward
         };
+        let newExp = targetKid.exp + expGained;
+        let newLevel = targetKid.level;
+        while (newExp >= getLevelReq(newLevel)) {
+          newExp -= getLevelReq(newLevel);
+          newLevel++;
+          notify(`太棒了！${targetKid.name} 升到了 Lv.${newLevel}！`, "success");
+        }
         await updateActiveKid({
-          balances: newBals
+          balances: newBals,
+          exp: newExp,
+          level: newLevel
         });
-        await handleExpChange(task.kidId, expGained);
         notify(`打卡成功！已奖励 ${targetKid.name} ${task.reward} 家庭币 和 ${expGained} 经验！`, "success");
       } else {
         // Penalty: Deduct EXP and Coins
         const absPenalty = Math.abs(task.reward);
+        const expPenalty = Math.ceil(absPenalty * 1.5);
+
+        // Atomic update: combine balances + EXP in a single call
         const newBals = {
           ...targetKid.balances,
           spend: Math.max(0, targetKid.balances.spend - absPenalty)
         };
+        let newExp = Math.max(0, targetKid.exp - expPenalty);
+        let newLevel = targetKid.level;
+        // Level doesn't decrease on penalty, but ensure exp is valid
         await updateActiveKid({
-          balances: newBals
+          balances: newBals,
+          exp: newExp,
+          level: newLevel
         });
-        const expPenalty = Math.ceil(absPenalty * 1.5);
+
         const refundTrans = {
           id: `trans_${Date.now()}_penalty`,
           kidId: task.kidId,
@@ -782,12 +819,13 @@ const handleQuickComplete = async () => {
           body: JSON.stringify(expRefundTrans)
         });
         setTransactions(prev => [refundTrans, expRefundTrans, ...prev]);
-        await handleExpChange(task.kidId, -expPenalty);
         notify(`已扣除 ${targetKid.name} ${absPenalty} 家庭币和 ${expPenalty} 经验。`, "error");
       }
     }
   } catch (e) {
     notify("网络请求失败", "error");
+  } finally {
+    resumeSync(); // Always unlock SSE sync
   }
 };
 
@@ -816,7 +854,7 @@ const handleQuickComplete = async () => {
         history: histUpdates
       })
     });
-    setTasks(tasks.map(t => t.id === task.id ? {
+    setTasks(prev => prev.map(t => t.id === task.id ? {
       ...t,
       history: histUpdates
     } : t));
@@ -1006,6 +1044,7 @@ const handleQuickComplete = async () => {
 };
 
     const handleApproveTask = async (task, date, actualKidId) => {
+  pauseSync(); // Prevent SSE refetch from overwriting in-flight balance updates
   try {
     // Write to Transaction Table First
     const newTrans = {
@@ -1058,7 +1097,7 @@ const handleQuickComplete = async () => {
         history: newHistory
       })
     });
-    setTasks(tasks.map(t => t.id === task.id ? {
+    setTasks(prev => prev.map(t => t.id === task.id ? {
       ...t,
       history: newHistory
     } : t));
@@ -1100,11 +1139,14 @@ const handleQuickComplete = async () => {
     }
   } catch (e) {
     notify("网络请求失败", "error");
+  } finally {
+    resumeSync(); // Always unlock SSE sync
   }
 };
 
     const handleApproveAllTasks = async approvalsList => {
   if (!approvalsList || approvalsList.length === 0) return;
+  pauseSync(); // Prevent SSE refetch from overwriting in-flight balance updates
   try {
     const timestamp = Date.now();
     let newTransactions = [];
@@ -1225,6 +1267,8 @@ const handleQuickComplete = async () => {
   } catch (e) {
     notify("批量审批网络请求部分失败，请刷新页面查看最新状态", "error");
     console.error(e);
+  } finally {
+    resumeSync(); // Always unlock SSE sync
   }
 };
 
@@ -1232,7 +1276,8 @@ const handleQuickComplete = async () => {
 const handleSavePlan = async () => {
   if (!planForm.title && !planForm.targetKid) return notify("请填写完整信息", "error"); // Basic check
   // Reward parsing
-  let rewardNum = parseInt(planForm.reward) || 0;
+  let rewardNum = planForm.reward !== '' && planForm.reward !== undefined ? parseInt(planForm.reward) : 0;
+  if (isNaN(rewardNum)) rewardNum = 0;
   if (planType === 'study' && planForm.pointRule !== 'custom') {
     rewardNum = 10; // Default system rule fallback for study
   }
@@ -1298,7 +1343,8 @@ const handleSavePlan = async () => {
       iconEmoji: planForm.iconEmoji,
       requireApproval: planForm.requireApproval,
       periodMaxPerDay: planType === 'habit' ? Number(planForm.periodMaxPerDay) : undefined,
-      periodMaxType: planType === 'habit' ? planForm.periodMaxType : undefined
+      periodMaxType: planType === 'habit' ? planForm.periodMaxType : undefined,
+      pointRule: planForm.pointRule || 'default'
     };
     try {
       await apiFetch(`/api/tasks/${editingTask.id}`, {
@@ -1308,7 +1354,7 @@ const handleSavePlan = async () => {
         },
         body: JSON.stringify(updates)
       });
-      setTasks(tasks.map(t => t.id === editingTask.id ? {
+      setTasks(prev => prev.map(t => t.id === editingTask.id ? {
         ...t,
         ...updates
       } : t));
@@ -1326,8 +1372,10 @@ const handleSavePlan = async () => {
   }
   // === CREATE MODE: Create new tasks ===
   let newTasks = [];
+  const maxOrder = tasks.reduce((max, t) => Math.max(max, t.order ?? 0), 0);
   const baseTask = {
     id: Date.now().toString(),
+    order: maxOrder + 1,
     title: planForm.title,
     desc: planForm.desc,
     reward: planType === 'habit' ? rewardNum : Math.abs(rewardNum),

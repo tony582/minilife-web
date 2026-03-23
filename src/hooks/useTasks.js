@@ -152,7 +152,7 @@ export const useTasks = (tasks, setTasks, kids, setKids, transactions, setTransa
     const handleDeleteTask = async (id, setDeleteConfirmTask) => {
         try {
             await apiFetch(`/api/tasks/${id}`, { method: 'DELETE' });
-            setTasks(tasks.filter(t => t.id !== id));
+            setTasks(prev => prev.filter(t => t.id !== id));
             setDeleteConfirmTask(null);
             notify('任务已删除', 'success');
         } catch (e) {
@@ -188,7 +188,7 @@ export const useTasks = (tasks, setTasks, kids, setKids, transactions, setTransa
                     newHistory[selectedDate].push(newRecord);
                 }
                 // Optimistic UI updates
-                setTasks(tasks.map(t => t.id === task.id ? { ...t, history: newHistory } : t));
+                setTasks(prev => prev.map(t => t.id === task.id ? { ...t, history: newHistory } : t));
 
                 const targetKid = kids.find(k => k.id === activeKidId);
                 let newExp = targetKid ? targetKid.exp : 0;
@@ -198,7 +198,7 @@ export const useTasks = (tasks, setTasks, kids, setKids, transactions, setTransa
                     const expDiff = Math.ceil((task.reward || 0) * 1.5);
                     newExp = Math.max(0, targetKid.exp + expDiff);
                     newBals = { ...targetKid.balances, spend: Math.max(0, targetKid.balances.spend + (task.reward || 0)) };
-                    setKids(kids.map(k => k.id === activeKidId ? { ...k, exp: newExp, balances: newBals } : k));
+                    setKids(prev => prev.map(k => k.id === activeKidId ? { ...k, exp: newExp, balances: newBals } : k));
                 }
 
                 if (task.reward !== 0) {
@@ -220,16 +220,18 @@ export const useTasks = (tasks, setTasks, kids, setKids, transactions, setTransa
                     notify("打卡成功！", "success");
                 }
 
-                // Background network sync
-                apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHistory }) }).catch(e => console.error(e));
+                // Await network sync to prevent poll from fetching stale data
+                await apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHistory }) });
 
                 if (task.reward !== 0) {
-                    apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kidId: activeKidId, type: task.reward > 0 ? 'income' : 'expense', amount: Math.abs(task.reward || 0), title: `记录成长: ${task.title}`, date: new Date().toISOString(), category: 'habit' }) }).catch(e => console.error(e));
-                    apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kidId: activeKidId, type: task.reward > 0 ? 'income' : 'expense', amount: Math.ceil(Math.abs(task.reward || 0) * 1.5), title: `记录成长: ${task.title}`, date: new Date().toISOString(), category: 'habit' }) }).catch(e => console.error(e));
+                    await Promise.all([
+                        apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kidId: activeKidId, type: task.reward > 0 ? 'income' : 'expense', amount: Math.abs(task.reward || 0), title: `记录成长: ${task.title}`, date: new Date().toISOString(), category: 'habit' }) }),
+                        apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kidId: activeKidId, type: task.reward > 0 ? 'income' : 'expense', amount: Math.ceil(Math.abs(task.reward || 0) * 1.5), title: `记录成长: ${task.title}`, date: new Date().toISOString(), category: 'habit' }) })
+                    ]);
                 }
 
                 if (targetKid) {
-                    apiFetch(`/api/kids/${activeKidId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exp: newExp, balances: newBals }) }).catch(e => console.error(e));
+                    await apiFetch(`/api/kids/${activeKidId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exp: newExp, balances: newBals }) });
                 }
 
             } catch (e) {
@@ -243,7 +245,7 @@ export const useTasks = (tasks, setTasks, kids, setKids, transactions, setTransa
     const handleMarkHabitComplete = async (task, date) => {
         try {
             await apiFetch(`/api/tasks/${task.id}/history`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, status: 'completed' }) });
-            setTasks(tasks.map(t => {
+            setTasks(prev => prev.map(t => {
                 if (t.id === task.id) {
                     let dateHist = t.history?.[date] || [];
                     if (!Array.isArray(dateHist)) {
@@ -290,7 +292,7 @@ export const useTasks = (tasks, setTasks, kids, setKids, transactions, setTransa
 
                     const newBals = { ...targetKid.balances, spend: targetKid.balances.spend + task.reward };
                     await apiFetch(`/api/kids/${targetKid.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ balances: newBals }) });
-                    setKids(kids.map(k => k.id === targetKid.id ? { ...k, balances: newBals } : k));
+                    setKids(prev => prev.map(k => k.id === targetKid.id ? { ...k, balances: newBals } : k));
 
                     await handleExpChange(task.kidId, expGained);
 
@@ -300,7 +302,7 @@ export const useTasks = (tasks, setTasks, kids, setKids, transactions, setTransa
                     const absPenalty = Math.abs(task.reward);
                     const newBals = { ...targetKid.balances, spend: Math.max(0, targetKid.balances.spend - absPenalty) };
                     await apiFetch(`/api/kids/${targetKid.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ balances: newBals }) });
-                    setKids(kids.map(k => k.id === targetKid.id ? { ...k, balances: newBals } : k));
+                    setKids(prev => prev.map(k => k.id === targetKid.id ? { ...k, balances: newBals } : k));
 
                     const expPenalty = Math.ceil(absPenalty * 1.5);
 
@@ -351,7 +353,7 @@ export const useTasks = (tasks, setTasks, kids, setKids, transactions, setTransa
                 body: JSON.stringify({ history: histUpdates })
             });
 
-            setTasks(tasks.map(t => t.id === task.id ? { ...t, history: histUpdates } : t));
+            setTasks(prev => prev.map(t => t.id === task.id ? { ...t, history: histUpdates } : t));
 
             // Reverse reward/penalty if was previously completed
             if (oldHistory.status === 'completed') {
@@ -367,7 +369,7 @@ export const useTasks = (tasks, setTasks, kids, setKids, transactions, setTransa
                             method: 'PUT', headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ balances: { ...targetKid.balances, spend: newBal } })
                         });
-                        setKids(kids.map(k => String(k.id) === String(kidId) ? { ...k, balances: { ...k.balances, spend: newBal } } : k));
+                        setKids(prev => prev.map(k => String(k.id) === String(kidId) ? { ...k, balances: { ...k.balances, spend: newBal } } : k));
 
                         // Create negative transaction to balance ledger
                         const refundTrans = {
@@ -395,7 +397,7 @@ export const useTasks = (tasks, setTasks, kids, setKids, transactions, setTransa
                                 method: 'PUT', headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ balances: { ...targetKid.balances, spend: newBal }, exp: newExp })
                             });
-                            setKids(kids.map(k => String(k.id) === String(kidId) ? { ...k, balances: { ...k.balances, spend: newBal }, exp: newExp } : k));
+                            setKids(prev => prev.map(k => String(k.id) === String(kidId) ? { ...k, balances: { ...k.balances, spend: newBal }, exp: newExp } : k));
 
                             // Negative reversed transaction
                             const refundTrans = {
@@ -428,7 +430,7 @@ export const useTasks = (tasks, setTasks, kids, setKids, transactions, setTransa
                                 method: 'PUT', headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ balances: { ...targetKid.balances, spend: newBal }, exp: newExp })
                             });
-                            setKids(kids.map(k => String(k.id) === String(kidId) ? { ...k, balances: { ...k.balances, spend: newBal }, exp: newExp } : k));
+                            setKids(prev => prev.map(k => String(k.id) === String(kidId) ? { ...k, balances: { ...k.balances, spend: newBal }, exp: newExp } : k));
 
                             // Positive refund transaction
                             const refundTrans = {
@@ -496,7 +498,7 @@ export const useTasks = (tasks, setTasks, kids, setKids, transactions, setTransa
             }
 
             await apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHistory }) });
-            setTasks(tasks.map(t => t.id === task.id ? { ...t, history: newHistory } : t));
+            setTasks(prev => prev.map(t => t.id === task.id ? { ...t, history: newHistory } : t));
 
             // Increase Balances & EXP
             const kid = kids.find(k => k.id === actualKidId);

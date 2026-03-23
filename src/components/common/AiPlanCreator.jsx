@@ -86,6 +86,12 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
             const today = new Date().toISOString().split('T')[0];
             const targetKids = planForm.targetKids || ['all'];
             const allNewTasks = [];
+            // Get max existing order to place new tasks at end
+            let nextOrder;
+            setTasks(prev => {
+                nextOrder = prev.reduce((max, t) => Math.max(max, t.order ?? 0), 0) + 1;
+                return prev; // don't change state yet
+            });
 
             for (const task of parsedTasks) {
                 // Determine schedule from AI output
@@ -109,6 +115,7 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
 
                 const baseTask = {
                     id: `${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                    order: nextOrder++,
                     title: task.title,
                     desc: task.desc || '',
                     reward: task.reward || 10,
@@ -138,6 +145,8 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                 } else {
                     for (const kidId of targetKids) {
                         const newTask = { ...baseTask, id: `${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, kidId };
+                        // Note: For multi-kid specific tasks created from AI, they'll share same order value 
+                        // which is fine since they are different kids' lists. 
                         await apiFetch('/api/tasks', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newTask) });
                         allNewTasks.push(newTask);
                     }

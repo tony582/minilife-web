@@ -1777,15 +1777,19 @@ export const GlobalModals = () => {
                                                     <div className="mt-2">
                                                         <span className="text-slate-400 text-xs font-bold mr-2 block mb-2">图片/视频证据:</span>
                                                         <div className="flex flex-wrap gap-2">
-                                                            {hr.attachments.map((url, i) => (
-                                                                <div key={i} onClick={(e) => { e.stopPropagation(); setPreviewImages(hr.attachments); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-white shadow-md cursor-pointer hover:border-orange-300 hover:scale-105 transition-all">
-                                                                    {(typeof url === 'string' && (url.endsWith('.mp4') || url.endsWith('.webm'))) ? (
-                                                                        <video src={url} className="w-full h-full object-cover" />
+                                                            {hr.attachments.map((att, i) => {
+                                                                const src = typeof att === 'string' ? att : (att.data || att.url || '');
+                                                                const isVideo = (typeof att === 'string' && (att.endsWith('.mp4') || att.endsWith('.webm'))) || (att.type && att.type.startsWith('video/'));
+                                                                return (
+                                                                <div key={i} onClick={(e) => { e.stopPropagation(); setPreviewImages(hr.attachments.map(a => typeof a === 'string' ? a : (a.data || a.url || ''))); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-white shadow-md cursor-pointer hover:border-orange-300 hover:scale-105 transition-all">
+                                                                    {isVideo ? (
+                                                                        <video src={src} className="w-full h-full object-cover" />
                                                                     ) : (
-                                                                        <img src={typeof url === 'string' ? url : (url.url || url)} className="w-full h-full object-cover" alt="证据" />
+                                                                        <img src={src} className="w-full h-full object-cover" alt="证据" />
                                                                     )}
                                                                 </div>
-                                                            ))}
+                                                                );
+                                                            })}
                                                         </div>
                                                     </div>
                                                 )}
@@ -1888,7 +1892,7 @@ export const GlobalModals = () => {
                                                             <div
                                                                 key={idx}
                                                                 onClick={() => {
-                                                                    setPreviewImages(record.attachments);
+                                                                    setPreviewImages(record.attachments.map(a => typeof a === 'string' ? a : (a.data || a.url || '')));
                                                                     setCurrentPreviewIndex(idx);
                                                                     setShowImagePreviewModal(true);
                                                                 }}
@@ -1959,7 +1963,7 @@ export const GlobalModals = () => {
                                         <button onClick={() => { setShowPreviewModal(false); setRejectingTaskInfo({ task: previewTask, dateStr: selectedDate, kidId: resolvedKidId }); setShowRejectModal(true); }} className="flex-1 bg-rose-50 text-rose-600 rounded-xl py-4 font-black hover:bg-rose-100 active:scale-95 transition-all flex items-center justify-center gap-1.5 border border-rose-200">
                                             <Icons.X size={18} strokeWidth={3} /> 打回
                                         </button>
-                                        <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleApproveTask(previewTask, selectedDate, resolvedKidId); }} className="flex-[2] bg-emerald-500 text-white rounded-xl py-4 font-black shadow-lg shadow-emerald-200 hover:bg-emerald-600 active:scale-95 transition-all flex items-center justify-center gap-1.5">
+                                        <button onClick={async () => { const t = previewTask; const d = selectedDate; const k = resolvedKidId; setShowPreviewModal(false); setPreviewTask(null); await handleApproveTask(t, d, k); }} className="flex-[2] bg-emerald-500 text-white rounded-xl py-4 font-black shadow-lg shadow-emerald-200 hover:bg-emerald-600 active:scale-95 transition-all flex items-center justify-center gap-1.5">
                                             <Icons.Check size={20} strokeWidth={3} /> 确认通过
                                         </button>
                                     </>
@@ -1988,7 +1992,7 @@ export const GlobalModals = () => {
                                                 endTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[1] : '',
                                                 durationPreset: previewTask.timeStr && String(previewTask.timeStr).includes('分钟') ? parseInt(String(previewTask.timeStr)) : 25,
                                                 pointRule: (previewTask.pointRule && previewTask.pointRule === 'custom') || (previewTask.type === 'habit') ? 'custom' : 'default',
-                                                reward: String(previewTask.reward || ''),
+                                                reward: String(previewTask.reward ?? ''),
                                                 iconEmoji: previewTask.iconEmoji || '📚',
                                                 habitColor: previewTask.catColor || 'from-blue-400 to-blue-500',
                                                 habitType: previewTask.habitType || 'daily_once',
@@ -3043,6 +3047,33 @@ export const GlobalModals = () => {
     // CelebrationModal has been correctly moved outside the App component body.
     return (
         <>
+            {/* Task Delete Confirmation Modal */}
+            {deleteConfirmTask && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-fade-in" onClick={() => setDeleteConfirmTask(null)}>
+                    <div className="bg-white max-w-sm w-full rounded-3xl p-6 shadow-2xl animate-scale-in border border-slate-100" onClick={e => e.stopPropagation()}>
+                        <div className="flex flex-col items-center text-center">
+                            <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-4 border-4 border-white shadow-sm">
+                                <Icons.Trash2 size={24} className="text-red-500" />
+                            </div>
+                            <h3 className="text-lg font-black text-slate-800 mb-2">确认删除任务？</h3>
+                            <p className="text-sm font-bold text-slate-500 mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100 w-full word-break">
+                                {deleteConfirmTask.title}
+                            </p>
+                            <div className="flex gap-3 w-full">
+                                <button onClick={() => setDeleteConfirmTask(null)}
+                                    className="flex-1 py-3.5 rounded-2xl font-bold transition-all text-slate-600 bg-slate-100 hover:bg-slate-200">
+                                    取消
+                                </button>
+                                <button onClick={() => handleDeleteTask(deleteConfirmTask.id)}
+                                    className="flex-1 py-3.5 rounded-2xl font-bold transition-all text-white bg-red-500 shadow-lg shadow-red-500/30 hover:bg-red-600 active:scale-95">
+                                    确定删除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {renderTaskSubmitModal()}
             {renderQuickCompleteModal()}
             {renderKidPreviewModal()}
