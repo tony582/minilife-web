@@ -309,6 +309,44 @@ app.put('/api/kids/:id', authenticateToken, (req, res) => {
     });
 });
 
+// Atomic reward: increment balance + exp without reading stale client state
+app.post('/api/kids/:id/reward', authenticateToken, (req, res) => {
+    const { coins, exp } = req.body;
+    if (!coins && !exp) return res.status(400).json({ error: "No reward specified" });
+    
+    // First read current state to compute level-ups
+    db.get("SELECT * FROM kids WHERE id = ? AND userId = ?", [req.params.id, req.user.id], (err, kid) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!kid) return res.status(404).json({ error: "Kid not found" });
+        
+        const newSpend = kid.balance_spend + (coins || 0);
+        let newExp = kid.exp + (exp || 0);
+        let newLevel = kid.level;
+        
+        // Level-up calculation (same formula as frontend)
+        const getLevelReq = (lvl) => 100 + (lvl - 1) * 50;
+        while (newExp >= getLevelReq(newLevel)) {
+            newExp -= getLevelReq(newLevel);
+            newLevel++;
+        }
+        
+        db.run(
+            "UPDATE kids SET balance_spend = ?, exp = ?, level = ? WHERE id = ? AND userId = ?",
+            [newSpend, newExp, newLevel, req.params.id, req.user.id],
+            function (err) {
+                if (err) return res.status(500).json({ error: err.message });
+                notifyUser(req.user.id);
+                res.json({ 
+                    updatedID: req.params.id,
+                    spend: newSpend,
+                    exp: newExp,
+                    level: newLevel
+                });
+            }
+        );
+    });
+});
+
 app.delete('/api/kids/:id', authenticateToken, (req, res) => {
     db.serialize(() => {
         db.run("DELETE FROM tasks WHERE kidId = ? AND userId = ?", [req.params.id, req.user.id]);

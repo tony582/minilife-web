@@ -542,6 +542,7 @@ const handleQuickComplete = async () => {
   // Auto-approve logic check
   const isAutoApprove = taskToSubmit.requireApproval === false;
   const finalStatus = isAutoApprove ? 'completed' : 'pending_approval';
+
   // Construct payload specifically based on whether history is 1D or 2D (unified)
   const histUpdate = {
     status: finalStatus,
@@ -561,8 +562,9 @@ const handleQuickComplete = async () => {
     newHistory[selectedDate] = histUpdate;
   }
   pauseSync(); // Prevent SSE refetch from overwriting in-flight balance updates
+
   try {
-    await apiFetch(`/api/tasks/${taskToSubmit.id}`, {
+    const putRes = await apiFetch(`/api/tasks/${taskToSubmit.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -571,11 +573,13 @@ const handleQuickComplete = async () => {
         history: newHistory
       })
     });
+
     setTasks(prev => prev.map(t => t.id === taskToSubmit.id ? {
       ...t,
       history: newHistory
     } : t));
     setQuickCompleteTask(null);
+
     if (isAutoApprove && taskToSubmit.reward > 0) {
       // Instantly generate transaction and family coins
       const newTrans = {
@@ -587,52 +591,55 @@ const handleQuickComplete = async () => {
         date: new Date().toISOString(),
         category: 'task'
       };
-      await apiFetch('/api/transactions', {
+
+      const transRes = await apiFetch('/api/transactions', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newTrans)
       });
+
       setTransactions(prev => [newTrans, ...prev]);
-      const targetKid = kids.find(k => k.id === activeKidId);
-      if (targetKid) {
-        let expGained = 0;
-        let newExp = targetKid.exp;
-        let newLevel = targetKid.level;
-        const newBals = {
-          ...targetKid.balances,
-          spend: targetKid.balances.spend + (taskToSubmit.reward || 0)
-        };
 
-        if (taskToSubmit.reward > 0) {
-          expGained = Math.ceil(taskToSubmit.reward * 1.5);
-          newExp += expGained;
-          while (newExp >= getLevelReq(newLevel)) {
-            newExp -= getLevelReq(newLevel);
-            newLevel++;
-            notify(`太棒了！${targetKid.name} 升到了 Lv.${newLevel}！`, "success");
-          }
+      // Use atomic server-side reward to avoid stale closure reads
+      const expGained = Math.ceil(taskToSubmit.reward * 1.5);
+
+      const rewardRes = await apiFetch(`/api/kids/${activeKidId}/reward`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ coins: taskToSubmit.reward, exp: expGained })
+      });
+      
+      if (rewardRes.ok) {
+        const rewardData = await rewardRes.json();
+
+        // Update React state with server-returned values (always fresh)
+        setKids(prev => prev.map(k => k.id === activeKidId ? {
+          ...k,
+          balances: { ...k.balances, spend: rewardData.spend },
+          exp: rewardData.exp,
+          level: rewardData.level
+        } : k));
+        
+        // Check for level-up
+        const oldKid = kids.find(k => k.id === activeKidId);
+        if (oldKid && rewardData.level > oldKid.level) {
+          notify(`太棒了！${oldKid.name} 升到了 Lv.${rewardData.level}！`, "success");
         }
+        
+        notify(`打卡成功！获得 ${taskToSubmit.reward} 家庭币 和 ${expGained} 经验值！`, 'success');
+      } else {
 
-        await updateActiveKid({
-          balances: newBals,
-          exp: newExp,
-          level: newLevel
-        });
-
-        if (taskToSubmit.reward > 0) {
-          notify(`打卡成功！获得 ${taskToSubmit.reward} 家庭币 和 ${expGained} 经验值！`, 'success');
-          return; // Exit early to use combined notification
-        }
+        notify('奖励发放失败，请重试', 'error');
       }
-      notify(`打卡成功！已自动发放 ${taskToSubmit.reward} 家庭币！`, 'success');
     } else {
+
       notify('已提交审核，等待家长发放家庭币哦！', 'success');
     }
   } catch (e) {
+
     notify('提交失败', 'error');
   } finally {
+
     resumeSync(); // Always unlock SSE sync
   }
 };

@@ -82,7 +82,9 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
                     apiFetch('/api/classes').then(safeJson)
                 ]);
 
-                if (Array.isArray(kidsData)) setKids(kidsData);
+                if (Array.isArray(kidsData)) {
+                    setKids(kidsData);
+                }
                 if (Array.isArray(tasksData)) setTasks(tasksData);
                 if (Array.isArray(invData)) setInventory(invData);
                 if (Array.isArray(ordersData)) setOrders(ordersData);
@@ -192,13 +194,15 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
     };
 
     const updateActiveKid = async (updates) => {
+
         try {
             await apiFetch(`/api/kids/${activeKidId}`, {
                 method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updates)
             });
+
             setKids(prev => prev.map(k => k.id === activeKidId ? { ...k, ...updates } : k));
         } catch (e) {
-            console.error(e);
+            console.error('updateActiveKid failed:', e);
             if (notify) notify('网络请求失败', 'error');
         }
     };

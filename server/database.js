@@ -8,6 +8,11 @@ const db = new sqlite3.Database(dbPath, (err) => {
     } else {
         console.log('Connected to the SQLite database.');
 
+        // Enable WAL mode for concurrent read/write support
+        // and set busy_timeout so writes wait instead of failing with SQLITE_BUSY
+        db.run("PRAGMA journal_mode = WAL");
+        db.run("PRAGMA busy_timeout = 5000");
+
         // Initialize Tables
         db.serialize(() => {
             // Because we are moving to multi-tenant, we wipe the old single-tenant tables.
