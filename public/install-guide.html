@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>安装 MiniLife 到桌面</title>
+    <link rel="icon" type="image/png" href="/minilife_logo.png" />
+    <link rel="apple-touch-icon" href="/minilife_logo.png" />
+    <meta name="theme-color" content="#FF8C42" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #FBF7F0; color: #1B2E4B; min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Color tokens */
+        :root {
+            --bg: #FBF7F0; --bgCard: #FFFFFF; --bgLight: #F0EBE1; --bgMuted: #E8E0D4;
+            --orange: #FF8C42; --orangeHot: #FF6B1A; --teal: #4ECDC4; --green: #10B981;
+            --coral: #FF6B6B; --purple: #7C5CFC; --blue: #6C9CFF;
+            --textPrimary: #1B2E4B; --textSoft: #5A6E8A; --textMuted: #9CAABE;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--orange) 0%, var(--orangeHot) 100%);
+            padding: 2rem 1.5rem 2.5rem;
+            color: white; position: relative; overflow: hidden;
+        }
+        .header::after {
+            content: ''; position: absolute; right: -30px; top: -30px;
+            width: 120px; height: 120px; border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+        }
+        .header .back-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: rgba(255,255,255,0.85); font-weight: 700; font-size: 14px;
+            text-decoration: none; margin-bottom: 1.25rem;
+            transition: opacity 0.2s;
+        }
+        .header .back-btn:hover { opacity: 0.7; }
+        .header h1 { font-size: 1.7rem; font-weight: 900; margin-bottom: 0.5rem; }
+        .header p { font-size: 0.9rem; opacity: 0.85; font-weight: 500; }
+
+        /* Container */
+        .container { max-width: 520px; margin: 0 auto; padding: 1.25rem; }
+
+        /* Device accordion */
+        .device-section {
+            background: var(--bgCard); border-radius: 1.25rem;
+            border: 1.5px solid var(--bgLight); margin-bottom: 0.75rem;
+            overflow: hidden; transition: box-shadow 0.3s;
+            box-shadow: 0 2px 12px rgba(27,46,75,0.04);
+        }
+        .device-section.active {
+            border-color: var(--orange);
+            box-shadow: 0 4px 20px rgba(255,140,66,0.12);
+        }
+        .device-header {
+            display: flex; align-items: center; gap: 14px;
+            padding: 1.1rem 1.25rem; cursor: pointer;
+            transition: background 0.2s; user-select: none;
+        }
+        .device-header:hover { background: rgba(240,235,225,0.3); }
+        .device-icon {
+            width: 44px; height: 44px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; flex-shrink: 0;
+        }
+        .device-icon.android { background: #E8F5E9; }
+        .device-icon.ios { background: #E3F2FD; }
+        .device-icon.pc { background: #F3E8FF; }
+        .device-title { font-weight: 800; font-size: 1.05rem; color: var(--textPrimary); }
+        .device-subtitle { font-size: 0.75rem; color: var(--textMuted); font-weight: 600; margin-top: 2px; }
+        .device-badge {
+            font-size: 0.65rem; font-weight: 800; padding: 3px 10px;
+            border-radius: 100px; background: rgba(255,140,66,0.12); color: var(--orange);
+            margin-left: auto; flex-shrink: 0;
+        }
+        .device-arrow {
+            color: var(--textMuted); font-size: 18px; margin-left: 8px;
+            transition: transform 0.3s; flex-shrink: 0;
+        }
+        .device-section.active .device-arrow { transform: rotate(180deg); }
+
+        /* Steps */
+        .steps-container { padding: 0 1.25rem 1.5rem; display: none; }
+        .device-section.active .steps-container { display: block; }
+
+        .step {
+            display: flex; gap: 16px; padding: 1rem 0;
+            border-bottom: 1px solid var(--bgLight);
+        }
+        .step:last-child { border-bottom: none; }
+        .step-num {
+            width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
+            background: var(--orange); color: white; font-weight: 900; font-size: 14px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .step-content { flex: 1; min-width: 0; }
+        .step-title { font-weight: 800; font-size: 0.95rem; color: var(--textPrimary); margin-bottom: 4px; }
+        .step-desc { font-size: 0.82rem; color: var(--textSoft); line-height: 1.6; font-weight: 500; }
+        .step-img {
+            margin-top: 10px; border-radius: 12px; overflow: hidden;
+            border: 1.5px solid var(--bgLight); background: var(--bgLight);
+        }
+        .step-img img { width: 100%; display: block; }
+
+        /* Tip box */
+        .tip-box {
+            background: rgba(255,140,66,0.06); border: 1.5px solid rgba(255,140,66,0.15);
+            border-radius: 12px; padding: 10px 14px; margin-top: 8px;
+            font-size: 0.78rem; color: var(--orange); font-weight: 700;
+            display: flex; align-items: flex-start; gap: 8px;
+        }
+        .tip-box.blue {
+            background: rgba(108,156,255,0.06); border-color: rgba(108,156,255,0.15); color: var(--blue);
+        }
+
+        /* Suggestions section */
+        .suggestions {
+            background: var(--bgCard); border-radius: 1.25rem; padding: 1.5rem;
+            border: 1.5px solid var(--bgLight); margin-top: 1.5rem;
+            box-shadow: 0 2px 12px rgba(27,46,75,0.04);
+        }
+        .suggestions h3 {
+            font-weight: 900; font-size: 1rem; color: var(--textPrimary);
+            margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;
+        }
+        .suggest-card {
+            border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
+        }
+        .suggest-card.recommended { background: rgba(255,140,66,0.06); border: 1.5px solid rgba(255,140,66,0.12); }
+        .suggest-card.alternative { background: rgba(124,92,252,0.04); border: 1.5px solid rgba(124,92,252,0.10); }
+        .suggest-label {
+            display: inline-block; font-size: 0.65rem; font-weight: 800;
+            padding: 3px 10px; border-radius: 100px; margin-bottom: 8px; color: white;
+        }
+        .suggest-label.rec { background: var(--orange); }
+        .suggest-label.alt { background: var(--purple); }
+        .suggest-list { list-style: none; padding: 0; }
+        .suggest-list li {
+            font-size: 0.82rem; color: var(--textSoft); font-weight: 500;
+            padding: 3px 0; display: flex; align-items: center; gap: 6px;
+        }
+        .suggest-list li::before { content: '·'; font-weight: 900; color: var(--textMuted); }
+
+        /* Tips section */
+        .tips-section {
+            margin-top: 14px; padding-top: 14px; border-top: 1.5px solid var(--bgLight);
+        }
+        .tips-section h4 {
+            font-weight: 800; font-size: 0.85rem; color: var(--textPrimary);
+            margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+        }
+        .tips-section li { font-size: 0.8rem; }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <a href="/" class="back-btn">← 返回</a>
+        <h1>📲 安装 MiniLife 到桌面</h1>
+        <p>选择你的设备类型，按照步骤操作即可</p>
+    </div>
+
+    <div class="container fade-in">
+        <!-- Android -->
+        <div class="device-section" id="section-android" onclick="toggleSection('android')">
+            <div class="device-header">
+                <div class="device-icon android">📱</div>
+                <div>
+                    <div class="device-title">Android 手机/平板</div>
+                    <div class="device-subtitle">6 个步骤</div>
+                </div>
+                <span class="device-badge" id="badge-android" style="display:none">当前设备</span>
+                <span class="device-arrow">▼</span>
+            </div>
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <div class="step-title">🌐 打开浏览器</div>
+                        <div class="step-desc">使用 <strong>Chrome</strong> 或 <strong>Edge</strong> 浏览器（推荐 Chrome）。不要使用微信/QQ 内置浏览器。</div>
+                        <div class="tip-box">💡 如果从微信打开，请点击右上角「⋯」选择「在浏览器中打开」</div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <div class="step-title">🔗 访问 MiniLife</div>
+                        <div class="step-desc">在地址栏输入 MiniLife 的网址并打开页面。</div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <div class="step-title">📋 打开浏览器菜单</div>
+                        <div class="step-desc">点击浏览器右上角的 <strong>三个点 ⋮</strong>（菜单按钮）。</div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">4</div>
+                    <div class="step-content">
+                        <div class="step-title">📥 添加到主屏幕</div>
+                        <div class="step-desc">在菜单中找到并点击 <strong>「添加到主屏幕」</strong> 或 <strong>「安装应用」</strong>。</div>
+                        <div class="tip-box blue">💡 如果看到「安装应用」按钮，优先选择它，体验更好</div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">5</div>
+                    <div class="step-content">
+                        <div class="step-title">✅ 确认添加</div>
+                        <div class="step-desc">在弹出的对话框中点击 <strong>「添加」</strong> 或 <strong>「安装」</strong>。</div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">6</div>
+                    <div class="step-content">
+                        <div class="step-title">🎉 完成！</div>
+                        <div class="step-desc">MiniLife 图标会出现在桌面上，点击即可像原生 App 一样全屏使用！</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- iOS -->
+        <div class="device-section" id="section-ios" onclick="toggleSection('ios')">
+            <div class="device-header">
+                <div class="device-icon ios">🍎</div>
+                <div>
+                    <div class="device-title">iOS / iPad</div>
+                    <div class="device-subtitle">5 个步骤</div>
+                </div>
+                <span class="device-badge" id="badge-ios" style="display:none">当前设备</span>
+                <span class="device-arrow">▼</span>
+            </div>
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <div class="step-title">🧭 打开 Safari 浏览器</div>
+                        <div class="step-desc">iOS 设备<strong>必须使用 Safari 浏览器</strong>，Chrome 等浏览器不支持添加到桌面。</div>
+                        <div class="tip-box">⚠️ 必须使用 Safari！其他浏览器无法添加到主屏幕</div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <div class="step-title">🔗 访问 MiniLife</div>
+                        <div class="step-desc">在 Safari 中输入 MiniLife 的网址并打开。</div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <div class="step-title">📤 点击分享按钮</div>
+                        <div class="step-desc">点击 Safari 底部（iPhone）或顶部（iPad）的 <strong>分享按钮</strong>（一个方框加向上箭头的图标 ⬆️）。</div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">4</div>
+                    <div class="step-content">
+                        <div class="step-title">➕ 选择「添加到主屏幕」</div>
+                        <div class="step-desc">在弹出的分享菜单中，向下滑动找到 <strong>「添加到主屏幕」</strong>，点击它。</div>
+                        <div class="tip-box blue">💡 如果找不到，可能需要滑动到底部，或点击「更多」</div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">5</div>
+                    <div class="step-content">
+                        <div class="step-title">🎉 确认添加</div>
+                        <div class="step-desc">编辑名称（可选），然后点击右上角 <strong>「添加」</strong>。MiniLife 图标将出现在主屏幕上！</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PC -->
+        <div class="device-section" id="section-pc" onclick="toggleSection('pc')">
+            <div class="device-header">
+                <div class="device-icon pc">💻</div>
+                <div>
+                    <div class="device-title">PC (Windows/Mac)</div>
+                    <div class="device-subtitle">4 个步骤</div>
+                </div>
+                <span class="device-badge" id="badge-pc" style="display:none">当前设备</span>
+                <span class="device-arrow">▼</span>
+            </div>
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <div class="step-title">🖥️ 打开 Chrome / Edge 浏览器</div>
+                        <div class="step-desc">使用 <strong>Chrome</strong> 或 <strong>Edge</strong> 浏览器访问 MiniLife 网址。</div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <div class="step-title">📥 点击安装图标</div>
+                        <div class="step-desc">在地址栏右侧会出现一个 <strong>安装图标</strong>（小电脑 + 下箭头），点击它。</div>
+                        <div class="tip-box">💡 如果没有看到安装图标，可以从浏览器菜单中选择「安装 MiniLife」</div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <div class="step-title">✅ 确认安装</div>
+                        <div class="step-desc">在弹出的对话框中点击 <strong>「安装」</strong>。</div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">4</div>
+                    <div class="step-content">
+                        <div class="step-title">🎉 完成！</div>
+                        <div class="step-desc">应用会在新窗口中打开，并添加到你的开始菜单/启动台/应用列表中。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suggestions -->
+        <div class="suggestions">
+            <h3>📋 安装建议</h3>
+
+            <div class="suggest-card recommended">
+                <div class="suggest-label rec">推荐：浏览器添加</div>
+                <ul class="suggest-list">
+                    <li>操作简单，使用默认浏览器即可</li>
+                    <li>无需下载安装包</li>
+                    <li>数据自动同步到云端</li>
+                    <li>自动获取最新功能更新</li>
+                </ul>
+            </div>
+
+            <div class="suggest-card alternative">
+                <div class="suggest-label alt">特点：桌面版体验</div>
+                <ul class="suggest-list">
+                    <li>PC 端使用 Edge 浏览器体验最好</li>
+                    <li>全屏运行，没有地址栏干扰</li>
+                    <li>可固定到任务栏/Dock</li>
+                </ul>
+            </div>
+
+            <div class="tips-section">
+                <h4>💡 通用提示：</h4>
+                <ul class="suggest-list">
+                    <li>应用数据会自动同步到云端</li>
+                    <li>应用图标会出现在桌面，像原生 App 一样使用</li>
+                    <li>iOS 设备必须使用 Safari 浏览器</li>
+                    <li>Android 推荐使用 Chrome 浏览器</li>
+                    <li>如遇问题可尝试清除浏览器缓存后重试</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="text-align: center; padding: 2rem 0 3rem; color: var(--textMuted); font-size: 0.75rem; font-weight: 600;">
+            MiniLife · 家庭成长助手
+        </div>
+    </div>
+
+    <script>
+        // Device detection
+        function detectDevice() {
+            const ua = navigator.userAgent;
+            if (/iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return 'ios';
+            if (/Android/.test(ua)) return 'android';
+            return 'pc';
+        }
+
+        // Toggle accordion
+        function toggleSection(device) {
+            const section = document.getElementById('section-' + device);
+            if (section.classList.contains('active')) {
+                section.classList.remove('active');
+            } else {
+                // Close all
+                document.querySelectorAll('.device-section').forEach(s => s.classList.remove('active'));
+                section.classList.add('active');
+            }
+        }
+
+        // Auto-detect and open current device
+        (function() {
+            const device = detectDevice();
+            const badge = document.getElementById('badge-' + device);
+            if (badge) badge.style.display = 'inline-block';
+            toggleSection(device);
+        })();
+    </script>
+</body>
+</html>

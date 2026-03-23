@@ -78,8 +78,14 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
 
                 apiFetch('/api/me/codes').then(safeJson).then(setUsedCodes).catch(console.error);
             } catch (err) {
-                localStorage.removeItem('minilife_token');
-                setToken(null);
+                // Only clear token if it was a real auth rejection (401)
+                // Network errors (switching apps, offline) should NOT logout
+                if (err.message === 'Auth failed') {
+                    localStorage.removeItem('minilife_token');
+                    setToken(null);
+                } else {
+                    console.warn('[Auth] Network error during init, keeping session:', err.message);
+                }
             }
             setAuthLoading(false);
             setIsLoading(false);

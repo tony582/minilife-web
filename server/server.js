@@ -614,9 +614,10 @@ app.post('/api/classes', authenticateToken, (req, res) => {
 });
 
 app.put('/api/classes/:id', authenticateToken, (req, res) => {
-    const { name, iconEmoji, teacher, location, totalSessions, usedSessions, sessionsPerClass, scheduleDays, timeStr, startDate, reward, checkinMode, notes, status, checkinHistory, classMode, pricePerSession, settlementType } = req.body;
+    const { kidId, name, iconEmoji, teacher, location, totalSessions, usedSessions, sessionsPerClass, scheduleDays, timeStr, startDate, reward, checkinMode, notes, status, checkinHistory, classMode, pricePerSession, settlementType } = req.body;
     let query = "UPDATE classes SET ";
     let params = [];
+    if (kidId !== undefined) { query += "kidId = ?, "; params.push(kidId); }
     if (name !== undefined) { query += "name = ?, "; params.push(name); }
     if (iconEmoji !== undefined) { query += "iconEmoji = ?, "; params.push(iconEmoji); }
     if (teacher !== undefined) { query += "teacher = ?, "; params.push(teacher); }
