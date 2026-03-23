@@ -29,7 +29,7 @@ export const AuthPage = () => {
         };
 
     return (
-        <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden">
+        <div className="min-h-screen relative flex flex-col items-center justify-center p-4 overflow-hidden">
             {/* Lush Dribbble-style Background */}
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-orange-50 z-0"></div>
 
@@ -90,6 +90,13 @@ export const AuthPage = () => {
                         </button>
                     </div>
                 </form>
+            </div>
+
+            {/* Install Guide Link */}
+            <div className="w-full max-w-[420px] text-center mt-4 relative z-10">
+                <a href="/install-guide.html" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-indigo-500 transition-colors">
+                    <span>📲</span> 安装 MiniLife 到桌面，体验更佳
+                </a>
             </div>
 
             {/* Notifications overlay needed for auth page too */}
