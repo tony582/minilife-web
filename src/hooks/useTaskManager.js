@@ -1262,7 +1262,26 @@ const handleQuickComplete = async () => {
       }
       return t;
     }));
-    apiFetch('/api/kids').then(r => r.json()).then(setKids).catch(console.error); // Reload kids to get fresh balances across the board
+    // Update kids state locally (don't refetch from server to avoid race conditions)
+    setKids(prevKids => prevKids.map(k => {
+      if (kidRewardTotals[k.id]) {
+        const totalReward = kidRewardTotals[k.id];
+        const totalExpGained = Math.ceil(totalReward * 1.5);
+        let newExp = k.exp + totalExpGained;
+        let newLevel = k.level;
+        while (newExp >= getLevelReq(newLevel)) {
+          newExp -= getLevelReq(newLevel);
+          newLevel++;
+        }
+        return {
+          ...k,
+          balances: { ...k.balances, spend: k.balances.spend + totalReward },
+          exp: newExp,
+          level: newLevel
+        };
+      }
+      return k;
+    }));
     notify(`一键审批完成！共计发放了 ${Object.values(kidRewardTotals).reduce((a, b) => a + b, 0) || 0} 家庭币。`, "success");
   } catch (e) {
     notify("批量审批网络请求部分失败，请刷新页面查看最新状态", "error");

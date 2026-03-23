@@ -36,7 +36,16 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
         let eventSource = null;
         let reconnectTimeout = null;
 
+        // Track whether this is the initial load (must always run)
+        let initialLoadDone = false;
+
         const checkAuthAndFetch = async () => {
+            // Skip refetch if sync is paused (multi-step operation in progress)
+            // but always allow the initial load to complete
+            if (initialLoadDone && syncPausedRef.current) {
+                pendingSyncRef.current = true;
+                return;
+            }
             if (!token) {
                 setAuthLoading(false);
                 setIsLoading(false);
@@ -93,6 +102,7 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
             }
             setAuthLoading(false);
             setIsLoading(false);
+            initialLoadDone = true;
         };
 
         checkAuthAndFetch();
@@ -121,6 +131,12 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
                         // writes to finish before refetching.
                         if (sseSyncDebounce) clearTimeout(sseSyncDebounce);
                         sseSyncDebounce = setTimeout(() => {
+                            // Double-check lock at fire time (in case pause started
+                            // after this timer was queued)
+                            if (syncPausedRef.current) {
+                                pendingSyncRef.current = true;
+                                return;
+                            }
                             checkAuthAndFetch();
                         }, 3000);
                     }
