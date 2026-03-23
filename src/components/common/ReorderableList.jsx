@@ -72,13 +72,22 @@ export const ReorderableList = ({ items, onReorder, renderItem, keyExtractor }) 
     }, [captureRects]);
 
     const handleDragOver = useCallback((e) => {
+        const curDragIdx = stateRef.current.dragIdx;
+        if (curDragIdx === null) return; // Don't interfere with normal scrolling
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
-        const curDragIdx = stateRef.current.dragIdx;
-        if (curDragIdx === null) return;
         const rects = stateRef.current.rects;
         if (!rects.length) return;
         const clientY = e.clientY;
+
+        // Auto-scroll the scrollable container on desktop drag
+        const scrollEl = containerRef.current?.closest('.overflow-y-auto');
+        if (scrollEl) {
+            const sr = scrollEl.getBoundingClientRect();
+            if (clientY < sr.top + 50) scrollEl.scrollTop -= 8;
+            else if (clientY > sr.bottom - 50) scrollEl.scrollTop += 8;
+        }
+
         let newInsert = curDragIdx;
         for (let i = 0; i < rects.length; i++) {
             if (clientY < rects[i].mid) { newInsert = i; break; }
