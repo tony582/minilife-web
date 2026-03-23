@@ -466,7 +466,7 @@ export const ParentPlansTab = () => {
                                                     endTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[1] : '',
                                                     durationPreset: t.timeStr && String(t.timeStr).includes('分钟') ? parseInt(String(t.timeStr)) : 25,
                                                     pointRule: (t.pointRule && t.pointRule === 'custom') || (t.type === 'habit') ? 'custom' : 'default',
-                                                    reward: String(Math.abs(t.reward || '')), 
+                                                    reward: String(Math.abs(t.reward ?? 0)), 
                                                     habitRewardType: (t.reward || 0) < 0 ? 'penalty' : 'reward',
                                                     iconEmoji: t.iconEmoji || '📘', habitColor: t.catColor || t.habitColor || 'from-blue-400 to-blue-500', habitType: t.habitType || 'daily_once', attachments: t.attachments || [], requireApproval: t.requireApproval !== undefined ? t.requireApproval : true
                                                 });

@@ -600,7 +600,7 @@ export const ParentTasksTab = () => {
                                                 endTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[1] : '',
                                                 durationPreset: t.timeStr && String(t.timeStr).includes('分钟') ? parseInt(String(t.timeStr)) : 25,
                                                 pointRule: (t.pointRule && t.pointRule === 'custom') || (t.type === 'habit') ? 'custom' : 'default',
-                                                reward: String(t.reward || ''),
+                                                reward: String(t.reward ?? ''),
                                                 iconEmoji: t.iconEmoji || '📚',
                                                 habitColor: t.catColor || 'from-blue-400 to-blue-500',
                                                 habitType: t.habitType || 'daily_once',

@@ -1232,7 +1232,8 @@ const handleQuickComplete = async () => {
 const handleSavePlan = async () => {
   if (!planForm.title && !planForm.targetKid) return notify("请填写完整信息", "error"); // Basic check
   // Reward parsing
-  let rewardNum = parseInt(planForm.reward) || 0;
+  let rewardNum = planForm.reward !== '' && planForm.reward !== undefined ? parseInt(planForm.reward) : 0;
+  if (isNaN(rewardNum)) rewardNum = 0;
   if (planType === 'study' && planForm.pointRule !== 'custom') {
     rewardNum = 10; // Default system rule fallback for study
   }
@@ -1298,7 +1299,8 @@ const handleSavePlan = async () => {
       iconEmoji: planForm.iconEmoji,
       requireApproval: planForm.requireApproval,
       periodMaxPerDay: planType === 'habit' ? Number(planForm.periodMaxPerDay) : undefined,
-      periodMaxType: planType === 'habit' ? planForm.periodMaxType : undefined
+      periodMaxType: planType === 'habit' ? planForm.periodMaxType : undefined,
+      pointRule: planForm.pointRule || 'default'
     };
     try {
       await apiFetch(`/api/tasks/${editingTask.id}`, {

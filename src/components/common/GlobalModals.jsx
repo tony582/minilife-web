@@ -1988,7 +1988,7 @@ export const GlobalModals = () => {
                                                 endTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[1] : '',
                                                 durationPreset: previewTask.timeStr && String(previewTask.timeStr).includes('分钟') ? parseInt(String(previewTask.timeStr)) : 25,
                                                 pointRule: (previewTask.pointRule && previewTask.pointRule === 'custom') || (previewTask.type === 'habit') ? 'custom' : 'default',
-                                                reward: String(previewTask.reward || ''),
+                                                reward: String(previewTask.reward ?? ''),
                                                 iconEmoji: previewTask.iconEmoji || '📚',
                                                 habitColor: previewTask.catColor || 'from-blue-400 to-blue-500',
                                                 habitType: previewTask.habitType || 'daily_once',
