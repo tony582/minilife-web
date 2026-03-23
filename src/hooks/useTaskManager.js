@@ -15,6 +15,7 @@ export const useTaskManager = (authC, dataC, uiC) => {
     const context = { ...authC, ...dataC, ...uiC };
     const { 
         activeKidId, kids, setKids, tasks, setTasks, transactions, setTransactions, notify, 
+        pauseSync, resumeSync,
         setTimerTargetId, setTimerTotalSeconds, setTimerMode, setIsTimerRunning, setTimerPaused, 
         setShowTimerModal, setDeleteConfirmTask, setTaskToSubmit, setCelebrationData, 
         setQuickCompleteTask, setQcTimeMode, setQcHours, setQcMinutes, setQcSeconds, 
@@ -559,6 +560,7 @@ const handleQuickComplete = async () => {
   } else {
     newHistory[selectedDate] = histUpdate;
   }
+  pauseSync(); // Prevent SSE refetch from overwriting in-flight balance updates
   try {
     await apiFetch(`/api/tasks/${taskToSubmit.id}`, {
       method: 'PUT',
@@ -630,6 +632,8 @@ const handleQuickComplete = async () => {
     }
   } catch (e) {
     notify('提交失败', 'error');
+  } finally {
+    resumeSync(); // Always unlock SSE sync
   }
 };
 
@@ -671,6 +675,7 @@ const handleQuickComplete = async () => {
 };
 
     const handleMarkHabitComplete = async (task, date) => {
+  pauseSync(); // Prevent SSE refetch from overwriting in-flight balance updates
   try {
     await apiFetch(`/api/tasks/${task.id}/history`, {
       method: 'PUT',
@@ -743,26 +748,44 @@ const handleQuickComplete = async () => {
           body: JSON.stringify(expTrans)
         });
         setTransactions([newTrans, expTrans, ...transactions]);
+
+        // Atomic update: combine balances + EXP + level in a single call
         const newBals = {
           ...targetKid.balances,
           spend: targetKid.balances.spend + task.reward
         };
+        let newExp = targetKid.exp + expGained;
+        let newLevel = targetKid.level;
+        while (newExp >= getLevelReq(newLevel)) {
+          newExp -= getLevelReq(newLevel);
+          newLevel++;
+          notify(`太棒了！${targetKid.name} 升到了 Lv.${newLevel}！`, "success");
+        }
         await updateActiveKid({
-          balances: newBals
+          balances: newBals,
+          exp: newExp,
+          level: newLevel
         });
-        await handleExpChange(task.kidId, expGained);
         notify(`打卡成功！已奖励 ${targetKid.name} ${task.reward} 家庭币 和 ${expGained} 经验！`, "success");
       } else {
         // Penalty: Deduct EXP and Coins
         const absPenalty = Math.abs(task.reward);
+        const expPenalty = Math.ceil(absPenalty * 1.5);
+
+        // Atomic update: combine balances + EXP in a single call
         const newBals = {
           ...targetKid.balances,
           spend: Math.max(0, targetKid.balances.spend - absPenalty)
         };
+        let newExp = Math.max(0, targetKid.exp - expPenalty);
+        let newLevel = targetKid.level;
+        // Level doesn't decrease on penalty, but ensure exp is valid
         await updateActiveKid({
-          balances: newBals
+          balances: newBals,
+          exp: newExp,
+          level: newLevel
         });
-        const expPenalty = Math.ceil(absPenalty * 1.5);
+
         const refundTrans = {
           id: `trans_${Date.now()}_penalty`,
           kidId: task.kidId,
@@ -796,12 +819,13 @@ const handleQuickComplete = async () => {
           body: JSON.stringify(expRefundTrans)
         });
         setTransactions(prev => [refundTrans, expRefundTrans, ...prev]);
-        await handleExpChange(task.kidId, -expPenalty);
         notify(`已扣除 ${targetKid.name} ${absPenalty} 家庭币和 ${expPenalty} 经验。`, "error");
       }
     }
   } catch (e) {
     notify("网络请求失败", "error");
+  } finally {
+    resumeSync(); // Always unlock SSE sync
   }
 };
 
@@ -1020,6 +1044,7 @@ const handleQuickComplete = async () => {
 };
 
     const handleApproveTask = async (task, date, actualKidId) => {
+  pauseSync(); // Prevent SSE refetch from overwriting in-flight balance updates
   try {
     // Write to Transaction Table First
     const newTrans = {
@@ -1114,11 +1139,14 @@ const handleQuickComplete = async () => {
     }
   } catch (e) {
     notify("网络请求失败", "error");
+  } finally {
+    resumeSync(); // Always unlock SSE sync
   }
 };
 
     const handleApproveAllTasks = async approvalsList => {
   if (!approvalsList || approvalsList.length === 0) return;
+  pauseSync(); // Prevent SSE refetch from overwriting in-flight balance updates
   try {
     const timestamp = Date.now();
     let newTransactions = [];
@@ -1239,6 +1267,8 @@ const handleQuickComplete = async () => {
   } catch (e) {
     notify("批量审批网络请求部分失败，请刷新页面查看最新状态", "error");
     console.error(e);
+  } finally {
+    resumeSync(); // Always unlock SSE sync
   }
 };
 
