@@ -115,26 +115,26 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
 
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
-                checkAuthAndFetch();
+                // Only reconnect SSE, don't refetch all data
+                // (data will refresh via SSE sync event if needed)
                 connectSSE();
             }
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
-        window.addEventListener('focus', handleVisibilityChange);
 
+        // Poll every 2 minutes as a fallback (SSE is the primary sync)
         const fallbackPoll = setInterval(() => {
             if (document.visibilityState === 'visible' && token) {
                 checkAuthAndFetch();
             }
-        }, 15000);
+        }, 120000);
 
         return () => {
             if (eventSource) eventSource.close();
             if (reconnectTimeout) clearTimeout(reconnectTimeout);
             clearInterval(fallbackPoll);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
-            window.removeEventListener('focus', handleVisibilityChange);
         };
     }, [token, setAuthLoading, setToken, setUser]);
 

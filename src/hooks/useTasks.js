@@ -220,16 +220,18 @@ export const useTasks = (tasks, setTasks, kids, setKids, transactions, setTransa
                     notify("打卡成功！", "success");
                 }
 
-                // Background network sync
-                apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHistory }) }).catch(e => console.error(e));
+                // Await network sync to prevent poll from fetching stale data
+                await apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHistory }) });
 
                 if (task.reward !== 0) {
-                    apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kidId: activeKidId, type: task.reward > 0 ? 'income' : 'expense', amount: Math.abs(task.reward || 0), title: `记录成长: ${task.title}`, date: new Date().toISOString(), category: 'habit' }) }).catch(e => console.error(e));
-                    apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kidId: activeKidId, type: task.reward > 0 ? 'income' : 'expense', amount: Math.ceil(Math.abs(task.reward || 0) * 1.5), title: `记录成长: ${task.title}`, date: new Date().toISOString(), category: 'habit' }) }).catch(e => console.error(e));
+                    await Promise.all([
+                        apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kidId: activeKidId, type: task.reward > 0 ? 'income' : 'expense', amount: Math.abs(task.reward || 0), title: `记录成长: ${task.title}`, date: new Date().toISOString(), category: 'habit' }) }),
+                        apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kidId: activeKidId, type: task.reward > 0 ? 'income' : 'expense', amount: Math.ceil(Math.abs(task.reward || 0) * 1.5), title: `记录成长: ${task.title}`, date: new Date().toISOString(), category: 'habit' }) })
+                    ]);
                 }
 
                 if (targetKid) {
-                    apiFetch(`/api/kids/${activeKidId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exp: newExp, balances: newBals }) }).catch(e => console.error(e));
+                    await apiFetch(`/api/kids/${activeKidId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exp: newExp, balances: newBals }) });
                 }
 
             } catch (e) {
