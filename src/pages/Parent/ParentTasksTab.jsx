@@ -643,7 +643,7 @@ export const ParentTasksTab = () => {
                                 onReorder={handleParentReorderTask}
                                 keyExtractor={(t) => t.id}
                                 renderItem={(t, index) => (
-                                    <div className="rounded-xl px-4 py-3.5 flex items-center gap-3 cursor-grab active:cursor-grabbing select-none transition-all"
+                                    <div className="rounded-xl px-4 py-3.5 flex items-center gap-3 select-none transition-all"
                                         style={{ background: C.bgCard }}>
                                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0 bg-gradient-to-br ${getCategoryGradient(t.category || '计划')}`}>
                                             {renderIcon(t.iconName || getIconForCategory(t.category), 16)}
@@ -652,9 +652,7 @@ export const ParentTasksTab = () => {
                                             <div className="text-[10px] font-bold mb-0.5" style={{ color: C.textMuted }}>{t.category || '计划'} · {t.frequency || '每天'}</div>
                                             <div className="font-black text-sm truncate" style={{ color: C.textPrimary }}>{t.title}</div>
                                         </div>
-                                        <div className="drag-handle p-2 -m-2 cursor-grab active:cursor-grabbing">
-                                            <Icons.GripVertical size={18} style={{ color: C.textMuted }} />
-                                        </div>
+                                        <Icons.GripVertical size={18} style={{ color: C.textMuted }} />
                                     </div>
                                 )}
                             />
