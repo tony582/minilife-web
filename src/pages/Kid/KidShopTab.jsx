@@ -178,15 +178,15 @@ export const KidShopTab = () => {
     const handleBuyItem = (item) => { setShopTargetItem(item); setShowShopConfirmModal(true); };
 
     return (
-        <div className="animate-fade-in -mx-4 md:-mx-8 px-0 pb-10" style={{ background: C.bg, minHeight: '100vh' }}>
+        <div className="animate-fade-in -mx-4 md:-mx-8 px-0 pb-10 overflow-hidden" style={{ background: C.bg, minHeight: '100vh' }}>
           <div className="max-w-5xl mx-auto">
 
             {/* ═══ Hero with blob decorations ═══ */}
-            <div className="relative overflow-hidden pb-4 px-4">
-                <div className="absolute -top-32 -left-20 w-56 h-56 rounded-full opacity-15" style={{ background: C.accent }}></div>
-                <div className="absolute -top-20 -left-12 w-40 h-40 rounded-full opacity-10" style={{ background: '#A78BFA' }}></div>
+            <div className="relative pb-4 px-4">
+                <div className="absolute -top-20 -left-20 w-56 h-56 rounded-full opacity-15" style={{ background: C.accent }}></div>
+                <div className="absolute -top-10 -left-12 w-40 h-40 rounded-full opacity-10" style={{ background: '#A78BFA' }}></div>
 
-                <div className="relative z-10 flex items-center justify-between">
+                <div className="relative z-10 flex items-center justify-between pt-1">
                     <div>
                         <h1 className="text-2xl font-black" style={{ color: C.textPrimary }}>奖品橱窗</h1>
                         <p className="text-sm font-bold mt-0.5" style={{ color: C.textSoft }}>完成任务赚金币，兑换心愿奖品</p>
