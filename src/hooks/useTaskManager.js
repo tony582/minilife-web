@@ -595,17 +595,31 @@ const handleQuickComplete = async () => {
       setTransactions(prev => [newTrans, ...prev]);
       const targetKid = kids.find(k => k.id === activeKidId);
       if (targetKid) {
+        let expGained = 0;
+        let newExp = targetKid.exp;
+        let newLevel = targetKid.level;
         const newBals = {
           ...targetKid.balances,
           spend: targetKid.balances.spend + (taskToSubmit.reward || 0)
         };
-        await updateActiveKid({
-          balances: newBals
-        });
-        // NEW DUAL REWARDS LOGIC: Gain EXP on task completion
+
         if (taskToSubmit.reward > 0) {
-          const expGained = Math.ceil(taskToSubmit.reward * 1.5);
-          await handleExpChange(activeKidId, expGained);
+          expGained = Math.ceil(taskToSubmit.reward * 1.5);
+          newExp += expGained;
+          while (newExp >= getLevelReq(newLevel)) {
+            newExp -= getLevelReq(newLevel);
+            newLevel++;
+            notify(`太棒了！${targetKid.name} 升到了 Lv.${newLevel}！`, "success");
+          }
+        }
+
+        await updateActiveKid({
+          balances: newBals,
+          exp: newExp,
+          level: newLevel
+        });
+
+        if (taskToSubmit.reward > 0) {
           notify(`打卡成功！获得 ${taskToSubmit.reward} 家庭币 和 ${expGained} 经验值！`, 'success');
           return; // Exit early to use combined notification
         }
