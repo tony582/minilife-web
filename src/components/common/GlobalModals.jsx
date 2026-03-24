@@ -1664,10 +1664,20 @@ export const GlobalModals = () => {
     const renderKidPreviewModal = () => {
         if (!showPreviewModal || !previewTask) return null;
 
-        // Evaluate the correct kid context for parents viewing 'All Kids'
+        // P1: When parent views 'all kids', intelligently resolve to the kid with the most
+        // relevant status (pending_approval > in_progress > completed > todo) instead of
+        // always defaulting to kids[0] which might not be the pending one.
         let resolvedKidId = activeKidId;
         if (appState === 'parent_app' && activeKidId === 'all') {
-            resolvedKidId = kids.length > 0 ? kids[0].id : activeKidId;
+            if (previewTask.kidId === 'all' && kids.length > 0) {
+                // Try to find a kid with pending_approval first, then in_progress, etc.
+                const pendingKid = kids.find(k => getTaskStatusOnDate(previewTask, selectedDate, k.id) === 'pending_approval');
+                const progressKid = kids.find(k => getTaskStatusOnDate(previewTask, selectedDate, k.id) === 'in_progress');
+                const completedKid = kids.find(k => getTaskStatusOnDate(previewTask, selectedDate, k.id) === 'completed');
+                resolvedKidId = (pendingKid || progressKid || completedKid || kids[0]).id;
+            } else {
+                resolvedKidId = kids.length > 0 ? kids[0].id : activeKidId;
+            }
         }
 
         // Extract history specific to resolvedKidId
