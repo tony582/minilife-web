@@ -19,9 +19,8 @@ import { SmartInstallBanner } from './components/common/SmartInstallBanner';
 
 function AppContent() {
   const { token, user, authLoading } = useAuthContext();
-  const { kids, setKids, transactions, setTransactions, isLoading } = useDataContext();
+  const { kids, setKids, transactions, setTransactions, isLoading, notifications, notify, setNotifications } = useDataContext();
   const { appState, kidTab, setKidTab, parentTab, setParentTab, showTransactionHistoryModal, showAddItemModal, showShopConfirmModal, showReviewModal, showAddPlanModal, showAddKidModal, showSettingsModal, showLevelModal, qrModalValue, showTimerModal } = useUIContext();
-  const { notifications, notify, setNotifications } = useToast();
 
   // --- 每日利息计算 (时光金库) ---
   useEffect(() => {
