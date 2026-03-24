@@ -120,6 +120,24 @@ export const GlobalModals = () => {
         setShowTimerModal(false);
     };
 
+    const [showTimerLeaveConfirm, setShowTimerLeaveConfirm] = useState(false);
+
+    const handleTimerBack = () => {
+        if (isTimerRunning && timerMode !== 'select') {
+            setShowTimerLeaveConfirm(true);
+        } else {
+            clearTimerState();
+        }
+    };
+
+    const handleTimerSaveAndLeave = () => {
+        // Save state to localStorage (already happens via useEffect) and close modal
+        // Timer pauses but state is preserved for "继续计时"
+        setTimerPaused(true);
+        setShowTimerLeaveConfirm(false);
+        setShowTimerModal(false);
+    };
+
     const renderTimerModal = () => {
         if (!showTimerModal) return null;
         const task = tasks.find(t => t.id === timerTargetId);
@@ -229,10 +247,62 @@ export const GlobalModals = () => {
                 )}
 
                 {/* Back / close button */}
-                <button onClick={() => { if (isTimerRunning && timerMode !== 'select') { setShowTimerModal(false); } else { clearTimerState(); } }}
+                <button onClick={handleTimerBack}
                     className="absolute top-6 left-6 z-10 text-white/40 hover:text-white/80 transition-colors flex items-center gap-1.5 text-sm font-bold">
-                    <Icons.ChevronLeft size={18} /> {isTimerRunning && timerMode !== 'select' ? '最小化' : '返回'}
+                    <Icons.ChevronLeft size={18} /> 返回
                 </button>
+
+                {/* Leave confirmation dialog */}
+                {showTimerLeaveConfirm && (() => {
+                    const eHrs = Math.floor(getElapsedSeconds() / 3600);
+                    const eMins = Math.floor((getElapsedSeconds() % 3600) / 60);
+                    const eSecs = getElapsedSeconds() % 60;
+                    return (
+                        <div className="absolute inset-0 z-20 flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}>
+                            <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl animate-fade-in">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                                        <span className="text-xl">⚠️</span>
+                                    </div>
+                                    <h3 className="text-xl font-black text-slate-800">确定要离开吗？</h3>
+                                </div>
+                                <p className="text-slate-500 text-sm mb-5">计时正在进行中，您可以选择：</p>
+                                <div className="space-y-3 mb-5">
+                                    <div className="flex items-start gap-2">
+                                        <span className="text-emerald-600 font-black text-sm mt-0.5">•</span>
+                                        <div>
+                                            <span className="text-emerald-600 font-black text-sm">保存并离开：</span>
+                                            <span className="text-slate-500 text-sm">自动保存当前的学习记录，下次可继续</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <span className="text-emerald-600 font-black text-sm mt-0.5">•</span>
+                                        <div>
+                                            <span className="text-emerald-600 font-black text-sm">继续学习：</span>
+                                            <span className="text-slate-500 text-sm">返回继续您的学习</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-slate-50 rounded-xl p-3 mb-5 text-center">
+                                    <span className="text-slate-400 text-xs font-bold">当前已计时：</span>
+                                    <span className="text-slate-700 font-black text-base ml-2">
+                                        {String(eHrs).padStart(2,'0')}:{String(eMins).padStart(2,'0')}:{String(eSecs).padStart(2,'0')}
+                                    </span>
+                                </div>
+                                <div className="flex gap-3">
+                                    <button onClick={() => setShowTimerLeaveConfirm(false)}
+                                        className="flex-1 py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-black text-sm hover:bg-slate-50 transition-all">
+                                        继续学习
+                                    </button>
+                                    <button onClick={handleTimerSaveAndLeave}
+                                        className="flex-1 py-3 rounded-xl bg-emerald-500 text-white font-black text-sm shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition-all">
+                                        保存并离开
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })()}
 
                 <div className="relative w-full max-w-md px-6 text-center">
 
@@ -2215,6 +2285,12 @@ export const GlobalModals = () => {
                         {/* Kid Controls */}
                         {appState === 'kid_app' && (() => {
                             const pStatus = getTaskStatusOnDate(previewTask, selectedDate, activeKidId);
+                            // Check if there's a saved timer for this task
+                            let hasSavedTimer = false;
+                            try {
+                                const saved = JSON.parse(localStorage.getItem('minilife_timer_state'));
+                                if (saved && saved.taskId === previewTask.id && saved.running) hasSavedTimer = true;
+                            } catch (e) {}
                             return (
                                 <>
                                     {pStatus === 'todo' && (
@@ -2222,15 +2298,22 @@ export const GlobalModals = () => {
                                             <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); openQuickComplete(previewTask); }} className="flex-1 rounded-2xl py-4 font-black transition-colors flex items-center justify-center gap-1" style={{ background: '#F0EBE1', color: '#5A6E8A' }}>
                                                 <Icons.Check className="inline-block mr-1" size={18} /> 快速打卡
                                             </button>
-                                            <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleStartTask(previewTask.id); }} className="flex-[2] text-white rounded-2xl py-4 font-black transition-all active:scale-95 flex items-center justify-center gap-1" style={{ background: '#FF8C42', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }}>
-                                                <Icons.Play className="inline-block mr-1" size={18} fill="currentColor" /> 开始计时
+                                            <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleStartTask(previewTask.id); }} className="flex-[2] text-white rounded-2xl py-4 font-black transition-all active:scale-95 flex items-center justify-center gap-1" style={{ background: hasSavedTimer ? '#3B82F6' : '#FF8C42', boxShadow: hasSavedTimer ? '0 4px 14px rgba(59,130,246,0.3)' : '0 4px 14px rgba(255,140,66,0.3)' }}>
+                                                <Icons.Play className="inline-block mr-1" size={18} fill="currentColor" /> {hasSavedTimer ? '继续计时' : '开始计时'}
                                             </button>
                                         </div>
                                     )}
                                     {pStatus === 'in_progress' && (
-                                        <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleAttemptSubmit(previewTask); }} className="w-full bg-indigo-100 text-indigo-700 rounded-2xl py-4 font-black flex items-center justify-center gap-2 hover:bg-indigo-200 transition-colors">
-                                            <Icons.CheckSquare size={20} /> 提交验收
-                                        </button>
+                                        <div className="flex gap-3 w-full">
+                                            {hasSavedTimer && (
+                                                <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleStartTask(previewTask.id); }} className="flex-1 text-white rounded-2xl py-4 font-black transition-all active:scale-95 flex items-center justify-center gap-1" style={{ background: '#3B82F6', boxShadow: '0 4px 14px rgba(59,130,246,0.3)' }}>
+                                                    <Icons.Play className="inline-block mr-1" size={18} fill="currentColor" /> 继续计时
+                                                </button>
+                                            )}
+                                            <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleAttemptSubmit(previewTask); }} className={`${hasSavedTimer ? 'flex-1' : 'w-full'} bg-indigo-100 text-indigo-700 rounded-2xl py-4 font-black flex items-center justify-center gap-2 hover:bg-indigo-200 transition-colors`}>
+                                                <Icons.CheckSquare size={20} /> 提交验收
+                                            </button>
+                                        </div>
                                     )}
                                     {pStatus === 'pending_approval' && (
                                         <div className="w-full bg-orange-50 text-orange-600 border border-orange-200 rounded-2xl py-4 font-black flex items-center justify-center gap-2 cursor-not-allowed">

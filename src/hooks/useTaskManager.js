@@ -359,6 +359,33 @@ const getTaskStatusOnDate = (t, date, kidId) => {
   if (!task) return;
   const limits = checkPeriodLimits(task, activeKidId, selectedDate);
   if (!limits.canSubmit) return notify(limits.reason, 'error');
+
+  // Check for saved timer state in localStorage
+  const TIMER_KEY = 'minilife_timer_state';
+  try {
+    const saved = JSON.parse(localStorage.getItem(TIMER_KEY));
+    if (saved && saved.taskId === id && saved.running) {
+      // Resume saved timer
+      const elapsed = Math.floor((Date.now() - saved.savedAt) / 1000);
+      let restoredSeconds = saved.seconds;
+      if (!saved.paused) {
+        if (saved.mode === 'forward') restoredSeconds += elapsed;
+        else restoredSeconds = Math.max(0, restoredSeconds - elapsed);
+      }
+      setTimerTargetId(id);
+      setTimerMode(saved.mode);
+      setTimerSeconds(restoredSeconds);
+      setTimerTotalSeconds(saved.totalSeconds);
+      setIsTimerRunning(true);
+      setTimerPaused(saved.paused);
+      setPomodoroSession(saved.pomodoroSession || 1);
+      setPomodoroIsBreak(saved.pomodoroIsBreak || false);
+      setShowTimerModal(true);
+      return;
+    }
+  } catch (e) { /* ignore */ }
+
+  // Fresh start
   setTimerTargetId(id);
   let secs = 900;
   if (task && task.timeStr && task.timeStr.includes('分钟')) {
