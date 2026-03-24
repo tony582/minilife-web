@@ -100,8 +100,8 @@ export const KidStudyTab = () => {
     const dataC = useDataContext();
     const uiC = useUIContext();
     const { tasks, setTasks, activeKidId } = dataC;
-    const { currentViewDate, setCurrentViewDate, setPreviewTask, setShowPreviewModal, showPreviewModal, setShowCalendarModal, selectedDate, setSelectedDate } = uiC;
-    const { handleStartTask, handleAttemptSubmit, getTaskStatusOnDate, getIncompleteStudyTasksCount, openQuickComplete, quickCompleteTask } = useTaskManager(authC, dataC, uiC);
+    const { currentViewDate, setCurrentViewDate, setPreviewTask, setShowPreviewModal, showPreviewModal, setShowCalendarModal, selectedDate, setSelectedDate, quickCompleteTask } = uiC;
+    const { handleStartTask, handleAttemptSubmit, getTaskStatusOnDate, getIncompleteStudyTasksCount, openQuickComplete } = useTaskManager(authC, dataC, uiC);
 
     const [searchKidTaskKeyword, setSearchKidTaskKeyword] = useState('');
     const [taskFilter, setTaskFilter] = useState([]);

@@ -10,7 +10,7 @@ export const DataProvider = ({ children }) => {
     const { notify } = useToast();
     const dataState = useAppData(token, setToken, user, setUser, setAuthLoading, notify);
 
-    return <DataContext.Provider value={dataState}>{children}</DataContext.Provider>;
+    return <DataContext.Provider value={{ ...dataState, notify }}>{children}</DataContext.Provider>;
 };
 
 export const useDataContext = () => {
