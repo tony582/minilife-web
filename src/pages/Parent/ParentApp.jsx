@@ -28,24 +28,24 @@ export const ParentApp = () => {
     } = useUIContext();
 
     return (
-        <div className="min-h-screen font-sans pb-24 text-left animate-fade-in" style={{ background: C.bg }}>
+        <div className="min-h-screen font-sans pb-24 text-left animate-fade-in overflow-x-hidden" style={{ background: C.bg }}>
             {/* ═══ Unified PC Header ═══ */}
             <div className="sticky top-0 z-[110] hidden md:block" style={{ background: C.bgCard, borderBottom: `1px solid ${C.bgLight}` }}>
-                <div className="max-w-5xl mx-auto flex items-center h-14 px-4 md:px-8">
+                <div className="max-w-5xl mx-auto flex items-center h-14 px-4 lg:px-8 min-w-0">
                     {/* Left: Logo */}
-                    <div className="flex items-center gap-2.5 shrink-0 mr-8">
+                    <div className="flex items-center gap-2 shrink-0 mr-4 lg:mr-8">
                         <img src="/minilife_logo.png" className="w-8 h-8 rounded-lg" alt="Logo" />
-                        <span className="font-black text-base tracking-tight" style={{ color: C.textPrimary }}>MiniLife</span>
+                        <span className="font-black text-base tracking-tight hidden lg:inline" style={{ color: C.textPrimary }}>MiniLife</span>
                     </div>
 
                     {/* Center: Tabs */}
-                    <nav className="flex-1 flex items-center justify-center gap-1">
+                    <nav className="flex-1 flex items-center justify-center gap-0 lg:gap-1 min-w-0">
                         {tabs.map(t => {
                             const active = parentTab === t.id;
                             const TabIcon = t.icon;
                             return (
                                 <button key={t.id} onClick={() => setParentTab(t.id)}
-                                    className="relative flex items-center gap-1.5 px-3 py-3.5 text-sm font-bold transition-colors"
+                                    className="relative flex items-center gap-1 lg:gap-1.5 px-2 lg:px-3 py-3.5 text-[12px] lg:text-sm font-bold transition-colors whitespace-nowrap"
                                     style={{ color: active ? C.orange : C.textMuted }}
                                 >
                                     <TabIcon size={15} />
