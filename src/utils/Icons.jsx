@@ -105,6 +105,8 @@ export const Icons = {
     MapPin: (p) => <IconWrapper {...p}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></IconWrapper>,
     Printer: (p) => <IconWrapper {...p}><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect width="12" height="8" x="6" y="14" /></IconWrapper>,
     Columns: (p) => <IconWrapper {...p}><rect x="3" y="3" width="8" height="18" rx="1" /><rect x="13" y="3" width="8" height="18" rx="1" /></IconWrapper>,
+    Timer: (p) => <IconWrapper {...p}><line x1="10" x2="14" y1="2" y2="2" /><line x1="12" x2="12" y1="14" y2="10" /><circle cx="12" cy="14" r="8" /></IconWrapper>,
+    SkipForward: (p) => <IconWrapper {...p}><polygon points="5 4 15 12 5 20 5 4" /><line x1="19" x2="19" y1="5" y2="19" /></IconWrapper>,
 };
 
 export const renderIcon = (name, size = 20, className = "") => {

@@ -446,6 +446,8 @@ const getTaskStatusOnDate = (t, date, kidId) => {
       history: newHistory
     } : t));
     setTaskToSubmit(null);
+    // Clear any saved timer state for this task
+    try { localStorage.removeItem('minilife_timer_state'); } catch (e) { /* ignore */ }
     // S4: Random encouragement on quick-complete submission
     const quickEncouragements = [
       '提交成功！等待家长审核中，你真棒！🌟',
