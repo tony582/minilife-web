@@ -387,10 +387,27 @@ const getTaskStatusOnDate = (t, date, kidId) => {
 
   // Fresh start
   setTimerTargetId(id);
-  let secs = 900;
-  if (task && task.timeStr && task.timeStr.includes('分钟')) {
-    const m = parseInt(task.timeStr);
-    if (!isNaN(m)) secs = m * 60;
+  let secs = 900; // default 15min
+  if (task && task.timeStr) {
+    // Time range: "17:00-18:00" → calculate difference
+    const rangeMatch = task.timeStr.match(/(\d{1,2}:\d{2})\s*(?:-|~|到|至)\s*(\d{1,2}:\d{2})/);
+    // Duration: "30分钟" or "30min"
+    const minMatch = task.timeStr.match(/(\d+)\s*(?:分钟|min|m)/);
+    // Duration: "1小时" or "1.5小时"
+    const hrMatch = task.timeStr.match(/(\d+(?:\.\d+)?)\s*(?:小时|hour|hr|h|个钟)/);
+    if (rangeMatch) {
+      const [sH, sM] = rangeMatch[1].split(':').map(Number);
+      const [eH, eM] = rangeMatch[2].split(':').map(Number);
+      let diffMins = eH * 60 + eM - (sH * 60 + sM);
+      if (diffMins < 0) diffMins += 24 * 60;
+      if (diffMins > 0) secs = diffMins * 60;
+    } else if (minMatch) {
+      const m = parseInt(minMatch[1]);
+      if (m > 0) secs = m * 60;
+    } else if (hrMatch) {
+      const totalM = Math.round(parseFloat(hrMatch[1]) * 60);
+      if (totalM > 0) secs = totalM * 60;
+    }
   }
   setTimerTotalSeconds(secs);
   setTimerMode('select');
