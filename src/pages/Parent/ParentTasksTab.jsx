@@ -166,12 +166,12 @@ export const ParentTasksTab = () => {
         dropShadow: '0 20px 50px rgba(27,46,75,0.12)',
     };
 
-    // Category hex colors — same as KidStudyTab
+    // Category hex colors — synced with KidStudyTab catColors
     const catHexMap = {
         '语文': '#F43F5E', '数学': '#6366F1', '英语': '#0EA5E9', '物理': '#F59E0B',
         '化学': '#D946EF', '生物': '#10B981', '历史': '#78716C', '地理': '#14B8A6',
         '政治': '#EF4444', '道德与法治': '#3B82F6', '信息技术': '#06B6D4', '体育运动': '#F97316',
-        '娱乐': '#EAB308', '兴趣班': '#EC4899', '其他': '#64748B', '计划': '#6366F1',
+        '娱乐': '#EAB308', '兴趣班': '#EC4899', '其他': '#64748B', '计划': '#FF8C42',
     };
     const getCatHex = (cat) => catHexMap[cat] || catHexMap['计划'];
 
@@ -455,7 +455,8 @@ export const ParentTasksTab = () => {
                                         onClick={() => { setSelectedDate(date); setPreviewTask(t); setShowPreviewModal(true); }}
                                         className="flex items-center gap-3 rounded-xl p-3 cursor-pointer hover:shadow-sm transition-all"
                                         style={{ background: '#fff' }}>
-                                        <div className={`w-9 h-9 shrink-0 rounded-lg bg-gradient-to-br ${getCategoryGradient(t.category || '计划')} flex items-center justify-center text-white`}>
+                                        <div className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center text-white"
+                                            style={{ background: getCatHex(t.category || '计划') }}>
                                             {renderIcon(t.iconName || getIconForCategory(t.category), 16)}
                                         </div>
                                         <div className="flex-1 min-w-0">
@@ -496,15 +497,8 @@ export const ParentTasksTab = () => {
                     const isCompleted = status === 'completed';
                     const isPending = status === 'pending_approval';
 
-                    // Category hex color for accent bar (same as kid tab)
-                    const catHexMap = {
-                        '语文': '#F43F5E', '数学': '#6366F1', '英语': '#0EA5E9',
-                        '物理': '#F59E0B', '化学': '#D946EF', '生物': '#10B981',
-                        '历史': '#78716C', '地理': '#14B8A6', '政治': '#EF4444',
-                        '道德与法治': '#3B82F6', '信息技术': '#06B6D4', '体育运动': '#F97316',
-                        '娱乐': '#EAB308', '兴趣班': '#EC4899', '其他': '#64748B', '计划': '#6366F1',
-                    };
-                    const accentColor = catHexMap[t.category] || catHexMap['计划'];
+                    // Use the outer catHexMap (synced with KidStudyTab)
+                    const accentColor = getCatHex(t.category || '计划');
 
                     return (
                         <div key={t.id}
@@ -524,8 +518,8 @@ export const ParentTasksTab = () => {
                             <div onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }}
                                 className="flex items-center gap-3 flex-1 min-w-0 px-3 py-3 relative z-10 cursor-pointer">
                                 {/* Icon */}
-                                <div className={`w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br ${getCategoryGradient(t.category || '计划')} flex items-center justify-center text-white transition-transform group-hover:scale-110`}
-                                    style={{ opacity: isCompleted ? 0.6 : 1 }}>
+                                <div className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-white transition-transform group-hover:scale-110"
+                                    style={{ background: accentColor, opacity: isCompleted ? 0.6 : 1 }}>
                                     {renderIcon(t.iconName || getIconForCategory(t.category), 18)}
                                 </div>
 
@@ -649,7 +643,8 @@ export const ParentTasksTab = () => {
                                 renderItem={(t, index) => (
                                     <div className="rounded-xl px-4 py-3.5 flex items-center gap-3 select-none transition-all"
                                         style={{ background: C.bgCard }}>
-                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0 bg-gradient-to-br ${getCategoryGradient(t.category || '计划')}`}>
+                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0"
+                                            style={{ background: getCatHex(t.category || '计划') }}>
                                             {renderIcon(t.iconName || getIconForCategory(t.category), 16)}
                                         </div>
                                         <div className="flex-1 min-w-0">

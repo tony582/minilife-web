@@ -112,6 +112,16 @@ export const KidStudyTab = () => {
     const [showStatusDropdown, setShowStatusDropdown] = useState(false);
     const [showSortDropdown, setShowSortDropdown] = useState(false);
 
+    // Layout toggle: 1-col or 2-col, persisted in localStorage
+    const [layoutCols, setLayoutCols] = useState(() => {
+        try { return localStorage.getItem('kid_task_layout') || '2'; } catch { return '2'; }
+    });
+    const toggleLayout = () => {
+        const next = layoutCols === '1' ? '2' : '1';
+        setLayoutCols(next);
+        try { localStorage.setItem('kid_task_layout', next); } catch {}
+    };
+
     useOnClickOutside(kidFilterRef, () => { setShowFilterDropdown(false); setShowSortDropdown(false); });
 
 
@@ -306,6 +316,13 @@ export const KidStudyTab = () => {
                         <button onClick={() => setSearchKidTaskKeyword('')} className="absolute inset-y-0 right-0 pr-3 flex items-center" style={{ color: C.textMuted }}><Icons.X size={14} /></button>
                     )}
                 </div>
+                {/* Layout toggle — only visible on wide screens */}
+                <button onClick={toggleLayout}
+                    className="hidden lg:flex w-10 h-10 rounded-xl items-center justify-center transition-all"
+                    style={{ background: C.bgCard, color: C.textSoft }}
+                    title={layoutCols === '1' ? '切换为两列' : '切换为一列'}>
+                    {layoutCols === '1' ? <Icons.Columns size={16} /> : <Icons.List size={16} />}
+                </button>
                 {/* Filter */}
                 <div className="relative">
                     <button onClick={() => { setShowFilterDropdown(!showFilterDropdown); setShowSortDropdown(false); }}
@@ -377,7 +394,7 @@ export const KidStudyTab = () => {
             </div>
 
             {/* ═══ Task Cards ═══ */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 px-4">
+            <div className={`grid gap-3 px-4 ${layoutCols === '1' ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
                 {myTasks.filter(t => !searchKidTaskKeyword || t.title.toLowerCase().includes(searchKidTaskKeyword.toLowerCase())).length === 0 ? (
                     <div className="text-center py-16 rounded-[2rem] lg:col-span-2" style={{ background: C.bgCard }}>
                         <div className="text-5xl mb-4">🌟</div>
