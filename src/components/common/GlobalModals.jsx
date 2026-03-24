@@ -374,7 +374,7 @@ export const GlobalModals = () => {
                                         ? (pomodoroIsBreak ? '休息中' : '专注中')
                                         : (timerMode === 'forward' ? '已学习' : '剩余')}
                                 </span>
-                                <div className="text-white font-black" style={{ fontSize: 52, fontFamily: "'SF Mono', 'Menlo', 'Courier New', monospace", letterSpacing: '0.05em' }}>
+                                <div className="text-white font-black" style={{ fontSize: hrs > 0 ? 36 : 52, fontFamily: "'SF Mono', 'Menlo', 'Courier New', monospace", letterSpacing: hrs > 0 ? '0.02em' : '0.05em' }}>
                                     {hrs > 0 ? `${String(hrs).padStart(2,'0')}:` : ''}
                                     {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
                                 </div>
