@@ -18,7 +18,23 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(() => {});
+          navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
+            .then((reg) => {
+              // Check for updates every 60s
+              setInterval(() => reg.update(), 60000);
+              // Auto-reload when new SW activates
+              reg.addEventListener('updatefound', () => {
+                const newSW = reg.installing;
+                if (newSW) {
+                  newSW.addEventListener('statechange', () => {
+                    if (newSW.state === 'activated' && navigator.serviceWorker.controller) {
+                      window.location.reload();
+                    }
+                  });
+                }
+              });
+            })
+            .catch(() => {});
         });
       }
     </script>

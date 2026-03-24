@@ -58,7 +58,15 @@ echo "════════════════════════�
 echo ""
 echo "📦 [1/4] 构建前端..."
 cd "$PROJECT_DIR"
+
+# Inject build timestamp into service worker for cache busting
+BUILD_TS=$(date +%s)
+sed -i '' "s/const CACHE_NAME = 'minilife-v[^']*'/const CACHE_NAME = 'minilife-v${BUILD_TS}'/" public/sw.js
+
 npm run build
+
+# Restore sw.js to avoid dirty git state
+git checkout public/sw.js 2>/dev/null
 echo "   构建完成 ✅"
 
 # ─── 2. 上传前端 dist ───
