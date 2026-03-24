@@ -2764,42 +2764,38 @@ export const GlobalModals = () => {
                                         />
                                     </div>
 
-                                    {/* 任务说明 */}
-                                    <div>
-                                        <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>任务说明 <span style={{ color: '#C0C8D4' }}>(可选)</span></label>
+                                    {/* ═══ 任务说明 + 附件 (合并为一个卡片) ═══ */}
+                                    <div className="rounded-2xl p-4 space-y-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
+                                        <label className="text-[11px] font-bold uppercase tracking-wider block" style={{ color: '#9CAABE' }}>任务说明与附件 <span style={{ color: '#C0C8D4' }}>(可选)</span></label>
                                         <textarea
                                             value={planForm.desc}
                                             onChange={e => setPlanForm({ ...planForm, desc: e.target.value })}
                                             placeholder="描述任务的具体要求或标准..."
-                                            className="w-full rounded-xl px-4 py-3 outline-none font-bold text-sm transition-all resize-y min-h-[70px]"
-                                            style={{ background: '#FFFFFF', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }}
+                                            className="w-full rounded-xl px-4 py-3 outline-none font-bold text-sm transition-all resize-y min-h-[60px]"
+                                            style={{ background: '#FBF7F0', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }}
                                             onFocus={e => e.target.style.borderColor = '#FF8C42'}
                                             onBlur={e => e.target.style.borderColor = '#F0EBE1'}
                                         />
-                                    </div>
-
-                                    {/* 任务附件(图片/视频) */}
-                                    <div>
-                                        <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>任务附件 <span style={{ color: '#C0C8D4' }}>(可选，可添加参考图片)</span></label>
+                                        {/* 附件图片 — delete button always visible */}
                                         <div className="flex flex-wrap gap-2">
                                             {(planForm.attachments || []).map((att, i) => {
                                                 const src = typeof att === 'string' ? att : (att.data || att.url || '');
                                                 return src ? (
-                                                    <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-orange-100 group">
+                                                    <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden" style={{ border: '2px solid #FFE8D0' }}>
                                                         <img src={src} className="w-full h-full object-cover" />
                                                         <button onClick={() => {
                                                             const newAtts = [...(planForm.attachments || [])];
                                                             newAtts.splice(i, 1);
                                                             setPlanForm({ ...planForm, attachments: newAtts });
-                                                        }} className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-bl-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ fontSize: 11 }}>✕</button>
+                                                        }} className="absolute -top-0 -right-0 w-5 h-5 bg-red-500 text-white rounded-bl-lg flex items-center justify-center" style={{ fontSize: 11 }}>✕</button>
                                                     </div>
                                                 ) : null;
                                             })}
                                             {(!planForm.attachments || planForm.attachments.length < 6) && (
                                                 <label className="w-16 h-16 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95"
-                                                    style={{ background: '#FFFFFF', border: '1.5px dashed #D0D5DD', color: '#9CAABE' }}>
-                                                    <Icons.Image size={18} />
-                                                    <span style={{ fontSize: 9, marginTop: 2 }}>添加</span>
+                                                    style={{ background: '#FBF7F0', border: '1.5px dashed #D0C9BD', color: '#9CAABE' }}>
+                                                    <Icons.Image size={16} />
+                                                    <span style={{ fontSize: 9, marginTop: 2 }}>添加图片</span>
                                                     <input type="file" accept="image/*,video/*" multiple className="hidden" onChange={e => {
                                                         const files = Array.from(e.target.files);
                                                         files.forEach(file => {
@@ -2819,89 +2815,72 @@ export const GlobalModals = () => {
                                         </div>
                                     </div>
 
-                                    {/* 指派给谁 (hidden when only one kid) */}
-                                    {kids.length > 1 && (
-                                    <div>
-                                        <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>指派给谁</label>
-                                        <div className="flex flex-wrap gap-2">
-                                            <button
-                                                onClick={() => setPlanForm({ ...planForm, targetKids: ['all'] })}
-                                                className="px-4 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5 active:scale-95"
-                                                style={(!planForm.targetKids || planForm.targetKids.includes('all'))
-                                                    ? { background: '#FF8C42', color: '#fff', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }
-                                                    : { background: '#fff', color: '#5A6E8A', border: '1.5px solid #F0EBE1' }}
-                                            >
-                                                👥 全部
-                                            </button>
-                                            {kids.map(k => {
-                                                const isSelected = (!planForm.targetKids || planForm.targetKids.includes('all')) || planForm.targetKids.includes(k.id);
-                                                const isExplicit = isSelected && (planForm.targetKids && !planForm.targetKids.includes('all'));
-                                                return (
-                                                    <button
-                                                        key={k.id}
-                                                        onClick={() => {
-                                                            let newTargets = (!planForm.targetKids || planForm.targetKids.includes('all')) ? [] : [...planForm.targetKids];
-                                                            if (newTargets.includes(k.id)) {
-                                                                newTargets = newTargets.filter(id => id !== k.id);
-                                                            } else {
-                                                                newTargets.push(k.id);
+                                    {/* ═══ 分类 + 指派 (紧凑行) ═══ */}
+                                    <div className="rounded-2xl p-4 space-y-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
+                                        {/* 分类选择 — 紧凑的下拉式 + 管理按钮 */}
+                                        <div>
+                                            <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>分类</label>
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex flex-wrap gap-1.5 flex-1">
+                                                    {[...allCategories, ...(parentSettings.customCategories || []).filter(c => !allCategories.includes(c))].slice(0, 8).map(c => (
+                                                        <button key={c}
+                                                            onClick={() => setPlanForm({ ...planForm, category: c, iconName: getIconForCategory(c) })}
+                                                            className="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all active:scale-95"
+                                                            style={planForm.category === c
+                                                                ? { background: getCatHexColor(c), color: '#fff', boxShadow: `0 2px 8px ${getCatHexColor(c)}40` }
+                                                                : { background: '#FBF7F0', color: '#5A6E8A', border: '1px solid #F0EBE1' }
                                                             }
-                                                            if (newTargets.length === 0) newTargets = ['all'];
-                                                            if (newTargets.length === kids.length && kids.length > 0) newTargets = ['all'];
-                                                            setPlanForm({ ...planForm, targetKids: newTargets });
-                                                        }}
-                                                        className="px-4 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5 active:scale-95"
-                                                        style={isExplicit
-                                                            ? { background: '#FF8C42', color: '#fff', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }
-                                                            : ((!planForm.targetKids || planForm.targetKids.includes('all'))
-                                                                ? { background: '#FFF3E8', color: '#FF8C42', border: '1.5px solid #FFD4AD' }
-                                                                : { background: '#fff', color: '#5A6E8A', border: '1.5px solid #F0EBE1' })}
-                                                    >
-                                                        <div className="w-5 h-5 flex flex-shrink-0 items-center justify-center rounded-full overflow-hidden"><AvatarDisplay avatar={k.avatar} /></div> <span className="truncate">{k.name}</span>
-                                                    </button>
-                                                )
-                                            })}
-                                        </div>
-                                    </div>
-                                    )}
-
-                                    {/* 分类 — P9 enhanced with inline custom category input */}
-                                    <div>
-                                        <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>分类</label>
-                                        {/* Category chip grid */}
-                                        <div className="flex flex-wrap gap-2 mb-2">
-                                            {[...allCategories, ...(parentSettings.customCategories || []).filter(c => !allCategories.includes(c))].map(c => (
-                                                <button key={c}
-                                                    onClick={() => setPlanForm({ ...planForm, category: c, iconName: getIconForCategory(c) })}
-                                                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${planForm.category === c
-                                                        ? 'text-white shadow-md scale-105'
-                                                        : 'bg-white hover:shadow-sm active:scale-95'
-                                                    }`}
-                                                    style={planForm.category === c
-                                                        ? { background: getCatHexColor(c), borderColor: getCatHexColor(c) }
-                                                        : { borderColor: '#F0EBE1', color: '#5A6E8A' }
-                                                    }
+                                                        >
+                                                            {c}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                <button
+                                                    onClick={() => setPlanForm({ ...planForm, _showCategoryManager: true })}
+                                                    className="shrink-0 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all active:scale-95 flex items-center gap-1"
+                                                    style={{ background: '#FBF7F0', color: '#9CAABE', border: '1px dashed #D0C9BD' }}
                                                 >
-                                                    {c}
-                                                    {/* Show delete badge for custom categories */}
-                                                    {(parentSettings.customCategories || []).includes(c) && planForm.category !== c && (
-                                                        <span onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            if (confirm(`删除自定义分类"${c}"？`)) {
-                                                                setParentSettings(prev => ({
-                                                                    ...prev,
-                                                                    customCategories: (prev.customCategories || []).filter(cc => cc !== c)
-                                                                }));
-                                                            }
-                                                        }} className="ml-1 text-slate-300 hover:text-red-400 inline-flex items-center">×</span>
-                                                    )}
+                                                    <Icons.Settings size={12} /> 管理
                                                 </button>
-                                            ))}
-                                            {/* Add custom category button/input */}
-                                            {planForm._addingCategory ? (
-                                                <div className="flex items-center gap-1 animate-fade-in">
+                                            </div>
+                                        </div>
+
+                                        {/* 分类管理弹窗 */}
+                                        {planForm._showCategoryManager && (
+                                            <div className="animate-fade-in rounded-xl p-3 space-y-2" style={{ background: '#FBF7F0', border: '1px solid #F0EBE1' }}>
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-[11px] font-bold" style={{ color: '#5A6E8A' }}>管理自定义分类</span>
+                                                    <button onClick={() => setPlanForm({ ...planForm, _showCategoryManager: false })}
+                                                        className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#F0EBE1', color: '#9CAABE' }}><Icons.X size={12} /></button>
+                                                </div>
+                                                {/* 已有自定义分类 */}
+                                                {(parentSettings.customCategories || []).length > 0 ? (
+                                                    <div className="space-y-1">
+                                                        {(parentSettings.customCategories || []).map(c => (
+                                                            <div key={c} className="flex items-center justify-between rounded-lg px-3 py-2" style={{ background: '#FFFFFF' }}>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-3 h-3 rounded-full" style={{ background: getCatHexColor(c) }} />
+                                                                    <span className="text-xs font-bold" style={{ color: '#1B2E4B' }}>{c}</span>
+                                                                </div>
+                                                                <button onClick={() => {
+                                                                    if (confirm(`删除自定义分类"${c}"？`)) {
+                                                                        setParentSettings(prev => ({
+                                                                            ...prev,
+                                                                            customCategories: (prev.customCategories || []).filter(cc => cc !== c)
+                                                                        }));
+                                                                        if (planForm.category === c) setPlanForm({ ...planForm, category: allCategories[0] });
+                                                                    }
+                                                                }} className="text-[10px] font-bold px-2 py-0.5 rounded-md transition-all active:scale-90"
+                                                                    style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444' }}>删除</button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-[10px] text-center py-2" style={{ color: '#9CAABE' }}>暂无自定义分类</p>
+                                                )}
+                                                {/* 添加新分类 */}
+                                                <div className="flex items-center gap-2 pt-1">
                                                     <input
-                                                        autoFocus
                                                         value={planForm._newCategoryName || ''}
                                                         onChange={e => setPlanForm({ ...planForm, _newCategoryName: e.target.value.substring(0, 6) })}
                                                         onKeyDown={e => {
@@ -2911,38 +2890,72 @@ export const GlobalModals = () => {
                                                                     ...prev,
                                                                     customCategories: [...new Set([...(prev.customCategories || []), newCat])]
                                                                 }));
-                                                                setPlanForm({ ...planForm, category: newCat, iconName: getIconForCategory(newCat), _addingCategory: false, _newCategoryName: '' });
-                                                            } else if (e.key === 'Escape') {
-                                                                setPlanForm({ ...planForm, _addingCategory: false, _newCategoryName: '' });
+                                                                setPlanForm({ ...planForm, category: newCat, _newCategoryName: '' });
                                                             }
                                                         }}
-                                                        onBlur={() => {
-                                                            if (planForm._newCategoryName?.trim()) {
-                                                                const newCat = planForm._newCategoryName.trim();
-                                                                setParentSettings(prev => ({
-                                                                    ...prev,
-                                                                    customCategories: [...new Set([...(prev.customCategories || []), newCat])]
-                                                                }));
-                                                                setPlanForm({ ...planForm, category: newCat, iconName: getIconForCategory(newCat), _addingCategory: false, _newCategoryName: '' });
-                                                            } else {
-                                                                setPlanForm({ ...planForm, _addingCategory: false, _newCategoryName: '' });
-                                                            }
-                                                        }}
-                                                        placeholder="输入分类名"
-                                                        className="w-20 rounded-full px-3 py-1.5 text-xs font-bold outline-none"
-                                                        style={{ border: '1.5px solid #FF8C42', color: '#1B2E4B' }}
+                                                        placeholder="输入新分类名称..."
+                                                        className="flex-1 rounded-lg px-3 py-2 text-xs font-bold outline-none"
+                                                        style={{ background: '#FFFFFF', border: '1px solid #F0EBE1', color: '#1B2E4B' }}
                                                     />
+                                                    <button onClick={() => {
+                                                        if (planForm._newCategoryName?.trim()) {
+                                                            const newCat = planForm._newCategoryName.trim();
+                                                            setParentSettings(prev => ({
+                                                                ...prev,
+                                                                customCategories: [...new Set([...(prev.customCategories || []), newCat])]
+                                                            }));
+                                                            setPlanForm({ ...planForm, category: newCat, _newCategoryName: '' });
+                                                        }
+                                                    }} className="shrink-0 px-3 py-2 rounded-lg text-xs font-bold text-white transition-all active:scale-95"
+                                                        style={{ background: '#4ECDC4' }}>添加</button>
                                                 </div>
-                                            ) : (
-                                                <button
-                                                    onClick={() => setPlanForm({ ...planForm, _addingCategory: true, _newCategoryName: '' })}
-                                                    className="px-3 py-1.5 rounded-full text-xs font-bold border border-dashed transition-all hover:border-orange-300 hover:text-orange-500 active:scale-95"
-                                                    style={{ borderColor: '#D0C9BD', color: '#9CAABE' }}
-                                                >
-                                                    ➕ 自定义
-                                                </button>
-                                            )}
-                                        </div>
+                                            </div>
+                                        )}
+
+                                        {/* 指派给谁 (hidden when only one kid) */}
+                                        {kids.length > 1 && (
+                                            <div>
+                                                <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>指派给谁</label>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    <button
+                                                        onClick={() => setPlanForm({ ...planForm, targetKids: ['all'] })}
+                                                        className="px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1 active:scale-95"
+                                                        style={(!planForm.targetKids || planForm.targetKids.includes('all'))
+                                                            ? { background: '#FF8C42', color: '#fff', boxShadow: '0 2px 8px rgba(255,140,66,0.3)' }
+                                                            : { background: '#FBF7F0', color: '#5A6E8A', border: '1px solid #F0EBE1' }}
+                                                    >
+                                                        👥 全部
+                                                    </button>
+                                                    {kids.map(k => {
+                                                        const isSelected = (!planForm.targetKids || planForm.targetKids.includes('all')) || planForm.targetKids.includes(k.id);
+                                                        const isExplicit = isSelected && (planForm.targetKids && !planForm.targetKids.includes('all'));
+                                                        return (
+                                                            <button key={k.id}
+                                                                onClick={() => {
+                                                                    let newTargets = (!planForm.targetKids || planForm.targetKids.includes('all')) ? [] : [...planForm.targetKids];
+                                                                    if (newTargets.includes(k.id)) {
+                                                                        newTargets = newTargets.filter(id => id !== k.id);
+                                                                    } else {
+                                                                        newTargets.push(k.id);
+                                                                    }
+                                                                    if (newTargets.length === 0) newTargets = ['all'];
+                                                                    if (newTargets.length === kids.length && kids.length > 0) newTargets = ['all'];
+                                                                    setPlanForm({ ...planForm, targetKids: newTargets });
+                                                                }}
+                                                                className="px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1 active:scale-95"
+                                                                style={isExplicit
+                                                                    ? { background: '#FF8C42', color: '#fff', boxShadow: '0 2px 8px rgba(255,140,66,0.3)' }
+                                                                    : ((!planForm.targetKids || planForm.targetKids.includes('all'))
+                                                                        ? { background: '#FFF3E8', color: '#FF8C42', border: '1px solid #FFD4AD' }
+                                                                        : { background: '#FBF7F0', color: '#5A6E8A', border: '1px solid #F0EBE1' })}
+                                                            >
+                                                                <div className="w-4 h-4 flex flex-shrink-0 items-center justify-center rounded-full overflow-hidden"><AvatarDisplay avatar={k.avatar} /></div> <span className="truncate">{k.name}</span>
+                                                            </button>
+                                                        )
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                 </div>
