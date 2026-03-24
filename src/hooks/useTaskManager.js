@@ -412,11 +412,8 @@ const getTaskStatusOnDate = (t, date, kidId) => {
   }
   setTimerTotalSeconds(secs);
   setTimerMode('select');
-  setTimerSeconds(0);
   setIsTimerRunning(false);
   setTimerPaused(false);
-  setPomodoroSession(1);
-  setPomodoroIsBreak(false);
   setShowTimerModal(true);
 };
 
