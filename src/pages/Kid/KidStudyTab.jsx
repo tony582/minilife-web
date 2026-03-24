@@ -318,10 +318,11 @@ export const KidStudyTab = () => {
                 </div>
                 {/* Layout toggle — only visible on wide screens */}
                 <button onClick={toggleLayout}
-                    className="hidden lg:flex w-10 h-10 rounded-xl items-center justify-center transition-all"
+                    className="hidden lg:flex px-3.5 py-2.5 rounded-xl items-center justify-center transition-all gap-1.5"
                     style={{ background: C.bgCard, color: C.textSoft }}
                     title={layoutCols === '1' ? '切换为两列' : '切换为一列'}>
                     {layoutCols === '1' ? <Icons.Columns size={16} /> : <Icons.List size={16} />}
+                    <span className="text-sm font-bold">布局</span>
                 </button>
                 {/* Filter */}
                 <div className="relative">
