@@ -282,24 +282,25 @@ export const GlobalModals = () => {
                     <div className="flex-1 flex flex-col justify-center w-full max-w-sm mx-auto px-6 animate-fade-in relative">
                         {/* Close */}
                         <button onClick={() => clearTimerState()}
-                            className="absolute top-2 right-2 w-10 h-10 rounded-full flex items-center justify-center text-white/25 hover:text-white/60 hover:bg-white/5 transition-all">
-                            <Icons.X size={20} />
+                            className="absolute top-2 right-2 w-11 h-11 rounded-full flex items-center justify-center transition-all active:scale-90"
+                            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)' }}>
+                            <Icons.X size={22} />
                         </button>
 
                         {/* Task info */}
                         <div className="mb-8">
                             <h2 className="text-white font-black text-xl mb-1">{task.title}</h2>
-                            {taskTimeStr && <p className="text-white/30 text-xs flex items-center gap-1"><Icons.Clock size={11} /> {taskTimeStr}</p>}
-                            {taskDesc && <p className="text-white/20 text-xs mt-1.5 line-clamp-2">{taskDesc}</p>}
+                            {taskTimeStr && <p className="text-white/50 text-xs flex items-center gap-1"><Icons.Clock size={11} /> {taskTimeStr}</p>}
+                            {taskDesc && <p className="text-white/40 text-xs mt-1.5 line-clamp-2">{taskDesc}</p>}
                         </div>
 
-                        <p className="text-white/30 text-[11px] font-bold uppercase tracking-widest mb-4">选择计时模式</p>
+                        <p className="text-white/50 text-[11px] font-bold uppercase tracking-widest mb-4">选择计时模式</p>
 
                         <div className="space-y-2">
                             {[
-                                { id: 'forward', IconComp: Icons.TrendingUp, title: '正计时', desc: '自由学习，不限时间', color: '#38BDF8', bgColor: 'rgba(56,189,248,0.08)' },
-                                { id: 'countdown', IconComp: Icons.Timer, title: '倒计时', desc: `目标 ${Math.round((timerTotalSeconds || 900) / 60)} 分钟`, color: '#C084FC', bgColor: 'rgba(192,132,252,0.08)' },
-                                { id: 'pomodoro', IconComp: Icons.Target, title: '番茄钟', desc: '25分钟专注 + 5分钟休息', color: '#FB7185', bgColor: 'rgba(251,113,133,0.08)' },
+                                { id: 'forward', IconComp: Icons.TrendingUp, title: '正计时', desc: '自由学习，不限时间', color: '#38BDF8', bgColor: 'rgba(56,189,248,0.15)' },
+                                { id: 'countdown', IconComp: Icons.Timer, title: '倒计时', desc: `目标 ${Math.round((timerTotalSeconds || 900) / 60)} 分钟`, color: '#C084FC', bgColor: 'rgba(192,132,252,0.15)' },
+                                { id: 'pomodoro', IconComp: Icons.Target, title: '番茄钟', desc: '25分钟专注 + 5分钟休息', color: '#FB7185', bgColor: 'rgba(251,113,133,0.15)' },
                             ].map(m => (
                                 <button key={m.id}
                                     onClick={() => {
@@ -308,16 +309,16 @@ export const GlobalModals = () => {
                                         else { setTimerMode('pomodoro'); setTimerSeconds(25 * 60); setPomodoroSession(1); setPomodoroIsBreak(false); setIsTimerRunning(true); }
                                     }}
                                     className="w-full flex items-center gap-3.5 p-4 rounded-2xl transition-all active:scale-[0.97]"
-                                    style={{ background: m.bgColor, border: `1px solid ${m.color}15` }}>
+                                    style={{ background: m.bgColor, border: `1px solid ${m.color}35` }}>
                                     <div className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
-                                        style={{ background: `${m.color}15`, border: `1.5px solid ${m.color}30` }}>
+                                        style={{ background: `${m.color}25`, border: `1.5px solid ${m.color}50` }}>
                                         <m.IconComp size={20} style={{ color: m.color }} />
                                     </div>
                                     <div className="text-left flex-1 min-w-0">
                                         <div className="text-white font-black text-sm">{m.title}</div>
-                                        <div className="text-white/25 text-[11px]">{m.desc}</div>
+                                        <div className="text-white/45 text-[11px]">{m.desc}</div>
                                     </div>
-                                    <Icons.ChevronRight size={16} style={{ color: `${m.color}60` }} />
+                                    <Icons.ChevronRight size={16} style={{ color: `${m.color}90` }} />
                                 </button>
                             ))}
                         </div>
@@ -405,7 +406,7 @@ export const GlobalModals = () => {
                         )}
 
                         {/* Bottom controls */}
-                        <div className="w-full flex flex-col items-center gap-3 pb-2" style={{ maxWidth: 280 }}>
+                        <div className="w-full flex flex-col items-center gap-3 pb-2" style={{ maxWidth: 320 }}>
                             {/* Central circular play/pause button */}
                             <button onClick={() => setTimerPaused(!timerPaused)}
                                 className="w-16 h-16 rounded-full flex items-center justify-center transition-all active:scale-90"
@@ -420,21 +421,24 @@ export const GlobalModals = () => {
                                 }
                             </button>
 
-                            {/* Text action links */}
-                            <div className="flex items-center gap-6 text-xs font-bold">
+                            {/* Action buttons row */}
+                            <div className="flex items-center gap-2.5 w-full">
                                 <button onClick={finishTimer}
-                                    className="text-emerald-400/70 hover:text-emerald-400 transition-colors flex items-center gap-1">
-                                    <Icons.CheckCircle size={14} /> 完成学习
+                                    className="flex-1 py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.97] flex items-center justify-center gap-1.5"
+                                    style={{ background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', color: '#34D399' }}>
+                                    <Icons.CheckCircle size={16} /> 完成学习
                                 </button>
                                 {timerMode === 'pomodoro' && (
                                     <button onClick={skipPomodoroStage}
-                                        className="text-white/25 hover:text-white/50 transition-colors flex items-center gap-1">
-                                        <Icons.SkipForward size={14} /> 跳过
+                                        className="py-3 px-4 rounded-xl font-bold text-sm transition-all active:scale-[0.97] flex items-center justify-center gap-1.5"
+                                        style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
+                                        <Icons.SkipForward size={16} /> 跳过
                                     </button>
                                 )}
                                 <button onClick={handleTimerBack}
-                                    className="text-white/25 hover:text-white/50 transition-colors flex items-center gap-1">
-                                    <Icons.ArrowLeft size={14} /> 返回
+                                    className="flex-1 py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.97] flex items-center justify-center gap-1.5"
+                                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
+                                    <Icons.ArrowLeft size={16} /> 返回
                                 </button>
                             </div>
                         </div>
