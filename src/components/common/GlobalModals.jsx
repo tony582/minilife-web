@@ -1800,6 +1800,16 @@ export const GlobalModals = () => {
                             </div>
                         ) : (
                             <div className="w-full rounded-2xl p-4 text-left space-y-4 mb-6" style={{ background: '#fff', border: '1px solid #F0EBE1' }}>
+                                {/* S1: 任务说明放最上面 — 最重要的信息 */}
+                                {(previewTask.desc || previewTask.standards) && (
+                                    <div className="rounded-xl p-3" style={{ background: '#FFF8F0', border: '1px solid #FFE8D0' }}>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <div className="w-6 h-6 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center shrink-0"><Icons.FileText size={13} /></div>
+                                            <div className="text-xs font-black" style={{ color: '#FF8C42' }}>任务说明</div>
+                                        </div>
+                                        <div className="text-sm font-medium leading-relaxed whitespace-pre-wrap pl-8" style={{ color: '#5A6E8A' }}>{previewTask.desc || previewTask.standards}</div>
+                                    </div>
+                                )}
                                 {/* 执行频次 */}
                                 <div className="flex items-start gap-3">
                                     <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><Icons.RefreshCw size={16} /></div>
@@ -1829,16 +1839,6 @@ export const GlobalModals = () => {
                                         </div>
                                     </div>
                                 </div>
-                                {/* 任务说明 */}
-                                {(previewTask.desc || previewTask.standards) && (
-                                    <div className="flex items-start gap-3 border-t border-slate-200 pt-3">
-                                        <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0"><Icons.FileText size={16} /></div>
-                                        <div>
-                                            <div className="text-xs font-bold text-slate-400 mb-0.5">任务说明</div>
-                                            <div className="text-sm font-medium text-slate-600 leading-relaxed whitespace-pre-wrap">{previewTask.desc || previewTask.standards}</div>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         )}
 
@@ -2377,13 +2377,13 @@ export const GlobalModals = () => {
                                         />
                                     </div>
 
-                                    {/* 补充说明 */}
+                                    {/* 任务说明 */}
                                     <div>
-                                        <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>补充说明 <span style={{ color: '#C0C8D4' }}>(可选)</span></label>
+                                        <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>任务说明 <span style={{ color: '#C0C8D4' }}>(可选)</span></label>
                                         <textarea
                                             value={planForm.desc}
                                             onChange={e => setPlanForm({ ...planForm, desc: e.target.value })}
-                                            placeholder="补充一些具体要求或鼓励的话..."
+                                            placeholder="描述任务的具体要求或标准..."
                                             className="w-full rounded-xl px-4 py-3 outline-none font-bold text-sm transition-all resize-y min-h-[70px]"
                                             style={{ background: '#FFFFFF', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }}
                                             onFocus={e => e.target.style.borderColor = '#FF8C42'}
@@ -2469,11 +2469,11 @@ export const GlobalModals = () => {
                                         <label className="text-[11px] font-bold uppercase tracking-wider mb-3 block" style={{ color: '#9CAABE' }}>任务安排</label>
 
                                         {/* Quick Chips for Repeat Type */}
-                                        <div className="flex flex-wrap gap-2 mb-3">
+                                        <div className="flex flex-wrap gap-2 mb-2">
                                             {[
-                                                { v: 'today', l: '仅今天' },
-                                                { v: 'daily', l: '每天' },
-                                                { v: 'weekly_custom', l: '每周固定' }
+                                                { v: 'today', l: '仅今天', d: '只在今天出现一次' },
+                                                { v: 'daily', l: '每天', d: '每天都需要完成' },
+                                                { v: 'weekly_custom', l: '每周固定', d: '选择每周哪几天执行' }
                                             ].map(opt => (
                                                 <button
                                                     key={opt.v}
@@ -2495,15 +2495,29 @@ export const GlobalModals = () => {
                                                     : { background: '#FBF7F0', color: '#5A6E8A', border: '1.5px solid #F0EBE1' }}
                                             >
                                                 <option value="" disabled>更多安排...</option>
-                                                <option value="biweekly_custom">按双周重复</option>
-                                                <option value="ebbinghaus">记忆曲线 (艾宾浩斯)</option>
-                                                <option value="weekly_1">本周完成1次</option>
-                                                <option value="biweekly_1">本双周完成1次</option>
-                                                <option value="monthly_1">本月完成1次</option>
-                                                <option value="every_week_1">每周完成1次</option>
-                                                <option value="every_biweek_1">每双周完成1次</option>
-                                                <option value="every_month_1">每月完成1次</option>
+                                                <option value="biweekly_custom">隔周重复（按双周）</option>
+                                                <option value="ebbinghaus">记忆曲线（艾宾浩斯）</option>
+                                                <option value="weekly_1">本周内完成（可选次数）</option>
+                                                <option value="biweekly_1">本双周内完成（可选次数）</option>
+                                                <option value="monthly_1">本月内完成（可选次数）</option>
+                                                <option value="every_week_1">每周循环完成（可选次数）</option>
+                                                <option value="every_biweek_1">每双周循环完成（可选次数）</option>
+                                                <option value="every_month_1">每月循环完成（可选次数）</option>
                                             </select>
+                                        </div>
+                                        {/* P3: 安排说明小字 */}
+                                        <div className="text-[11px] font-medium mb-1 px-1" style={{ color: '#9CAABE' }}>
+                                            {planForm.repeatType === 'today' && '📌 任务仅在今天出现，完成后不再重复'}
+                                            {planForm.repeatType === 'daily' && '🔁 任务会每天出现，直到设定的结束日期'}
+                                            {planForm.repeatType === 'weekly_custom' && '📅 选择每周的固定日期来执行此任务'}
+                                            {planForm.repeatType === 'biweekly_custom' && '📅 每隔一周执行，适合交替安排的任务'}
+                                            {planForm.repeatType === 'ebbinghaus' && '🧠 按遗忘曲线安排复习，适合记忆类任务'}
+                                            {planForm.repeatType?.includes('weekly_1') && '🎯 在本周的任意时间完成指定次数'}
+                                            {planForm.repeatType?.includes('biweekly_1') && '🎯 在本双周内的任意时间完成指定次数'}
+                                            {planForm.repeatType?.includes('monthly_1') && '🎯 在本月内的任意时间完成指定次数'}
+                                            {planForm.repeatType?.includes('every_week_1') && '🔄 每周循环，在每周内完成指定次数'}
+                                            {planForm.repeatType?.includes('every_biweek_1') && '🔄 每双周循环，在每个双周内完成指定次数'}
+                                            {planForm.repeatType?.includes('every_month_1') && '🔄 每月循环，在每月内完成指定次数'}
                                         </div>
 
                                         {/* Dynamic Sub-configs based on Repeat Type */}
@@ -2728,10 +2742,21 @@ export const GlobalModals = () => {
                                                 <button onClick={() => setPlanForm({ ...planForm, reward: Math.max(0, (parseInt(planForm.reward) || 5) - 1).toString() })}
                                                     className="w-9 h-9 rounded-l-xl flex items-center justify-center font-black text-lg transition-all active:scale-90"
                                                     style={{ background: '#F0EBE1', color: '#5A6E8A' }}>−</button>
-                                                <div className="w-12 h-9 flex items-center justify-center font-black text-lg"
-                                                    style={{ background: '#fff', color: '#FF8C42', borderTop: '1px solid #F0EBE1', borderBottom: '1px solid #F0EBE1' }}>
-                                                    {planForm.reward || 5}
-                                                </div>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    max="999"
+                                                    value={planForm.reward === '' ? 5 : planForm.reward}
+                                                    onChange={e => {
+                                                        const val = e.target.value;
+                                                        if (val === '') { setPlanForm({ ...planForm, reward: '' }); return; }
+                                                        const num = Math.max(0, Math.min(999, parseInt(val) || 0));
+                                                        setPlanForm({ ...planForm, reward: num.toString() });
+                                                    }}
+                                                    onBlur={e => { if (e.target.value === '' || isNaN(parseInt(e.target.value))) setPlanForm({ ...planForm, reward: '5' }); }}
+                                                    className="w-14 h-9 text-center font-black text-lg outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                    style={{ background: '#fff', color: '#FF8C42', borderTop: '1px solid #F0EBE1', borderBottom: '1px solid #F0EBE1' }}
+                                                />
                                                 <button onClick={() => setPlanForm({ ...planForm, reward: ((parseInt(planForm.reward) || 5) + 1).toString() })}
                                                     className="w-9 h-9 rounded-r-xl flex items-center justify-center font-black text-lg transition-all active:scale-90"
                                                     style={{ background: '#FF8C42', color: '#fff' }}>+</button>

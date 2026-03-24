@@ -614,7 +614,16 @@ const handleQuickComplete = async () => {
           notify(`太棒了！${oldKid.name} 升到了 Lv.${rewardData.level}！`, "success");
         }
         
-        notify(`打卡成功！获得 ${taskToSubmit.reward} 家庭币 和 ${expGained} 经验值！`, 'success');
+        // S4: Random encouragement message on task completion
+        const encouragements = [
+          `太棒了！获得 ${taskToSubmit.reward} 家庭币！继续加油！🎉`,
+          `完成得真棒！+${taskToSubmit.reward} 家庭币！你是最棒的！⭐`,
+          `又完成一个任务！+${taskToSubmit.reward} 家庭币！离目标更近了！🚀`,
+          `厉害！+${taskToSubmit.reward} 家庭币！坚持就是胜利！💪`,
+          `好样的！+${taskToSubmit.reward} 家庭币 +${expGained} 经验！🌟`,
+          `任务达成！+${taskToSubmit.reward} 家庭币！你的努力值得表扬！👏`,
+        ];
+        notify(encouragements[Math.floor(Math.random() * encouragements.length)], 'success');
       } else {
 
         notify('奖励发放失败，请重试', 'error');
@@ -1257,10 +1266,22 @@ const handleQuickComplete = async () => {
 
     // Check on load when kids data is present
 const handleSavePlan = async () => {
-  if (!planForm.title && !planForm.targetKid) return notify("请填写完整信息", "error"); // Basic check
-  // Reward parsing
+  // P8: Form validation with specific error messages
+  if (!planForm.title || !planForm.title.trim()) return notify("请填写任务名称", "error");
+
+  // P7: Time validation — end time must be after start time
+  if (planType === 'study' && planForm.timeSetting === 'range' && planForm.startTime && planForm.endTime) {
+    if (planForm.endTime <= planForm.startTime) {
+      return notify("结束时间不能早于或等于开始时间", "error");
+    }
+  }
+
+  // P5: Reward parsing — default to 5 when custom is on but value is empty
   let rewardNum = planForm.reward !== '' && planForm.reward !== undefined ? parseInt(planForm.reward) : 0;
   if (isNaN(rewardNum)) rewardNum = 0;
+  if (planType === 'study' && planForm.pointRule === 'custom' && rewardNum === 0 && (planForm.reward === '' || planForm.reward === undefined)) {
+    rewardNum = 5; // Default custom reward
+  }
   if (planType === 'study' && planForm.pointRule !== 'custom') {
     rewardNum = 10; // Default system rule fallback for study
   }

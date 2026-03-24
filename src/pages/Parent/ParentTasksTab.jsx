@@ -298,11 +298,12 @@ export const ParentTasksTab = () => {
                             </svg>
                             <div className="absolute inset-0 flex items-center justify-center text-[11px] font-black" style={{ color: C.textPrimary }}>{progressPct}%</div>
                         </div>
-                        <div className="flex-1">
-                            <div className="text-sm font-black" style={{ color: C.textPrimary }}>今日进度</div>
+                        <div className="flex-1 min-w-0">
+                            <div className="text-sm font-black flex items-center gap-1.5" style={{ color: progressPct === 100 ? '#10B981' : C.textPrimary }}>
+                                今日进度 {progressPct === 100 && <span className="text-xs px-1.5 py-0.5 rounded-full font-black" style={{ background: '#D1FAE5', color: '#059669' }}>✓ 全部完成</span>}
+                            </div>
                             <div className="text-xs mt-0.5" style={{ color: C.textSoft }}>已完成 {completedCount} / {totalCount} 个任务</div>
                         </div>
-                        {progressPct === 100 && <div className="text-2xl">🎉</div>}
                         <button onClick={() => setShowAiTaskCreator(true)}
                             className="rounded-full py-2 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
                             style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', boxShadow: '0 4px 14px rgba(102,126,234,0.3)' }}>

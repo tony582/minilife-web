@@ -100,7 +100,7 @@ export const KidStudyTab = () => {
     const dataC = useDataContext();
     const uiC = useUIContext();
     const { tasks, setTasks, activeKidId } = dataC;
-    const { currentViewDate, setCurrentViewDate, setPreviewTask, setShowPreviewModal, setShowCalendarModal, selectedDate, setSelectedDate } = uiC;
+    const { currentViewDate, setCurrentViewDate, setPreviewTask, setShowPreviewModal, showPreviewModal, setShowCalendarModal, selectedDate, setSelectedDate } = uiC;
     const { handleStartTask, handleAttemptSubmit, getTaskStatusOnDate, getIncompleteStudyTasksCount, openQuickComplete } = useTaskManager(authC, dataC, uiC);
 
     const [searchKidTaskKeyword, setSearchKidTaskKeyword] = useState('');
@@ -180,7 +180,7 @@ export const KidStudyTab = () => {
 
             {/* ═══ Compact Sticky Calendar (portal) ═══ */}
             {createPortal(
-                <div className={`fixed top-0 left-0 right-0 z-[9998] sm:hidden transition-all duration-300 ${showCompactCalendar ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}`}>
+                <div className={`fixed top-0 left-0 right-0 z-[9998] sm:hidden transition-all duration-300 ${showCompactCalendar && !showPreviewModal ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}`}>
                     <div style={{ background: C.stickyBg, backdropFilter: 'blur(20px)', borderBottom: `1px solid ${C.bgLight}`, paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }} className="px-3 py-2">
                         <div className="flex items-center gap-1">
                             {getDisplayDateArray(currentViewDate).map((day, i) => {
