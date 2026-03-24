@@ -151,7 +151,7 @@ function AppContent() {
       {renderMobileNavigationBar()}
 
       {/* Toast 通知 */}
-      <div className="fixed top-24 right-6 z-[200] space-y-3 pointer-events-none">
+      <div className="fixed top-24 right-6 z-[99999] space-y-3 pointer-events-none">
         {notifications.map((n) => (
           <div key={n.id} className={`px-6 py-4 rounded-2xl shadow-xl animate-bounce-in text-white text-sm font-bold flex items-center justify-between gap-4 pointer-events-auto ${n.type === 'error' ? 'bg-rose-500' : n.type === 'info' ? 'bg-slate-800' : 'bg-emerald-500'}`}>
             <div className="flex items-center gap-2">
