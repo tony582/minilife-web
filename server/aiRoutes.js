@@ -3,16 +3,64 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const db = require('./database');
 const router = express.Router();
 
-// Category -> emoji mapping
+// Canonical categories — MUST match frontend categoryUtils.js defaultCategories
+const VALID_CATEGORIES = ['语文', '数学', '英语', '物理', '化学', '生物', '历史', '地理', '政治', '道德与法治', '信息技术', '体育运动', '娱乐', '兴趣班', '其他'];
+
+// Category -> emoji mapping (aligned with valid categories)
 const catEmojiMap = {
-    '语文': '📖', '数学': '🧮', '英语': '🔤', '科学': '🔬',
-    '编程': '💻', '阅读': '📚', '写作': '✏️', '音乐': '🎵',
-    '美术': '🎨', '体育': '🏃', '技能': '🧠', '复习': '📝',
-    '背诵': '🗣️', '练习': '📋', '默写': '✍️', '预习': '📕'
+    '语文': '📖', '数学': '🧮', '英语': '🔤', '物理': '⚡',
+    '化学': '🧪', '生物': '🌿', '历史': '⏳', '地理': '🌍',
+    '政治': '🏛️', '道德与法治': '⚖️', '信息技术': '💻', '体育运动': '🏃',
+    '娱乐': '🎮', '兴趣班': '🎨', '其他': '📋'
+};
+
+// Keyword-based fuzzy matching: map AI output to canonical categories
+const categoryKeywords = {
+    '语文': ['语文', '作文', '写字', '汉字', '生字', '词语', '古诗', '课文', '阅读理解', '日记', '练字', '拼音', '笔顺', '默写', '抄写', '朗读', '诗词', '成语', '造句'],
+    '数学': ['数学', '算术', '口算', '计算', '几何', '方程', '奥数', '算数', '练习题', '应用题', '竖式'],
+    '英语': ['英语', 'english', '单词', '英文', '听力', '口语', '音标', '字母', 'unit', 'word', 'reading', '背单词', '新概念'],
+    '物理': ['物理'],
+    '化学': ['化学'],
+    '生物': ['生物'],
+    '历史': ['历史'],
+    '地理': ['地理'],
+    '政治': ['政治'],
+    '道德与法治': ['道德', '法治'],
+    '信息技术': ['编程', '电脑', '信息', '计算机', '代码', '程序'],
+    '体育运动': ['体育', '运动', '跑步', '跳绳', '游泳', '球', '锻炼', '体能'],
+    '娱乐': ['游戏', '娱乐', '玩'],
+    '兴趣班': ['钢琴', '小提琴', '乐器', '画画', '美术', '音乐', '舞蹈', '书法', '围棋', '象棋', '乐高', '编程课', '兴趣']
+};
+
+/**
+ * Normalize AI-returned category to a canonical one.
+ * Strategy: exact match → keyword match on title → keyword match on category → fallback '其他'
+ */
+const normalizeCategory = (aiCategory, taskTitle = '') => {
+    // 1. Exact match against valid categories
+    if (VALID_CATEGORIES.includes(aiCategory)) return aiCategory;
+
+    const combined = `${aiCategory} ${taskTitle}`.toLowerCase();
+
+    // 2. Keyword match — check each canonical category's keywords
+    for (const [cat, keywords] of Object.entries(categoryKeywords)) {
+        for (const kw of keywords) {
+            if (combined.includes(kw.toLowerCase())) return cat;
+        }
+    }
+
+    // 3. Fallback
+    return '其他';
 };
 
 const SYSTEM_PROMPT = `将作业内容拆解为具体学习任务，并智能判断任务安排。
-分类限选: 语文/数学/英语/科学/编程/阅读/写作/音乐/美术/体育/技能/复习/背诵/练习/默写/预习
+**分类规则（非常重要）**：category 必须按照学科/科目分类，不能用动作类型（如"练习""背诵""默写"）。
+可用分类仅限: ${VALID_CATEGORIES.join('/')}
+例如："英语：背诵Unit 3单词" → category 应为 "英语"，不是 "背诵"
+例如："语文：默写古诗" → category 应为 "语文"，不是 "默写"
+例如："跳绳100个" → category 应为 "体育运动"
+如果无法确定科目，使用 "其他"
+
 时长10-120分钟。奖励: 简单5-10分, 中等10-20, 难20-30。模糊作业要拆具体步骤。
 任务安排规则:
 - schedule="today": 一次性作业(如"完成XX卷子""明天交的作业")
@@ -20,7 +68,7 @@ const SYSTEM_PROMPT = `将作业内容拆解为具体学习任务，并智能判
 - schedule="weekly": 每周固定几天做的(如"周三周五练琴""每周二上课")，需附weeklyDays数组(1=周一..7=周日)
 - 如无法判断，默认"today"
 仅返回JSON数组:
-[{"title":"任务标题","category":"分类","desc":"具体标准","reward":分数,"durationPreset":分钟,"schedule":"today/daily/weekly","weeklyDays":[]}]`;
+[{"title":"任务标题","category":"学科分类","desc":"具体标准","reward":分数,"durationPreset":分钟,"schedule":"today/daily/weekly","weeklyDays":[]}]`;
 
 // Helper: get AI config from DB, fallback to env
 const getAiConfig = () => new Promise((resolve, reject) => {
@@ -216,11 +264,15 @@ router.post('/parse-homework', async (req, res) => {
 
         const tasks = JSON.parse(jsonStr);
 
-        // Enrich with emoji
-        const enrichedTasks = tasks.map(t => ({
-            ...t,
-            iconEmoji: catEmojiMap[t.category] || '📚',
-        }));
+        // Enrich with normalized category + emoji
+        const enrichedTasks = tasks.map(t => {
+            const normalizedCat = normalizeCategory(t.category, t.title);
+            return {
+                ...t,
+                category: normalizedCat,
+                iconEmoji: catEmojiMap[normalizedCat] || '📚',
+            };
+        });
 
         // Log usage AFTER successful parse
         try { await logUsage(req.user.id, 'parse-homework'); } catch (e) { console.error('[AI] Usage log error:', e); }
