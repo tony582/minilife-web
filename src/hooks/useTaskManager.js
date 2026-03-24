@@ -385,7 +385,8 @@ const getTaskStatusOnDate = (t, date, kidId) => {
     }
   } catch (e) { /* ignore */ }
 
-  // Fresh start
+  // Fresh start — clear any stale saved state first
+  try { localStorage.removeItem(TIMER_KEY); } catch (e) { /* ignore */ }
   setTimerTargetId(id);
   let secs = 900; // default 15min
   if (task && task.timeStr) {
@@ -411,8 +412,11 @@ const getTaskStatusOnDate = (t, date, kidId) => {
   }
   setTimerTotalSeconds(secs);
   setTimerMode('select');
+  setTimerSeconds(0);
   setIsTimerRunning(false);
   setTimerPaused(false);
+  setPomodoroSession(1);
+  setPomodoroIsBreak(false);
   setShowTimerModal(true);
 };
 

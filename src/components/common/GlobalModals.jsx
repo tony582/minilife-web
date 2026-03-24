@@ -118,12 +118,14 @@ export const GlobalModals = () => {
         setPomodoroSession(1);
         setPomodoroIsBreak(false);
         setShowTimerModal(false);
+        setShowTimerLeaveConfirm(false);
     };
 
     const [showTimerLeaveConfirm, setShowTimerLeaveConfirm] = useState(false);
 
     const handleTimerBack = () => {
-        if (isTimerRunning && timerMode !== 'select') {
+        if (timerMode !== 'select' && (timerSeconds > 0 || timerMode === 'forward')) {
+            setTimerPaused(true);
             setShowTimerLeaveConfirm(true);
         } else {
             clearTimerState();
@@ -131,11 +133,13 @@ export const GlobalModals = () => {
     };
 
     const handleTimerSaveAndLeave = () => {
-        // Save state to localStorage (already happens via useEffect) and close modal
-        // Timer pauses but state is preserved for "继续计时"
+        // Save state to localStorage (already written by useEffect) and close modal
+        // Pause the timer so the save useEffect writes paused=true, then stop running
         setTimerPaused(true);
         setShowTimerLeaveConfirm(false);
         setShowTimerModal(false);
+        // Stop the timer running flag AFTER pause is set, so localStorage has paused=true
+        setTimeout(() => setIsTimerRunning(false), 100);
     };
 
     const renderTimerModal = () => {
