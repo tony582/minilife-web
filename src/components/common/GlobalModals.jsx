@@ -1706,22 +1706,22 @@ export const GlobalModals = () => {
         if (!showPreviewModal || !previewTask) return null;
 
         // P1: Resolve the correct kid context for the preview modal.
-        // In parent mode, parentKidFilter determines which kid the parent is viewing.
-        // This must be used instead of activeKidId (which stays 'all').
+        // Priority: _previewKidId (from 待审核 panel) > parentKidFilter > smart detect > fallback
         let resolvedKidId = activeKidId;
         if (appState === 'parent_app') {
-            if (parentKidFilter && parentKidFilter !== 'all') {
-                // Parent is filtering by a specific kid — use that kid directly
+            if (previewTask._previewKidId) {
+                // Explicitly passed from 待审核 panel click
+                resolvedKidId = previewTask._previewKidId;
+            } else if (parentKidFilter && parentKidFilter !== 'all') {
+                // Parent is filtering by a specific kid
                 resolvedKidId = parentKidFilter;
             } else if (previewTask.kidId === 'all' && kids.length > 0) {
-                // Parent viewing 'all' filter + task assigned to all kids
-                // Intelligently find the most relevant kid (pending > in_progress > completed > todo)
+                // Smart detect: find the most relevant kid
                 const pendingKid = kids.find(k => getTaskStatusOnDate(previewTask, selectedDate, k.id) === 'pending_approval');
                 const progressKid = kids.find(k => getTaskStatusOnDate(previewTask, selectedDate, k.id) === 'in_progress');
                 const completedKid = kids.find(k => getTaskStatusOnDate(previewTask, selectedDate, k.id) === 'completed');
                 resolvedKidId = (pendingKid || progressKid || completedKid || kids[0]).id;
             } else if (previewTask.kidId && previewTask.kidId !== 'all') {
-                // Task assigned to a specific kid
                 resolvedKidId = previewTask.kidId;
             } else {
                 resolvedKidId = kids.length > 0 ? kids[0].id : activeKidId;

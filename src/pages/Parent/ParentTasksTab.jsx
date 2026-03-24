@@ -453,7 +453,7 @@ export const ParentTasksTab = () => {
                                 const kidInfo = kids.find(k => k.id === actualKidId);
                                 return (
                                     <div key={`${t.id}-${date}`}
-                                        onClick={() => { setSelectedDate(date); setParentKidFilter(actualKidId); setPreviewTask(t); setShowPreviewModal(true); }}
+                                        onClick={() => { setSelectedDate(date); setPreviewTask({ ...t, _previewKidId: actualKidId }); setShowPreviewModal(true); }}
                                         className="flex items-center gap-3 rounded-xl p-3 cursor-pointer hover:shadow-sm transition-all"
                                         style={{ background: '#fff' }}>
                                         <div className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center text-white"
@@ -467,7 +467,7 @@ export const ParentTasksTab = () => {
                                                 <span>· {date}</span>
                                             </div>
                                         </div>
-                                        <button onClick={(e) => { e.stopPropagation(); setSelectedDate(date); setParentKidFilter(actualKidId); setPreviewTask(t); setShowPreviewModal(true); }}
+                                        <button onClick={(e) => { e.stopPropagation(); setSelectedDate(date); setPreviewTask({ ...t, _previewKidId: actualKidId }); setShowPreviewModal(true); }}
                                             className="rounded-full py-1.5 px-3 text-[11px] font-black text-white flex items-center gap-1 shrink-0 active:scale-95 transition-all"
                                             style={{ background: '#10B981' }}>
                                             <Icons.Check size={10} strokeWidth={3} /> 审核
