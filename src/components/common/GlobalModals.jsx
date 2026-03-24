@@ -39,9 +39,15 @@ export const GlobalModals = () => {
         const mins = Math.floor((timerSeconds % 3600) / 60);
         const secs = timerSeconds % 60;
 
+        // Progress for countdown ring (0 to 1)
+        const progress = timerMode === 'countdown' && timerTotalSeconds > 0
+            ? 1 - (timerSeconds / timerTotalSeconds)
+            : timerMode === 'forward' ? Math.min(timerSeconds / (timerTotalSeconds || 900), 1) : 0;
+        const circumference = 2 * Math.PI * 120;
+        const strokeDashoffset = circumference * (1 - progress);
+
         const finishTimer = async () => {
             try {
-                // Determine actual time spent based on mode
                 let spentStr = '';
                 if (timerMode === 'forward') {
                     const spentMins = Math.max(1, Math.round(timerSeconds / 60));
@@ -71,54 +77,89 @@ export const GlobalModals = () => {
                 setShowTimerModal(false);
                 setIsTimerRunning(false);
                 playSuccessSound();
-                notify(`太棒了！你完成了【${task.title}】的计时，快去提交验收吧。`, "success");
+                // S2: Auto-trigger quick complete so student can submit immediately
+                setTimeout(() => openQuickComplete(task), 300);
             } catch (e) {
                 notify("网络请求失败", "error");
             }
         };
 
         return (
-            <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-fade-in z-[110]">
-                <div className="bg-white/10 w-full max-w-sm rounded-[2rem] p-8 mt-[-10vh] text-center border border-white/20 shadow-2xl">
-                    <div className="text-white/60 font-bold mb-2">{timerMode === 'select' ? '选择计时方式' : (timerPaused ? '计时暂停中' : '正在专注进行')}</div>
-                    <h2 className="text-3xl font-black text-white mb-8">{task.title}</h2>
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 animate-fade-in"
+                style={{ background: 'linear-gradient(135deg, #FF8C42 0%, #FF6B35 30%, #E85D26 60%, #C94B18 100%)' }}>
+                <div className="w-full max-w-sm mt-[-8vh] text-center">
+                    {/* Status pill */}
+                    <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 mb-4">
+                        {timerMode === 'select' ? (
+                            <span className="text-white/90 text-sm font-bold">🎯 选择计时方式</span>
+                        ) : (
+                            <>
+                                {!timerPaused && <span className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></span>}
+                                <span className="text-white/90 text-sm font-bold">
+                                    {timerPaused ? '⏸ 暂停中' : (timerMode === 'forward' ? '⬆️ 正数计时' : '⬇️ 倒数计时')}
+                                </span>
+                            </>
+                        )}
+                    </div>
+                    <h2 className="text-2xl font-black text-white mb-6 drop-shadow-lg">{task.title}</h2>
 
                     {timerMode === 'select' ? (
-                        <div className="flex flex-col gap-4 mb-4">
-                            <button onClick={() => { setTimerMode('forward'); setTimerSeconds(0); setIsTimerRunning(true); }} className="w-full py-4 text-white font-black bg-blue-500 rounded-2xl shadow-lg hover:bg-blue-600 hover:scale-105 transition-all outline-none flex items-center justify-center gap-2">
-                                <Icons.TrendingUp size={20} /> 正数计时
+                        <div className="bg-white/15 backdrop-blur-sm rounded-[2rem] p-6 border border-white/20 shadow-2xl space-y-3">
+                            <button onClick={() => { setTimerMode('forward'); setTimerSeconds(0); setIsTimerRunning(true); }}
+                                className="w-full py-4 text-white font-black bg-white/20 rounded-2xl shadow-lg hover:bg-white/30 hover:scale-[1.02] transition-all outline-none flex items-center justify-center gap-3 border border-white/20">
+                                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><Icons.TrendingUp size={22} /></div>
+                                <div className="text-left"><div className="font-black text-base">正数计时 ⬆️</div><div className="text-white/60 text-xs font-bold">从零开始记录</div></div>
                             </button>
-                            <button onClick={() => { setTimerMode('countdown'); setTimerSeconds(timerTotalSeconds); setIsTimerRunning(true); }} className="w-full py-4 text-white font-black bg-indigo-500 rounded-2xl shadow-lg hover:bg-indigo-600 hover:scale-105 transition-all outline-none flex items-center justify-center gap-2">
-                                <Icons.Clock size={20} /> 倒数计时
+                            <button onClick={() => { setTimerMode('countdown'); setTimerSeconds(timerTotalSeconds); setIsTimerRunning(true); }}
+                                className="w-full py-4 text-white font-black bg-white/20 rounded-2xl shadow-lg hover:bg-white/30 hover:scale-[1.02] transition-all outline-none flex items-center justify-center gap-3 border border-white/20">
+                                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><Icons.Clock size={22} /></div>
+                                <div className="text-left"><div className="font-black text-base">倒数计时 ⬇️</div><div className="text-white/60 text-xs font-bold">预设 {Math.round(timerTotalSeconds / 60)} 分钟</div></div>
                             </button>
-                            <div className="text-white/50 text-xs mt-2 px-4">倒数计时将根据该任务配置的估计时间进行倒计时，如果没有设置时间则默认15分钟。</div>
-                            <button onClick={() => setShowTimerModal(false)} className="mt-4 w-full py-3 text-white/50 font-bold hover:text-white/80 transition-colors">取消</button>
+                            <button onClick={() => setShowTimerModal(false)} className="mt-2 w-full py-3 text-white/50 font-bold hover:text-white/80 transition-colors text-sm">取消</button>
                         </div>
                     ) : (
-                        <>
-                            <div className="text-5xl sm:text-6xl font-black text-white font-mono tracking-tighter mb-10 drop-shadow-xl flex justify-center gap-2 items-center">
-                                {hrs > 0 && (
-                                    <>
-                                        <span className="bg-white/20 p-3 sm:p-4 rounded-3xl min-w-[70px] sm:min-w-[90px]">{String(hrs).padStart(2, '0')}</span>
-                                        <span className="text-white/50 pt-2">:</span>
-                                    </>
-                                )}
-                                <span className="bg-white/20 p-3 sm:p-4 rounded-3xl min-w-[70px] sm:min-w-[90px]">{String(mins).padStart(2, '0')}</span>
-                                <span className="text-white/50 pt-2">:</span>
-                                <span className="bg-white/20 p-3 sm:p-4 rounded-3xl min-w-[70px] sm:min-w-[90px]">{String(secs).padStart(2, '0')}</span>
+                        <div className="bg-white/15 backdrop-blur-sm rounded-[2rem] p-6 border border-white/20 shadow-2xl">
+                            {/* Progress Ring */}
+                            <div className="relative w-56 h-56 mx-auto mb-6">
+                                <svg className="w-full h-full -rotate-90" viewBox="0 0 260 260">
+                                    <circle cx="130" cy="130" r="120" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="8" />
+                                    <circle cx="130" cy="130" r="120" fill="none" stroke="white" strokeWidth="8"
+                                        strokeLinecap="round"
+                                        strokeDasharray={circumference}
+                                        strokeDashoffset={strokeDashoffset}
+                                        className="transition-all duration-1000 ease-linear"
+                                    />
+                                </svg>
+                                {/* Time display inside ring */}
+                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                    <div className="text-4xl sm:text-5xl font-black text-white font-mono tracking-tight drop-shadow-lg">
+                                        {hrs > 0 && <>{String(hrs).padStart(2, '0')}:</>}
+                                        {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
+                                    </div>
+                                    <div className="text-white/50 text-xs font-bold mt-1">
+                                        {timerMode === 'forward' ? '已经过' : '剩余'}
+                                    </div>
+                                </div>
                             </div>
-                            <button onClick={() => setTimerPaused(!timerPaused)} className="w-full mb-4 py-4 text-white/90 font-bold bg-white/10 rounded-2xl border border-white/20 hover:bg-white/20 backdrop-blur-sm transition-all focus:outline-none flex justify-center items-center gap-2">
-                                {timerPaused ? <><Icons.Play size={20} /> 继续计时</> : <><Icons.Pause size={20} /> 暂停计时</>}
-                            </button>
-                            <div className="flex gap-4">
-                                <button onClick={() => { setIsTimerRunning(false); setShowTimerModal(false); }} className="flex-1 py-4 text-red-300 font-bold bg-white/10 rounded-2xl hover:bg-red-500/20 backdrop-blur-sm transition-all">
-                                    放弃
+
+                            {/* Controls */}
+                            <div className="space-y-3">
+                                <button onClick={() => setTimerPaused(!timerPaused)}
+                                    className="w-full py-3.5 text-white/90 font-bold bg-white/15 rounded-2xl border border-white/20 hover:bg-white/25 transition-all focus:outline-none flex justify-center items-center gap-2">
+                                    {timerPaused ? <><Icons.Play size={18} /> 继续计时</> : <><Icons.Pause size={18} /> 暂停</>}
                                 </button>
-                                <button onClick={finishTimer} className="flex-[2] py-4 bg-emerald-500 text-white font-black rounded-2xl shadow-lg shadow-emerald-500/50 hover:bg-emerald-400 hover:scale-105 transition-all outline-none">
-                                    完成打卡！
-                                </button>
+                                <div className="flex gap-3">
+                                    <button onClick={() => { setIsTimerRunning(false); setShowTimerModal(false); }}
+                                        className="flex-1 py-3.5 text-white/60 font-bold bg-white/10 rounded-2xl hover:bg-red-500/30 hover:text-white transition-all">
+                                        放弃
+                                    </button>
+                                    <button onClick={finishTimer}
+                                        className="flex-[2] py-3.5 bg-white text-orange-600 font-black rounded-2xl shadow-lg shadow-black/10 hover:scale-[1.02] transition-all outline-none flex items-center justify-center gap-2">
+                                        <Icons.CheckCircle size={18} /> 完成打卡！
+                                    </button>
+                                </div>
                             </div>
-                        </>
+                        </div>
                     )}
                 </div>
             </div>
