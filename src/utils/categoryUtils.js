@@ -60,3 +60,17 @@ export const getIconForCategory = (cat) => {
     };
     return iconMap[cat] || 'Star';
 };
+
+export const getCatHexColor = (cat) => {
+    const hexMap = {
+        '语文': '#F43F5E', '数学': '#6366F1', '英语': '#0EA5E9', '物理': '#F59E0B',
+        '化学': '#D946EF', '生物': '#10B981', '历史': '#78716C', '地理': '#14B8A6',
+        '政治': '#EF4444', '道德与法治': '#3B82F6', '信息技术': '#06B6D4', '体育运动': '#F97316',
+        '娱乐': '#EAB308', '兴趣班': '#EC4899', '其他': '#64748B', '计划': '#64748B', '技能': '#8B5CF6'
+    };
+    if (hexMap[cat]) return hexMap[cat];
+    let hash = 0;
+    for (let i = 0; i < (cat || '').length; i++) hash = cat.charCodeAt(i) + ((hash << 5) - hash);
+    const fallback = ['#F43F5E', '#84CC16', '#14B8A6', '#D946EF', '#0EA5E9', '#F97316', '#8B5CF6'];
+    return fallback[Math.abs(hash) % fallback.length];
+};

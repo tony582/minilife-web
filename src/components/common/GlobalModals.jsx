@@ -9,7 +9,7 @@ import { useShopManager } from '../../hooks/useShopManager';
 import { Icons, AvatarDisplay, renderIcon } from '../../utils/Icons';
 import { getLevelReq, getLevelTier } from '../../utils/levelUtils';
 import { isSameDay, getDaysInMonth, formatDate } from '../../utils/dateUtils';
-import { getCategoryGradient, getCategoryColor, getIconForCategory, allCategories } from '../../utils/categoryUtils';
+import { getCategoryGradient, getCategoryColor, getIconForCategory, allCategories, getCatHexColor } from '../../utils/categoryUtils';
 import { apiFetch } from '../../api/client';
 import AiPlanCreator from './AiPlanCreator';
 
@@ -2447,25 +2447,84 @@ export const GlobalModals = () => {
                                     </div>
                                     )}
 
-                                    {/* 分类 */}
+                                    {/* 分类 — P9 enhanced with inline custom category input */}
                                     <div>
                                         <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>分类</label>
-                                        <select value={planForm.category} onChange={e => {
-                                            if (e.target.value === '__NEW__') {
-                                                const custom = window.prompt("请输入新任务分类名称 (最长6个字符)：");
-                                                if (custom && custom.trim()) {
-                                                    const newCat = custom.trim().substring(0, 6);
-                                                    setPlanForm({ ...planForm, category: newCat, iconName: getIconForCategory(newCat) });
-                                                }
-                                            } else {
-                                                setPlanForm({ ...planForm, category: e.target.value, iconName: getIconForCategory(e.target.value) });
-                                            }
-                                        }} className="w-full rounded-xl px-4 py-3 outline-none font-bold text-sm transition-all appearance-none"
-                                            style={{ background: '#FFFFFF', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }}>
-                                            {allCategories.map(c => <option key={c} value={c}>{c}</option>)}
-                                            {(!allCategories.includes(planForm.category) && planForm.category && planForm.category !== '__NEW__') && <option value={planForm.category}>{planForm.category}</option>}
-                                            <option value="__NEW__">➕ 自定义新分类...</option>
-                                        </select>
+                                        {/* Category chip grid */}
+                                        <div className="flex flex-wrap gap-2 mb-2">
+                                            {[...allCategories, ...(parentSettings.customCategories || []).filter(c => !allCategories.includes(c))].map(c => (
+                                                <button key={c}
+                                                    onClick={() => setPlanForm({ ...planForm, category: c, iconName: getIconForCategory(c) })}
+                                                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${planForm.category === c
+                                                        ? 'text-white shadow-md scale-105'
+                                                        : 'bg-white hover:shadow-sm active:scale-95'
+                                                    }`}
+                                                    style={planForm.category === c
+                                                        ? { background: getCatHexColor(c), borderColor: getCatHexColor(c) }
+                                                        : { borderColor: '#F0EBE1', color: '#5A6E8A' }
+                                                    }
+                                                >
+                                                    {c}
+                                                    {/* Show delete badge for custom categories */}
+                                                    {(parentSettings.customCategories || []).includes(c) && planForm.category !== c && (
+                                                        <span onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (confirm(`删除自定义分类"${c}"？`)) {
+                                                                setParentSettings(prev => ({
+                                                                    ...prev,
+                                                                    customCategories: (prev.customCategories || []).filter(cc => cc !== c)
+                                                                }));
+                                                            }
+                                                        }} className="ml-1 text-slate-300 hover:text-red-400 inline-flex items-center">×</span>
+                                                    )}
+                                                </button>
+                                            ))}
+                                            {/* Add custom category button/input */}
+                                            {planForm._addingCategory ? (
+                                                <div className="flex items-center gap-1 animate-fade-in">
+                                                    <input
+                                                        autoFocus
+                                                        value={planForm._newCategoryName || ''}
+                                                        onChange={e => setPlanForm({ ...planForm, _newCategoryName: e.target.value.substring(0, 6) })}
+                                                        onKeyDown={e => {
+                                                            if (e.key === 'Enter' && planForm._newCategoryName?.trim()) {
+                                                                const newCat = planForm._newCategoryName.trim();
+                                                                setParentSettings(prev => ({
+                                                                    ...prev,
+                                                                    customCategories: [...new Set([...(prev.customCategories || []), newCat])]
+                                                                }));
+                                                                setPlanForm({ ...planForm, category: newCat, iconName: getIconForCategory(newCat), _addingCategory: false, _newCategoryName: '' });
+                                                            } else if (e.key === 'Escape') {
+                                                                setPlanForm({ ...planForm, _addingCategory: false, _newCategoryName: '' });
+                                                            }
+                                                        }}
+                                                        onBlur={() => {
+                                                            if (planForm._newCategoryName?.trim()) {
+                                                                const newCat = planForm._newCategoryName.trim();
+                                                                setParentSettings(prev => ({
+                                                                    ...prev,
+                                                                    customCategories: [...new Set([...(prev.customCategories || []), newCat])]
+                                                                }));
+                                                                setPlanForm({ ...planForm, category: newCat, iconName: getIconForCategory(newCat), _addingCategory: false, _newCategoryName: '' });
+                                                            } else {
+                                                                setPlanForm({ ...planForm, _addingCategory: false, _newCategoryName: '' });
+                                                            }
+                                                        }}
+                                                        placeholder="输入分类名"
+                                                        className="w-20 rounded-full px-3 py-1.5 text-xs font-bold outline-none"
+                                                        style={{ border: '1.5px solid #FF8C42', color: '#1B2E4B' }}
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => setPlanForm({ ...planForm, _addingCategory: true, _newCategoryName: '' })}
+                                                    className="px-3 py-1.5 rounded-full text-xs font-bold border border-dashed transition-all hover:border-orange-300 hover:text-orange-500 active:scale-95"
+                                                    style={{ borderColor: '#D0C9BD', color: '#9CAABE' }}
+                                                >
+                                                    ➕ 自定义
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
 
                                 </div>
