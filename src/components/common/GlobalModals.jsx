@@ -188,7 +188,7 @@ export const GlobalModals = () => {
 
         /* ── Premium color themes with gradients ── */
         const themes = {
-            select: { bg: 'linear-gradient(180deg, #0F172A 0%, #1E293B 100%)', ring: '#64748B', ringGlow: 'rgba(100,116,139,0.4)' },
+            select: { bg: 'linear-gradient(180deg, #FFF9F0 0%, #F5EFE6 100%)', ring: '#FF8C42', ringGlow: 'rgba(255,140,66,0.3)', isLight: true },
             forward: { bg: 'linear-gradient(180deg, #0C1B3A 0%, #1A3A6B 50%, #0F2654 100%)', ring: '#38BDF8', ringGlow: 'rgba(56,189,248,0.5)', ringBg: 'rgba(56,189,248,0.08)' },
             countdown: { bg: 'linear-gradient(180deg, #1A0B3E 0%, #2D1B69 50%, #1A0B3E 100%)', ring: '#C084FC', ringGlow: 'rgba(192,132,252,0.5)', ringBg: 'rgba(192,132,252,0.08)' },
             pomodoro: pomodoroIsBreak
@@ -228,7 +228,8 @@ export const GlobalModals = () => {
         const dotY = CY + R * Math.sin(dotAngle);
 
         const taskTimeStr = task.timeStr || '';
-        const taskDesc = task.description || '';
+        const taskDesc = task.desc || task.standards || '';
+        const taskAttachments = task.attachments || [];
 
         return (
             <div className="fixed inset-0 flex flex-col items-center overflow-hidden animate-fade-in"
@@ -277,30 +278,35 @@ export const GlobalModals = () => {
                     );
                 })()}
 
-                {/* ══════ MODE SELECTION ══════ */}
+                {/* ══════ MODE SELECTION (Light Theme) ══════ */}
                 {timerMode === 'select' ? (
-                    <div className="flex-1 flex flex-col justify-center w-full max-w-sm mx-auto px-6 animate-fade-in relative">
-                        {/* Close */}
-                        <button onClick={() => clearTimerState()}
-                            className="absolute top-2 right-2 w-11 h-11 rounded-full flex items-center justify-center transition-all active:scale-90"
-                            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)' }}>
-                            <Icons.X size={22} />
-                        </button>
+                    <div className="flex-1 flex flex-col w-full max-w-sm mx-auto px-6 animate-fade-in relative" style={{ paddingTop: 24 }}>
 
-                        {/* Task info */}
-                        <div className="mb-8">
-                            <h2 className="text-white font-black text-xl mb-1">{task.title}</h2>
-                            {taskTimeStr && <p className="text-white/50 text-xs flex items-center gap-1"><Icons.Clock size={11} /> {taskTimeStr}</p>}
-                            {taskDesc && <p className="text-white/40 text-xs mt-1.5 line-clamp-2">{taskDesc}</p>}
+                        {/* Task info card */}
+                        <div className="rounded-2xl p-4 mb-6" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
+                            <h2 className="font-black text-lg mb-1" style={{ color: '#1B2E4B' }}>{task.title}</h2>
+                            {taskTimeStr && <p className="text-xs flex items-center gap-1 mb-1" style={{ color: '#9CAABE' }}><Icons.Clock size={11} /> {taskTimeStr}</p>}
+                            {taskDesc && <p className="text-xs mt-1 leading-relaxed" style={{ color: '#5A6E8A' }}>{taskDesc}</p>}
+                            {taskAttachments.length > 0 && (
+                                <div className="flex gap-2 mt-3 flex-wrap">
+                                    {taskAttachments.map((att, i) => {
+                                        const src = typeof att === 'string' ? att : (att.data || att.url || '');
+                                        return src ? (
+                                            <img key={i} src={src} className="w-14 h-14 rounded-xl object-cover border-2 border-orange-100 cursor-pointer hover:scale-105 transition-all"
+                                                onClick={() => { setPreviewImages(taskAttachments.map(a => typeof a === 'string' ? a : (a.data || a.url || ''))); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} />
+                                        ) : null;
+                                    })}
+                                </div>
+                            )}
                         </div>
 
-                        <p className="text-white/50 text-[11px] font-bold uppercase tracking-widest mb-4">选择计时模式</p>
+                        <p className="text-[11px] font-bold uppercase tracking-widest mb-3" style={{ color: '#9CAABE' }}>选择计时模式</p>
 
-                        <div className="space-y-2">
+                        <div className="space-y-2.5">
                             {[
-                                { id: 'forward', IconComp: Icons.TrendingUp, title: '正计时', desc: '自由学习，不限时间', color: '#38BDF8', bgColor: 'rgba(56,189,248,0.15)' },
-                                { id: 'countdown', IconComp: Icons.Timer, title: '倒计时', desc: `目标 ${Math.round((timerTotalSeconds || 900) / 60)} 分钟`, color: '#C084FC', bgColor: 'rgba(192,132,252,0.15)' },
-                                { id: 'pomodoro', IconComp: Icons.Target, title: '番茄钟', desc: '25分钟专注 + 5分钟休息', color: '#FB7185', bgColor: 'rgba(251,113,133,0.15)' },
+                                { id: 'forward', IconComp: Icons.TrendingUp, title: '正计时', desc: '自由学习，不限时间', color: '#38BDF8', bgColor: '#EFF9FF' },
+                                { id: 'countdown', IconComp: Icons.Timer, title: '倒计时', desc: `目标 ${Math.round((timerTotalSeconds || 900) / 60)} 分钟`, color: '#A855F7', bgColor: '#F5F0FF' },
+                                { id: 'pomodoro', IconComp: Icons.Target, title: '番茄钟', desc: '25分钟专注 + 5分钟休息', color: '#F43F5E', bgColor: '#FFF0F3' },
                             ].map(m => (
                                 <button key={m.id}
                                     onClick={() => {
@@ -309,25 +315,32 @@ export const GlobalModals = () => {
                                         else { setTimerMode('pomodoro'); setTimerSeconds(25 * 60); setPomodoroSession(1); setPomodoroIsBreak(false); setIsTimerRunning(true); }
                                     }}
                                     className="w-full flex items-center gap-3.5 p-4 rounded-2xl transition-all active:scale-[0.97]"
-                                    style={{ background: m.bgColor, border: `1px solid ${m.color}35` }}>
+                                    style={{ background: m.bgColor, border: `1.5px solid ${m.color}30` }}>
                                     <div className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
-                                        style={{ background: `${m.color}25`, border: `1.5px solid ${m.color}50` }}>
+                                        style={{ background: `${m.color}20`, border: `1.5px solid ${m.color}40` }}>
                                         <m.IconComp size={20} style={{ color: m.color }} />
                                     </div>
                                     <div className="text-left flex-1 min-w-0">
-                                        <div className="text-white font-black text-sm">{m.title}</div>
-                                        <div className="text-white/45 text-[11px]">{m.desc}</div>
+                                        <div className="font-black text-sm" style={{ color: '#1B2E4B' }}>{m.title}</div>
+                                        <div className="text-[11px]" style={{ color: '#9CAABE' }}>{m.desc}</div>
                                     </div>
-                                    <Icons.ChevronRight size={16} style={{ color: `${m.color}90` }} />
+                                    <Icons.ChevronRight size={16} style={{ color: m.color }} />
                                 </button>
                             ))}
                         </div>
+
+                        {/* Close button at bottom */}
+                        <button onClick={() => clearTimerState()}
+                            className="mt-6 mx-auto py-3 px-8 rounded-2xl font-bold text-sm transition-all active:scale-95 flex items-center gap-1.5"
+                            style={{ background: '#F0EBE1', color: '#5A6E8A' }}>
+                            <Icons.X size={16} /> 关闭
+                        </button>
                     </div>
                 ) : (
                     /* ══════ TIMER RUNNING ══════ */
-                    <div className="flex-1 flex flex-col items-center justify-between w-full max-w-sm mx-auto px-4 py-2 animate-fade-in">
+                    <div className="flex-1 flex flex-col items-center justify-between w-full max-w-sm mx-auto px-4 py-2 animate-fade-in overflow-y-auto">
 
-                        {/* Top: Task name + mode */}
+                        {/* Top: Task name + mode + task info */}
                         <div className="text-center pt-2 w-full">
                             <p className="text-white/90 font-black text-base mb-0.5">{task.title}</p>
                             <p className="text-white/25 text-[11px] font-bold uppercase tracking-wider">
@@ -335,6 +348,23 @@ export const GlobalModals = () => {
                                     ? (pomodoroIsBreak ? `休息 · ${pomodoroSession}/4` : `专注 · ${pomodoroSession}/4`)
                                     : (timerMode === 'forward' ? '正计时' : '倒计时')}
                             </p>
+                            {/* Task description & attachments (collapsible) */}
+                            {(taskDesc || taskAttachments.length > 0) && (
+                                <div className="mt-2 mx-auto rounded-xl px-3 py-2 text-left" style={{ background: 'rgba(255,255,255,0.06)', maxWidth: 300, border: '1px solid rgba(255,255,255,0.08)' }}>
+                                    {taskDesc && <p className="text-white/40 text-[11px] leading-relaxed line-clamp-3">{taskDesc}</p>}
+                                    {taskAttachments.length > 0 && (
+                                        <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                                            {taskAttachments.slice(0, 4).map((att, i) => {
+                                                const src = typeof att === 'string' ? att : (att.data || att.url || '');
+                                                return src ? (
+                                                    <img key={i} src={src} className="w-10 h-10 rounded-lg object-cover cursor-pointer hover:scale-110 transition-all" style={{ border: '1px solid rgba(255,255,255,0.15)' }}
+                                                        onClick={() => { setPreviewImages(taskAttachments.map(a => typeof a === 'string' ? a : (a.data || a.url || ''))); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} />
+                                                ) : null;
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {/* Center: Giant ring with tick marks */}
@@ -2742,6 +2772,47 @@ export const GlobalModals = () => {
                                             onFocus={e => e.target.style.borderColor = '#FF8C42'}
                                             onBlur={e => e.target.style.borderColor = '#F0EBE1'}
                                         />
+                                    </div>
+
+                                    {/* 任务附件(图片/视频) */}
+                                    <div>
+                                        <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>任务附件 <span style={{ color: '#C0C8D4' }}>(可选，可添加参考图片)</span></label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {(planForm.attachments || []).map((att, i) => {
+                                                const src = typeof att === 'string' ? att : (att.data || att.url || '');
+                                                return src ? (
+                                                    <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-orange-100 group">
+                                                        <img src={src} className="w-full h-full object-cover" />
+                                                        <button onClick={() => {
+                                                            const newAtts = [...(planForm.attachments || [])];
+                                                            newAtts.splice(i, 1);
+                                                            setPlanForm({ ...planForm, attachments: newAtts });
+                                                        }} className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-bl-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ fontSize: 11 }}>✕</button>
+                                                    </div>
+                                                ) : null;
+                                            })}
+                                            {(!planForm.attachments || planForm.attachments.length < 6) && (
+                                                <label className="w-16 h-16 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95"
+                                                    style={{ background: '#FFFFFF', border: '1.5px dashed #D0D5DD', color: '#9CAABE' }}>
+                                                    <Icons.Image size={18} />
+                                                    <span style={{ fontSize: 9, marginTop: 2 }}>添加</span>
+                                                    <input type="file" accept="image/*,video/*" multiple className="hidden" onChange={e => {
+                                                        const files = Array.from(e.target.files);
+                                                        files.forEach(file => {
+                                                            const reader = new FileReader();
+                                                            reader.onload = ev => {
+                                                                setPlanForm(prev => ({
+                                                                    ...prev,
+                                                                    attachments: [...(prev.attachments || []), { data: ev.target.result, name: file.name }]
+                                                                }));
+                                                            };
+                                                            reader.readAsDataURL(file);
+                                                        });
+                                                        e.target.value = '';
+                                                    }} />
+                                                </label>
+                                            )}
+                                        </div>
                                     </div>
 
                                     {/* 指派给谁 (hidden when only one kid) */}

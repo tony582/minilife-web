@@ -1436,6 +1436,7 @@ const handleSavePlan = async () => {
       standards: planForm.desc || "",
       iconEmoji: planForm.iconEmoji,
       requireApproval: planForm.requireApproval,
+      attachments: planForm.attachments || [],
       periodMaxPerDay: planType === 'habit' ? Number(planForm.periodMaxPerDay) : undefined,
       periodMaxType: planType === 'habit' ? planForm.periodMaxType : undefined,
       pointRule: planForm.pointRule || 'default'
