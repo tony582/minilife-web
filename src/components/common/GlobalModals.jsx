@@ -2067,16 +2067,16 @@ export const GlobalModals = () => {
                         <div className="flex-1 overflow-y-auto p-5 space-y-5 min-h-0">
 
                             {/* Section: 习惯名称 */}
-                            <div>
-                                <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>习惯名称</label>
+                            <div data-field-error={planFormErrors?.title ? 'title' : undefined}>
+                                <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: planFormErrors?.title ? '#EF4444' : '#9CAABE' }}>习惯名称 {planFormErrors?.title && <span className="text-red-500 normal-case">— {planFormErrors.title}</span>}</label>
                                 <input
                                     value={planForm.title}
-                                    onChange={e => setPlanForm({ ...planForm, title: e.target.value })}
+                                    onChange={e => { setPlanForm({ ...planForm, title: e.target.value }); if (planFormErrors?.title) setPlanFormErrors(prev => ({ ...prev, title: undefined })); }}
                                     placeholder="例如：早起、阅读、不玩手机"
-                                    className="w-full rounded-xl px-4 py-3 outline-none font-bold text-base transition-all"
-                                    style={{ background: '#FFFFFF', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }}
-                                    onFocus={e => e.target.style.borderColor = '#4ECDC4'}
-                                    onBlur={e => e.target.style.borderColor = '#F0EBE1'}
+                                    className={`w-full rounded-xl px-4 py-3 outline-none font-bold text-base transition-all ${planFormErrors?.title ? 'animate-shake' : ''}`}
+                                    style={{ background: '#FFFFFF', border: `1.5px solid ${planFormErrors?.title ? '#EF4444' : '#F0EBE1'}`, color: '#1B2E4B' }}
+                                    onFocus={e => e.target.style.borderColor = planFormErrors?.title ? '#EF4444' : '#4ECDC4'}
+                                    onBlur={e => e.target.style.borderColor = planFormErrors?.title ? '#EF4444' : '#F0EBE1'}
                                 />
                             </div>
 
@@ -2364,16 +2364,16 @@ export const GlobalModals = () => {
                                 <div className="space-y-5 animate-fade-in relative z-0">
 
                                     {/* 任务名称 */}
-                                    <div>
-                                        <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>任务名称</label>
+                                    <div data-field-error={planFormErrors?.title ? 'title' : undefined}>
+                                        <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: planFormErrors?.title ? '#EF4444' : '#9CAABE' }}>任务名称 {planFormErrors?.title && <span className="text-red-500 normal-case">— {planFormErrors.title}</span>}</label>
                                         <input
                                             value={planForm.title}
-                                            onChange={e => setPlanForm({ ...planForm, title: e.target.value })}
+                                            onChange={e => { setPlanForm({ ...planForm, title: e.target.value }); if (planFormErrors?.title) setPlanFormErrors(prev => ({ ...prev, title: undefined })); }}
                                             placeholder="例如：练字30分钟、阅读打卡"
-                                            className="w-full rounded-xl px-4 py-3 outline-none font-bold text-base transition-all"
-                                            style={{ background: '#FFFFFF', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }}
-                                            onFocus={e => e.target.style.borderColor = '#FF8C42'}
-                                            onBlur={e => e.target.style.borderColor = '#F0EBE1'}
+                                            className={`w-full rounded-xl px-4 py-3 outline-none font-bold text-base transition-all ${planFormErrors?.title ? 'animate-shake' : ''}`}
+                                            style={{ background: '#FFFFFF', border: `1.5px solid ${planFormErrors?.title ? '#EF4444' : '#F0EBE1'}`, color: '#1B2E4B' }}
+                                            onFocus={e => e.target.style.borderColor = planFormErrors?.title ? '#EF4444' : '#FF8C42'}
+                                            onBlur={e => e.target.style.borderColor = planFormErrors?.title ? '#EF4444' : '#F0EBE1'}
                                         />
                                     </div>
 
@@ -2659,15 +2659,16 @@ export const GlobalModals = () => {
                                                 </div>
 
                                                 {planForm.timeSetting === 'range' && (
-                                                    <div className="animate-fade-in">
+                                                    <div className="animate-fade-in" data-field-error={planFormErrors?.time ? 'time' : undefined}>
+                                                        {planFormErrors?.time && <div className="text-xs font-bold text-red-500 mb-2 flex items-center gap-1">⚠️ {planFormErrors.time}</div>}
                                                         <div className="grid grid-cols-2 gap-3 md:gap-4">
                                                             <div className="w-full min-w-0">
-                                                                <label className="block text-xs font-bold text-slate-600 mb-2 truncate">开始时间</label>
-                                                                <input type="time" value={planForm.startTime} onChange={e => setPlanForm({ ...planForm, startTime: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl px-2 py-2.5 outline-none focus:border-blue-500 font-bold bg-white text-xs sm:text-sm appearance-none" />
+                                                                <label className="block text-xs font-bold mb-2 truncate" style={{ color: planFormErrors?.time ? '#EF4444' : '#475569' }}>开始时间</label>
+                                                                <input type="time" value={planForm.startTime} onChange={e => { setPlanForm({ ...planForm, startTime: e.target.value }); if (planFormErrors?.time) setPlanFormErrors(prev => ({ ...prev, time: undefined })); }} className={`w-full box-border rounded-xl px-2 py-2.5 outline-none focus:border-blue-500 font-bold bg-white text-xs sm:text-sm appearance-none ${planFormErrors?.time ? 'animate-shake' : ''}`} style={{ border: `2px solid ${planFormErrors?.time ? '#EF4444' : '#e2e8f0'}` }} />
                                                             </div>
                                                             <div className="w-full min-w-0">
-                                                                <label className="block text-xs font-bold text-slate-600 mb-2 truncate">结束时间</label>
-                                                                <input type="time" value={planForm.endTime} onChange={e => setPlanForm({ ...planForm, endTime: e.target.value })} className="w-full box-border border-2 border-slate-200 rounded-xl px-2 py-2.5 outline-none focus:border-blue-500 font-bold bg-white text-xs sm:text-sm appearance-none" />
+                                                                <label className="block text-xs font-bold mb-2 truncate" style={{ color: planFormErrors?.time ? '#EF4444' : '#475569' }}>结束时间</label>
+                                                                <input type="time" value={planForm.endTime} onChange={e => { setPlanForm({ ...planForm, endTime: e.target.value }); if (planFormErrors?.time) setPlanFormErrors(prev => ({ ...prev, time: undefined })); }} className={`w-full box-border rounded-xl px-2 py-2.5 outline-none focus:border-blue-500 font-bold bg-white text-xs sm:text-sm appearance-none ${planFormErrors?.time ? 'animate-shake' : ''}`} style={{ border: `2px solid ${planFormErrors?.time ? '#EF4444' : '#e2e8f0'}` }} />
                                                             </div>
                                                         </div>
                                                     </div>

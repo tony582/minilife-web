@@ -114,6 +114,7 @@ export const UIProvider = ({ children }) => {
     const [reviewComment, setReviewComment] = useState("");
     const [newItem, setNewItem] = useState({ name: '', desc: '', price: '', iconEmoji: '🧸', type: 'single', walletTarget: 'spend', charityTarget: '', maxExchanges: 1, periodMaxType: 'lifetime' });
     const [planType, setPlanType] = useState('study');
+    const [planFormErrors, setPlanFormErrors] = useState({});
     const [lastSavedEndTime, setLastSavedEndTime] = useState(''); // Record last used end time to chain tasks
     const [planForm, setPlanForm] = useState({
         targetKids: ['all'], category: '技能', title: '', desc: '',
@@ -174,7 +175,7 @@ export const UIProvider = ({ children }) => {
         showInterestDetailsModal, setShowInterestDetailsModal, quickCompleteTask, setQuickCompleteTask, qcTimeMode, setQcTimeMode,
         qcHours, setQcHours, qcMinutes, setQcMinutes, qcSeconds, setQcSeconds, qcStartTime, setQcStartTime, qcEndTime, setQcEndTime,
         qcNote, setQcNote, qcAttachments, setQcAttachments, pinInput, setPinInput, reviewStars, setReviewStars, reviewComment, setReviewComment,
-        newItem, setNewItem, planType, setPlanType, lastSavedEndTime, setLastSavedEndTime, planForm, setPlanForm,
+        newItem, setNewItem, planType, setPlanType, lastSavedEndTime, setLastSavedEndTime, planForm, setPlanForm, planFormErrors, setPlanFormErrors,
         showPreviewModal, setShowPreviewModal, previewTask, setPreviewTask, showImagePreviewModal, setShowImagePreviewModal,
         previewImages, setPreviewImages, currentPreviewIndex, setCurrentPreviewIndex
     };

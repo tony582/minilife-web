@@ -21,7 +21,7 @@ export const useTaskManager = (authC, dataC, uiC) => {
         setQuickCompleteTask, setQcTimeMode, setQcHours, setQcMinutes, setQcSeconds, 
         setQcStartTime, setQcEndTime, setQcNote, setQcAttachments, qcTimeMode, qcHours, 
         qcMinutes, qcSeconds, qcStartTime, qcEndTime, quickCompleteTask, qcNote, qcAttachments, 
-        editingTask, setEditingTask, planType, planForm, setShowAddPlanModal, setPlanForm, 
+        editingTask, setEditingTask, planType, planForm, setShowAddPlanModal, setPlanForm, planFormErrors, setPlanFormErrors,
         setLastSavedEndTime, lastSavedEndTime, selectedDate, taskToSubmit,
         setShowPenaltyModal, setPenaltyTaskContext, setPenaltySelectedKidIds, setShowRewardModal, 
         setShowRejectModal, setRejectCode, setRejectingTaskInfo, setCelebrateKids, 
@@ -1280,15 +1280,32 @@ const handleQuickComplete = async () => {
 
     // Check on load when kids data is present
 const handleSavePlan = async () => {
-  // P8: Form validation with specific error messages
-  if (!planForm.title || !planForm.title.trim()) return notify("请填写任务名称", "error");
+  // P8: Field-level validation with specific error indicators
+  const errors = {};
+  if (!planForm.title || !planForm.title.trim()) {
+    errors.title = '请填写任务名称';
+  }
 
   // P7: Time validation — end time must be after start time
   if (planType === 'study' && planForm.timeSetting === 'range' && planForm.startTime && planForm.endTime) {
     if (planForm.endTime <= planForm.startTime) {
-      return notify("结束时间不能早于或等于开始时间", "error");
+      errors.time = '结束时间不能早于或等于开始时间';
     }
   }
+
+  if (Object.keys(errors).length > 0) {
+    setPlanFormErrors(errors);
+    // Show first error as toast too
+    const firstError = Object.values(errors)[0];
+    notify(firstError, 'error');
+    // Scroll to first errored field
+    setTimeout(() => {
+      const el = document.querySelector('[data-field-error]');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+    return;
+  }
+  setPlanFormErrors({}); // Clear errors on successful validation
 
   // P5: Reward parsing — default to 5 when custom is on but value is empty
   let rewardNum = planForm.reward !== '' && planForm.reward !== undefined ? parseInt(planForm.reward) : 0;
