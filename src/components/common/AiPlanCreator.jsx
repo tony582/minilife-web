@@ -289,7 +289,8 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                                 </button>
                             </div>
 
-                            {/* Target kids selector */}
+                            {/* Target kids selector (hidden when only one kid) */}
+                            {kids.length > 1 && (
                             <div className="rounded-2xl p-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
                                 <label className="text-[10px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>分配给</label>
                                 <div className="flex flex-wrap gap-2">
@@ -319,6 +320,7 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                                     })}
                                 </div>
                             </div>
+                            )}
 
                             {/* Task cards */}
                             {parsedTasks.map((task, idx) => (

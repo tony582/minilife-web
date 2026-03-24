@@ -376,7 +376,7 @@ export const ParentPlansTab = () => {
                             if (habitCardFilter === 'expense') return t.reward < 0;
                             return true;
                         }).map(t => {
-                            const kName = t.kidId === 'all' ? '全部孩子' : (kids.find(k => k.id === t.kidId)?.name || '未知');
+                            const kName = t.kidId === 'all' ? (kids.length === 1 ? kids[0].name : '全部孩子') : (kids.find(k => k.id === t.kidId)?.name || '未知');
                             const isNeg = t.reward < 0;
                             const accent = isNeg ? C.coral : C.teal;
                             return (

@@ -256,8 +256,8 @@ export const ParentTasksTab = () => {
                 </div>
             </div>
 
-            {/* ═══ Kid Filter Bar ═══ */}
-            {kids.length > 0 && (
+            {/* ═══ Kid Filter Bar (hidden when only one kid) ═══ */}
+            {kids.length > 1 && (
                 <div className="flex overflow-x-auto hide-scrollbar gap-4 sm:gap-5 mb-4 py-3 px-4 items-center">
                     <button onClick={() => setParentKidFilter('all')}
                         className="shrink-0 flex flex-col items-center gap-1.5 transition-transform"
@@ -492,7 +492,7 @@ export const ParentTasksTab = () => {
                     let displayKidId = t.kidId;
                     if (t.kidId === 'all') displayKidId = effectiveFilter === 'all' ? 'all' : effectiveFilter;
 
-                    const kidInfo = displayKidId === 'all' ? { name: '全部孩子', avatar: '👥' } : kids.find(k => k.id === displayKidId);
+                    const kidInfo = displayKidId === 'all' ? (kids.length === 1 ? kids[0] : { name: '全部孩子', avatar: '👥' }) : kids.find(k => k.id === displayKidId);
                     const status = getDailyStatus(t);
                     const isCompleted = status === 'completed';
                     const isPending = status === 'pending_approval';

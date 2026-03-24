@@ -2121,7 +2121,8 @@ export const GlobalModals = () => {
                                 </div>
                             </div>
 
-                            {/* Section: 指派给谁 */}
+                            {/* Section: 指派给谁 (hidden when only one kid) */}
+                            {kids.length > 1 && (
                             <div>
                                 <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>指派给谁</label>
                                 <div className="flex flex-wrap gap-2">
@@ -2156,6 +2157,7 @@ export const GlobalModals = () => {
                                     })}
                                 </div>
                             </div>
+                            )}
 
                             {/* Section: 好坏习惯 + 频率 + 金币 — grouped */}
                             <div className="rounded-2xl p-4 space-y-4" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
@@ -2389,7 +2391,8 @@ export const GlobalModals = () => {
                                         />
                                     </div>
 
-                                    {/* 指派给谁 */}
+                                    {/* 指派给谁 (hidden when only one kid) */}
+                                    {kids.length > 1 && (
                                     <div>
                                         <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>指派给谁</label>
                                         <div className="flex flex-wrap gap-2">
@@ -2432,6 +2435,7 @@ export const GlobalModals = () => {
                                             })}
                                         </div>
                                     </div>
+                                    )}
 
                                     {/* 分类 */}
                                     <div>
