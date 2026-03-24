@@ -419,7 +419,14 @@ const getTaskStatusOnDate = (t, date, kidId) => {
       history: newHistory
     } : t));
     setTaskToSubmit(null);
-    notify("已快速完成并提交！等待家长审核。", "success");
+    // S4: Random encouragement on quick-complete submission
+    const quickEncouragements = [
+      '提交成功！等待家长审核中，你真棒！🌟',
+      '做得好！已提交审核，继续保持！💪',
+      '任务已提交！家长审核后就能获得奖励哦！✨',
+      '很棒！又完成了一个任务，等审核结果吧！🎯',
+    ];
+    notify(quickEncouragements[Math.floor(Math.random() * quickEncouragements.length)], 'success');
   } catch (e) {
     notify("网络请求失败", "error");
   }
@@ -630,7 +637,14 @@ const handleQuickComplete = async () => {
       }
     } else {
 
-      notify('已提交审核，等待家长发放家庭币哦！', 'success');
+      // S4: Random encouragement for pending approval
+      const pendingEncouragements = [
+        '已提交审核！坚持打卡的你真了不起！🌈',
+        '提交成功！等家长审核后就能拿到家庭币了！💰',
+        '做得好！已提交给家长，很快就有奖励啦！⭐',
+        '任务已提交！你的努力不会白费的！🎊',
+      ];
+      notify(pendingEncouragements[Math.floor(Math.random() * pendingEncouragements.length)], 'success');
     }
   } catch (e) {
 
