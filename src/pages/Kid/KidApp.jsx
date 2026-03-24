@@ -83,7 +83,7 @@ export const KidApp = () => {
     const nextLevelExp = getLevelReq(activeKid.level);
 
     return (
-        <div className="min-h-screen font-sans pb-24 text-left animate-fade-in" style={{ background: (kidTab === 'study' || kidTab === 'habit' || kidTab === 'wealth' || kidTab === 'profile') ? '#FBF7F0' : '#f4f7f9' }}>
+        <div className="min-h-screen font-sans pb-24 text-left animate-fade-in overflow-x-hidden" style={{ background: (kidTab === 'study' || kidTab === 'habit' || kidTab === 'wealth' || kidTab === 'profile') ? '#FBF7F0' : '#f4f7f9' }}>
             {/* Mobile navbar - unchanged */}
             <div className="md:hidden bg-white border-b border-slate-100 px-4 py-3 flex justify-between items-center sticky top-0 z-20 shadow-sm">
                 <div className="flex items-center gap-2">
@@ -119,16 +119,16 @@ export const KidApp = () => {
 
             {/* PC unified header */}
             <div className="hidden md:block sticky top-0 z-20 bg-white" style={{ borderBottom: '2px solid #f0ebe1' }}>
-                <div className="max-w-6xl mx-auto px-8">
-                    <div className="flex items-center h-14">
+                <div className="max-w-6xl mx-auto px-4 lg:px-8">
+                    <div className="flex items-center h-14 min-w-0">
                         {/* Logo */}
-                        <div className="flex items-center gap-2.5 flex-shrink-0 mr-8">
+                        <div className="flex items-center gap-2 flex-shrink-0 mr-4 lg:mr-8">
                             <img src="/minilife_logo.png" className="w-7 h-7 rounded-lg" alt="Logo" />
-                            <span className="font-black text-lg tracking-tight text-slate-800">MiniLife</span>
+                            <span className="font-black text-lg tracking-tight text-slate-800 hidden lg:inline">MiniLife</span>
                         </div>
 
                         {/* Underline Tabs — center */}
-                        <nav className="flex items-center gap-1 flex-1">
+                        <nav className="flex items-center gap-0 lg:gap-1 flex-1 min-w-0">
                             {[
                                 { id: 'study', icon: <Icons.BookOpen size={16} />, label: "学习任务" },
                                 { id: 'habit', icon: <Icons.ShieldCheck size={16} />, label: "习惯养成" },
@@ -137,7 +137,7 @@ export const KidApp = () => {
                                 { id: 'profile', icon: <Icons.User size={16} />, label: "我的" }
                             ].map(tab => (
                                 <button key={tab.id} onClick={() => setKidTab(tab.id)}
-                                    className="relative flex items-center gap-1.5 px-4 h-14 font-bold text-[13px] whitespace-nowrap transition-colors"
+                                    className="relative flex items-center gap-1 lg:gap-1.5 px-2 lg:px-4 h-14 font-bold text-[12px] lg:text-[13px] whitespace-nowrap transition-colors"
                                     style={{ color: kidTab === tab.id ? '#FF8C42' : '#8896AB' }}>
                                     {tab.icon} {tab.label}
                                     {/* Active underline */}
