@@ -155,40 +155,19 @@ export const GlobalModals = () => {
             return completedWork + currentWork;
         };
 
-        const finishTimer = async () => {
-            try {
-                const elapsedSec = getElapsedSeconds();
-                const spentMins = Math.max(1, Math.round(elapsedSec / 60));
-                const modeLabel = timerMode === 'forward' ? '正计时' : timerMode === 'countdown' ? '倒计时' : '番茄钟';
-                const spentStr = `${spentMins} 分钟(${modeLabel})`;
+        const finishTimer = () => {
+            // Record time then trigger completion flow (same as completing task from list)
+            const elapsedSec = getElapsedSeconds();
+            const spentMins = Math.max(1, Math.round(elapsedSec / 60));
+            const modeLabel = timerMode === 'forward' ? '正计时' : timerMode === 'countdown' ? '倒计时' : '番茄钟';
+            const spentStr = `${spentMins} 分钟(${modeLabel})`;
 
-                // Record time to task history — keep status in_progress so student can continue
-                const existingHist = task.kidId === 'all'
-                    ? ((task.history || {})[selectedDate] || {})[activeKidId] || {}
-                    : (task.history || {})[selectedDate] || {};
-                const prevTime = existingHist.timeSpent || '';
-                const histUpdate = { ...existingHist, status: existingHist.status || 'in_progress', timeSpent: prevTime ? `${prevTime} + ${spentStr}` : spentStr };
-                let newHistory = { ...(task.history || {}) };
-
-                if (task.kidId === 'all') {
-                    newHistory[selectedDate] = { ...(newHistory[selectedDate] || {}), [activeKidId]: histUpdate };
-                } else {
-                    newHistory[selectedDate] = histUpdate;
-                }
-
-                await apiFetch(`/api/tasks/${task.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ history: newHistory })
-                });
-
-                setTasks(tasks.map(t => t.id === task.id ? { ...t, history: newHistory } : t));
-                clearTimerState();
-                playSuccessSound();
-                notify(`⏱ 已记录 ${spentStr} 学习时间`, 'success');
-            } catch (e) {
-                notify("网络请求失败", "error");
-            }
+            // Pre-fill the quick-complete modal with timer data
+            const taskCopy = { ...task, _timerTimeSpent: spentStr };
+            clearTimerState();
+            playSuccessSound();
+            // Open quick-complete modal — same as clicking "完成" on the task list
+            openQuickComplete(taskCopy);
         };
 
         const skipPomodoroStage = () => {
@@ -233,24 +212,18 @@ export const GlobalModals = () => {
         const ringOffset = ringCircumference * (1 - Math.min(1, Math.max(0, ringProgress)));
 
         return (
-            <div className="fixed inset-0 z-[110] flex items-center justify-center animate-fade-in overflow-hidden"
-                style={{ background: theme.bg }}>
+            <div className="fixed inset-0 z-[110] flex flex-col items-center justify-center animate-fade-in overflow-auto"
+                style={{ background: theme.bg, paddingTop: 'max(env(safe-area-inset-top), 16px)', paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}>
 
                 {/* Ambient glow circles */}
                 {timerMode !== 'select' && (
                     <>
-                        <div className="absolute w-[500px] h-[500px] rounded-full opacity-20 blur-[100px]"
+                        <div className="absolute w-[500px] h-[500px] rounded-full opacity-20 blur-[100px] pointer-events-none"
                             style={{ background: theme.glow, top: '-15%', right: '-10%' }} />
-                        <div className="absolute w-[400px] h-[400px] rounded-full opacity-15 blur-[80px]"
+                        <div className="absolute w-[400px] h-[400px] rounded-full opacity-15 blur-[80px] pointer-events-none"
                             style={{ background: theme.glow, bottom: '-10%', left: '-10%' }} />
                     </>
                 )}
-
-                {/* Back / close button */}
-                <button onClick={handleTimerBack}
-                    className="absolute top-6 left-6 z-10 text-white/40 hover:text-white/80 transition-colors flex items-center gap-1.5 text-sm font-bold">
-                    <Icons.ChevronLeft size={18} /> 返回
-                </button>
 
                 {/* Leave confirmation dialog */}
                 {showTimerLeaveConfirm && (() => {
@@ -347,9 +320,9 @@ export const GlobalModals = () => {
                                 ))}
                             </div>
 
-                            <button onClick={() => setShowTimerModal(false)}
-                                className="mt-6 text-white/30 text-sm font-bold hover:text-white/60 transition-colors">
-                                取消
+                            <button onClick={() => { clearTimerState(); }}
+                                className="mt-6 text-white/30 text-sm font-bold hover:text-white/60 transition-colors flex items-center justify-center gap-1.5">
+                                <Icons.ChevronLeft size={14} /> 返回
                             </button>
                         </div>
                     ) : (
@@ -455,6 +428,12 @@ export const GlobalModals = () => {
                                         <Icons.ChevronRight size={14} /> 跳过{pomodoroIsBreak ? '休息' : '学习'}
                                     </button>
                                 )}
+
+                                {/* Back / Save */}
+                                <button onClick={handleTimerBack}
+                                    className="w-full py-3 text-white/40 font-bold text-sm hover:text-white/60 transition-all flex items-center justify-center gap-1.5">
+                                    <Icons.ChevronLeft size={14} /> 返回
+                                </button>
 
                                 {/* Abandon */}
                                 <button onClick={clearTimerState}

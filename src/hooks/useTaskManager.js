@@ -508,6 +508,19 @@ const getTaskStatusOnDate = (t, date, kidId) => {
       }
     }
   }
+  // If coming from timer, override duration with timer-recorded time
+  if (task._timerTimeSpent) {
+    const timerMinMatch = task._timerTimeSpent.match(/(\d+)\s*分钟/);
+    if (timerMinMatch) {
+      const totalM = parseInt(timerMinMatch[1]);
+      dHours = Math.floor(totalM / 60);
+      dMinutes = totalM % 60;
+      defaultMode = 'duration';
+      // Calculate start time from timer duration
+      const startRealDate = new Date(now.getTime() - totalM * 60000);
+      sTime = `${String(startRealDate.getHours()).padStart(2, '0')}:${String(startRealDate.getMinutes()).padStart(2, '0')}`;
+    }
+  }
   setQcTimeMode(defaultMode);
   setQcHours(dHours);
   setQcMinutes(dMinutes);
