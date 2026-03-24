@@ -2817,28 +2817,27 @@ export const GlobalModals = () => {
 
                                     {/* ═══ 分类 + 指派 (紧凑行) ═══ */}
                                     <div className="rounded-2xl p-4 space-y-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
-                                        {/* 分类选择 — 紧凑的下拉式 + 管理按钮 */}
+                                        {/* 分类选择 — 下拉列表 + 管理按钮 */}
                                         <div>
                                             <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>分类</label>
                                             <div className="flex items-center gap-2">
-                                                <div className="flex flex-wrap gap-1.5 flex-1">
-                                                    {[...allCategories, ...(parentSettings.customCategories || []).filter(c => !allCategories.includes(c))].slice(0, 8).map(c => (
-                                                        <button key={c}
-                                                            onClick={() => setPlanForm({ ...planForm, category: c, iconName: getIconForCategory(c) })}
-                                                            className="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all active:scale-95"
-                                                            style={planForm.category === c
-                                                                ? { background: getCatHexColor(c), color: '#fff', boxShadow: `0 2px 8px ${getCatHexColor(c)}40` }
-                                                                : { background: '#FBF7F0', color: '#5A6E8A', border: '1px solid #F0EBE1' }
-                                                            }
-                                                        >
-                                                            {c}
-                                                        </button>
-                                                    ))}
+                                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                    <div className="w-3 h-3 rounded-full shrink-0" style={{ background: getCatHexColor(planForm.category) }} />
+                                                    <select
+                                                        value={planForm.category}
+                                                        onChange={e => setPlanForm({ ...planForm, category: e.target.value, iconName: getIconForCategory(e.target.value) })}
+                                                        className="flex-1 min-w-0 rounded-xl px-3 py-2.5 outline-none font-bold text-sm appearance-none cursor-pointer"
+                                                        style={{ background: '#FBF7F0', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }}
+                                                    >
+                                                        {[...allCategories, ...(parentSettings.customCategories || []).filter(c => !allCategories.includes(c))].map(c => (
+                                                            <option key={c} value={c}>{c}</option>
+                                                        ))}
+                                                    </select>
                                                 </div>
                                                 <button
                                                     onClick={() => setPlanForm({ ...planForm, _showCategoryManager: true })}
-                                                    className="shrink-0 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all active:scale-95 flex items-center gap-1"
-                                                    style={{ background: '#FBF7F0', color: '#9CAABE', border: '1px dashed #D0C9BD' }}
+                                                    className="shrink-0 px-3 py-2.5 rounded-xl text-[11px] font-bold transition-all active:scale-95 flex items-center gap-1"
+                                                    style={{ background: '#FBF7F0', color: '#9CAABE', border: '1.5px solid #F0EBE1' }}
                                                 >
                                                     <Icons.Settings size={12} /> 管理
                                                 </button>
