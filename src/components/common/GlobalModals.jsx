@@ -30,6 +30,96 @@ export const GlobalModals = () => {
     const activeKid = kids.find(k => k.id === activeKidId);
     const { showAiTaskCreator, setShowAiTaskCreator } = uiC;
     
+    // ═══ TIMER: Tick interval ═══
+    useEffect(() => {
+        if (!isTimerRunning || timerPaused) return;
+        const interval = setInterval(() => {
+            if (timerMode === 'forward') {
+                setTimerSeconds(s => s + 1);
+            } else if (timerMode === 'countdown') {
+                setTimerSeconds(s => {
+                    if (s <= 1) {
+                        clearInterval(interval);
+                        playSuccessSound();
+                        return 0;
+                    }
+                    return s - 1;
+                });
+            } else if (timerMode === 'pomodoro') {
+                setTimerSeconds(s => {
+                    if (s <= 1) {
+                        // Auto-switch work/break
+                        playSuccessSound();
+                        if (pomodoroIsBreak) {
+                            // Break ended → next work session
+                            setPomodoroIsBreak(false);
+                            setPomodoroSession(ps => ps + 1);
+                            return 25 * 60;
+                        } else {
+                            // Work ended → break (5min, or 15min after 4th)
+                            setPomodoroIsBreak(true);
+                            const breakMins = (pomodoroSession % 4 === 0) ? 15 : 5;
+                            return breakMins * 60;
+                        }
+                    }
+                    return s - 1;
+                });
+            }
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [isTimerRunning, timerPaused, timerMode, pomodoroIsBreak, pomodoroSession]);
+
+    // ═══ TIMER: localStorage persistence ═══
+    const TIMER_KEY = 'minilife_timer_state';
+    useEffect(() => {
+        if (isTimerRunning && timerTargetId) {
+            localStorage.setItem(TIMER_KEY, JSON.stringify({
+                taskId: timerTargetId, mode: timerMode, seconds: timerSeconds,
+                totalSeconds: timerTotalSeconds, running: isTimerRunning, paused: timerPaused,
+                pomodoroSession, pomodoroIsBreak, savedAt: Date.now()
+            }));
+        }
+    }, [timerSeconds, isTimerRunning, timerPaused, timerMode, timerTargetId]);
+
+    // ═══ TIMER: Restore on mount ═══
+    useEffect(() => {
+        try {
+            const saved = JSON.parse(localStorage.getItem(TIMER_KEY));
+            if (saved && saved.taskId && saved.running) {
+                const task = tasks.find(t => t.id === saved.taskId);
+                if (task) {
+                    // Calculate elapsed time while away
+                    const elapsed = Math.floor((Date.now() - saved.savedAt) / 1000);
+                    let restoredSeconds = saved.seconds;
+                    if (!saved.paused) {
+                        if (saved.mode === 'forward') restoredSeconds += elapsed;
+                        else restoredSeconds = Math.max(0, restoredSeconds - elapsed);
+                    }
+                    setTimerTargetId(saved.taskId);
+                    setTimerMode(saved.mode);
+                    setTimerSeconds(restoredSeconds);
+                    setTimerTotalSeconds(saved.totalSeconds);
+                    setIsTimerRunning(true);
+                    setTimerPaused(saved.paused);
+                    setPomodoroSession(saved.pomodoroSession || 1);
+                    setPomodoroIsBreak(saved.pomodoroIsBreak || false);
+                    setShowTimerModal(true);
+                }
+            }
+        } catch (e) { /* ignore */ }
+    }, []);
+
+    const clearTimerState = () => {
+        localStorage.removeItem(TIMER_KEY);
+        setIsTimerRunning(false);
+        setTimerPaused(false);
+        setTimerMode('select');
+        setTimerSeconds(0);
+        setPomodoroSession(1);
+        setPomodoroIsBreak(false);
+        setShowTimerModal(false);
+    };
+
     const renderTimerModal = () => {
         if (!showTimerModal) return null;
         const task = tasks.find(t => t.id === timerTargetId);
@@ -39,24 +129,22 @@ export const GlobalModals = () => {
         const mins = Math.floor((timerSeconds % 3600) / 60);
         const secs = timerSeconds % 60;
 
-        // Progress for countdown ring (0 to 1)
-        const progress = timerMode === 'countdown' && timerTotalSeconds > 0
-            ? 1 - (timerSeconds / timerTotalSeconds)
-            : timerMode === 'forward' ? Math.min(timerSeconds / (timerTotalSeconds || 900), 1) : 0;
-        const circumference = 2 * Math.PI * 120;
-        const strokeDashoffset = circumference * (1 - progress);
+        // Calculate actual study time for recording
+        const getElapsedSeconds = () => {
+            if (timerMode === 'forward') return timerSeconds;
+            if (timerMode === 'countdown') return timerTotalSeconds - timerSeconds;
+            // pomodoro: each completed work session = 25min, current partial
+            const completedWork = Math.max(0, pomodoroSession - 1) * 25 * 60;
+            const currentWork = pomodoroIsBreak ? 0 : (25 * 60 - timerSeconds);
+            return completedWork + currentWork;
+        };
 
         const finishTimer = async () => {
             try {
-                let spentStr = '';
-                if (timerMode === 'forward') {
-                    const spentMins = Math.max(1, Math.round(timerSeconds / 60));
-                    spentStr = `${spentMins} 分钟(正数)`;
-                } else if (timerMode === 'countdown') {
-                    const elapsed = timerTotalSeconds - timerSeconds;
-                    const spentMins = Math.max(1, Math.round(elapsed / 60));
-                    spentStr = `${spentMins} 分钟(倒数)`;
-                }
+                const elapsedSec = getElapsedSeconds();
+                const spentMins = Math.max(1, Math.round(elapsedSec / 60));
+                const modeLabel = timerMode === 'forward' ? '正计时' : timerMode === 'countdown' ? '倒计时' : '番茄钟';
+                const spentStr = `${spentMins} 分钟(${modeLabel})`;
 
                 const histUpdate = { status: 'in_progress', timeSpent: spentStr };
                 let newHistory = { ...(task.history || {}) };
@@ -74,93 +162,136 @@ export const GlobalModals = () => {
                 });
 
                 setTasks(tasks.map(t => t.id === task.id ? { ...t, history: newHistory } : t));
-                setShowTimerModal(false);
-                setIsTimerRunning(false);
+                clearTimerState();
                 playSuccessSound();
-                // S2: Auto-trigger quick complete so student can submit immediately
                 setTimeout(() => openQuickComplete(task), 300);
             } catch (e) {
                 notify("网络请求失败", "error");
             }
         };
 
+        const skipPomodoroStage = () => {
+            playSuccessSound();
+            if (pomodoroIsBreak) {
+                setPomodoroIsBreak(false);
+                setPomodoroSession(s => s + 1);
+                setTimerSeconds(25 * 60);
+            } else {
+                setPomodoroIsBreak(true);
+                const breakMins = (pomodoroSession % 4 === 0) ? 15 : 5;
+                setTimerSeconds(breakMins * 60);
+            }
+        };
+
+        // Mode colors
+        const modeColors = {
+            forward: { h: '#4F46E5', m: '#A855F7', s: '#F97316', accent: '#6366F1' },
+            countdown: { h: '#4F46E5', m: '#A855F7', s: '#F97316', accent: '#8B5CF6' },
+            pomodoro: { h: pomodoroIsBreak ? '#10B981' : '#EF4444', m: pomodoroIsBreak ? '#14B8A6' : '#F43F5E', s: pomodoroIsBreak ? '#06D6A0' : '#F97316', accent: pomodoroIsBreak ? '#10B981' : '#EF4444' },
+        };
+        const mc = modeColors[timerMode] || modeColors.forward;
+
+        const TimeCard = ({ value, label, color }) => (
+            <div className="flex flex-col items-center">
+                <div className="rounded-2xl flex items-center justify-center shadow-lg text-white font-black"
+                    style={{ background: `linear-gradient(135deg, ${color}, ${color}dd)`, width: 80, height: 90, fontSize: 40 }}>
+                    {String(value).padStart(2, '0')}
+                </div>
+                <div className="text-white/50 text-[10px] font-bold mt-1.5">{label}</div>
+            </div>
+        );
+
         return (
             <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 animate-fade-in"
                 style={{ background: 'linear-gradient(135deg, #FF8C42 0%, #FF6B35 30%, #E85D26 60%, #C94B18 100%)' }}>
-                <div className="w-full max-w-sm mt-[-8vh] text-center">
-                    {/* Status pill */}
-                    <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 mb-4">
+                <div className="w-full max-w-sm mt-[-6vh] text-center">
+                    {/* Task title */}
+                    <h2 className="text-2xl font-black text-white mb-4 drop-shadow-lg">{task.title}</h2>
+
+                    <div className="bg-white/15 backdrop-blur-sm rounded-[2rem] p-5 border border-white/20 shadow-2xl">
+                        {/* Mode tabs — only when not running */}
+                        {timerMode === 'select' && (
+                            <div className="flex gap-1 mb-5 bg-white/10 rounded-full p-1">
+                                {[
+                                    { id: 'forward', icon: '📈', label: '正计时' },
+                                    { id: 'countdown', icon: '⏱', label: '倒计时' },
+                                    { id: 'pomodoro', icon: '🍅', label: '番茄钟' },
+                                ].map(m => (
+                                    <button key={m.id}
+                                        onClick={() => {
+                                            if (m.id === 'forward') {
+                                                setTimerMode('forward'); setTimerSeconds(0); setIsTimerRunning(true);
+                                            } else if (m.id === 'countdown') {
+                                                setTimerMode('countdown'); setTimerSeconds(timerTotalSeconds || 900); setIsTimerRunning(true);
+                                            } else {
+                                                setTimerMode('pomodoro'); setTimerSeconds(25 * 60); setPomodoroSession(1); setPomodoroIsBreak(false); setIsTimerRunning(true);
+                                            }
+                                        }}
+                                        className="flex-1 py-3 rounded-full text-white font-bold text-sm transition-all hover:bg-white/15 active:scale-95">
+                                        {m.icon} {m.label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
                         {timerMode === 'select' ? (
-                            <span className="text-white/90 text-sm font-bold">🎯 选择计时方式</span>
+                            <div className="py-8">
+                                <div className="text-6xl mb-4">🎯</div>
+                                <div className="text-white/80 font-bold text-sm mb-2">选择计时方式开始学习</div>
+                                <div className="text-white/40 text-xs px-4">
+                                    正计时从零开始 · 倒计时预设{Math.round((timerTotalSeconds || 900) / 60)}分钟 · 番茄钟25分钟工作+5分钟休息
+                                </div>
+                                <button onClick={() => setShowTimerModal(false)} className="mt-6 text-white/40 text-sm font-bold hover:text-white/70">取消</button>
+                            </div>
                         ) : (
                             <>
-                                {!timerPaused && <span className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></span>}
-                                <span className="text-white/90 text-sm font-bold">
-                                    {timerPaused ? '⏸ 暂停中' : (timerMode === 'forward' ? '⬆️ 正数计时' : '⬇️ 倒数计时')}
-                                </span>
+                                {/* Mode indicator */}
+                                <div className="flex items-center justify-center gap-2 mb-4">
+                                    <span className={`w-2 h-2 rounded-full ${timerPaused ? 'bg-yellow-300' : 'bg-green-300 animate-pulse'}`}></span>
+                                    <span className="text-white/80 text-sm font-bold">
+                                        {timerMode === 'pomodoro'
+                                            ? (pomodoroIsBreak ? '☕ 休息时间' : `💪 工作时间 · 第${pomodoroSession}个番茄`)
+                                            : (timerMode === 'forward' ? '📈 正计时' : '⏱ 倒计时')}
+                                    </span>
+                                    {timerPaused && <span className="text-yellow-300 text-xs font-bold">已暂停</span>}
+                                </div>
+
+                                {/* Time display — color cards */}
+                                <div className="flex items-center justify-center gap-3 mb-5">
+                                    <TimeCard value={hrs} label="小时" color={mc.h} />
+                                    <span className="text-white/40 text-3xl font-bold pb-5">:</span>
+                                    <TimeCard value={mins} label="分钟" color={mc.m} />
+                                    <span className="text-white/40 text-3xl font-bold pb-5">:</span>
+                                    <TimeCard value={secs} label="秒" color={mc.s} />
+                                </div>
+
+                                {/* Controls */}
+                                <div className="space-y-2.5">
+                                    <div className="flex gap-2.5">
+                                        <button onClick={() => setTimerPaused(!timerPaused)}
+                                            className="flex-1 py-3 font-black rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2 text-sm"
+                                            style={{ background: timerPaused ? '#3B82F6' : '#F59E0B', color: 'white' }}>
+                                            {timerPaused ? <><Icons.Play size={16} /> 继续</> : <><Icons.Pause size={16} /> 暂停</>}
+                                        </button>
+                                        <button onClick={finishTimer}
+                                            className="flex-1 py-3 bg-emerald-500 text-white font-black rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2 text-sm shadow-lg shadow-emerald-500/30">
+                                            <Icons.CheckCircle size={16} /> 完成
+                                        </button>
+                                    </div>
+                                    {timerMode === 'pomodoro' && (
+                                        <button onClick={skipPomodoroStage}
+                                            className="w-full py-2.5 text-white/60 font-bold bg-white/10 rounded-2xl hover:bg-white/15 transition-all text-sm flex items-center justify-center gap-2">
+                                            <Icons.ChevronRight size={14} /> 跳过{pomodoroIsBreak ? '休息' : '工作'}阶段
+                                        </button>
+                                    )}
+                                    <button onClick={clearTimerState}
+                                        className="w-full py-2 text-white/30 font-bold text-xs hover:text-red-300 transition-all">
+                                        放弃本次计时
+                                    </button>
+                                </div>
                             </>
                         )}
                     </div>
-                    <h2 className="text-2xl font-black text-white mb-6 drop-shadow-lg">{task.title}</h2>
-
-                    {timerMode === 'select' ? (
-                        <div className="bg-white/15 backdrop-blur-sm rounded-[2rem] p-6 border border-white/20 shadow-2xl space-y-3">
-                            <button onClick={() => { setTimerMode('forward'); setTimerSeconds(0); setIsTimerRunning(true); }}
-                                className="w-full py-4 text-white font-black bg-white/20 rounded-2xl shadow-lg hover:bg-white/30 hover:scale-[1.02] transition-all outline-none flex items-center justify-center gap-3 border border-white/20">
-                                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><Icons.TrendingUp size={22} /></div>
-                                <div className="text-left"><div className="font-black text-base">正数计时 ⬆️</div><div className="text-white/60 text-xs font-bold">从零开始记录</div></div>
-                            </button>
-                            <button onClick={() => { setTimerMode('countdown'); setTimerSeconds(timerTotalSeconds); setIsTimerRunning(true); }}
-                                className="w-full py-4 text-white font-black bg-white/20 rounded-2xl shadow-lg hover:bg-white/30 hover:scale-[1.02] transition-all outline-none flex items-center justify-center gap-3 border border-white/20">
-                                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><Icons.Clock size={22} /></div>
-                                <div className="text-left"><div className="font-black text-base">倒数计时 ⬇️</div><div className="text-white/60 text-xs font-bold">预设 {Math.round(timerTotalSeconds / 60)} 分钟</div></div>
-                            </button>
-                            <button onClick={() => setShowTimerModal(false)} className="mt-2 w-full py-3 text-white/50 font-bold hover:text-white/80 transition-colors text-sm">取消</button>
-                        </div>
-                    ) : (
-                        <div className="bg-white/15 backdrop-blur-sm rounded-[2rem] p-6 border border-white/20 shadow-2xl">
-                            {/* Progress Ring */}
-                            <div className="relative w-56 h-56 mx-auto mb-6">
-                                <svg className="w-full h-full -rotate-90" viewBox="0 0 260 260">
-                                    <circle cx="130" cy="130" r="120" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="8" />
-                                    <circle cx="130" cy="130" r="120" fill="none" stroke="white" strokeWidth="8"
-                                        strokeLinecap="round"
-                                        strokeDasharray={circumference}
-                                        strokeDashoffset={strokeDashoffset}
-                                        className="transition-all duration-1000 ease-linear"
-                                    />
-                                </svg>
-                                {/* Time display inside ring */}
-                                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <div className="text-4xl sm:text-5xl font-black text-white font-mono tracking-tight drop-shadow-lg">
-                                        {hrs > 0 && <>{String(hrs).padStart(2, '0')}:</>}
-                                        {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
-                                    </div>
-                                    <div className="text-white/50 text-xs font-bold mt-1">
-                                        {timerMode === 'forward' ? '已经过' : '剩余'}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Controls */}
-                            <div className="space-y-3">
-                                <button onClick={() => setTimerPaused(!timerPaused)}
-                                    className="w-full py-3.5 text-white/90 font-bold bg-white/15 rounded-2xl border border-white/20 hover:bg-white/25 transition-all focus:outline-none flex justify-center items-center gap-2">
-                                    {timerPaused ? <><Icons.Play size={18} /> 继续计时</> : <><Icons.Pause size={18} /> 暂停</>}
-                                </button>
-                                <div className="flex gap-3">
-                                    <button onClick={() => { setIsTimerRunning(false); setShowTimerModal(false); }}
-                                        className="flex-1 py-3.5 text-white/60 font-bold bg-white/10 rounded-2xl hover:bg-red-500/30 hover:text-white transition-all">
-                                        放弃
-                                    </button>
-                                    <button onClick={finishTimer}
-                                        className="flex-[2] py-3.5 bg-white text-orange-600 font-black rounded-2xl shadow-lg shadow-black/10 hover:scale-[1.02] transition-all outline-none flex items-center justify-center gap-2">
-                                        <Icons.CheckCircle size={18} /> 完成打卡！
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
         );
