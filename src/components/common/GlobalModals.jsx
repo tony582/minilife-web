@@ -72,14 +72,15 @@ export const GlobalModals = () => {
     // ═══ TIMER: localStorage persistence ═══
     const TIMER_KEY = 'minilife_timer_state';
     useEffect(() => {
-        if (isTimerRunning && timerTargetId) {
+        // Only auto-save when timer modal is visible AND running
+        if (isTimerRunning && timerTargetId && showTimerModal) {
             localStorage.setItem(TIMER_KEY, JSON.stringify({
                 taskId: timerTargetId, mode: timerMode, seconds: timerSeconds,
                 totalSeconds: timerTotalSeconds, running: isTimerRunning, paused: timerPaused,
                 pomodoroSession, pomodoroIsBreak, savedAt: Date.now()
             }));
         }
-    }, [timerSeconds, isTimerRunning, timerPaused, timerMode, timerTargetId]);
+    }, [timerSeconds, isTimerRunning, timerPaused, timerMode, timerTargetId, showTimerModal]);
 
     // ═══ TIMER: Restore on mount ═══
     useEffect(() => {
@@ -141,11 +142,12 @@ export const GlobalModals = () => {
                 pomodoroSession, pomodoroIsBreak, savedAt: Date.now()
             }));
         } catch (e) { /* ignore */ }
-        // Close the modal without clearing localStorage
-        setIsTimerRunning(false);
-        setTimerPaused(true);
+        // Close the modal and stop timer -- clear timerTargetId LAST to prevent
+        // the auto-save useEffect from overwriting with stale data
         setShowTimerLeaveConfirm(false);
         setShowTimerModal(false);
+        setIsTimerRunning(false);
+        setTimerPaused(true);
     };
 
     const renderTimerModal = () => {
