@@ -31,6 +31,9 @@ import { ImagePreviewModal } from '../modals/ImagePreviewModal';
 import { QrZoomModal } from '../modals/QrZoomModal';
 import { QrScannerModal } from '../modals/QrScannerModal';
 import { AddItemModal } from '../modals/AddItemModal';
+import { AddKidModal } from '../modals/AddKidModal';
+import { KidPreviewModal } from '../modals/KidPreviewModal';
+import { AddPlanModal } from '../modals/AddPlanModal';
 
 
 export const GlobalModals = () => {
@@ -3764,14 +3767,14 @@ export const GlobalModals = () => {
 
             <TaskSubmitModal context={context} />
             <QuickCompleteModal context={context} />
-            {renderKidPreviewModal()}
+            <KidPreviewModal context={context} />
             <TransferModal context={context} />
             <ReviewModal context={context} />
             <AddItemModal context={context} />
-            {renderAddPlanModal()}
+            <AddPlanModal context={context} />
             <TimerModal context={context} />
             <CalendarModal context={context} />
-            {renderAddKidModal()}
+            <AddKidModal context={context} />
             <PenaltyModal context={context} />
             <RewardModal context={context} />
             <EmotionalReminderModal context={context} />
