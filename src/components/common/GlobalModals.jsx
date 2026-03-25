@@ -124,7 +124,7 @@ export const GlobalModals = () => {
     const [showTimerLeaveConfirm, setShowTimerLeaveConfirm] = useState(false);
 
     const handleTimerBack = () => {
-        if (timerMode !== 'select' && (timerSeconds > 0 || timerMode === 'forward')) {
+        if (isTimerRunning) {
             setTimerPaused(true);
             setShowTimerLeaveConfirm(true);
         } else {
@@ -133,13 +133,19 @@ export const GlobalModals = () => {
     };
 
     const handleTimerSaveAndLeave = () => {
-        // Save state to localStorage (already written by useEffect) and close modal
-        // Pause the timer so the save useEffect writes paused=true, then stop running
+        // Explicitly write a paused save snapshot so it persists correctly
+        try {
+            localStorage.setItem(TIMER_KEY, JSON.stringify({
+                taskId: timerTargetId, mode: timerMode, seconds: timerSeconds,
+                totalSeconds: timerTotalSeconds, running: true, paused: true,
+                pomodoroSession, pomodoroIsBreak, savedAt: Date.now()
+            }));
+        } catch (e) { /* ignore */ }
+        // Close the modal without clearing localStorage
+        setIsTimerRunning(false);
         setTimerPaused(true);
         setShowTimerLeaveConfirm(false);
         setShowTimerModal(false);
-        // Stop the timer running flag AFTER pause is set, so localStorage has paused=true
-        setTimeout(() => setIsTimerRunning(false), 100);
     };
 
     const renderTimerModal = () => {
