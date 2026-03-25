@@ -614,7 +614,7 @@ export const ParentTasksTab = () => {
 
             {/* ═══ Kid Picker Modal (for completing "all kids" tasks) ═══ */}
             {kidPickerTask && ReactDOM.createPortal(
-                <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center" onClick={() => setKidPickerTask(null)}>
+                <div className="fixed inset-0 z-[200] flex items-center justify-center" onClick={() => setKidPickerTask(null)}>
                     <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
                     <div className="relative w-full max-w-sm mx-4 mb-4 sm:mb-0 rounded-2xl p-5 animate-fade-in"
                         style={{ background: C.bgCard, boxShadow: C.dropShadow }}
