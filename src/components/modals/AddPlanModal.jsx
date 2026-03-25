@@ -18,9 +18,9 @@ export const AddPlanModal = ({ context }) => {
         AvatarDisplay
     } = context;
 
-    if (!showAddPlanModal) return null;
+    const fileInputRef = useRef(null);
 
-    const fileInputRef = React.createRef();
+    if (!showAddPlanModal) return null;
 
         try {
             // Define color themes for habits
