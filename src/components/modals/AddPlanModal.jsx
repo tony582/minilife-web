@@ -73,7 +73,7 @@ export const AddPlanModal = ({ context }) => {
                             <div data-field-error={planFormErrors?.title ? 'title' : undefined}>
                                 <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: planFormErrors?.title ? '#EF4444' : '#9CAABE' }}>习惯名称 {planFormErrors?.title && <span className="text-red-500 normal-case">— {planFormErrors.title}</span>}</label>
                                 <input
-                                    value={planForm.title}
+                                    value={planForm.title || ''}
                                     onChange={e => { setPlanForm({ ...planForm, title: e.target.value }); if (planFormErrors?.title) setPlanFormErrors(prev => ({ ...prev, title: undefined })); }}
                                     placeholder="例如：早起、阅读、不玩手机"
                                     className={`w-full rounded-xl px-4 py-3 outline-none font-bold text-base transition-all ${planFormErrors?.title ? 'animate-shake' : ''}`}
@@ -370,7 +370,7 @@ export const AddPlanModal = ({ context }) => {
                                     <div data-field-error={planFormErrors?.title ? 'title' : undefined}>
                                         <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: planFormErrors?.title ? '#EF4444' : '#9CAABE' }}>任务名称 {planFormErrors?.title && <span className="text-red-500 normal-case">— {planFormErrors.title}</span>}</label>
                                         <input
-                                            value={planForm.title}
+                                            value={planForm.title || ''}
                                             onChange={e => { setPlanForm({ ...planForm, title: e.target.value }); if (planFormErrors?.title) setPlanFormErrors(prev => ({ ...prev, title: undefined })); }}
                                             placeholder="例如：练字30分钟、阅读打卡"
                                             className={`w-full rounded-xl px-4 py-3 outline-none font-bold text-base transition-all ${planFormErrors?.title ? 'animate-shake' : ''}`}
@@ -384,7 +384,7 @@ export const AddPlanModal = ({ context }) => {
                                     <div className="rounded-2xl p-4 space-y-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
                                         <label className="text-[11px] font-bold uppercase tracking-wider block" style={{ color: '#9CAABE' }}>任务说明与附件 <span style={{ color: '#C0C8D4' }}>(可选)</span></label>
                                         <textarea
-                                            value={planForm.desc}
+                                            value={planForm.desc || ''}
                                             onChange={e => setPlanForm({ ...planForm, desc: e.target.value })}
                                             placeholder="描述任务的具体要求或标准..."
                                             className="w-full rounded-xl px-4 py-3 outline-none font-bold text-sm transition-all resize-y min-h-[60px]"
@@ -446,7 +446,7 @@ export const AddPlanModal = ({ context }) => {
                                                 <div className="flex items-center gap-2 flex-1 min-w-0">
                                                     <div className="w-3 h-3 rounded-full shrink-0" style={{ background: getCatHexColor(planForm.category) }} />
                                                     <select
-                                                        value={planForm.category}
+                                                        value={planForm.category || ''}
                                                         onChange={e => setPlanForm({ ...planForm, category: e.target.value, iconName: getIconForCategory(e.target.value) })}
                                                         className="flex-1 min-w-0 rounded-xl px-3 py-2.5 outline-none font-bold text-sm appearance-none cursor-pointer"
                                                         style={{ background: '#FBF7F0', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }}
@@ -647,14 +647,14 @@ export const AddPlanModal = ({ context }) => {
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div className="w-full min-w-0">
                                                     <label className="text-[10px] font-bold mb-1.5 block" style={{ color: '#9CAABE' }}>开始日期</label>
-                                                    <input type="date" value={planForm.startDate} onChange={e => setPlanForm({ ...planForm, startDate: e.target.value })}
+                                                    <input type="date" value={planForm.startDate || ''} onChange={e => setPlanForm({ ...planForm, startDate: e.target.value })}
                                                         className="w-full box-border rounded-xl px-3 py-2.5 outline-none font-bold text-xs appearance-none"
                                                         style={{ background: '#FBF7F0', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }} />
                                                 </div>
                                                 {planForm.repeatType !== 'today' && (
                                                     <div className="w-full min-w-0">
                                                         <label className="text-[10px] font-bold mb-1.5 block" style={{ color: '#9CAABE' }}>结束日期 <span style={{ color: '#C0C8D4' }}>(可选)</span></label>
-                                                        <input type="date" value={planForm.endDate} onChange={e => setPlanForm({ ...planForm, endDate: e.target.value })}
+                                                        <input type="date" value={planForm.endDate || ''} onChange={e => setPlanForm({ ...planForm, endDate: e.target.value })}
                                                             className="w-full box-border rounded-xl px-3 py-2.5 outline-none font-bold text-xs appearance-none"
                                                             style={{ background: '#FBF7F0', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }} />
                                                     </div>
@@ -709,17 +709,17 @@ export const AddPlanModal = ({ context }) => {
                                                     <div className="grid grid-cols-2 gap-4">
                                                         <div>
                                                             <label className="block text-xs font-bold text-slate-600 mb-2">该周期内需完成几次？</label>
-                                                            <input type="number" min="1" max="99" value={planForm.periodTargetCount} onChange={e => setPlanForm({ ...planForm, periodTargetCount: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold bg-white text-orange-700" />
+                                                            <input type="number" min="1" max="99" value={planForm.periodTargetCount || 1} onChange={e => setPlanForm({ ...planForm, periodTargetCount: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold bg-white text-orange-700" />
                                                         </div>
                                                         <div>
                                                             <label className="block text-xs font-bold text-slate-600 mb-2">每次奖励上限次数 <span className="opacity-50">(防刷)</span></label>
-                                                            <input type="number" min="1" max="10" value={planForm.periodMaxPerDay} onChange={e => setPlanForm({ ...planForm, periodMaxPerDay: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold bg-white text-orange-700" />
+                                                            <input type="number" min="1" max="10" value={planForm.periodMaxPerDay || 1} onChange={e => setPlanForm({ ...planForm, periodMaxPerDay: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold bg-white text-orange-700" />
                                                         </div>
                                                     </div>
 
                                                     <div>
                                                         <label className="block text-xs font-bold text-slate-600 mb-2">允许执行的日期限制</label>
-                                                        <select value={planForm.periodDaysType} onChange={e => setPlanForm({ ...planForm, periodDaysType: e.target.value })} className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-orange-500 font-bold text-base text-slate-700 appearance-none">
+                                                        <select value={planForm.periodDaysType || 'any'} onChange={e => setPlanForm({ ...planForm, periodDaysType: e.target.value })} className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-orange-500 font-bold text-base text-slate-700 appearance-none">
                                                             <option value="any">⏳ 任意时间都可以完成</option>
                                                             <option value="workdays">💼 仅限工作日完成</option>
                                                             <option value="weekends">🎉 仅限周末完成</option>
@@ -785,11 +785,11 @@ export const AddPlanModal = ({ context }) => {
                                                         <div className="grid grid-cols-2 gap-3 md:gap-4">
                                                             <div className="w-full min-w-0">
                                                                 <label className="block text-xs font-bold mb-2 truncate" style={{ color: planFormErrors?.time ? '#EF4444' : '#475569' }}>开始时间</label>
-                                                                <input type="time" value={planForm.startTime} onChange={e => { setPlanForm({ ...planForm, startTime: e.target.value }); if (planFormErrors?.time) setPlanFormErrors(prev => ({ ...prev, time: undefined })); }} className={`w-full box-border rounded-xl px-2 py-2.5 outline-none focus:border-blue-500 font-bold bg-white text-xs sm:text-sm appearance-none ${planFormErrors?.time ? 'animate-shake' : ''}`} style={{ border: `2px solid ${planFormErrors?.time ? '#EF4444' : '#e2e8f0'}` }} />
+                                                                <input type="time" value={planForm.startTime || ''} onChange={e => { setPlanForm({ ...planForm, startTime: e.target.value }); if (planFormErrors?.time) setPlanFormErrors(prev => ({ ...prev, time: undefined })); }} className={`w-full box-border rounded-xl px-2 py-2.5 outline-none focus:border-blue-500 font-bold bg-white text-xs sm:text-sm appearance-none ${planFormErrors?.time ? 'animate-shake' : ''}`} style={{ border: `2px solid ${planFormErrors?.time ? '#EF4444' : '#e2e8f0'}` }} />
                                                             </div>
                                                             <div className="w-full min-w-0">
                                                                 <label className="block text-xs font-bold mb-2 truncate" style={{ color: planFormErrors?.time ? '#EF4444' : '#475569' }}>结束时间</label>
-                                                                <input type="time" value={planForm.endTime} onChange={e => { setPlanForm({ ...planForm, endTime: e.target.value }); if (planFormErrors?.time) setPlanFormErrors(prev => ({ ...prev, time: undefined })); }} className={`w-full box-border rounded-xl px-2 py-2.5 outline-none focus:border-blue-500 font-bold bg-white text-xs sm:text-sm appearance-none ${planFormErrors?.time ? 'animate-shake' : ''}`} style={{ border: `2px solid ${planFormErrors?.time ? '#EF4444' : '#e2e8f0'}` }} />
+                                                                <input type="time" value={planForm.endTime || ''} onChange={e => { setPlanForm({ ...planForm, endTime: e.target.value }); if (planFormErrors?.time) setPlanFormErrors(prev => ({ ...prev, time: undefined })); }} className={`w-full box-border rounded-xl px-2 py-2.5 outline-none focus:border-blue-500 font-bold bg-white text-xs sm:text-sm appearance-none ${planFormErrors?.time ? 'animate-shake' : ''}`} style={{ border: `2px solid ${planFormErrors?.time ? '#EF4444' : '#e2e8f0'}` }} />
                                                             </div>
                                                         </div>
                                                     </div>
