@@ -16,7 +16,7 @@ export const ParentTasksTab = () => {
     const dataC = useDataContext();
     const uiC = useUIContext();
     
-    const { kids, tasks, setTasks } = dataC;
+    const { kids, tasks, setTasks, activeKidId, setActiveKidId } = dataC;
     const {
         selectedDate, setSelectedDate,
         setShowAddPlanModal, setShowAiTaskCreator,
@@ -30,8 +30,11 @@ export const ParentTasksTab = () => {
 
     const {
         handleApproveAllTasks, getIncompleteStudyTasksCount,
-        getTaskStatusOnDate
+        getTaskStatusOnDate, openQuickComplete
     } = useTaskManager(authC, dataC, uiC);
+
+    // Parent-side kid picker for completing "all kids" tasks
+    const [kidPickerTask, setKidPickerTask] = useState(null);
 
     const [parentTaskFilter, setParentTaskFilter] = useState([]);
     const [parentTaskStatusFilter, setParentTaskStatusFilter] = useState('all');
@@ -567,15 +570,48 @@ export const ParentTasksTab = () => {
                             </div>
 
                             {/* Inline action buttons — right side */}
-                            <div className="relative z-10 flex items-center gap-1.5 pr-3 shrink-0">
+                            <div className="relative z-10 flex items-center gap-1 pr-3 shrink-0">
                                 {isPending ? (
                                     <button onClick={(e) => { e.stopPropagation(); setPreviewTask(t); setShowPreviewModal(true); }}
                                         className="rounded-full py-1.5 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
                                         style={{ background: '#10B981' }}>
                                         <Icons.CheckCircle size={12} /> 去审核
                                     </button>
+                                ) : isCompleted ? (
+                                    <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
+                                        style={{ color: '#16A34A' }}>
+                                        <Icons.CheckCircle size={12} /> 已完成
+                                    </div>
                                 ) : (
                                     <>
+                                        {/* Complete — primary action for parents */}
+                                        {(status === 'todo' || status === 'failed') && (
+                                            <button onClick={(e) => {
+                                                e.stopPropagation();
+                                                // Determine which kid to complete for
+                                                let targetKid = null;
+                                                if (t.kidId === 'all') {
+                                                    if (effectiveFilter !== 'all') {
+                                                        targetKid = effectiveFilter;
+                                                    } else if (kids.length === 1) {
+                                                        targetKid = kids[0].id;
+                                                    } else {
+                                                        // Multiple kids — show picker
+                                                        setKidPickerTask(t);
+                                                        return;
+                                                    }
+                                                } else {
+                                                    targetKid = t.kidId;
+                                                }
+                                                setActiveKidId(targetKid);
+                                                openQuickComplete({ ...t, requireApproval: false });
+                                            }}
+                                                className="rounded-full py-1.5 px-3 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
+                                                style={{ background: C.teal, boxShadow: `0 2px 8px ${C.teal}40` }}>
+                                                <Icons.Check size={12} strokeWidth={3} /> 完成
+                                            </button>
+                                        )}
+                                        {/* Edit — icon only */}
                                         <button onClick={(e) => {
                                             e.stopPropagation();
                                             setEditingTask(t);
@@ -608,14 +644,17 @@ export const ParentTasksTab = () => {
                                                 requireApproval: t.requireApproval !== undefined ? t.requireApproval : true
                                             });
                                             setShowAddPlanModal(true);
-                                        }} className="rounded-full py-1.5 px-3 text-xs font-bold transition-all active:scale-95 flex items-center gap-1 hover:bg-blue-50"
-                                            style={{ color: '#3B82F6' }}>
-                                            <Icons.Edit3 size={12} /> 编辑
+                                        }} className="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90 hover:bg-blue-50"
+                                            style={{ color: '#3B82F6' }}
+                                            title="编辑">
+                                            <Icons.Edit3 size={14} />
                                         </button>
+                                        {/* Delete — icon only */}
                                         <button onClick={(e) => { e.stopPropagation(); setDeleteConfirmTask(t); }}
-                                            className="rounded-full py-1.5 px-3 text-xs font-bold transition-all active:scale-95 flex items-center gap-1 hover:bg-red-50"
-                                            style={{ color: '#94A3B8' }}>
-                                            <Icons.Trash2 size={12} /> 删除
+                                            className="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90 hover:bg-red-50"
+                                            style={{ color: '#CBD5E1' }}
+                                            title="删除">
+                                            <Icons.Trash2 size={14} />
                                         </button>
                                     </>
                                 )}
@@ -624,6 +663,42 @@ export const ParentTasksTab = () => {
                     );
                 })}
             </div>
+
+            {/* ═══ Kid Picker Modal (for completing "all kids" tasks) ═══ */}
+            {kidPickerTask && ReactDOM.createPortal(
+                <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center" onClick={() => setKidPickerTask(null)}>
+                    <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+                    <div className="relative w-full max-w-sm mx-4 mb-4 sm:mb-0 rounded-2xl p-5 animate-fade-in"
+                        style={{ background: C.bgCard, boxShadow: C.dropShadow }}
+                        onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-base font-black" style={{ color: C.textPrimary }}>选择孩子</h3>
+                            <button onClick={() => setKidPickerTask(null)} className="p-1 rounded-full" style={{ color: C.textMuted }}>
+                                <Icons.X size={18} />
+                            </button>
+                        </div>
+                        <p className="text-xs font-bold mb-4" style={{ color: C.textSoft }}>
+                            为哪个孩子完成「{kidPickerTask.title}」？
+                        </p>
+                        <div className="flex flex-wrap gap-3 justify-center">
+                            {kids.map(k => (
+                                <button key={k.id} onClick={() => {
+                                    setActiveKidId(k.id);
+                                    openQuickComplete({ ...kidPickerTask, requireApproval: false });
+                                    setKidPickerTask(null);
+                                }} className="flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-95 hover:shadow-md"
+                                    style={{ background: C.bgLight, minWidth: 80 }}>
+                                    <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center text-2xl ring-2 ring-white" style={{ background: '#fff' }}>
+                                        <AvatarDisplay avatar={k.avatar} />
+                                    </div>
+                                    <span className="text-xs font-black" style={{ color: C.textPrimary }}>{k.name}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
 
             {showReorderModal && ReactDOM.createPortal(
                 <div className="z-[200]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: C.bg }}>
