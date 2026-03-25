@@ -30,6 +30,7 @@ import { TransactionHistoryModal } from '../modals/TransactionHistoryModal';
 import { ImagePreviewModal } from '../modals/ImagePreviewModal';
 import { QrZoomModal } from '../modals/QrZoomModal';
 import { QrScannerModal } from '../modals/QrScannerModal';
+import { AddItemModal } from '../modals/AddItemModal';
 
 
 export const GlobalModals = () => {
@@ -3766,7 +3767,7 @@ export const GlobalModals = () => {
             {renderKidPreviewModal()}
             <TransferModal context={context} />
             <ReviewModal context={context} />
-            {renderAddItemModal()}
+            <AddItemModal context={context} />
             {renderAddPlanModal()}
             <TimerModal context={context} />
             <CalendarModal context={context} />
