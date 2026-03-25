@@ -422,7 +422,7 @@ export const GlobalModals = () => {
             <ReviewModal context={context} />
             <AddItemModal context={context} />
             <AddPlanModal context={context} />
-            <TimerModal context={context} />
+            <TimerModal context={{...context, showTimerLeaveConfirm, setShowTimerLeaveConfirm, handleTimerBack, handleTimerSaveAndLeave, clearTimerState}} />
             <CalendarModal context={context} />
             <AddKidModal context={context} />
             <PenaltyModal context={context} />
@@ -430,7 +430,7 @@ export const GlobalModals = () => {
             <EmotionalReminderModal context={context} />
             <RejectModal context={context} />
             <QrScannerModal context={context} />
-            <ShopConfirmModal context={context} />
+            <ShopConfirmModal context={{...context, handleConfirmBuy, handleBuyItem}} />
             <QrZoomModal context={context} />
             <TransactionHistoryModal context={context} />
             <ImagePreviewModal context={context} />
