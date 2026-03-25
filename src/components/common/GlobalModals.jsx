@@ -15,6 +15,14 @@ import AiPlanCreator from './AiPlanCreator';
 import { CelebrationModal } from '../modals/CelebrationModal';
 import { DeleteConfirmModal } from '../modals/DeleteConfirmModal';
 import { SettingsModals } from '../modals/SettingsModals';
+import { CalendarModal } from '../modals/CalendarModal';
+import { EmotionalReminderModal } from '../modals/EmotionalReminderModal';
+import { PenaltyModal } from '../modals/PenaltyModal';
+import { RewardModal } from '../modals/RewardModal';
+import { TaskSubmitModal } from '../modals/TaskSubmitModal';
+import { TransferModal } from '../modals/TransferModal';
+import { ReviewModal } from '../modals/ReviewModal';
+import { RejectModal } from '../modals/RejectModal';
 
 
 export const GlobalModals = () => {
@@ -3746,20 +3754,20 @@ export const GlobalModals = () => {
                 handleDeleteTask={handleDeleteTask}
             />
 
-            {renderTaskSubmitModal()}
+            <TaskSubmitModal context={context} />
             {renderQuickCompleteModal()}
             {renderKidPreviewModal()}
-            {renderTransferModal()}
-            {renderReviewModal()}
+            <TransferModal context={context} />
+            <ReviewModal context={context} />
             {renderAddItemModal()}
             {renderAddPlanModal()}
             {renderTimerModal()}
-            {renderCalendarModal()}
+            <CalendarModal context={context} />
             {renderAddKidModal()}
-            {renderPenaltyModal()}
-            {renderRewardModal()}
-            {renderEmotionalReminderModal()}
-            {renderRejectModal()}
+            <PenaltyModal context={context} />
+            <RewardModal context={context} />
+            <EmotionalReminderModal context={context} />
+            <RejectModal context={context} />
             {renderQrScannerModal()}
             {renderShopConfirmModal()}
             {renderQrZoomModal()}
