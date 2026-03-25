@@ -2090,36 +2090,44 @@ export const GlobalModals = () => {
         }
 
         return (
-            <div className="fixed inset-0 backdrop-blur-md z-[100] flex items-end md:items-center justify-center p-0 md:p-4 animate-fade-in overflow-y-auto" style={{ background: 'rgba(27,46,75,0.5)' }}>
-                <div className="w-full max-w-md rounded-t-2xl md:rounded-2xl px-4 pt-4 pb-3 md:p-6 shadow-2xl relative overflow-hidden max-h-[92vh] md:max-h-[85vh] flex flex-col" style={{ background: '#FBF7F0' }}>
-                    {/* Ultra-Compact Header */}
-                    <div className="absolute top-3 right-3 z-50">
-                        <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); }} className="w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ background: '#F0EBE1', color: '#5A6E8A' }}>
-                            <Icons.X size={14} />
+            <div className="fixed inset-0 z-[10000] flex items-center justify-center p-0 md:p-6 animate-fade-in"
+                style={{ background: 'rgba(27,46,75,0.3)', backdropFilter: 'blur(8px)' }}
+                onClick={() => { setShowPreviewModal(false); setPreviewTask(null); }}>
+                <div className="w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden animate-bounce-in"
+                    style={{ background: '#FBF7F0' }}
+                    onClick={e => e.stopPropagation()}>
+
+                    {/* — Header (same as parent modal) — */}
+                    <div className="shrink-0 px-5 py-4 flex items-center justify-between"
+                        style={{ background: '#FFFFFF', borderBottom: '1px solid #F0EBE1' }}>
+                        <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br ${getCategoryGradient(previewTask.category || '计划任务')} flex items-center justify-center ${previewTask.type === 'habit' ? 'text-xl' : 'text-white'} shadow-sm`}>
+                                {previewTask.type === 'habit'
+                                    ? (previewTask.iconEmoji || '⭐')
+                                    : renderIcon(previewTask.iconName || getIconForCategory(previewTask.category), 20)
+                                }
+                            </div>
+                            <div>
+                                <h2 className="font-black text-base" style={{ color: '#1B2E4B' }}>{previewTask.title}</h2>
+                                <div className="text-[11px] font-bold mt-0.5" style={{ color: '#9CAABE' }}>{previewTask.category || '计划任务'}</div>
+                            </div>
+                        </div>
+                        <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); }}
+                            className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90"
+                            style={{ background: '#F0EBE1', color: '#9CAABE' }}>
+                            <Icons.X size={18} />
                         </button>
                     </div>
 
-                    <div className="relative z-10 flex items-center gap-2.5 shrink-0 mb-3 pr-8 pb-3" style={{ borderBottom: '1px solid #F0EBE1' }}>
-                        <div className={`w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br ${getCategoryGradient(previewTask.category || '计划任务')} flex items-center justify-center ${previewTask.type === 'habit' ? 'text-xl' : 'text-white'} shadow-sm`}>
-                            {previewTask.type === 'habit'
-                                ? (previewTask.iconEmoji || '⭐')
-                                : renderIcon(previewTask.iconName || getIconForCategory(previewTask.category), previewTask.type === 'habit' ? 22 : 18)
-                            }
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                            <h2 className="text-[15px] font-black leading-tight line-clamp-2" style={{ color: '#1B2E4B' }}>{previewTask.title}</h2>
-                            <span className="text-[10px] font-bold mt-0.5" style={{ color: '#FF8C42' }}>{previewTask.category || '计划任务'}</span>
-                        </div>
-                    </div>
-
-                    <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar pr-1 mb-2 md:mb-4">
+                    {/* — Scrollable Body — */}
+                    <div className="flex-1 overflow-y-auto p-5 space-y-4 min-h-0">
                         {/* Review Mode Overlay for Parents */}
                         {(appState === 'parent_app' && getTaskStatusOnDate(previewTask, selectedDate, resolvedKidId) === 'pending_approval') ? (
-                            <div className="w-full text-left space-y-4 mb-6">
-                                <div className="text-sm font-black text-rose-600 mb-2 flex items-center gap-2">
+                            <div className="w-full text-left space-y-4">
+                                <div className="text-sm font-black text-rose-600 flex items-center gap-2">
                                     <Icons.Clock size={16} /> 待审核验收
                                 </div>
-                                <div className="bg-orange-50/50 rounded-2xl p-4 border border-orange-100 flex flex-col gap-3">
+                                <div className="rounded-2xl p-4 flex flex-col gap-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
                                     {(() => {
                                         const hr = kidHistory[selectedDate];
                                         if (!hr) return <div className="text-slate-400 text-sm font-bold">暂无提交记录</div>;
@@ -2169,112 +2177,118 @@ export const GlobalModals = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="w-full text-left space-y-2 mb-3">
-                                {/* S1: 任务说明 */}
+                            <>
+                                {/* 任务说明 */}
                                 {(previewTask.desc || previewTask.standards) && (
-                                    <div className="rounded-xl px-3 py-2.5" style={{ background: '#FFF8F0', border: '1px solid #FFE8D0' }}>
-                                        <div className="text-[10px] font-black mb-1" style={{ color: '#FF8C42' }}>📋 任务说明</div>
-                                        <div className="text-[13px] font-medium leading-relaxed whitespace-pre-wrap" style={{ color: '#5A6E8A' }}>{previewTask.desc || previewTask.standards}</div>
+                                    <div className="rounded-2xl p-4" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
+                                        <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>📋 任务说明</label>
+                                        <div className="text-sm font-medium leading-relaxed whitespace-pre-wrap" style={{ color: '#5A6E8A' }}>{previewTask.desc || previewTask.standards}</div>
                                     </div>
                                 )}
-                                {/* 任务附件图片 */}
+
+                                {/* 任务附件 */}
                                 {previewTask.attachments && previewTask.attachments.length > 0 && (
-                                    <div className="flex gap-2 flex-wrap px-1">
-                                        {previewTask.attachments.map((att, i) => {
-                                            const src = typeof att === 'string' ? att : (att.data || att.url || '');
-                                            return src ? (
-                                                <img key={i} src={src} className="w-14 h-14 rounded-xl object-cover border-2 border-orange-100 cursor-pointer hover:scale-105 transition-all"
-                                                    onClick={() => { setPreviewImages(previewTask.attachments.map(a => typeof a === 'string' ? a : (a.data || a.url || ''))); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} />
-                                            ) : null;
-                                        })}
+                                    <div className="rounded-2xl p-4" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
+                                        <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>📎 参考附件</label>
+                                        <div className="flex gap-2 flex-wrap">
+                                            {previewTask.attachments.map((att, i) => {
+                                                const src = typeof att === 'string' ? att : (att.data || att.url || '');
+                                                return src ? (
+                                                    <img key={i} src={src} className="w-16 h-16 rounded-xl object-cover cursor-pointer hover:scale-105 transition-all"
+                                                        style={{ border: '2px solid #FFE8D0' }}
+                                                        onClick={() => { setPreviewImages(previewTask.attachments.map(a => typeof a === 'string' ? a : (a.data || a.url || ''))); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} />
+                                                ) : null;
+                                            })}
+                                        </div>
                                     </div>
                                 )}
-                                {/* 任务信息 — 紧凑的横排 */}
-                                <div className="rounded-xl px-3 py-2 flex flex-wrap gap-x-4 gap-y-1" style={{ background: '#fff', border: '1px solid #F0EBE1' }}>
-                                    <div className="flex items-center gap-1.5">
-                                        <Icons.RefreshCw size={12} className="text-emerald-500" />
-                                        <span className="text-[11px] font-bold" style={{ color: '#5A6E8A' }}>{previewTask.frequency || '每天'}</span>
+
+                                {/* 任务详情 */}
+                                <div className="rounded-2xl p-4 space-y-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
+                                    <label className="text-[11px] font-bold uppercase tracking-wider block" style={{ color: '#9CAABE' }}>任务详情</label>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#E8F5E9' }}><Icons.RefreshCw size={14} className="text-emerald-600" /></div>
+                                        <div>
+                                            <div className="text-[10px] font-bold" style={{ color: '#9CAABE' }}>执行频次</div>
+                                            <div className="text-sm font-black" style={{ color: '#1B2E4B' }}>{previewTask.frequency || '每天'}</div>
+                                        </div>
                                     </div>
                                     {(previewTask.timeStr && previewTask.timeStr !== '--:--') && (
-                                        <div className="flex items-center gap-1.5">
-                                            <Icons.Clock size={12} className="text-blue-500" />
-                                            <span className="text-[11px] font-bold" style={{ color: '#5A6E8A' }}>{previewTask.timeStr}</span>
+                                        <div className="flex items-center gap-3 pt-2" style={{ borderTop: '1px solid #F0EBE1' }}>
+                                            <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#E3F2FD' }}><Icons.Clock size={14} className="text-blue-600" /></div>
+                                            <div>
+                                                <div className="text-[10px] font-bold" style={{ color: '#9CAABE' }}>时间要求</div>
+                                                <div className="text-sm font-black" style={{ color: '#1B2E4B' }}>{previewTask.timeStr}</div>
+                                            </div>
                                         </div>
                                     )}
-                                    <div className="flex items-center gap-1.5">
-                                        <Icons.Star size={12} className="text-yellow-500" fill="currentColor" />
-                                        <span className="text-[11px] font-bold" style={{ color: '#5A6E8A' }}>{previewTask.reward} 家庭币</span>
+                                    <div className="flex items-center gap-3 pt-2" style={{ borderTop: '1px solid #F0EBE1' }}>
+                                        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#FFF8E1' }}><Icons.Star size={14} className="text-yellow-600" fill="currentColor" /></div>
+                                        <div>
+                                            <div className="text-[10px] font-bold" style={{ color: '#9CAABE' }}>奖励</div>
+                                            <div className="text-sm font-black" style={{ color: '#1B2E4B' }}>{previewTask.reward} 家庭币</div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </>
                         )}
 
-                        {/* 历史完成信息记录 */}
-                        <div className="w-full text-left">
-                            <div className="text-xs font-black text-slate-700 mb-2 flex items-center gap-1.5">
-                                <Icons.TrendingUp size={13} className="text-indigo-500" /> 历史完成
-                            </div>
-                            <div className="rounded-xl px-3 py-2.5 flex items-center justify-between mb-2" style={{ background: '#fff', border: '1px solid #F0EBE1' }}>
+                        {/* 历史完成记录 */}
+                        <div className="rounded-2xl p-4" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
+                            <label className="text-[11px] font-bold uppercase tracking-wider mb-3 block" style={{ color: '#9CAABE' }}>历史完成</label>
+                            <div className="flex items-center justify-between mb-3">
                                 <div className="flex flex-col items-center flex-1">
-                                    <span className="text-lg font-black text-slate-800">{totalCompleted}</span>
-                                    <span className="text-[9px] font-bold text-slate-400">完成(次)</span>
+                                    <span className="text-xl font-black" style={{ color: '#1B2E4B' }}>{totalCompleted}</span>
+                                    <span className="text-[10px] font-bold" style={{ color: '#9CAABE' }}>完成(次)</span>
                                 </div>
-                                <div className="w-px h-8 bg-slate-100"></div>
+                                <div className="w-px h-8" style={{ background: '#F0EBE1' }}></div>
                                 <div className="flex flex-col items-center flex-1">
-                                    <span className="text-lg font-black text-emerald-500">{currentStreak}</span>
-                                    <span className="text-[9px] font-bold text-slate-400">连续(天)</span>
+                                    <span className="text-xl font-black text-emerald-500">{currentStreak}</span>
+                                    <span className="text-[10px] font-bold" style={{ color: '#9CAABE' }}>连续(天)</span>
                                 </div>
-                                <div className="w-px h-8 bg-slate-100"></div>
+                                <div className="w-px h-8" style={{ background: '#F0EBE1' }}></div>
                                 <div className="flex flex-col items-center flex-1">
-                                    <span className="text-lg font-black text-orange-500">{totalEarned}</span>
-                                    <span className="text-[9px] font-bold text-slate-400">累计获得</span>
+                                    <span className="text-xl font-black" style={{ color: '#FF8C42' }}>{totalEarned}</span>
+                                    <span className="text-[10px] font-bold" style={{ color: '#9CAABE' }}>累计获得</span>
                                 </div>
                             </div>
 
                             {historyEntries.length > 0 && (
-                                <details className="group bg-white border border-slate-200 rounded-2xl overflow-hidden [&_summary::-webkit-details-marker]:hidden">
-                                    <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 transition-colors list-none">
+                                <details className="group rounded-xl overflow-hidden [&_summary::-webkit-details-marker]:hidden" style={{ background: '#FBF7F0', border: '1px solid #F0EBE1' }}>
+                                    <summary className="flex items-center justify-between px-4 py-3 cursor-pointer transition-colors list-none">
                                         <div className="flex items-center gap-2">
-                                            <Icons.List size={16} className="text-slate-400" />
-                                            <span className="text-sm font-bold text-slate-700">展开历史打卡记录</span>
+                                            <Icons.List size={14} style={{ color: '#9CAABE' }} />
+                                            <span className="text-xs font-bold" style={{ color: '#5A6E8A' }}>展开历史打卡记录</span>
                                         </div>
-                                        <Icons.ChevronDown size={16} className="text-slate-400 group-open:-rotate-180 transition-transform duration-300" />
+                                        <Icons.ChevronDown size={14} className="group-open:-rotate-180 transition-transform duration-300" style={{ color: '#9CAABE' }} />
                                     </summary>
-                                    <div className="border-t border-slate-100 p-0 flex flex-col hide-scrollbar max-h-48 overflow-y-auto bg-slate-50/50">
+                                    <div className="p-0 flex flex-col max-h-48 overflow-y-auto" style={{ borderTop: '1px solid #F0EBE1' }}>
                                         {historyEntries.map(([date, record]) => (
-                                            <div key={date} className="px-4 py-3 border-b border-slate-100 last:border-0 hover:bg-white transition-colors">
+                                            <div key={date} className="px-4 py-3" style={{ borderBottom: '1px solid #F0EBE1' }}>
                                                 <div className="flex justify-between items-center mb-1">
-                                                    <span className="font-bold text-sm text-slate-800">{date}</span>
-                                                    <span className="text-xs text-slate-500 flex items-center gap-1"><Icons.Clock size={12} />{record.timeSpent || '瞬间完成'}</span>
+                                                    <span className="font-bold text-sm" style={{ color: '#1B2E4B' }}>{date}</span>
+                                                    <span className="text-xs flex items-center gap-1" style={{ color: '#9CAABE' }}><Icons.Clock size={12} />{record.timeSpent || '瞬间完成'}</span>
                                                 </div>
                                                 {record.note && (
-                                                    <p className="text-xs text-slate-600 bg-slate-100/50 p-2 rounded-lg mt-2 border border-slate-200">
+                                                    <p className="text-xs p-2 rounded-lg mt-2" style={{ color: '#5A6E8A', background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
                                                         <span className="font-bold">打卡备注：</span>{record.note}
                                                     </p>
                                                 )}
                                                 {record.attachments && Array.isArray(record.attachments) && record.attachments.length > 0 ? (
                                                     <div className="mt-3 flex overflow-x-auto gap-2 pb-1 hide-scrollbar">
                                                         {record.attachments.map((att, idx) => (
-                                                            <div
-                                                                key={idx}
-                                                                onClick={() => {
-                                                                    setPreviewImages(record.attachments.map(a => typeof a === 'string' ? a : (a.data || a.url || '')));
-                                                                    setCurrentPreviewIndex(idx);
-                                                                    setShowImagePreviewModal(true);
-                                                                }}
-                                                                className="w-16 h-16 shrink-0 rounded-lg overflow-hidden border border-slate-200 shadow-sm cursor-pointer hover:shadow-md transition-all relative group"
-                                                            >
-                                                                <img src={att.data || att.url} alt="Evidence" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
-                                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                                                                    <Icons.Eye size={16} className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" />
-                                                                </div>
+                                                            <div key={idx}
+                                                                onClick={() => { setPreviewImages(record.attachments.map(a => typeof a === 'string' ? a : (a.data || a.url || ''))); setCurrentPreviewIndex(idx); setShowImagePreviewModal(true); }}
+                                                                className="w-16 h-16 shrink-0 rounded-lg overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-all"
+                                                                style={{ border: '1px solid #F0EBE1' }}>
+                                                                <img src={att.data || att.url} alt="Evidence" className="w-full h-full object-cover" />
                                                             </div>
                                                         ))}
                                                     </div>
                                                 ) : (
                                                     record.attachmentCount > 0 && (
-                                                        <div className="mt-2 flex items-center gap-1 text-xs text-blue-600 bg-blue-50 w-fit px-2 py-1 rounded">
-                                                            <Icons.Paperclip size={12} /> {record.attachmentCount} 个附件 (已归档或无预览)
+                                                        <div className="mt-2 flex items-center gap-1 text-xs w-fit px-2 py-1 rounded" style={{ color: '#5A6E8A', background: '#FBF7F0' }}>
+                                                            <Icons.Paperclip size={12} /> {record.attachmentCount} 个附件
                                                         </div>
                                                     )
                                                 )}
@@ -2286,11 +2300,11 @@ export const GlobalModals = () => {
                         </div>
                     </div>
 
-                    <div className="relative z-10 shrink-0 mt-2">
+                    {/* — Footer (same as parent modal) — */}
+                    <div className="shrink-0 px-5 py-4 flex gap-3" style={{ background: '#FFFFFF', borderTop: '1px solid #F0EBE1', paddingBottom: 'max(1rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))' }}>
                         {/* Kid Controls */}
                         {appState === 'kid_app' && (() => {
                             const pStatus = getTaskStatusOnDate(previewTask, selectedDate, activeKidId);
-                            // Check if there's a saved timer for this task
                             let hasSavedTimer = false;
                             try {
                                 const saved = JSON.parse(localStorage.getItem('minilife_timer_state'));
@@ -2299,35 +2313,45 @@ export const GlobalModals = () => {
                             return (
                                 <>
                                     {pStatus === 'todo' && (
-                                        <div className="flex gap-3 w-full">
-                                            <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); openQuickComplete(previewTask); }} className="flex-1 rounded-xl py-3 font-black text-sm transition-colors flex items-center justify-center gap-1" style={{ background: '#F0EBE1', color: '#5A6E8A' }}>
-                                                <Icons.Check className="inline-block" size={16} /> 快速打卡
+                                        <>
+                                            <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); openQuickComplete(previewTask); }}
+                                                className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                                style={{ background: '#F0EBE1', color: '#5A6E8A' }}>
+                                                <Icons.Check size={16} /> 快速打卡
                                             </button>
-                                            <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleStartTask(previewTask.id); }} className="flex-[2] text-white rounded-xl py-3 font-black text-sm transition-all active:scale-95 flex items-center justify-center gap-1" style={{ background: hasSavedTimer ? '#3B82F6' : '#FF8C42', boxShadow: hasSavedTimer ? '0 4px 14px rgba(59,130,246,0.3)' : '0 4px 14px rgba(255,140,66,0.3)' }}>
-                                                <Icons.Play className="inline-block" size={16} fill="currentColor" /> {hasSavedTimer ? '继续计时' : '开始计时'}
+                                            <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleStartTask(previewTask.id); }}
+                                                className="flex-[2] py-3 rounded-xl text-sm font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                                style={{ background: hasSavedTimer ? '#3B82F6' : '#FF8C42', boxShadow: hasSavedTimer ? '0 4px 15px rgba(59,130,246,0.3)' : '0 4px 15px rgba(255,140,66,0.35)' }}>
+                                                <Icons.Play size={16} fill="currentColor" /> {hasSavedTimer ? '继续计时' : '开始计时'}
                                             </button>
-                                        </div>
+                                        </>
                                     )}
                                     {pStatus === 'in_progress' && (
-                                        <div className="flex gap-3 w-full">
+                                        <>
                                             {hasSavedTimer && (
-                                                <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleStartTask(previewTask.id); }} className="flex-1 text-white rounded-2xl py-4 font-black transition-all active:scale-95 flex items-center justify-center gap-1" style={{ background: '#3B82F6', boxShadow: '0 4px 14px rgba(59,130,246,0.3)' }}>
-                                                    <Icons.Play className="inline-block mr-1" size={18} fill="currentColor" /> 继续计时
+                                                <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleStartTask(previewTask.id); }}
+                                                    className="flex-1 py-3 rounded-xl text-sm font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                                    style={{ background: '#3B82F6', boxShadow: '0 4px 15px rgba(59,130,246,0.3)' }}>
+                                                    <Icons.Play size={16} fill="currentColor" /> 继续计时
                                                 </button>
                                             )}
-                                            <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleAttemptSubmit(previewTask); }} className={`${hasSavedTimer ? 'flex-1' : 'w-full'} bg-indigo-100 text-indigo-700 rounded-2xl py-4 font-black flex items-center justify-center gap-2 hover:bg-indigo-200 transition-colors`}>
-                                                <Icons.CheckSquare size={20} /> 提交验收
+                                            <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleAttemptSubmit(previewTask); }}
+                                                className={`${hasSavedTimer ? 'flex-1' : 'w-full'} py-3 rounded-xl text-sm font-black transition-all active:scale-95 flex items-center justify-center gap-1.5`}
+                                                style={{ background: '#E8EAF6', color: '#3F51B5' }}>
+                                                <Icons.CheckSquare size={16} /> 提交验收
                                             </button>
-                                        </div>
+                                        </>
                                     )}
                                     {pStatus === 'pending_approval' && (
-                                        <div className="w-full bg-orange-50 text-orange-600 border border-orange-200 rounded-2xl py-4 font-black flex items-center justify-center gap-2 cursor-not-allowed">
-                                            <Icons.Clock size={20} /> 待家长审核发放奖励...
+                                        <div className="w-full py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 cursor-not-allowed"
+                                            style={{ background: '#FFF3E8', color: '#FF8C42', border: '1px solid #FFE8D0' }}>
+                                            <Icons.Clock size={16} /> 待家长审核发放奖励...
                                         </div>
                                     )}
                                     {pStatus === 'completed' && (
-                                        <div className="w-full bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-2xl py-4 font-black flex items-center justify-center gap-2 cursor-not-allowed">
-                                            <Icons.CheckCircle size={20} /> 此任务已完成
+                                        <div className="w-full py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 cursor-not-allowed"
+                                            style={{ background: '#E8F5E9', color: '#4CAF50', border: '1px solid #C8E6C9' }}>
+                                            <Icons.CheckCircle size={16} /> 此任务已完成
                                         </div>
                                     )}
                                 </>
@@ -2336,14 +2360,18 @@ export const GlobalModals = () => {
 
                         {/* Parent Controls */}
                         {appState === 'parent_app' && (
-                            <div className="flex gap-2 w-full mt-3 border-t border-slate-100 pt-4">
+                            <>
                                 {getTaskStatusOnDate(previewTask, selectedDate, resolvedKidId) === 'pending_approval' ? (
                                     <>
-                                        <button onClick={() => { setShowPreviewModal(false); setRejectingTaskInfo({ task: previewTask, dateStr: selectedDate, kidId: resolvedKidId }); setShowRejectModal(true); }} className="flex-1 bg-rose-50 text-rose-600 rounded-xl py-4 font-black hover:bg-rose-100 active:scale-95 transition-all flex items-center justify-center gap-1.5 border border-rose-200">
-                                            <Icons.X size={18} strokeWidth={3} /> 打回
+                                        <button onClick={() => { setShowPreviewModal(false); setRejectingTaskInfo({ task: previewTask, dateStr: selectedDate, kidId: resolvedKidId }); setShowRejectModal(true); }}
+                                            className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                            style={{ background: '#FFF0F0', color: '#EF4444', border: '1px solid #FECACA' }}>
+                                            <Icons.X size={16} strokeWidth={3} /> 打回
                                         </button>
-                                        <button onClick={async () => { const t = previewTask; const d = selectedDate; const k = resolvedKidId; setShowPreviewModal(false); setPreviewTask(null); await handleApproveTask(t, d, k); }} className="flex-[2] bg-emerald-500 text-white rounded-xl py-4 font-black shadow-lg shadow-emerald-200 hover:bg-emerald-600 active:scale-95 transition-all flex items-center justify-center gap-1.5">
-                                            <Icons.Check size={20} strokeWidth={3} /> 确认通过
+                                        <button onClick={async () => { const t = previewTask; const d = selectedDate; const k = resolvedKidId; setShowPreviewModal(false); setPreviewTask(null); await handleApproveTask(t, d, k); }}
+                                            className="flex-[2] py-3 rounded-xl text-sm font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                            style={{ background: '#4ECDC4', boxShadow: '0 4px 15px rgba(78,205,196,0.35)' }}>
+                                            <Icons.Check size={16} strokeWidth={3} /> 确认通过
                                         </button>
                                     </>
                                 ) : (
@@ -2379,15 +2407,18 @@ export const GlobalModals = () => {
                                                 requireApproval: previewTask.requireApproval !== undefined ? previewTask.requireApproval : true
                                             });
                                             setShowAddPlanModal(true);
-                                        }} className="flex-1 bg-blue-50 text-blue-600 rounded-xl py-3 font-bold hover:bg-blue-100 transition-colors flex justify-center items-center gap-1">
+                                        }} className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                            style={{ background: '#E3F2FD', color: '#2196F3' }}>
                                             <Icons.Edit3 size={14} /> 编辑
                                         </button>
-                                        <button onClick={() => { setShowPreviewModal(false); setDeleteConfirmTask(previewTask); }} className="flex-1 bg-red-50 text-red-500 rounded-xl py-3 font-bold hover:bg-red-100 transition-colors flex justify-center items-center gap-1">
+                                        <button onClick={() => { setShowPreviewModal(false); setDeleteConfirmTask(previewTask); }}
+                                            className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                            style={{ background: '#FFF0F0', color: '#EF4444' }}>
                                             <Icons.Trash2 size={14} /> 删除
                                         </button>
                                     </>
                                 )}
-                            </div>
+                            </>
                         )}
                     </div>
                 </div>
