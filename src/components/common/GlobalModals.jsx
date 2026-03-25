@@ -2143,78 +2143,76 @@ export const GlobalModals = () => {
                         {/* Review Mode Overlay for Parents */}
                         {(appState === 'parent_app' && getTaskStatusOnDate(previewTask, selectedDate, resolvedKidId) === 'pending_approval') ? (
                             <div className="w-full text-left space-y-4">
-                                <div className="text-sm font-black text-rose-600 flex items-center gap-2">
-                                    <Icons.Clock size={16} /> 待审核验收
-                                </div>
+                                {/* Cleaner Comparative Layout */}
+                                {(() => {
+                                    const hr = kidHistory[selectedDate] || {};
+                                    return (
+                                        <div className="space-y-3">
+                                            {/* Top Row: Expected vs Actual Time */}
+                                            <div className="bg-white rounded-2xl p-4 flex items-center justify-between shadow-sm" style={{ border: '1px solid #FFE8D0' }}>
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                                                        <Icons.Target size={12} /> 计划时间
+                                                    </div>
+                                                    <div className="text-sm font-black text-slate-700">{previewTask.timeStr || '--:--'}</div>
+                                                </div>
+                                                
+                                                <div className="w-px h-8 bg-slate-100"></div>
 
-                                {/* Side-by-side comparative layout */}
-                                <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid #E8E0D4', background: '#FFFFFF' }}>
-                                    {(() => {
-                                        const hr = kidHistory[selectedDate] || {};
-                                        
-                                        return (
-                                            <>
-                                                {/* Header / Time Comparison */}
-                                                <div className="flex divide-x" style={{ borderColor: '#E8E0D4' }}>
-                                                    {/* Plan side */}
-                                                    <div className="flex-1 p-3.5" style={{ background: '#FBF7F0' }}>
-                                                        <div className="flex items-center gap-1.5 mb-1.5 opacity-60">
-                                                            <Icons.Target size={12} style={{ color: '#1B2E4B' }} />
-                                                            <span className="text-[11px] font-bold" style={{ color: '#1B2E4B' }}>计划要求</span>
+                                                <div className="flex flex-col gap-1 items-end">
+                                                    <div className="text-[10px] font-bold text-orange-400 flex items-center gap-1">
+                                                        实际用时 <Icons.CheckCircle size={12} />
+                                                    </div>
+                                                    <div className="text-sm font-black text-orange-600">{hr.timeSpent || hr.actualDuration || '已完成'}</div>
+                                                    {hr.submittedAt && (
+                                                        <div className="text-[9px] text-slate-400">
+                                                            {new Date(hr.submittedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })} 提交
                                                         </div>
-                                                        <div className="text-sm font-black text-slate-700">
-                                                            {previewTask.timeStr || '--:--'}
-                                                        </div>
-                                                        <div className="flex items-center gap-1 mt-1 text-[11px]">
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Middle Row: Task Requirements vs Student Submission */}
+                                            <div className="bg-white rounded-2xl p-4 shadow-sm space-y-4" style={{ border: '1px solid #F0EBE1' }}>
+                                                
+                                                {/* Parent's Request */}
+                                                <div>
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className="text-[11px] font-bold text-slate-400 uppercase">📋 任务要求</span>
+                                                        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-50 border border-orange-100">
                                                             <Icons.Star size={10} style={{ color: '#D97706' }} fill="currentColor" />
-                                                            <span className="font-bold text-orange-600">奖励 {previewTask.reward}</span>
+                                                            <span className="text-[10px] font-bold text-orange-600">奖励 {previewTask.reward} 金币</span>
                                                         </div>
                                                     </div>
-                                                    {/* Actual side */}
-                                                    <div className="flex-1 p-3.5" style={{ background: '#FFFFFF' }}>
-                                                        <div className="flex items-center gap-1.5 mb-1.5 opacity-60">
-                                                            <Icons.CheckCircle size={12} style={{ color: '#EA580C' }} />
-                                                            <span className="text-[11px] font-bold" style={{ color: '#EA580C' }}>实际提交</span>
-                                                        </div>
-                                                        <div className="text-sm font-black text-orange-600">
-                                                            {hr.timeSpent || hr.actualDuration || '已完成'}
-                                                        </div>
-                                                        <div className="flex items-center gap-1 mt-1 text-[11px] opacity-60">
-                                                            <Icons.Clock size={10} style={{ color: '#5A6E8A' }} />
-                                                            <span className="text-slate-500">
-                                                                {hr.submittedAt ? new Date(hr.submittedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) + ' 提交' : '无时间戳'}
-                                                            </span>
-                                                        </div>
+                                                    <div className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                                        {previewTask.desc || previewTask.standards || '无特别说明'}
                                                     </div>
                                                 </div>
 
-                                                {/* Details Comparison */}
-                                                <div className="flex border-t divide-x" style={{ borderColor: '#E8E0D4' }}>
-                                                    {/* Plan Description */}
-                                                    <div className="flex-1 p-3.5" style={{ background: '#FBF7F0' }}>
-                                                        <div className="text-[10px] font-bold mb-1.5 opacity-50" style={{ color: '#1B2E4B' }}>任务说明</div>
-                                                        <div className="text-xs leading-relaxed whitespace-pre-wrap" style={{ color: '#5A6E8A' }}>
-                                                            {previewTask.desc || previewTask.standards || '无附加说明'}
-                                                        </div>
-                                                    </div>
-                                                    {/* Actual Notes & Evidence */}
-                                                    <div className="flex-1 p-3.5 bg-white space-y-3">
-                                                        <div>
-                                                            <div className="text-[10px] font-bold mb-1.5 opacity-50" style={{ color: '#1B2E4B' }}>学习备注</div>
-                                                            <div className="text-xs leading-relaxed" style={{ color: '#1B2E4B' }}>
-                                                                {hr.note || <span className="text-slate-300 italic">无留言</span>}
+                                                <div className="h-px w-full bg-slate-100"></div>
+
+                                                {/* Child's Submission */}
+                                                <div>
+                                                    <div className="text-[11px] font-bold text-slate-400 uppercase mb-2">✍️ 孩子提交</div>
+                                                    <div className="space-y-3">
+                                                        {/* Note */}
+                                                        {hr.note && (
+                                                            <div className="text-sm text-slate-700 bg-orange-50/50 p-3 rounded-xl border border-orange-100/50">
+                                                                <span className="text-xs font-bold text-orange-400 mr-2">留言:</span>
+                                                                {hr.note}
                                                             </div>
-                                                        </div>
+                                                        )}
                                                         
+                                                        {/* Attachments */}
                                                         {hr.attachments && hr.attachments.length > 0 && (
                                                             <div>
-                                                                <div className="text-[10px] font-bold mb-1.5 opacity-50" style={{ color: '#1B2E4B' }}>完成证据</div>
+                                                                <span className="text-xs font-bold text-slate-400 mb-2 block">完成证据:</span>
                                                                 <div className="flex flex-wrap gap-2">
                                                                     {hr.attachments.map((att, i) => {
                                                                         const src = typeof att === 'string' ? att : (att.data || att.url || '');
                                                                         const isVideo = (typeof att === 'string' && (att.endsWith('.mp4') || att.endsWith('.webm'))) || (att.type && att.type.startsWith('video/'));
                                                                         return (
-                                                                            <div key={i} onClick={(e) => { e.stopPropagation(); setPreviewImages(hr.attachments.map(a => typeof a === 'string' ? a : (a.data || a.url || ''))); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-200 cursor-pointer hover:border-orange-300 transition-colors">
+                                                                            <div key={i} onClick={(e) => { e.stopPropagation(); setPreviewImages(hr.attachments.map(a => typeof a === 'string' ? a : (a.data || a.url || ''))); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} className="relative w-16 h-16 rounded-xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md hover:scale-105 transition-all border-2 border-white ring-1 ring-slate-200">
                                                                                 {isVideo ? (
                                                                                     <video src={src} className="w-full h-full object-cover" />
                                                                                 ) : (
@@ -2226,13 +2224,20 @@ export const GlobalModals = () => {
                                                                 </div>
                                                             </div>
                                                         )}
+                                                        
+                                                        {!hr.note && (!hr.attachments || hr.attachments.length === 0) && (
+                                                            <div className="text-xs text-slate-400 italic text-center py-2">
+                                                                除打卡外，没有附加留言或图片
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
-                                            </>
-                                        );
-                                    })()}
-                                </div>
+                                            </div>
 
+                                        </div>
+                                    );
+                                })()}
+                                
                                 {/* Audit Trail */}
                                 {(() => {
                                     const hr = kidHistory[selectedDate];
