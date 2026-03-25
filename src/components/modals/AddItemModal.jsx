@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useCallback } from 'react';
+import { useSwipeBack } from '../../hooks/useSwipeBack';
 import { Icons } from '../../utils/Icons';
 
 export const AddItemModal = ({ context }) => {
@@ -10,6 +11,9 @@ export const AddItemModal = ({ context }) => {
     } = context;
 
     const emojis = ['🧸', '🎮', '🍔', '🍭', '🎢', '✈️', '📱', '📚', '🛡️', '🎟️', '❤️', '🎁'];
+    const closeModal = useCallback(() => setShowAddItemModal(false), [setShowAddItemModal]);
+    const { swipeRef, swipeHandlers } = useSwipeBack(closeModal);
+
     if (!showAddItemModal) return null;
 
     const handleItemImageUpload = (e) => {
@@ -45,7 +49,8 @@ export const AddItemModal = ({ context }) => {
 
     return (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[10000] flex items-center justify-center p-4 animate-fade-in overflow-y-auto pt-10 pb-20">
-            <div className="bg-white w-full max-w-sm sm:max-w-md rounded-[2rem] shadow-2xl overflow-hidden flex flex-col mt-auto mb-auto border border-white/20 max-h-[85vh] sm:max-h-[90vh]">
+            <div ref={swipeRef} {...swipeHandlers}
+                className="bg-white w-full max-w-sm sm:max-w-md rounded-[2rem] shadow-2xl overflow-hidden flex flex-col mt-auto mb-auto border border-white/20 max-h-[85vh] sm:max-h-[90vh]">
 
                 {/* Header */}
                 <div className="bg-white p-4 sm:p-6 flex justify-between items-center text-slate-800 shrink-0 border-b border-slate-100 relative z-30 shadow-sm">

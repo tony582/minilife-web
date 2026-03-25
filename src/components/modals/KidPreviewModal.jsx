@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useSwipeBack } from '../../hooks/useSwipeBack';
 import { Icons } from '../../utils/Icons';
 
 export const KidPreviewModal = ({ context }) => {
@@ -26,6 +27,9 @@ export const KidPreviewModal = ({ context }) => {
     useEffect(() => {
         setOverrideKidId(null);
     }, [previewTask?.id, showPreviewModal]);
+
+    const closeModal = useCallback(() => { setShowPreviewModal(false); setPreviewTask(null); }, [setShowPreviewModal, setPreviewTask]);
+    const { swipeRef, swipeHandlers } = useSwipeBack(closeModal);
 
     if (!showPreviewModal || !previewTask) return null;
 
@@ -107,7 +111,8 @@ export const KidPreviewModal = ({ context }) => {
         <div className="fixed inset-0 z-[10000] flex items-center justify-center p-0 md:p-6 animate-fade-in"
             style={{ background: 'rgba(27,46,75,0.3)', backdropFilter: 'blur(8px)' }}
             onClick={() => { setShowPreviewModal(false); setPreviewTask(null); }}>
-            <div className="w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden animate-bounce-in"
+            <div ref={swipeRef} {...swipeHandlers}
+                className="w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden animate-bounce-in"
                 style={{ background: '#FBF7F0' }}
                 onClick={e => e.stopPropagation()}>
 

@@ -1,4 +1,5 @@
-import React, { useRef } from 'react';
+import React, { useRef, useCallback } from 'react';
+import { useSwipeBack } from '../../hooks/useSwipeBack';
 import { Icons } from '../../utils/Icons';
 
 export const AddPlanModal = ({ context }) => {
@@ -19,6 +20,8 @@ export const AddPlanModal = ({ context }) => {
     } = context;
 
     const fileInputRef = useRef(null);
+    const closeModal = useCallback(() => { setShowAddPlanModal(false); setEditingTask(null); }, [setShowAddPlanModal, setEditingTask]);
+    const { swipeRef, swipeHandlers } = useSwipeBack(closeModal);
 
     if (!showAddPlanModal) return null;
 
@@ -40,7 +43,8 @@ export const AddPlanModal = ({ context }) => {
                 <div className="fixed inset-0 z-[10000] flex items-center justify-center p-0 md:p-6 animate-fade-in"
                     style={{ background: 'rgba(27,46,75,0.3)', backdropFilter: 'blur(8px)' }}
                     onClick={() => { setShowAddPlanModal(false); setEditingTask(null); }}>
-                    <div className="w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden animate-bounce-in"
+                    <div ref={swipeRef} {...swipeHandlers}
+                        className="w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden animate-bounce-in"
                         style={{ background: '#FBF7F0' }}
                         onClick={e => e.stopPropagation()}>
 
@@ -333,7 +337,8 @@ export const AddPlanModal = ({ context }) => {
                 <div className="fixed inset-0 z-[10000] flex items-center justify-center p-0 md:p-6 animate-fade-in"
                     style={{ background: 'rgba(27,46,75,0.3)', backdropFilter: 'blur(8px)' }}
                     onClick={() => { setShowAddPlanModal(false); setEditingTask(null); }}>
-                    <div className="w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden animate-bounce-in"
+                    <div ref={swipeRef} {...swipeHandlers}
+                        className="w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden animate-bounce-in"
                         style={{ background: '#FBF7F0' }}
                         onClick={e => e.stopPropagation()}>
 

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useCallback } from 'react';
+import { useSwipeBack } from '../../hooks/useSwipeBack';
 import { Icons } from '../../utils/Icons';
 
 export const QuickCompleteModal = ({ context }) => {
@@ -18,6 +19,9 @@ export const QuickCompleteModal = ({ context }) => {
         selectedDate
     } = context;
 
+    const closeModal = useCallback(() => setQuickCompleteTask(null), [setQuickCompleteTask]);
+    const { swipeRef, swipeHandlers } = useSwipeBack(closeModal);
+
     if (!quickCompleteTask) return null;
     const t = quickCompleteTask;
     const totalMins = qcHours * 60 + qcMinutes + Math.round(qcSeconds / 60);
@@ -25,7 +29,8 @@ export const QuickCompleteModal = ({ context }) => {
 
     return (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4 pb-[5rem] md:pb-4 animate-fade-in">
-            <div className="w-full max-w-md rounded-[2rem] shadow-2xl text-left max-h-[75vh] md:max-h-[90vh] overflow-y-auto" style={{ background: '#FBF7F0' }}>
+            <div ref={swipeRef} {...swipeHandlers}
+                className="w-full max-w-md rounded-[2rem] shadow-2xl text-left max-h-[75vh] md:max-h-[90vh] overflow-y-auto" style={{ background: '#FBF7F0' }}>
                 {/* Header */}
                 <div className="sticky top-0 z-10 p-6 pb-4 rounded-t-[2rem]" style={{ background: '#FBF7F0', borderBottom: '1px solid #F0EBE1' }}>
                     <div className="flex items-start justify-between">

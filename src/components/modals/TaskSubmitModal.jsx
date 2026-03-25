@@ -1,14 +1,19 @@
-import React from 'react';
+import React, { useCallback } from 'react';
+import { useSwipeBack } from '../../hooks/useSwipeBack';
 import { Icons } from '../../utils/Icons';
 
 export const TaskSubmitModal = ({ context }) => {
     const { taskToSubmit, setTaskToSubmit, confirmSubmitTask } = context;
 
+    const closeModal = useCallback(() => setTaskToSubmit(null), [setTaskToSubmit]);
+    const { swipeRef, swipeHandlers } = useSwipeBack(closeModal);
+
     if (!taskToSubmit) return null;
 
     return (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 pb-[5rem] md:pb-4 animate-fade-in">
-            <div className="bg-white w-full max-w-sm rounded-[2rem] p-5 md:p-6 shadow-2xl text-left max-h-[75vh] md:max-h-[85vh] overflow-y-auto">
+            <div ref={swipeRef} {...swipeHandlers}
+                className="bg-white w-full max-w-sm rounded-[2rem] p-5 md:p-6 shadow-2xl text-left max-h-[75vh] md:max-h-[85vh] overflow-y-auto">
                 <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mb-4"><Icons.CheckSquare size={24} /></div>
                 <h2 className="text-xl font-black text-slate-800 mb-2">提交验收确认</h2>
                 <p className="text-sm text-slate-500 mb-4">在提交给家长审核前，请确认你是否达到了以下标准：</p>
