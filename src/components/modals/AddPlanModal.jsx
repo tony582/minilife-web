@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Icons } from '../../utils/Icons';
 
 export const AddPlanModal = ({ context }) => {
@@ -18,7 +18,9 @@ export const AddPlanModal = ({ context }) => {
         AvatarDisplay
     } = context;
 
-        if (!showAddPlanModal) return null;
+    if (!showAddPlanModal) return null;
+
+    const fileInputRef = React.createRef();
 
         try {
             // Define color themes for habits
@@ -406,25 +408,31 @@ export const AddPlanModal = ({ context }) => {
                                                 ) : null;
                                             })}
                                             {(!planForm.attachments || planForm.attachments.length < 6) && (
-                                                <label className="w-16 h-16 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95"
-                                                    style={{ background: '#FBF7F0', border: '1.5px dashed #D0C9BD', color: '#9CAABE' }}>
-                                                    <Icons.Image size={16} />
-                                                    <span style={{ fontSize: 9, marginTop: 2 }}>添加图片</span>
-                                                    <input type="file" accept="image/*,video/*" multiple style={{ position: 'absolute', opacity: 0, width: 0, height: 0, overflow: 'hidden' }} onChange={e => {
-                                                        const files = Array.from(e.target.files);
-                                                        files.forEach(file => {
-                                                            const reader = new FileReader();
-                                                            reader.onload = ev => {
-                                                                setPlanForm(prev => ({
-                                                                    ...prev,
-                                                                    attachments: [...(prev.attachments || []), { data: ev.target.result, name: file.name }]
-                                                                }));
-                                                            };
-                                                            reader.readAsDataURL(file);
-                                                        });
-                                                        e.target.value = '';
-                                                    }} />
-                                                </label>
+                                                <>
+                                                    <input ref={fileInputRef} type="file" accept="image/*,video/*" multiple
+                                                        style={{ display: 'none' }}
+                                                        onChange={e => {
+                                                            const files = Array.from(e.target.files);
+                                                            files.forEach(file => {
+                                                                const reader = new FileReader();
+                                                                reader.onload = ev => {
+                                                                    setPlanForm(prev => ({
+                                                                        ...prev,
+                                                                        attachments: [...(prev.attachments || []), { data: ev.target.result, name: file.name }]
+                                                                    }));
+                                                                };
+                                                                reader.readAsDataURL(file);
+                                                            });
+                                                            e.target.value = '';
+                                                        }} />
+                                                    <button type="button"
+                                                        onClick={() => fileInputRef.current?.click()}
+                                                        className="w-16 h-16 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95"
+                                                        style={{ background: '#FBF7F0', border: '1.5px dashed #D0C9BD', color: '#9CAABE' }}>
+                                                        <Icons.Image size={16} />
+                                                        <span style={{ fontSize: 9, marginTop: 2 }}>添加图片</span>
+                                                    </button>
+                                                </>
                                             )}
                                         </div>
                                     </div>
