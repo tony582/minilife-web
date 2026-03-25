@@ -45,7 +45,7 @@ export const useFormStore = create((set) => ({
     lastSavedEndTime: '',
     setLastSavedEndTime: (v) => set({ lastSavedEndTime: v }),
     planForm: { ...defaultPlanForm },
-    setPlanForm: (v) => set({ planForm: v }),
+    setPlanForm: (v) => set((state) => ({ planForm: typeof v === 'function' ? v(state.planForm) : v })),
 
     // Review form
     reviewStars: 5,
