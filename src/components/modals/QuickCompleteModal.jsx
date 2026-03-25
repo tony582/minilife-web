@@ -20,7 +20,7 @@ export const QuickCompleteModal = ({ context }) => {
     } = context;
 
     const closeModal = useCallback(() => setQuickCompleteTask(null), [setQuickCompleteTask]);
-    const { swipeRef, swipeHandlers } = useSwipeBack(closeModal);
+    const { swipeRef, swipeHandlers } = useSwipeBack(closeModal, { enabled: !!quickCompleteTask });
 
     if (!quickCompleteTask) return null;
     const t = quickCompleteTask;

@@ -29,7 +29,7 @@ export const KidPreviewModal = ({ context }) => {
     }, [previewTask?.id, showPreviewModal]);
 
     const closeModal = useCallback(() => { setShowPreviewModal(false); setPreviewTask(null); }, [setShowPreviewModal, setPreviewTask]);
-    const { swipeRef, swipeHandlers } = useSwipeBack(closeModal);
+    const { swipeRef, swipeHandlers } = useSwipeBack(closeModal, { enabled: showPreviewModal && !!previewTask });
 
     if (!showPreviewModal || !previewTask) return null;
 

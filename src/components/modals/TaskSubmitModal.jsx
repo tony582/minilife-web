@@ -6,7 +6,7 @@ export const TaskSubmitModal = ({ context }) => {
     const { taskToSubmit, setTaskToSubmit, confirmSubmitTask } = context;
 
     const closeModal = useCallback(() => setTaskToSubmit(null), [setTaskToSubmit]);
-    const { swipeRef, swipeHandlers } = useSwipeBack(closeModal);
+    const { swipeRef, swipeHandlers } = useSwipeBack(closeModal, { enabled: !!taskToSubmit });
 
     if (!taskToSubmit) return null;
 

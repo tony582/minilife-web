@@ -21,7 +21,7 @@ export const AddPlanModal = ({ context }) => {
 
     const fileInputRef = useRef(null);
     const closeModal = useCallback(() => { setShowAddPlanModal(false); setEditingTask(null); }, [setShowAddPlanModal, setEditingTask]);
-    const { swipeRef, swipeHandlers } = useSwipeBack(closeModal);
+    const { swipeRef, swipeHandlers } = useSwipeBack(closeModal, { enabled: showAddPlanModal });
 
     if (!showAddPlanModal) return null;
 

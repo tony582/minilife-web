@@ -12,7 +12,7 @@ export const AddItemModal = ({ context }) => {
 
     const emojis = ['🧸', '🎮', '🍔', '🍭', '🎢', '✈️', '📱', '📚', '🛡️', '🎟️', '❤️', '🎁'];
     const closeModal = useCallback(() => setShowAddItemModal(false), [setShowAddItemModal]);
-    const { swipeRef, swipeHandlers } = useSwipeBack(closeModal);
+    const { swipeRef, swipeHandlers } = useSwipeBack(closeModal, { enabled: showAddItemModal });
 
     if (!showAddItemModal) return null;
 
