@@ -481,7 +481,7 @@ export const KidStudyTab = () => {
                                         <button onClick={() => openQuickComplete(t)}
                                             className="rounded-full py-1.5 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
                                             style={{ background: isFailed ? '#EF4444' : C.teal }}>
-                                            {isFailed ? <><Icons.RotateCcw size={12} /> 重来</> : <><Icons.Check size={12} strokeWidth={3} /> 完成</>}
+                                            {isFailed ? <><Icons.RefreshCw size={12} /> 重来</> : <><Icons.Check size={12} strokeWidth={3} /> 完成</>}
                                         </button>
                                     )
                                 )}
