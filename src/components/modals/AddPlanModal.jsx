@@ -600,10 +600,10 @@ export const AddPlanModal = ({ context }) => {
                                                 </button>
                                             ))}
                                             <select
-                                                value={!['today', 'daily', 'weekly_custom'].includes(planForm.repeatType) ? planForm.repeatType : ''}
+                                                value={!['today', 'daily', 'weekly_custom'].includes(planForm.repeatType || '') ? planForm.repeatType : ''}
                                                 onChange={e => { if (e.target.value) setPlanForm({ ...planForm, repeatType: e.target.value }) }}
                                                 className="px-4 py-2.5 rounded-xl text-sm font-bold transition-all outline-none appearance-none"
-                                                style={!['today', 'daily', 'weekly_custom'].includes(planForm.repeatType)
+                                                style={!['today', 'daily', 'weekly_custom'].includes(planForm.repeatType || '')
                                                     ? { background: '#FF8C42', color: '#fff', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }
                                                     : { background: '#FBF7F0', color: '#5A6E8A', border: '1.5px solid #F0EBE1' }}
                                             >
