@@ -598,7 +598,10 @@ export const ParentTasksTab = () => {
                                             } else if (kids.length === 1) {
                                                 targetKid = kids[0].id;
                                             } else {
-                                                setKidPickerTask(t);
+                                                // Open preview modal so parent can see per-kid status
+                                                setSelectedDate(date);
+                                                setPreviewTask(t);
+                                                setShowPreviewModal(true);
                                                 return;
                                             }
                                         } else {
@@ -618,41 +621,7 @@ export const ParentTasksTab = () => {
                 })}
             </div>
 
-            {/* ═══ Kid Picker Modal (for completing "all kids" tasks) ═══ */}
-            {kidPickerTask && ReactDOM.createPortal(
-                <div className="fixed inset-0 z-[200] flex items-center justify-center" onClick={() => setKidPickerTask(null)}>
-                    <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
-                    <div className="relative w-full max-w-sm mx-4 mb-4 sm:mb-0 rounded-2xl p-5 animate-fade-in"
-                        style={{ background: C.bgCard, boxShadow: C.dropShadow }}
-                        onClick={e => e.stopPropagation()}>
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-base font-black" style={{ color: C.textPrimary }}>选择孩子</h3>
-                            <button onClick={() => setKidPickerTask(null)} className="p-1 rounded-full" style={{ color: C.textMuted }}>
-                                <Icons.X size={18} />
-                            </button>
-                        </div>
-                        <p className="text-xs font-bold mb-4" style={{ color: C.textSoft }}>
-                            为哪个孩子完成「{kidPickerTask.title}」？
-                        </p>
-                        <div className="flex flex-wrap gap-3 justify-center">
-                            {kids.map(k => (
-                                <button key={k.id} onClick={() => {
-                                    setActiveKidId(k.id);
-                                    openQuickComplete({ ...kidPickerTask, requireApproval: false });
-                                    setKidPickerTask(null);
-                                }} className="flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-95 hover:shadow-md"
-                                    style={{ background: C.bgLight, minWidth: 80 }}>
-                                    <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center text-2xl ring-2 ring-white" style={{ background: '#fff' }}>
-                                        <AvatarDisplay avatar={k.avatar} />
-                                    </div>
-                                    <span className="text-xs font-black" style={{ color: C.textPrimary }}>{k.name}</span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>,
-                document.body
-            )}
+
 
             {showReorderModal && ReactDOM.createPortal(
                 <div className="z-[200]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: C.bg }}>
