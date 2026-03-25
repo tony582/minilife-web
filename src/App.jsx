@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Icons } from './utils/Icons';
 import { apiFetch } from './api/client';
 import { useToast } from './hooks/useToast';
@@ -21,6 +22,7 @@ function AppContent() {
   const { token, user, authLoading } = useAuthContext();
   const { kids, setKids, transactions, setTransactions, isLoading, notifications, notify, setNotifications } = useDataContext();
   const { appState, kidTab, setKidTab, parentTab, setParentTab, showTransactionHistoryModal, showAddItemModal, showShopConfirmModal, showReviewModal, showAddPlanModal, showAddKidModal, showSettingsModal, showLevelModal, qrModalValue, showTimerModal } = useUIContext();
+  const location = useLocation();
 
   // --- 每日利息计算 (时光金库) ---
   useEffect(() => {
@@ -128,24 +130,31 @@ function AppContent() {
     return <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white font-bold text-xl">加载中...</div>;
   }
 
+  // Auth guard: not logged in → show login page
   if (!token) {
     return <AuthPage />;
   }
 
+  // Subscription expired → show expired page
   if (user && new Date(user.sub_end_date) < new Date() && user.role !== 'admin') {
     return <ExpiredPage />;
   }
 
+  // Admin user → show admin page
   if (user?.role === 'admin') {
     return <AdminPage />;
   }
 
   return (
     <div className="font-sans selection:bg-indigo-100">
-      {appState === 'profiles' && <ProfileSelectionPage />}
-      {appState === 'parent_pin' && <ParentPinPage />}
-      {appState === 'kid_app' && <KidApp />}
-      {appState === 'parent_app' && <ParentApp />}
+      <Routes>
+        <Route path="/" element={<ProfileSelectionPage />} />
+        <Route path="/parent/pin" element={<ParentPinPage />} />
+        <Route path="/parent/*" element={<ParentApp />} />
+        <Route path="/kid/*" element={<KidApp />} />
+        {/* Catch-all: redirect to profile selection */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
 
       {renderMobileNavigationBar()}
 
@@ -192,13 +201,15 @@ export default function App() {
   return (
     <>
       <SmartInstallBanner />
-      <AuthProvider>
-        <DataProvider>
-          <UIProvider>
-            <AppContent />
-          </UIProvider>
-        </DataProvider>
-      </AuthProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <DataProvider>
+            <UIProvider>
+              <AppContent />
+            </UIProvider>
+          </DataProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </>
   );
 }

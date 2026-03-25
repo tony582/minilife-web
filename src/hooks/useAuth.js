@@ -45,7 +45,6 @@ export const useAuth = (notify, changeAppState) => {
 
     const handleLogout = () => {
         localStorage.removeItem('minilife_token');
-        localStorage.removeItem('minilife_appState');
         localStorage.removeItem('minilife_activeKidId');
         setToken(null);
         setUser(null);

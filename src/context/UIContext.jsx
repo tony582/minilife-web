@@ -1,14 +1,36 @@
-import React, { createContext, useContext, useState, useRef } from 'react';
+import React, { createContext, useContext, useState, useRef, useMemo, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const UIContext = createContext(null);
 
 export const UIProvider = ({ children }) => {
-    // App-level navigation state (shared across all components)
-    const [appState, setAppState] = useState(localStorage.getItem('minilife_appState') || 'profiles');
-    const changeAppState = (newState) => {
-        setAppState(newState);
-        localStorage.setItem('minilife_appState', newState);
-    };
+    // App-level navigation — derived from URL path via react-router-dom
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const appState = useMemo(() => {
+        const path = location.pathname;
+        if (path.startsWith('/kid')) return 'kid_app';
+        if (path.startsWith('/parent/pin')) return 'parent_pin';
+        if (path.startsWith('/parent')) return 'parent_app';
+        if (path.startsWith('/admin')) return 'admin';
+        if (path.startsWith('/login')) return 'login';
+        if (path.startsWith('/expired')) return 'expired';
+        return 'profiles'; // default: root path = profile selection
+    }, [location.pathname]);
+
+    const changeAppState = useCallback((newState) => {
+        const routeMap = {
+            'profiles': '/',
+            'parent_pin': '/parent/pin',
+            'parent_app': '/parent',
+            'kid_app': '/kid',
+            'admin': '/admin',
+            'login': '/login',
+            'expired': '/expired',
+        };
+        navigate(routeMap[newState] || '/');
+    }, [navigate]);
 
     // 任务列表控制 (Parent)
     // Parent header settings dropdown
