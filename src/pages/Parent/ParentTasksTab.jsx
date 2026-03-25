@@ -461,7 +461,7 @@ export const ParentTasksTab = () => {
                             {pendingApprovals.map(({ task: t, date, actualKidId }) => {
                                 const kidInfo = kids.find(k => k.id === actualKidId);
                                 return (
-                                    <div key={`${t.id}-${date}`}
+                                    <div key={`${t.id}-${date}-${actualKidId}`}
                                         onClick={() => { setSelectedDate(date); setPreviewTask({ ...t, _previewKidId: actualKidId }); setShowPreviewModal(true); }}
                                         className="flex items-center gap-3 rounded-xl p-3 cursor-pointer hover:shadow-sm transition-all"
                                         style={{ background: '#fff' }}>
