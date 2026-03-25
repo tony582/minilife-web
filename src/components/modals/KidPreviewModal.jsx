@@ -235,6 +235,65 @@ export const KidPreviewModal = ({ context }) => {
                         </div>
                     ) : (
                         <>
+                            {/* ═══ Rejection Feedback Banner (student-side) ═══ */}
+                            {appState === 'kid_app' && getTaskStatusOnDate(previewTask, selectedDate, activeKidId) === 'failed' && (() => {
+                                const hist = previewTask?.history || {};
+                                const entry = previewTask?.kidId === 'all'
+                                    ? hist[selectedDate]?.[activeKidId]
+                                    : hist[selectedDate];
+                                const feedback = entry?.rejectFeedback;
+                                const auditLog = entry?.auditLog;
+                                if (!feedback && (!auditLog || auditLog.length === 0)) return null;
+                                return (
+                                    <div className="rounded-2xl p-4 space-y-3" style={{ background: '#FFF5F5', border: '1.5px solid #FECACA' }}>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-sm" style={{ background: '#FEE2E2' }}>↩️</div>
+                                            <label className="text-xs font-black" style={{ color: '#DC2626' }}>任务被打回</label>
+                                        </div>
+                                        {feedback && (
+                                            <div className="rounded-xl p-3" style={{ background: '#FFFFFF', border: '1px solid #FECACA' }}>
+                                                <div className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: '#9CAABE' }}>家长反馈</div>
+                                                <div className="text-sm font-medium leading-relaxed whitespace-pre-wrap" style={{ color: '#DC2626' }}>
+                                                    {feedback}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {/* Show previous submission details if available */}
+                                        {entry?.note && (
+                                            <div className="rounded-xl p-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
+                                                <div className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: '#9CAABE' }}>你上次提交的备注</div>
+                                                <div className="text-xs leading-relaxed" style={{ color: '#5A6E8A' }}>{entry.note}</div>
+                                            </div>
+                                        )}
+                                        {/* Mini audit trail */}
+                                        {auditLog && auditLog.length > 0 && (
+                                            <div className="rounded-xl p-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
+                                                <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: '#9CAABE' }}>📜 审核记录</div>
+                                                <div className="space-y-1.5">
+                                                    {auditLog.map((log, i) => {
+                                                        const actionMap = {
+                                                            submitted: { label: '提交审核', color: '#3B82F6', icon: '📤' },
+                                                            rejected: { label: '被打回', color: '#EF4444', icon: '↩️' },
+                                                            approved: { label: '审核通过', color: '#22C55E', icon: '✅' },
+                                                        };
+                                                        const info = actionMap[log.action] || { label: log.action, color: '#9CAABE', icon: '•' };
+                                                        const time = new Date(log.timestamp);
+                                                        return (
+                                                            <div key={i} className="flex items-center gap-2 text-[11px]">
+                                                                <span>{info.icon}</span>
+                                                                <span className="font-bold" style={{ color: info.color }}>{info.label}</span>
+                                                                <span style={{ color: '#9CAABE' }}>{time.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                                {log.detail && <span style={{ color: '#5A6E8A' }}>· {log.detail}</span>}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })()}
+
                             {/* 任务说明 */}
                             {(previewTask.desc || previewTask.standards) && (
                                 <div className="rounded-2xl p-4" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>

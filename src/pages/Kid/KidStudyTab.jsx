@@ -465,6 +465,20 @@ export const KidStudyTab = () => {
                                             </span>
                                         )}
                                     </div>
+                                    {/* Reject feedback — show reason to student */}
+                                    {isFailed && (() => {
+                                        const hist = t?.history || {};
+                                        const entry = t?.kidId === 'all'
+                                            ? hist[selectedDate]?.[activeKidId]
+                                            : hist[selectedDate];
+                                        const feedback = entry?.rejectFeedback;
+                                        return feedback ? (
+                                            <div className="mt-1 flex items-start gap-1 text-[11px] leading-tight" style={{ color: '#DC2626' }}>
+                                                <span className="shrink-0">💬</span>
+                                                <span className="line-clamp-2">{feedback}</span>
+                                            </div>
+                                        ) : null;
+                                    })()}
                                 </div>
                             </div>
 
