@@ -67,7 +67,10 @@ module.exports = (db, { authenticateToken, notifyUser }) => {
         query = query.slice(0, -2) + " WHERE id = ? AND userId = ?";
         params.push(req.params.id, req.user.id);
         db.run(query, params, function (err) {
-            if (err) return res.status(500).json({ error: err.message });
+            if (err) {
+                console.error('[TASK UPDATE ERROR]', { taskId: req.params.id, error: err.message, query: query.substring(0, 200) });
+                return res.status(500).json({ error: err.message });
+            }
 
             // Sync linked class when history is updated
             if (history !== undefined) {
