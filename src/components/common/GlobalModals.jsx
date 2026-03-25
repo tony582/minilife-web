@@ -332,97 +332,120 @@ export const GlobalModals = () => {
                         </div>
                     </div>
                 ) : (
-                    /* ══════ TIMER RUNNING (flat cute) ══════ */
+                    /* ══════ TIMER RUNNING — minimalist focus style ══════ */
                     <div className="relative z-10 w-full h-full md:h-auto md:max-h-[90vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden"
                         style={{ background: theme.bg, boxShadow: '0 20px 60px rgba(27,46,75,0.15)' }}>
 
-                        {/* Top bar: task name + mode */}
-                        <div className="shrink-0 px-5 py-3 flex items-center justify-between"
-                            style={{ background: '#FFFFFF', borderBottom: '1px solid #F0EBE1' }}>
-                            <div className="flex items-center gap-2.5 min-w-0">
-                                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0"
-                                    style={{ background: theme.accent || '#FFF3E8' }}>
-                                    {timerMode === 'pomodoro' ? '🍅' : timerMode === 'countdown' ? '⏳' : '⏱️'}
-                                </div>
-                                <div className="min-w-0">
-                                    <h3 className="font-black text-sm truncate" style={{ color: '#1B2E4B' }}>{task.title}</h3>
-                                    <p className="text-[10px] font-bold" style={{ color: '#9CAABE' }}>
-                                        {timerMode === 'pomodoro'
-                                            ? (pomodoroIsBreak ? `☕ 休息 · ${pomodoroSession}/4` : `🔥 专注 · ${pomodoroSession}/4`)
-                                            : (timerMode === 'forward' ? '正计时' : '倒计时')}
-                                    </p>
-                                </div>
-                            </div>
+                        {/* ── Minimal top bar ── */}
+                        <div className="shrink-0 px-5 pt-4 pb-2 flex items-center justify-between"
+                            style={{ paddingTop: 'max(env(safe-area-inset-top, 16px), 16px)' }}>
                             <button onClick={handleTimerBack}
-                                className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all active:scale-90"
-                                style={{ background: '#F0EBE1', color: '#9CAABE' }}>
-                                <Icons.X size={16} />
+                                className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90"
+                                style={{ background: `${theme.ring}15`, color: theme.ring }}>
+                                <Icons.ArrowLeft size={18} />
                             </button>
+                            <div className="flex items-center gap-1.5 text-sm font-bold" style={{ color: theme.ring }}>
+                                {timerMode === 'pomodoro' ? '🍅' : timerMode === 'countdown' ? '⏳' : '⏱️'}
+                                <span>{timerMode === 'forward' ? '正计时' : timerMode === 'countdown' ? '倒计时' : '番茄钟'}</span>
+                            </div>
+                            <div className="w-9 h-9" /> {/* spacer for symmetry */}
                         </div>
 
-                        {/* Scrollable content */}
-                        <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-3 min-h-0">
+                        {/* ── Main content (scrollable) ── */}
+                        <div className="flex-1 overflow-y-auto flex flex-col items-center px-6 min-h-0">
 
-                            {/* Ring + Time */}
-                            <div className="relative shrink-0 my-2" style={{ width: 260, height: 260 }}>
-                                <svg className="w-full h-full" viewBox="0 0 280 280">
-                                    {/* Background ring */}
-                                    <circle cx={CX} cy={CY} r={R} fill="none"
-                                        stroke={theme.ringBg || '#F0EBE1'} strokeWidth="8" />
-                                    {/* Progress arc */}
-                                    <circle cx={CX} cy={CY} r={R} fill="none"
-                                        stroke={theme.ring} strokeWidth="8"
-                                        strokeLinecap="round"
-                                        strokeDasharray={C} strokeDashoffset={dashOff}
-                                        className="transition-all duration-1000 ease-linear"
-                                        style={{ filter: `drop-shadow(0 0 6px ${theme.ringGlow})`, transform: 'rotate(-90deg)', transformOrigin: `${CX}px ${CY}px` }}
-                                    />
-                                </svg>
-
-                                {/* Time digits in center */}
-                                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: '#9CAABE' }}>
-                                        {timerMode === 'pomodoro'
-                                            ? (pomodoroIsBreak ? '休息中 ☕' : '专注中 🔥')
-                                            : (timerMode === 'forward' ? '已学习' : '剩余')}
-                                    </span>
-                                    <div className="font-black" style={{ color: '#1B2E4B', fontSize: hrs > 0 ? 32 : 46, fontFamily: "'SF Mono', 'Menlo', 'Courier New', monospace", letterSpacing: '0.02em' }}>
-                                        {hrs > 0 ? `${String(hrs).padStart(2,'0')}:` : ''}
-                                        {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
-                                    </div>
-                                    {timerPaused && (
-                                        <span className="text-[10px] font-bold mt-1.5 tracking-wider animate-pulse" style={{ color: theme.ring }}>已暂停</span>
-                                    )}
-                                </div>
+                            {/* Big bold title */}
+                            <div className="text-center mt-4 mb-6">
+                                <h1 className="font-black text-2xl leading-tight mb-1" style={{ color: theme.textMain || '#1B2E4B' }}>
+                                    {timerMode === 'pomodoro'
+                                        ? (pomodoroIsBreak ? '休息时间' : '专注学习')
+                                        : task.title}
+                                </h1>
+                                {timerMode === 'pomodoro' && (
+                                    <p className="text-sm font-bold" style={{ color: theme.textSub || '#9CAABE' }}>{task.title}</p>
+                                )}
                             </div>
 
-                            {/* Pomodoro session dots */}
+                            {/* Session dots (like reference) */}
                             {timerMode === 'pomodoro' && (
-                                <div className="flex items-center justify-center gap-3 mb-2">
+                                <div className="flex items-center justify-center gap-2.5 mb-6">
                                     {Array.from({ length: 4 }).map((_, i) => (
-                                        <div key={i} className="w-3.5 h-3.5 rounded-full transition-all duration-500" style={{
+                                        <div key={i} className="w-4 h-4 rounded-full transition-all duration-500" style={{
                                             background: i < pomodoroSession - (pomodoroIsBreak ? 0 : 1)
                                                 ? theme.ring
                                                 : i === pomodoroSession - (pomodoroIsBreak ? 0 : 1)
-                                                    ? `${theme.ring}40` : '#F0EBE1',
+                                                    ? `${theme.ring}50` : `${theme.ring}15`,
                                             boxShadow: i < pomodoroSession - (pomodoroIsBreak ? 0 : 1)
-                                                ? `0 0 6px ${theme.ringGlow}` : 'none',
-                                        }}></div>
+                                                ? `0 0 8px ${theme.ringGlow}` : 'none',
+                                        }} />
                                     ))}
                                 </div>
                             )}
 
-                            {/* Task info card — larger area for students to read */}
+                            {/* ── Giant time display ── */}
+                            <div className="flex items-center justify-center gap-3 my-4">
+                                <div className="font-black tracking-tight" style={{
+                                    color: theme.textMain || '#1B2E4B',
+                                    fontSize: hrs > 0 ? 56 : 72,
+                                    fontFamily: "'SF Mono', 'Menlo', 'Courier New', monospace",
+                                    letterSpacing: '-0.02em',
+                                    lineHeight: 1,
+                                }}>
+                                    {hrs > 0 ? `${String(hrs).padStart(2,'0')}:` : ''}
+                                    {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
+                                </div>
+                            </div>
+
+                            {/* Status label */}
+                            <div className="mb-6 flex items-center gap-2">
+                                <span className="text-xs font-bold uppercase tracking-widest" style={{ color: theme.textSub || '#9CAABE' }}>
+                                    {timerMode === 'pomodoro'
+                                        ? (pomodoroIsBreak ? '休息中' : `专注 · ${pomodoroSession}/4`)
+                                        : (timerMode === 'forward' ? '已学习' : '剩余')}
+                                </span>
+                                {timerPaused && (
+                                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full animate-pulse"
+                                        style={{ background: `${theme.ring}20`, color: theme.ring }}>
+                                        已暂停
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Thin progress bar (replaces ring) */}
+                            {timerMode !== 'forward' && (
+                                <div className="w-full max-w-xs mb-6">
+                                    <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: `${theme.ring}15` }}>
+                                        <div className="h-full rounded-full transition-all duration-1000 ease-linear"
+                                            style={{
+                                                width: `${Math.min(100, progress * 100)}%`,
+                                                background: theme.ring,
+                                                boxShadow: `0 0 8px ${theme.ringGlow}`,
+                                            }} />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Decorative divider */}
+                            <div className="flex items-center gap-3 mb-4 w-full max-w-xs">
+                                <div className="flex-1 h-px" style={{ background: `${theme.ring}20` }} />
+                                <span className="text-xs font-bold" style={{ color: theme.textSub || '#9CAABE' }}>
+                                    {task.category || '任务'}
+                                </span>
+                                <div className="flex-1 h-px" style={{ background: `${theme.ring}20` }} />
+                            </div>
+
+                            {/* Task description & attachments card */}
                             {(taskDesc || taskAttachments.length > 0) && (
-                                <div className="w-full max-w-sm rounded-2xl p-4 mt-2" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
+                                <div className="w-full max-w-sm rounded-2xl p-4 mb-4"
+                                    style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
                                     {taskDesc && (
                                         <>
                                             <label className="text-[10px] font-bold uppercase tracking-wider mb-1.5 block" style={{ color: '#9CAABE' }}>📋 任务说明</label>
-                                            <p className="text-sm leading-relaxed whitespace-pre-wrap mb-2" style={{ color: '#5A6E8A' }}>{taskDesc}</p>
+                                            <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: '#5A6E8A' }}>{taskDesc}</p>
                                         </>
                                     )}
                                     {taskAttachments.length > 0 && (
-                                        <div className="flex gap-2 flex-wrap">
+                                        <div className={`flex gap-2 flex-wrap ${taskDesc ? 'mt-3' : ''}`}>
                                             {taskAttachments.map((att, i) => {
                                                 const src = typeof att === 'string' ? att : (att.data || att.url || '');
                                                 return src ? (
@@ -437,23 +460,23 @@ export const GlobalModals = () => {
                             )}
                         </div>
 
-                        {/* Footer: controls */}
+                        {/* ── Footer controls ── */}
                         <div className="shrink-0 px-5 py-4 space-y-3"
-                            style={{ background: '#FFFFFF', borderTop: '1px solid #F0EBE1', paddingBottom: 'max(1rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))' }}>
-                            {/* Play/Pause big button */}
+                            style={{ borderTop: '1px solid #F0EBE1', paddingBottom: 'max(1rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))' }}>
+                            {/* Big play/pause button */}
                             <button onClick={() => setTimerPaused(!timerPaused)}
-                                className="w-full py-3.5 rounded-2xl font-black text-sm transition-all active:scale-[0.97] flex items-center justify-center gap-2"
+                                className="w-full py-4 rounded-2xl font-black text-base transition-all active:scale-[0.97] flex items-center justify-center gap-2"
                                 style={{
-                                    background: timerPaused ? theme.ring : '#F0EBE1',
-                                    color: timerPaused ? '#FFFFFF' : '#5A6E8A',
-                                    boxShadow: timerPaused ? `0 4px 15px ${theme.ringGlow}` : 'none',
+                                    background: timerPaused ? theme.ring : `${theme.ring}15`,
+                                    color: timerPaused ? '#FFFFFF' : theme.ring,
+                                    boxShadow: timerPaused ? `0 4px 20px ${theme.ringGlow}` : 'none',
                                 }}>
                                 {timerPaused
-                                    ? <><Icons.Play size={18} className="ml-0.5" /> 继续学习</>
-                                    : <><Icons.Pause size={18} /> 暂停</>
+                                    ? <><Icons.Play size={20} /> 继续学习</>
+                                    : <><Icons.Pause size={20} /> 暂停</>
                                 }
                             </button>
-                            {/* Action buttons row */}
+                            {/* Secondary row */}
                             <div className="flex items-center gap-2.5">
                                 <button onClick={finishTimer}
                                     className="flex-1 py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.97] flex items-center justify-center gap-1.5"
@@ -463,7 +486,7 @@ export const GlobalModals = () => {
                                 {timerMode === 'pomodoro' && (
                                     <button onClick={skipPomodoroStage}
                                         className="py-3 px-4 rounded-xl font-bold text-sm transition-all active:scale-[0.97] flex items-center justify-center gap-1.5"
-                                        style={{ background: '#F0EBE1', color: '#9CAABE' }}>
+                                        style={{ background: `${theme.ring}10`, color: theme.textSub || '#9CAABE', border: `1px solid ${theme.ring}20` }}>
                                         <Icons.SkipForward size={16} /> 跳过
                                     </button>
                                 )}
