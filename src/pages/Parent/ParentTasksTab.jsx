@@ -74,8 +74,8 @@ export const ParentTasksTab = () => {
         if (t.kidId === 'all' && effectiveFilter === 'all') {
             let statuses = kids.map(k => getTaskStatusOnDate(t, selectedDate, k.id));
             if (statuses.length === 0) return 'todo';
-            if (statuses.includes('failed')) return 'failed';
             if (statuses.includes('pending_approval')) return 'pending_approval';
+            if (statuses.includes('failed')) return 'failed';
             if (statuses.includes('in_progress')) return 'in_progress';
             if (statuses.includes('todo')) return 'todo';
             return 'completed';
@@ -291,37 +291,43 @@ export const ParentTasksTab = () => {
             {/* ═══ Progress + Toolbar ═══ */}
             <div className="px-4 mb-4">
                 {totalCount > 0 && (
-                    <div className="p-4 rounded-2xl flex items-center gap-4 mb-4" style={{ background: C.bgCard }}>
-                        <div className="relative w-12 h-12 shrink-0">
-                            <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
-                                <circle cx="24" cy="24" r="20" fill="none" stroke={C.bgLight} strokeWidth="4" />
-                                <circle cx="24" cy="24" r="20" fill="none" stroke={C.orange} strokeWidth="4" strokeLinecap="round"
-                                    strokeDasharray={`${2 * Math.PI * 20}`} strokeDashoffset={`${2 * Math.PI * 20 * (1 - progressPct / 100)}`}
-                                    className="transition-all duration-700" />
-                            </svg>
-                            <div className="absolute inset-0 flex items-center justify-center text-[11px] font-black" style={{ color: C.textPrimary }}>{progressPct}%</div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="text-sm font-black flex items-center gap-1.5" style={{ color: progressPct === 100 ? '#10B981' : C.textPrimary }}>
-                                今日进度 {progressPct === 100 && <span className="text-xs px-1.5 py-0.5 rounded-full font-black" style={{ background: '#D1FAE5', color: '#059669' }}>✓ 全部完成</span>}
+                    <div className="rounded-2xl mb-4" style={{ background: C.bgCard }}>
+                        {/* Row 1: Progress circle + text */}
+                        <div className="p-4 flex items-center gap-4">
+                            <div className="relative w-12 h-12 shrink-0">
+                                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
+                                    <circle cx="24" cy="24" r="20" fill="none" stroke={C.bgLight} strokeWidth="4" />
+                                    <circle cx="24" cy="24" r="20" fill="none" stroke={C.orange} strokeWidth="4" strokeLinecap="round"
+                                        strokeDasharray={`${2 * Math.PI * 20}`} strokeDashoffset={`${2 * Math.PI * 20 * (1 - progressPct / 100)}`}
+                                        className="transition-all duration-700" />
+                                </svg>
+                                <div className="absolute inset-0 flex items-center justify-center text-[11px] font-black" style={{ color: C.textPrimary }}>{progressPct}%</div>
                             </div>
-                            <div className="text-xs mt-0.5" style={{ color: C.textSoft }}>已完成 {completedCount} / {totalCount} 个任务</div>
+                            <div className="flex-1 min-w-0">
+                                <div className="text-sm font-black flex items-center gap-1.5" style={{ color: progressPct === 100 ? '#10B981' : C.textPrimary }}>
+                                    今日进度 {progressPct === 100 && <span className="text-xs px-1.5 py-0.5 rounded-full font-black" style={{ background: '#D1FAE5', color: '#059669' }}>✓ 全部完成</span>}
+                                </div>
+                                <div className="text-xs mt-0.5" style={{ color: C.textSoft }}>已完成 {completedCount} / {totalCount} 个任务</div>
+                            </div>
                         </div>
-                        <button onClick={() => setShowAiTaskCreator(true)}
-                            className="rounded-full py-2 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
-                            style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', boxShadow: '0 4px 14px rgba(102,126,234,0.3)' }}>
-                            ✨ AI
-                        </button>
-                        <button onClick={() => {
-                            const defaultTimes = getDefaultTimeRange();
-                            setEditingTask(null);
-                            setPlanType('study');
-                            setPlanForm({ targetKids: parentKidFilter === 'all' ? ['all'] : [parentKidFilter], category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, periodMaxType: 'daily', timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
-                            setShowAddPlanModal(true);
-                        }} className="rounded-full py-2 px-5 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
-                            style={{ background: C.orange, boxShadow: `0 4px 14px ${C.orange}50` }}>
-                            <Icons.Plus size={14} /> 新建
-                        </button>
+                        {/* Row 2: Action buttons */}
+                        <div className="flex items-center gap-2 px-4 pb-4">
+                            <button onClick={() => setShowAiTaskCreator(true)}
+                                className="flex-1 rounded-xl py-2.5 text-xs font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', boxShadow: '0 4px 14px rgba(102,126,234,0.3)' }}>
+                                ✨ AI 智能生成
+                            </button>
+                            <button onClick={() => {
+                                const defaultTimes = getDefaultTimeRange();
+                                setEditingTask(null);
+                                setPlanType('study');
+                                setPlanForm({ targetKids: parentKidFilter === 'all' ? ['all'] : [parentKidFilter], category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, periodMaxType: 'daily', timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
+                                setShowAddPlanModal(true);
+                            }} className="flex-1 rounded-xl py-2.5 text-xs font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                style={{ background: C.orange, boxShadow: `0 4px 14px ${C.orange}50` }}>
+                                <Icons.Plus size={14} /> 新建任务
+                            </button>
+                        </div>
                     </div>
                 )}
                 {totalCount === 0 && (
