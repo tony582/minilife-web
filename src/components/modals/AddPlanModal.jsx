@@ -696,7 +696,7 @@ export const AddPlanModal = ({ context }) => {
                                             )}
 
                                             {/* N-times Period Goals */}
-                                            {(planForm.repeatType.includes('_1') || planForm.repeatType.includes('_n')) && (
+                                            {(planForm.repeatType?.includes('_1') || planForm.repeatType?.includes('_n')) && (
                                                 <div className="animate-fade-in bg-orange-50/50 p-4 rounded-2xl border border-orange-100 space-y-4">
                                                     <div className="grid grid-cols-2 gap-4">
                                                         <div>
