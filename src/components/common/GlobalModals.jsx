@@ -2090,33 +2090,29 @@ export const GlobalModals = () => {
         }
 
         return (
-            <div className="fixed inset-0 backdrop-blur-md z-[100] flex items-center justify-center p-4 pb-[5rem] md:pb-4 animate-fade-in overflow-y-auto" style={{ background: 'rgba(27,46,75,0.5)' }}>
-                <div className="w-full max-w-md rounded-[2rem] p-5 md:p-8 shadow-2xl relative overflow-hidden my-auto max-h-[75vh] md:max-h-[85vh] flex flex-col" style={{ background: '#FBF7F0' }}>
+            <div className="fixed inset-0 backdrop-blur-md z-[100] flex items-end md:items-center justify-center p-0 md:p-4 animate-fade-in overflow-y-auto" style={{ background: 'rgba(27,46,75,0.5)' }}>
+                <div className="w-full max-w-md rounded-t-2xl md:rounded-2xl px-4 pt-4 pb-3 md:p-6 shadow-2xl relative overflow-hidden max-h-[92vh] md:max-h-[85vh] flex flex-col" style={{ background: '#FBF7F0' }}>
                     {/* Ultra-Compact Header */}
                     <div className="absolute top-3 right-3 z-50">
-                        <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); }} className="w-8 h-8 rounded-full flex items-center justify-center transition-colors" style={{ background: '#F0EBE1', color: '#5A6E8A' }}>
-                            <Icons.X size={16} />
+                        <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); }} className="w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ background: '#F0EBE1', color: '#5A6E8A' }}>
+                            <Icons.X size={14} />
                         </button>
                     </div>
 
-                    <div className="relative z-10 flex items-start gap-3 shrink-0 mb-4 pr-10 pb-4" style={{ borderBottom: '1px solid #F0EBE1' }}>
-                        <div className={`w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br ${getCategoryGradient(previewTask.category || '计划任务')} flex items-center justify-center ${previewTask.type === 'habit' ? 'text-2xl' : 'text-white'} shadow-sm`}>
+                    <div className="relative z-10 flex items-center gap-2.5 shrink-0 mb-3 pr-8 pb-3" style={{ borderBottom: '1px solid #F0EBE1' }}>
+                        <div className={`w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br ${getCategoryGradient(previewTask.category || '计划任务')} flex items-center justify-center ${previewTask.type === 'habit' ? 'text-xl' : 'text-white'} shadow-sm`}>
                             {previewTask.type === 'habit'
                                 ? (previewTask.iconEmoji || '⭐')
-                                : renderIcon(previewTask.iconName || getIconForCategory(previewTask.category), previewTask.type === 'habit' ? 28 : 22)
+                                : renderIcon(previewTask.iconName || getIconForCategory(previewTask.category), previewTask.type === 'habit' ? 22 : 18)
                             }
                         </div>
-                        <div className="flex flex-col min-w-0 pt-0.5 mt-[-2px]">
-                            <div className="flex items-center mb-1">
-                                <span className="text-[10px] font-black px-2 py-0.5 rounded-full text-white" style={{ background: '#FF8C42' }}>
-                                    {previewTask.category || '计划任务'}
-                                </span>
-                            </div>
-                            <h2 className="text-base font-black leading-tight line-clamp-2" style={{ color: '#1B2E4B' }}>{previewTask.title}</h2>
+                        <div className="flex flex-col min-w-0">
+                            <h2 className="text-[15px] font-black leading-tight line-clamp-2" style={{ color: '#1B2E4B' }}>{previewTask.title}</h2>
+                            <span className="text-[10px] font-bold mt-0.5" style={{ color: '#FF8C42' }}>{previewTask.category || '计划任务'}</span>
                         </div>
                     </div>
 
-                    <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar pr-2 mb-4 md:mb-6">
+                    <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar pr-1 mb-2 md:mb-4">
                         {/* Review Mode Overlay for Parents */}
                         {(appState === 'parent_app' && getTaskStatusOnDate(previewTask, selectedDate, resolvedKidId) === 'pending_approval') ? (
                             <div className="w-full text-left space-y-4 mb-6">
@@ -2173,44 +2169,41 @@ export const GlobalModals = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="w-full rounded-2xl p-4 text-left space-y-4 mb-6" style={{ background: '#fff', border: '1px solid #F0EBE1' }}>
-                                {/* S1: 任务说明放最上面 — 最重要的信息 */}
+                            <div className="w-full text-left space-y-2 mb-3">
+                                {/* S1: 任务说明 */}
                                 {(previewTask.desc || previewTask.standards) && (
-                                    <div className="rounded-xl p-3" style={{ background: '#FFF8F0', border: '1px solid #FFE8D0' }}>
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <div className="w-6 h-6 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center shrink-0"><Icons.FileText size={13} /></div>
-                                            <div className="text-xs font-black" style={{ color: '#FF8C42' }}>任务说明</div>
-                                        </div>
-                                        <div className="text-sm font-medium leading-relaxed whitespace-pre-wrap pl-8" style={{ color: '#5A6E8A' }}>{previewTask.desc || previewTask.standards}</div>
+                                    <div className="rounded-xl px-3 py-2.5" style={{ background: '#FFF8F0', border: '1px solid #FFE8D0' }}>
+                                        <div className="text-[10px] font-black mb-1" style={{ color: '#FF8C42' }}>📋 任务说明</div>
+                                        <div className="text-[13px] font-medium leading-relaxed whitespace-pre-wrap" style={{ color: '#5A6E8A' }}>{previewTask.desc || previewTask.standards}</div>
                                     </div>
                                 )}
-                                {/* 执行频次 */}
-                                <div className="flex items-start gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><Icons.RefreshCw size={16} /></div>
-                                    <div>
-                                        <div className="text-xs font-bold text-slate-400 mb-0.5">执行频次</div>
-                                        <div className="text-sm font-black text-slate-700">
-                                            {previewTask.frequency || '每天'}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {(previewTask.timeStr && previewTask.timeStr !== '--:--') && (
-                                    <div className="flex items-start gap-3 border-t border-slate-200 pt-3">
-                                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><Icons.Clock size={16} /></div>
-                                        <div>
-                                            <div className="text-xs font-bold text-slate-400 mb-0.5">时间要求</div>
-                                            <div className="text-sm font-black text-slate-700">{previewTask.timeStr}</div>
-                                        </div>
+                                {/* 任务附件图片 */}
+                                {previewTask.attachments && previewTask.attachments.length > 0 && (
+                                    <div className="flex gap-2 flex-wrap px-1">
+                                        {previewTask.attachments.map((att, i) => {
+                                            const src = typeof att === 'string' ? att : (att.data || att.url || '');
+                                            return src ? (
+                                                <img key={i} src={src} className="w-14 h-14 rounded-xl object-cover border-2 border-orange-100 cursor-pointer hover:scale-105 transition-all"
+                                                    onClick={() => { setPreviewImages(previewTask.attachments.map(a => typeof a === 'string' ? a : (a.data || a.url || ''))); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} />
+                                            ) : null;
+                                        })}
                                     </div>
                                 )}
-                                <div className="flex items-start gap-3 border-t border-slate-200 pt-3">
-                                    <div className="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center shrink-0"><Icons.Star size={16} fill="currentColor" /></div>
-                                    <div>
-                                        <div className="text-xs font-bold text-slate-400 mb-0.5">奖励规则</div>
-                                        <div className="text-sm font-black text-slate-700">
-                                            {previewTask.pointRule === 'custom' ? `固定得 ${previewTask.reward} ${previewTask.type === 'habit' ? '家庭币' : '家庭币'}` : `系统自动计算 (${previewTask.reward} ${previewTask.type === 'habit' ? '家庭币' : '家庭币'})`}
+                                {/* 任务信息 — 紧凑的横排 */}
+                                <div className="rounded-xl px-3 py-2 flex flex-wrap gap-x-4 gap-y-1" style={{ background: '#fff', border: '1px solid #F0EBE1' }}>
+                                    <div className="flex items-center gap-1.5">
+                                        <Icons.RefreshCw size={12} className="text-emerald-500" />
+                                        <span className="text-[11px] font-bold" style={{ color: '#5A6E8A' }}>{previewTask.frequency || '每天'}</span>
+                                    </div>
+                                    {(previewTask.timeStr && previewTask.timeStr !== '--:--') && (
+                                        <div className="flex items-center gap-1.5">
+                                            <Icons.Clock size={12} className="text-blue-500" />
+                                            <span className="text-[11px] font-bold" style={{ color: '#5A6E8A' }}>{previewTask.timeStr}</span>
                                         </div>
+                                    )}
+                                    <div className="flex items-center gap-1.5">
+                                        <Icons.Star size={12} className="text-yellow-500" fill="currentColor" />
+                                        <span className="text-[11px] font-bold" style={{ color: '#5A6E8A' }}>{previewTask.reward} 家庭币</span>
                                     </div>
                                 </div>
                             </div>
@@ -2218,24 +2211,23 @@ export const GlobalModals = () => {
 
                         {/* 历史完成信息记录 */}
                         <div className="w-full text-left">
-                            <div className="text-sm font-black text-slate-800 mb-3 flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-md bg-indigo-100 text-indigo-600 flex items-center justify-center"><Icons.TrendingUp size={14} /></div>
-                                历史完成记录
+                            <div className="text-xs font-black text-slate-700 mb-2 flex items-center gap-1.5">
+                                <Icons.TrendingUp size={13} className="text-indigo-500" /> 历史完成
                             </div>
-                            <div className="rounded-2xl p-4 flex items-center justify-between mb-4" style={{ background: '#fff', border: '1px solid #F0EBE1' }}>
+                            <div className="rounded-xl px-3 py-2.5 flex items-center justify-between mb-2" style={{ background: '#fff', border: '1px solid #F0EBE1' }}>
                                 <div className="flex flex-col items-center flex-1">
-                                    <span className="text-2xl font-black text-slate-800">{totalCompleted}</span>
-                                    <span className="text-[10px] font-bold text-slate-400 mt-1">累计完成(次)</span>
+                                    <span className="text-lg font-black text-slate-800">{totalCompleted}</span>
+                                    <span className="text-[9px] font-bold text-slate-400">完成(次)</span>
                                 </div>
-                                <div className="w-px h-10 bg-slate-100"></div>
+                                <div className="w-px h-8 bg-slate-100"></div>
                                 <div className="flex flex-col items-center flex-1">
-                                    <span className="text-2xl font-black text-emerald-500">{currentStreak}</span>
-                                    <span className="text-[10px] font-bold text-slate-400 mt-1">当前连续(天)</span>
+                                    <span className="text-lg font-black text-emerald-500">{currentStreak}</span>
+                                    <span className="text-[9px] font-bold text-slate-400">连续(天)</span>
                                 </div>
-                                <div className="w-px h-10 bg-slate-100"></div>
+                                <div className="w-px h-8 bg-slate-100"></div>
                                 <div className="flex flex-col items-center flex-1">
-                                    <span className="text-2xl font-black text-orange-500">{totalEarned}</span>
-                                    <span className="text-[10px] font-bold text-slate-400 mt-1">累计获得</span>
+                                    <span className="text-lg font-black text-orange-500">{totalEarned}</span>
+                                    <span className="text-[9px] font-bold text-slate-400">累计获得</span>
                                 </div>
                             </div>
 
@@ -2294,7 +2286,7 @@ export const GlobalModals = () => {
                         </div>
                     </div>
 
-                    <div className="relative z-10 shrink-0 mt-4">
+                    <div className="relative z-10 shrink-0 mt-2">
                         {/* Kid Controls */}
                         {appState === 'kid_app' && (() => {
                             const pStatus = getTaskStatusOnDate(previewTask, selectedDate, activeKidId);
@@ -2308,11 +2300,11 @@ export const GlobalModals = () => {
                                 <>
                                     {pStatus === 'todo' && (
                                         <div className="flex gap-3 w-full">
-                                            <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); openQuickComplete(previewTask); }} className="flex-1 rounded-2xl py-4 font-black transition-colors flex items-center justify-center gap-1" style={{ background: '#F0EBE1', color: '#5A6E8A' }}>
-                                                <Icons.Check className="inline-block mr-1" size={18} /> 快速打卡
+                                            <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); openQuickComplete(previewTask); }} className="flex-1 rounded-xl py-3 font-black text-sm transition-colors flex items-center justify-center gap-1" style={{ background: '#F0EBE1', color: '#5A6E8A' }}>
+                                                <Icons.Check className="inline-block" size={16} /> 快速打卡
                                             </button>
-                                            <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleStartTask(previewTask.id); }} className="flex-[2] text-white rounded-2xl py-4 font-black transition-all active:scale-95 flex items-center justify-center gap-1" style={{ background: hasSavedTimer ? '#3B82F6' : '#FF8C42', boxShadow: hasSavedTimer ? '0 4px 14px rgba(59,130,246,0.3)' : '0 4px 14px rgba(255,140,66,0.3)' }}>
-                                                <Icons.Play className="inline-block mr-1" size={18} fill="currentColor" /> {hasSavedTimer ? '继续计时' : '开始计时'}
+                                            <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleStartTask(previewTask.id); }} className="flex-[2] text-white rounded-xl py-3 font-black text-sm transition-all active:scale-95 flex items-center justify-center gap-1" style={{ background: hasSavedTimer ? '#3B82F6' : '#FF8C42', boxShadow: hasSavedTimer ? '0 4px 14px rgba(59,130,246,0.3)' : '0 4px 14px rgba(255,140,66,0.3)' }}>
+                                                <Icons.Play className="inline-block" size={16} fill="currentColor" /> {hasSavedTimer ? '继续计时' : '开始计时'}
                                             </button>
                                         </div>
                                     )}
