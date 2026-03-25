@@ -124,6 +124,21 @@ export const KidPreviewModal = ({ context }) => {
                                 const hr = kidHistory[selectedDate] || {};
                                 return (
                                     <div className="bg-white rounded-2xl p-5 shadow-sm space-y-6" style={{ border: '1px solid #E8E0D4' }}>
+                                        {/* Who submitted */}
+                                        {(() => {
+                                            const kidInfo = kids.find(k => k.id === resolvedKidId);
+                                            return kidInfo ? (
+                                                <div className="flex items-center gap-3 pb-4" style={{ borderBottom: '1px solid #F0EBE1' }}>
+                                                    <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-lg ring-2 ring-orange-100" style={{ background: '#FFF7ED' }}>
+                                                        <AvatarDisplay avatar={kidInfo.avatar} />
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-sm font-black" style={{ color: '#1B2E4B' }}>{kidInfo.name} 提交了这项任务</div>
+                                                        <div className="text-[10px] font-bold" style={{ color: '#9CAABE' }}>等待家长审核</div>
+                                                    </div>
+                                                </div>
+                                            ) : null;
+                                        })()}
                                         {/* Header */}
                                         <div className="flex items-center justify-between pb-4" style={{ borderBottom: '1px solid #F0EBE1' }}>
                                             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">验收对比</div>
