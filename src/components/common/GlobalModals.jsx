@@ -2146,33 +2146,78 @@ export const GlobalModals = () => {
                                 <div className="text-sm font-black text-rose-600 flex items-center gap-2">
                                     <Icons.Clock size={16} /> 待审核验收
                                 </div>
+
+                                {/* Task info card */}
+                                <div className="rounded-2xl p-4 flex flex-col gap-2" style={{ background: '#FBF7F0', border: '1px solid #F0EBE1' }}>
+                                    <div className="text-[11px] font-bold uppercase tracking-wider mb-1" style={{ color: '#9CAABE' }}>📋 任务信息</div>
+                                    <div className="grid grid-cols-2 gap-2 text-xs">
+                                        {previewTask.timeStr && (
+                                            <div className="flex items-center gap-1.5">
+                                                <Icons.Clock size={12} style={{ color: '#9CAABE' }} />
+                                                <span className="text-slate-500">计划时间:</span>
+                                                <span className="font-bold text-slate-700">{previewTask.timeStr}</span>
+                                            </div>
+                                        )}
+                                        <div className="flex items-center gap-1.5">
+                                            <Icons.Star size={12} style={{ color: '#D97706' }} fill="#D97706" />
+                                            <span className="text-slate-500">奖励:</span>
+                                            <span className="font-bold text-orange-600">{previewTask.reward} 金币</span>
+                                        </div>
+                                    </div>
+                                    {previewTask.desc && (
+                                        <div className="mt-1 text-xs text-slate-500 leading-relaxed whitespace-pre-wrap border-t border-dashed pt-2" style={{ borderColor: '#E8E0D4' }}>
+                                            {previewTask.desc}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Submission details */}
                                 <div className="rounded-2xl p-4 flex flex-col gap-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
+                                    <div className="text-[11px] font-bold uppercase tracking-wider mb-1" style={{ color: '#9CAABE' }}>📝 提交详情</div>
                                     {(() => {
                                         const hr = kidHistory[selectedDate];
                                         if (!hr) return <div className="text-slate-400 text-sm font-bold">暂无提交记录</div>;
                                         return (
                                             <>
-                                                {hr.actualTimeStr && (
-                                                    <div className="flex items-start gap-2 text-sm">
-                                                        <span className="text-orange-400 mt-0.5"><Icons.Clock size={14} /></span>
-                                                        <span className="font-bold text-slate-700">实际时间: <span className="text-orange-600 font-black tracking-wide ml-1">{hr.actualTimeStr}</span></span>
-                                                    </div>
-                                                )}
-                                                {hr.actualDuration && (
-                                                    <div className="flex items-start gap-2 text-sm">
-                                                        <span className="text-orange-400 mt-0.5"><Icons.Play size={14} fill="currentColor" /></span>
-                                                        <span className="font-bold text-slate-700">总耗时: <span className="text-orange-600 font-black tracking-wide ml-1">{hr.actualDuration}</span></span>
-                                                    </div>
-                                                )}
+                                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                                    {hr.timeSpent && (
+                                                        <div className="flex items-center gap-1.5 col-span-2 sm:col-span-1">
+                                                            <Icons.Play size={12} fill="#FF8C42" style={{ color: '#FF8C42' }} />
+                                                            <span className="text-slate-500">用时:</span>
+                                                            <span className="font-black text-orange-600">{hr.timeSpent}</span>
+                                                        </div>
+                                                    )}
+                                                    {hr.submittedAt && (
+                                                        <div className="flex items-center gap-1.5 col-span-2 sm:col-span-1">
+                                                            <Icons.Clock size={12} style={{ color: '#9CAABE' }} />
+                                                            <span className="text-slate-500">提交于:</span>
+                                                            <span className="font-bold text-slate-700">{new Date(hr.submittedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                        </div>
+                                                    )}
+                                                    {hr.actualTimeStr && (
+                                                        <div className="flex items-center gap-1.5 col-span-2 sm:col-span-1">
+                                                            <Icons.Clock size={12} style={{ color: '#FF8C42' }} />
+                                                            <span className="text-slate-500">实际时间:</span>
+                                                            <span className="font-bold text-slate-700">{hr.actualTimeStr}</span>
+                                                        </div>
+                                                    )}
+                                                    {hr.actualDuration && (
+                                                        <div className="flex items-center gap-1.5 col-span-2 sm:col-span-1">
+                                                            <Icons.Activity size={12} style={{ color: '#FF8C42' }} />
+                                                            <span className="text-slate-500">总耗时:</span>
+                                                            <span className="font-bold text-slate-700">{hr.actualDuration}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                                 {hr.note && (
-                                                    <div className="flex items-start gap-2 text-sm">
-                                                        <span className="text-orange-400 mt-0.5"><Icons.MessageCircle size={14} /></span>
-                                                        <span className="font-bold text-slate-600 leading-relaxed bg-white px-3 py-2 rounded-xl border border-orange-100 w-full shadow-sm"><span className="text-slate-400 text-xs mr-2 block mb-1">孩子留言:</span>{hr.note}</span>
+                                                    <div className="mt-1 bg-amber-50 px-3 py-2 rounded-xl border border-amber-100">
+                                                        <div className="text-[10px] font-bold text-amber-400 mb-1">学习备注:</div>
+                                                        <div className="text-sm font-bold text-slate-700 leading-relaxed">{hr.note}</div>
                                                     </div>
                                                 )}
                                                 {hr.attachments && hr.attachments.length > 0 && (
-                                                    <div className="mt-2">
-                                                        <span className="text-slate-400 text-xs font-bold mr-2 block mb-2">图片/视频证据:</span>
+                                                    <div className="mt-1">
+                                                        <span className="text-[10px] font-bold text-slate-400 block mb-2">完成证据:</span>
                                                         <div className="flex flex-wrap gap-2">
                                                             {hr.attachments.map((att, i) => {
                                                                 const src = typeof att === 'string' ? att : (att.data || att.url || '');

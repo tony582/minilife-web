@@ -440,7 +440,8 @@ const getTaskStatusOnDate = (t, date, kidId) => {
   playSuccessSound(); // Fire exactly on click to bypass iOS async suspensions
   // Construct payload specifically based on whether history is 1D or 2D (unified)
   const histUpdate = {
-    status: 'pending_approval'
+    status: 'pending_approval',
+    submittedAt: Date.now()
   };
   let newHistory = {
     ...(taskToSubmit.history || {})
@@ -607,7 +608,8 @@ const handleQuickComplete = async () => {
     status: finalStatus,
     timeSpent: spentStr,
     note: qcNote,
-    attachments: qcAttachments
+    attachments: qcAttachments,
+    submittedAt: Date.now()
   };
   let newHistory = {
     ...(taskToSubmit.history || {})
