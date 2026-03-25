@@ -43,11 +43,11 @@ export const GlobalModals = () => {
     const toastC = useToast();
     const taskM = useTaskManager(authC, dataC, uiC);
     const shopM = useShopManager(authC, dataC, uiC);
-    const context = { ...authC, ...dataC, ...uiC, ...taskM, ...shopM, ...toastC, getCategoryGradient, getCategoryColor, getIconForCategory, allCategories, getCatHexColor, AvatarDisplay, renderIcon, getLevelReq, getLevelTier, formatDate, isSameDay, getDaysInMonth };
+    const baseContext = { ...authC, ...dataC, ...uiC, ...taskM, ...shopM, ...toastC, getCategoryGradient, getCategoryColor, getIconForCategory, allCategories, getCatHexColor, AvatarDisplay, renderIcon, getLevelReq, getLevelTier, formatDate, isSameDay, getDaysInMonth };
     const {
         activeKidId, setActiveKidId, kidTab, setKidTab, kidShopTab, setKidShopTab, parentTab, setParentTab, parentKidFilter, setParentKidFilter, currentViewDate, setCurrentViewDate, selectedDate, setSelectedDate, monthViewDate, setMonthViewDate, showParentSettingsDropdown, setShowParentSettingsDropdown, showSettingsModal, setShowSettingsModal, showSubscriptionModal, setShowSubscriptionModal, showSecurityParamsModal, setShowSecurityParamsModal, taskToSubmit, setTaskToSubmit, taskIdToEdit, setTaskIdToEdit, showTransferModal, setShowTransferModal, transferForm, setTransferForm, previewImageIndex, setPreviewImageIndex, selectedOrder, setSelectedOrder, showAddPlanModal, setShowAddPlanModal, showAddKidModal, setShowAddKidModal, newKidForm, setNewKidForm, showAddItemModal, setShowAddItemModal, showQrScanner, setShowQrScanner, historyFilter, setHistoryFilter, showLevelRules, setShowLevelRules, editingTask, setEditingTask, deleteConfirmTask, setDeleteConfirmTask, mallSortByPrice, setMallSortByPrice, orderSortByPrice, setOrderSortByPrice, orderFilterStatus, setOrderFilterStatus, kidCheckoutItem, setKidCheckoutItem, showAvatarPickerModal, setShowAvatarPickerModal, showPenaltyModal, setShowPenaltyModal, penaltyTaskContext, setPenaltyTaskContext, penaltySelectedKidIds, setPenaltySelectedKidIds, showReviewModal, setShowReviewModal, reviewOrderId, setReviewOrderId, showShopConfirmModal, setShowShopConfirmModal, shopTargetItem, setShopTargetItem, qrModalValue, setQrModalValue, showLevelModal, setShowLevelModal, pendingAvatar, setPendingAvatar, pointActionTimings, setPointActionTimings, showEmotionalReminderModal, setShowEmotionalReminderModal, emotionalCooldownSeconds, setEmotionalCooldownSeconds, showRewardModal, setShowRewardModal, showRejectModal, setShowRejectModal, rejectingTaskInfo, setRejectingTaskInfo, rejectReason, setRejectReason, showTransactionHistoryModal, setShowTransactionHistoryModal, transactionHistoryKidId, setTransactionHistoryKidId, transactionHistoryFilterTime, setTransactionHistoryFilterTime, transactionHistoryStartDate, setTransactionHistoryStartDate, transactionHistoryEndDate, setTransactionHistoryEndDate, transactionHistoryFilterType, setTransactionHistoryFilterType, showTimerModal, setShowTimerModal, timerTargetId, setTimerTargetId, timerMode, setTimerMode, timerSeconds, setTimerSeconds, timerTotalSeconds, setTimerTotalSeconds, isTimerRunning, setIsTimerRunning, timerPaused, setTimerPaused, pomodoroSession, setPomodoroSession, pomodoroIsBreak, setPomodoroIsBreak, showCalendarModal, setShowCalendarModal, showParentPinModal, setShowParentPinModal, showKidSwitcher, setShowKidSwitcher, showInterestDetailsModal, setShowInterestDetailsModal, quickCompleteTask, setQuickCompleteTask, qcTimeMode, setQcTimeMode, qcHours, setQcHours, qcMinutes, setQcMinutes, qcSeconds, setQcSeconds, qcStartTime, setQcStartTime, qcEndTime, setQcEndTime, qcNote, setQcNote, qcAttachments, setQcAttachments, pinInput, setPinInput, reviewStars, setReviewStars, reviewComment, setReviewComment, newItem, setNewItem, planType, setPlanType, lastSavedEndTime, setLastSavedEndTime, planForm, setPlanForm, planFormErrors, setPlanFormErrors, parentSettings, setParentSettings, celebrationData, setCelebrationData, showPreviewModal, setShowPreviewModal, previewTask, setPreviewTask, showImagePreviewModal, setShowImagePreviewModal, previewImages, setPreviewImages, currentPreviewIndex, setCurrentPreviewIndex, notifications, notify, setNotifications, appState, changeAppState, token, setToken, user, setUser, authLoading, setAuthLoading, authMode, setAuthMode, authForm, setAuthForm, confirmPassword, setConfirmPassword, activationCode, setActivationCode, handleAuth, handleLogout, kids, setKids, tasks, setTasks, inventory, setInventory, orders, setOrders, transactions, setTransactions, isLoading, setIsLoading, adminTab, setAdminTab, adminUsers, setAdminUsers, adminCodes, setAdminCodes, usedCodes, setUsedCodes, settingsCode, setSettingsCode, changeActiveKid, updateActiveKid, updateKidData, handleExpChange, getTaskStatusOnDate, getTaskTimeSpent, handleDeleteTask, handleAttemptSubmit, handleMarkHabitComplete, handleRejectTask, handleStartTask, confirmSubmitTask, confirmTransfer, buyItem, getIncompleteStudyTasksCount,
         openQuickComplete, handleQcQuickDuration, handleQcFileUpload, handleQuickComplete, handleSavePlan, submitReview, handleSaveNewItem, confirmReceipt, checkPeriodLimits, playSuccessSound, handleVerifyOrder, handleApproveTask
-    } = context;
+    } = baseContext;
 
     const activeKid = kids.find(k => k.id === activeKidId);
     const { showAiTaskCreator, setShowAiTaskCreator } = uiC;
@@ -404,8 +404,18 @@ export const GlobalModals = () => {
         return () => clearInterval(timer);
     }, [showEmotionalReminderModal, emotionalCooldownSeconds]);
 
+    // Build FULL context AFTER all local functions are defined
+    const context = {
+        ...baseContext,
+        // Timer local functions
+        showTimerLeaveConfirm, setShowTimerLeaveConfirm,
+        clearTimerState, handleTimerBack, handleTimerSaveAndLeave,
+        // Shop local functions
+        handleBuyItem, handleConfirmBuy,
+        // Reject/Penalty/Reward local functions
+        confirmRejectTask, confirmPenalty, confirmReward, toggleKidSelectionPenalty,
+    };
 
-    // CelebrationModal has been correctly moved outside the App component body.
     return (
         <>
             {/* Task Delete Confirmation Modal — Extracted */}
@@ -422,7 +432,7 @@ export const GlobalModals = () => {
             <ReviewModal context={context} />
             <AddItemModal context={context} />
             <AddPlanModal context={context} />
-            <TimerModal context={{...context, showTimerLeaveConfirm, setShowTimerLeaveConfirm, handleTimerBack, handleTimerSaveAndLeave, clearTimerState}} />
+            <TimerModal context={context} />
             <CalendarModal context={context} />
             <AddKidModal context={context} />
             <PenaltyModal context={context} />
@@ -430,7 +440,7 @@ export const GlobalModals = () => {
             <EmotionalReminderModal context={context} />
             <RejectModal context={context} />
             <QrScannerModal context={context} />
-            <ShopConfirmModal context={{...context, handleConfirmBuy, handleBuyItem}} />
+            <ShopConfirmModal context={context} />
             <QrZoomModal context={context} />
             <TransactionHistoryModal context={context} />
             <ImagePreviewModal context={context} />
