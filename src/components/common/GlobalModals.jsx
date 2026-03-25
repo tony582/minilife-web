@@ -190,42 +190,71 @@ export const GlobalModals = () => {
             }
         };
 
-        /* ── Premium color themes — FLAT cute pastels ── */
+        /* ── Color themes per mode ── */
         const themes = {
-            select: { bg: '#FBF7F0', ring: '#FF8C42', ringGlow: 'rgba(255,140,66,0.25)', textMain: '#1B2E4B', textSub: '#9CAABE' },
-            forward: { bg: '#F0F8FF', ring: '#38BDF8', ringGlow: 'rgba(56,189,248,0.3)', ringBg: '#E8F4FD', textMain: '#1B2E4B', textSub: '#7EADD4', accent: '#EFF9FF' },
-            countdown: { bg: '#F8F0FF', ring: '#A855F7', ringGlow: 'rgba(168,85,247,0.3)', ringBg: '#F0E8FA', textMain: '#1B2E4B', textSub: '#B39AD8', accent: '#F5F0FF' },
+            forward: { bg: '#EDF6FF', card: '#D6EBFF', ring: '#38BDF8', ringGlow: 'rgba(56,189,248,0.3)', textMain: '#1B4D7A', textSub: '#7EADD4', btnBg: '#38BDF8' },
+            countdown: { bg: '#F3EDFF', card: '#E8DEFF', ring: '#A855F7', ringGlow: 'rgba(168,85,247,0.3)', textMain: '#3B1B6E', textSub: '#B39AD8', btnBg: '#A855F7' },
             pomodoro: pomodoroIsBreak
-                ? { bg: '#F0FFF8', ring: '#2DD4BF', ringGlow: 'rgba(45,212,191,0.3)', ringBg: '#E0FAF3', textMain: '#1B2E4B', textSub: '#7EC4B3', accent: '#EEFFF8' }
-                : { bg: '#FFF5F5', ring: '#FB7185', ringGlow: 'rgba(251,113,133,0.3)', ringBg: '#FDE8EC', textMain: '#1B2E4B', textSub: '#D48A95', accent: '#FFF0F3' },
+                ? { bg: '#E8FAF5', card: '#D0F5EB', ring: '#2DD4BF', ringGlow: 'rgba(45,212,191,0.3)', textMain: '#134E4A', textSub: '#7EC4B3', btnBg: '#2DD4BF' }
+                : { bg: '#FFE8EC', card: '#FFD4DC', ring: '#FB7185', ringGlow: 'rgba(251,113,133,0.3)', textMain: '#5C1A28', textSub: '#D48A95', btnBg: '#FB7185' },
         };
-        const theme = themes[timerMode] || themes.select;
+        /* If still 'select', treat as forward for display */
+        const activeMode = timerMode === 'select' ? 'forward' : timerMode;
+        const theme = themes[activeMode] || themes.forward;
+        const isRunning = isTimerRunning && timerMode !== 'select';
+        const canSwitchMode = !isRunning;
 
-        /* ── Ring geometry ── */
-        const R = 110; // ring radius
-        const CX = 140, CY = 140; // center
-        const C = 2 * Math.PI * R;
-        const ringTotal = timerMode === 'forward' ? Math.max(timerSeconds, 1)
-            : timerMode === 'countdown' ? timerTotalSeconds
+        /* ── Progress calc ── */
+        const ringTotal = activeMode === 'forward' ? Math.max(timerSeconds, 1)
+            : activeMode === 'countdown' ? timerTotalSeconds
             : (pomodoroIsBreak ? (pomodoroSession % 4 === 0 ? 900 : 300) : 1500);
-        const progress = timerMode === 'select' ? 0
-            : timerMode === 'forward' ? 1
+        const progress = !isRunning ? 0
+            : activeMode === 'forward' ? 1
             : ringTotal > 0 ? (1 - timerSeconds / ringTotal) : 0;
-        const dashOff = C * (1 - Math.min(1, Math.max(0, progress)));
+
+        /* ── Display time based on mode (preview or running) ── */
+        const displaySeconds = isRunning ? timerSeconds
+            : activeMode === 'countdown' ? (timerTotalSeconds || 900)
+            : activeMode === 'pomodoro' ? 1500
+            : 0;
+        const dHrs = Math.floor(displaySeconds / 3600);
+        const dMins = Math.floor((displaySeconds % 3600) / 60);
+        const dSecs = displaySeconds % 60;
 
         const taskTimeStr = task.timeStr || '';
         const taskDesc = task.desc || task.standards || '';
         const taskAttachments = task.attachments || [];
 
+        /* ── Start a specific mode ── */
+        const startMode = (mode) => {
+            if (mode === 'forward') { setTimerMode('forward'); setTimerSeconds(0); setIsTimerRunning(true); setTimerPaused(false); }
+            else if (mode === 'countdown') { setTimerMode('countdown'); setTimerSeconds(timerTotalSeconds || 900); setIsTimerRunning(true); setTimerPaused(false); }
+            else { setTimerMode('pomodoro'); setTimerSeconds(25 * 60); setPomodoroSession(1); setPomodoroIsBreak(false); setIsTimerRunning(true); setTimerPaused(false); }
+        };
+
+        /* ── Switch tab (only when not running) ── */
+        const switchTab = (mode) => {
+            if (!canSwitchMode) return;
+            // Just update visual, don't start yet
+            setTimerMode(mode);
+        };
+
+        /* ── Mode tab config ── */
+        const modeTabs = [
+            { id: 'forward', label: '正计时', emoji: '⏱️' },
+            { id: 'countdown', label: '倒计时', emoji: '⏳' },
+            { id: 'pomodoro', label: '番茄钟', emoji: '🍅' },
+        ];
+
         return (
             <div className="fixed inset-0 flex items-center justify-center overflow-hidden animate-fade-in"
                 style={{ zIndex: 9999 }}>
-                {/* Desktop: blurred backdrop overlay for all modes */}
+                {/* Desktop: blurred backdrop */}
                 <div className="absolute inset-0 hidden md:block" style={{ background: 'rgba(27,46,75,0.3)', backdropFilter: 'blur(8px)' }} />
-                {/* Mobile: full-screen solid bg */}
-                <div className="absolute inset-0 md:hidden" style={{ background: timerMode === 'select' ? '#FBF7F0' : theme.bg }} />
+                {/* Mobile: solid bg */}
+                <div className="absolute inset-0 md:hidden" style={{ background: theme.bg }} />
 
-                {/* ── Leave confirmation (flat style) ── */}
+                {/* ── Leave confirmation ── */}
                 {showTimerLeaveConfirm && (() => {
                     const eSec = getElapsedSeconds();
                     const eM = Math.floor(eSec / 60); const eS = eSec % 60;
@@ -240,12 +269,12 @@ export const GlobalModals = () => {
                                     <button onClick={() => setShowTimerLeaveConfirm(false)}
                                         className="w-full py-3.5 rounded-2xl font-black text-sm transition-all active:scale-[0.97]"
                                         style={{ background: theme.ring, color: '#FFFFFF', boxShadow: `0 4px 15px ${theme.ringGlow}` }}>
-                                        继续学习
+                                        ▶️ 继续学习
                                     </button>
                                     <button onClick={handleTimerSaveAndLeave}
                                         className="w-full py-3.5 rounded-2xl font-bold text-sm transition-all active:scale-[0.97]"
                                         style={{ background: '#F0EBE1', color: '#5A6E8A' }}>
-                                        保存并离开
+                                        💾 保存并离开
                                     </button>
                                     <button onClick={clearTimerState}
                                         className="w-full py-2 font-bold text-[11px] transition-all"
@@ -258,163 +287,111 @@ export const GlobalModals = () => {
                     );
                 })()}
 
-                {/* ══════ MODE SELECTION (parent-modal structure) ══════ */}
-                {timerMode === 'select' ? (
-                    <div className="relative z-10 w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden"
-                        style={{ background: '#FBF7F0', boxShadow: '0 20px 60px rgba(27,46,75,0.15)' }}>
+                {/* ══════ UNIFIED TIMER PAGE ══════ */}
+                <div className="relative z-10 w-full h-full md:h-auto md:max-h-[90vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden transition-colors duration-500"
+                    style={{ background: theme.bg, boxShadow: '0 20px 60px rgba(27,46,75,0.15)' }}>
 
-                        {/* — Header — */}
-                        <div className="shrink-0 px-5 py-4 flex items-center justify-between"
-                            style={{ background: '#FFFFFF', borderBottom: '1px solid #F0EBE1' }}>
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-                                    style={{ background: '#FF8C4218' }}>⏱️</div>
-                                <div>
-                                    <h2 className="font-black text-base" style={{ color: '#1B2E4B' }}>开始学习</h2>
-                                    <div className="text-[11px] font-bold mt-0.5" style={{ color: '#9CAABE' }}>选择计时模式</div>
-                                </div>
-                            </div>
-                            <button onClick={() => clearTimerState()}
-                                className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90"
-                                style={{ background: '#F0EBE1', color: '#9CAABE' }}>
-                                <Icons.X size={18} />
-                            </button>
-                        </div>
-
-                        {/* — Body — */}
-                        <div className="flex-1 overflow-y-auto p-5 space-y-4 min-h-0">
-                            {/* Task info card */}
-                            <div className="rounded-2xl p-4" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
-                                <h3 className="font-black text-base mb-1" style={{ color: '#1B2E4B' }}>{task.title}</h3>
-                                {taskTimeStr && <p className="text-xs flex items-center gap-1 mb-1" style={{ color: '#9CAABE' }}><Icons.Clock size={11} /> {taskTimeStr}</p>}
-                                {taskDesc && <p className="text-sm mt-2 leading-relaxed whitespace-pre-wrap" style={{ color: '#5A6E8A' }}>{taskDesc}</p>}
-                                {taskAttachments.length > 0 && (
-                                    <div className="flex gap-2 mt-3 flex-wrap">
-                                        {taskAttachments.map((att, i) => {
-                                            const src = typeof att === 'string' ? att : (att.data || att.url || '');
-                                            return src ? (
-                                                <img key={i} src={src} className="w-16 h-16 rounded-xl object-cover cursor-pointer hover:scale-105 transition-all"
-                                                    style={{ border: '2px solid #FFE8D0' }}
-                                                    onClick={() => { setPreviewImages(taskAttachments.map(a => typeof a === 'string' ? a : (a.data || a.url || ''))); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} />
-                                            ) : null;
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Timer mode buttons */}
-                            <div className="space-y-2.5">
-                                {[
-                                    { id: 'forward', emoji: '⏱️', title: '正计时', desc: '自由学习，不限时间', color: '#38BDF8', bgColor: '#EFF9FF' },
-                                    { id: 'countdown', emoji: '⏳', title: '倒计时', desc: `目标 ${Math.round((timerTotalSeconds || 900) / 60)} 分钟`, color: '#A855F7', bgColor: '#F5F0FF' },
-                                    { id: 'pomodoro', emoji: '🍅', title: '番茄钟', desc: '25分钟专注 + 5分钟休息', color: '#F43F5E', bgColor: '#FFF0F3' },
-                                ].map(m => (
-                                    <button key={m.id}
-                                        onClick={() => {
-                                            if (m.id === 'forward') { setTimerMode('forward'); setTimerSeconds(0); setIsTimerRunning(true); }
-                                            else if (m.id === 'countdown') { setTimerMode('countdown'); setTimerSeconds(timerTotalSeconds || 900); setIsTimerRunning(true); }
-                                            else { setTimerMode('pomodoro'); setTimerSeconds(25 * 60); setPomodoroSession(1); setPomodoroIsBreak(false); setIsTimerRunning(true); }
-                                        }}
-                                        className="w-full flex items-center gap-3.5 p-4 rounded-2xl transition-all active:scale-[0.97]"
-                                        style={{ background: '#FFFFFF', border: `1.5px solid ${m.color}30` }}>
-                                        <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0"
-                                            style={{ background: m.bgColor }}>
-                                            {m.emoji}
-                                        </div>
-                                        <div className="text-left flex-1 min-w-0">
-                                            <div className="font-black text-sm" style={{ color: '#1B2E4B' }}>{m.title}</div>
-                                            <div className="text-[11px]" style={{ color: '#9CAABE' }}>{m.desc}</div>
-                                        </div>
-                                        <Icons.ChevronRight size={16} style={{ color: m.color }} />
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+                    {/* ── Top bar ── */}
+                    <div className="shrink-0 px-5 pt-4 pb-2 flex items-center justify-between"
+                        style={{ paddingTop: 'max(env(safe-area-inset-top, 16px), 16px)' }}>
+                        <button onClick={handleTimerBack}
+                            className="w-9 h-9 rounded-full flex items-center justify-center text-lg transition-all active:scale-90"
+                            style={{ background: `${theme.ring}18`, color: theme.textMain }}>
+                            ←
+                        </button>
+                        <h2 className="font-black text-sm" style={{ color: theme.textMain }}>{task.title}</h2>
+                        <button onClick={() => clearTimerState()}
+                            className="w-9 h-9 rounded-full flex items-center justify-center text-lg transition-all active:scale-90"
+                            style={{ background: `${theme.ring}18`, color: theme.textMain }}>
+                            ✕
+                        </button>
                     </div>
-                ) : (
-                    /* ══════ TIMER RUNNING — minimalist focus style ══════ */
-                    <div className="relative z-10 w-full h-full md:h-auto md:max-h-[90vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden"
-                        style={{ background: theme.bg, boxShadow: '0 20px 60px rgba(27,46,75,0.15)' }}>
 
-                        {/* ── Minimal top bar ── */}
-                        <div className="shrink-0 px-5 pt-4 pb-2 flex items-center justify-between"
-                            style={{ paddingTop: 'max(env(safe-area-inset-top, 16px), 16px)' }}>
-                            <button onClick={handleTimerBack}
-                                className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90"
-                                style={{ background: `${theme.ring}15`, color: theme.ring }}>
-                                <Icons.ArrowLeft size={18} />
-                            </button>
-                            <div className="flex items-center gap-1.5 text-sm font-bold" style={{ color: theme.ring }}>
-                                {timerMode === 'pomodoro' ? '🍅' : timerMode === 'countdown' ? '⏳' : '⏱️'}
-                                <span>{timerMode === 'forward' ? '正计时' : timerMode === 'countdown' ? '倒计时' : '番茄钟'}</span>
-                            </div>
-                            <div className="w-9 h-9" /> {/* spacer for symmetry */}
-                        </div>
+                    {/* ── Mode tabs (Pomofocus style) ── */}
+                    <div className="shrink-0 mx-5 mt-2 mb-4 rounded-2xl p-1.5 flex gap-1"
+                        style={{ background: `${theme.ring}12` }}>
+                        {modeTabs.map(tab => {
+                            const isActive = activeMode === tab.id;
+                            return (
+                                <button key={tab.id}
+                                    onClick={() => switchTab(tab.id)}
+                                    disabled={!canSwitchMode}
+                                    className={`flex-1 py-2.5 px-2 rounded-xl font-black text-xs transition-all ${canSwitchMode ? 'active:scale-[0.96]' : ''}`}
+                                    style={{
+                                        background: isActive ? '#FFFFFF' : 'transparent',
+                                        color: isActive ? theme.textMain : `${theme.textMain}60`,
+                                        boxShadow: isActive ? `0 2px 8px ${theme.ringGlow}` : 'none',
+                                        opacity: !canSwitchMode && !isActive ? 0.4 : 1,
+                                    }}>
+                                    {tab.emoji} {tab.label}
+                                </button>
+                            );
+                        })}
+                    </div>
 
-                        {/* ── Main content (scrollable) ── */}
-                        <div className="flex-1 overflow-y-auto flex flex-col items-center px-6 min-h-0">
+                    {/* ── Main content (scrollable) ── */}
+                    <div className="flex-1 overflow-y-auto flex flex-col items-center px-6 min-h-0">
 
-                            {/* Big bold title */}
-                            <div className="text-center mt-4 mb-6">
-                                <h1 className="font-black text-2xl leading-tight mb-1" style={{ color: theme.textMain || '#1B2E4B' }}>
-                                    {timerMode === 'pomodoro'
-                                        ? (pomodoroIsBreak ? '休息时间' : '专注学习')
-                                        : task.title}
-                                </h1>
-                                {timerMode === 'pomodoro' && (
-                                    <p className="text-sm font-bold" style={{ color: theme.textSub || '#9CAABE' }}>{task.title}</p>
-                                )}
-                            </div>
+                        {/* Big time card */}
+                        <div className="w-full rounded-3xl p-6 flex flex-col items-center mb-4 transition-colors duration-500"
+                            style={{ background: theme.card }}>
 
-                            {/* Session dots (like reference) */}
-                            {timerMode === 'pomodoro' && (
-                                <div className="flex items-center justify-center gap-2.5 mb-6">
+                            {/* Pomodoro status */}
+                            {activeMode === 'pomodoro' && isRunning && (
+                                <div className="text-sm font-black mb-2" style={{ color: theme.textMain }}>
+                                    {pomodoroIsBreak ? '☕ 休息时间' : '🔥 专注时间'}
+                                </div>
+                            )}
+
+                            {/* Session dots (pomodoro only) */}
+                            {activeMode === 'pomodoro' && (
+                                <div className="flex items-center justify-center gap-2 mb-4">
                                     {Array.from({ length: 4 }).map((_, i) => (
-                                        <div key={i} className="w-4 h-4 rounded-full transition-all duration-500" style={{
-                                            background: i < pomodoroSession - (pomodoroIsBreak ? 0 : 1)
+                                        <div key={i} className="w-3.5 h-3.5 rounded-full transition-all duration-500" style={{
+                                            background: isRunning && i < pomodoroSession - (pomodoroIsBreak ? 0 : 1)
                                                 ? theme.ring
-                                                : i === pomodoroSession - (pomodoroIsBreak ? 0 : 1)
-                                                    ? `${theme.ring}50` : `${theme.ring}15`,
-                                            boxShadow: i < pomodoroSession - (pomodoroIsBreak ? 0 : 1)
-                                                ? `0 0 8px ${theme.ringGlow}` : 'none',
+                                                : isRunning && i === pomodoroSession - (pomodoroIsBreak ? 0 : 1)
+                                                    ? `${theme.ring}50` : `${theme.ring}25`,
+                                            boxShadow: isRunning && i < pomodoroSession - (pomodoroIsBreak ? 0 : 1)
+                                                ? `0 0 6px ${theme.ringGlow}` : 'none',
                                         }} />
                                     ))}
                                 </div>
                             )}
 
-                            {/* ── Giant time display ── */}
-                            <div className="flex items-center justify-center gap-3 my-4">
-                                <div className="font-black tracking-tight" style={{
-                                    color: theme.textMain || '#1B2E4B',
-                                    fontSize: hrs > 0 ? 56 : 72,
-                                    fontFamily: "'SF Mono', 'Menlo', 'Courier New', monospace",
-                                    letterSpacing: '-0.02em',
-                                    lineHeight: 1,
-                                }}>
-                                    {hrs > 0 ? `${String(hrs).padStart(2,'0')}:` : ''}
-                                    {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
-                                </div>
+                            {/* Giant time display */}
+                            <div className="font-black tracking-tight" style={{
+                                color: theme.textMain,
+                                fontSize: dHrs > 0 ? 52 : 72,
+                                fontFamily: "'SF Mono', 'Menlo', 'Courier New', monospace",
+                                letterSpacing: '-0.02em',
+                                lineHeight: 1,
+                            }}>
+                                {dHrs > 0 ? `${String(dHrs).padStart(2,'0')}:` : ''}
+                                {String(dMins).padStart(2, '0')}:{String(dSecs).padStart(2, '0')}
                             </div>
 
                             {/* Status label */}
-                            <div className="mb-6 flex items-center gap-2">
-                                <span className="text-xs font-bold uppercase tracking-widest" style={{ color: theme.textSub || '#9CAABE' }}>
-                                    {timerMode === 'pomodoro'
-                                        ? (pomodoroIsBreak ? '休息中' : `专注 · ${pomodoroSession}/4`)
-                                        : (timerMode === 'forward' ? '已学习' : '剩余')}
-                                </span>
-                                {timerPaused && (
-                                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full animate-pulse"
-                                        style={{ background: `${theme.ring}20`, color: theme.ring }}>
-                                        已暂停
+                            {isRunning && (
+                                <div className="mt-3 flex items-center gap-2">
+                                    <span className="text-xs font-bold" style={{ color: `${theme.textMain}80` }}>
+                                        {activeMode === 'pomodoro'
+                                            ? `第 ${pomodoroSession} 轮`
+                                            : (activeMode === 'forward' ? '已学习' : '剩余')}
                                     </span>
-                                )}
-                            </div>
+                                    {timerPaused && (
+                                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full animate-pulse"
+                                            style={{ background: '#FFFFFF', color: theme.ring }}>
+                                            已暂停
+                                        </span>
+                                    )}
+                                </div>
+                            )}
 
-                            {/* Thin progress bar (replaces ring) */}
-                            {timerMode !== 'forward' && (
-                                <div className="w-full max-w-xs mb-6">
-                                    <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: `${theme.ring}15` }}>
+                            {/* Progress bar (countdown + pomodoro) */}
+                            {isRunning && activeMode !== 'forward' && (
+                                <div className="w-full mt-4">
+                                    <div className="w-full h-2.5 rounded-full overflow-hidden" style={{ background: `${theme.ring}20` }}>
                                         <div className="h-full rounded-full transition-all duration-1000 ease-linear"
                                             style={{
                                                 width: `${Math.min(100, progress * 100)}%`,
@@ -425,75 +402,77 @@ export const GlobalModals = () => {
                                 </div>
                             )}
 
-                            {/* Decorative divider */}
-                            <div className="flex items-center gap-3 mb-4 w-full max-w-xs">
-                                <div className="flex-1 h-px" style={{ background: `${theme.ring}20` }} />
-                                <span className="text-xs font-bold" style={{ color: theme.textSub || '#9CAABE' }}>
-                                    {task.category || '任务'}
-                                </span>
-                                <div className="flex-1 h-px" style={{ background: `${theme.ring}20` }} />
-                            </div>
+                            {/* START / PAUSE button — inside the card like Pomofocus */}
+                            <button
+                                onClick={() => {
+                                    if (!isRunning) {
+                                        startMode(activeMode);
+                                    } else {
+                                        setTimerPaused(!timerPaused);
+                                    }
+                                }}
+                                className="mt-5 w-full max-w-[240px] py-4 rounded-2xl font-black text-lg uppercase tracking-wider transition-all active:scale-[0.95]"
+                                style={{
+                                    background: '#FFFFFF',
+                                    color: theme.btnBg,
+                                    boxShadow: `0 6px 20px ${theme.ringGlow}`,
+                                    letterSpacing: '0.15em',
+                                }}>
+                                {!isRunning ? 'START' : timerPaused ? '▶ 继续' : '⏸ 暂停'}
+                            </button>
+                        </div>
 
-                            {/* Task description & attachments card */}
-                            {(taskDesc || taskAttachments.length > 0) && (
-                                <div className="w-full max-w-sm rounded-2xl p-4 mb-4"
-                                    style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
-                                    {taskDesc && (
-                                        <>
-                                            <label className="text-[10px] font-bold uppercase tracking-wider mb-1.5 block" style={{ color: '#9CAABE' }}>📋 任务说明</label>
-                                            <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: '#5A6E8A' }}>{taskDesc}</p>
-                                        </>
-                                    )}
-                                    {taskAttachments.length > 0 && (
-                                        <div className={`flex gap-2 flex-wrap ${taskDesc ? 'mt-3' : ''}`}>
-                                            {taskAttachments.map((att, i) => {
-                                                const src = typeof att === 'string' ? att : (att.data || att.url || '');
-                                                return src ? (
-                                                    <img key={i} src={src} className="w-16 h-16 rounded-xl object-cover cursor-pointer hover:scale-105 transition-all"
-                                                        style={{ border: '2px solid #FFE8D0' }}
-                                                        onClick={() => { setPreviewImages(taskAttachments.map(a => typeof a === 'string' ? a : (a.data || a.url || ''))); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} />
-                                                ) : null;
-                                            })}
-                                        </div>
-                                    )}
+                        {/* Pomodoro skip button */}
+                        {isRunning && activeMode === 'pomodoro' && (
+                            <button onClick={skipPomodoroStage}
+                                className="mb-3 py-2 px-6 rounded-xl font-bold text-sm transition-all active:scale-[0.97]"
+                                style={{ background: `${theme.ring}12`, color: theme.textSub }}>
+                                ⏭ 跳过{pomodoroIsBreak ? '休息' : '专注'}
+                            </button>
+                        )}
+
+                        {/* Divider */}
+                        <div className="flex items-center gap-3 mb-3 mt-1 w-full max-w-sm">
+                            <div className="flex-1 h-px" style={{ background: `${theme.ring}20` }} />
+                            <span className="text-xs font-bold" style={{ color: theme.textSub }}>
+                                📋 {task.category || '任务详情'}
+                            </span>
+                            <div className="flex-1 h-px" style={{ background: `${theme.ring}20` }} />
+                        </div>
+
+                        {/* Task info card */}
+                        <div className="w-full max-w-sm rounded-2xl p-4 mb-4"
+                            style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
+                            <h3 className="font-black text-sm mb-1" style={{ color: '#1B2E4B' }}>{task.title}</h3>
+                            {taskTimeStr && <p className="text-xs flex items-center gap-1 mb-1" style={{ color: '#9CAABE' }}>🕐 {taskTimeStr}</p>}
+                            {taskDesc && <p className="text-sm leading-relaxed whitespace-pre-wrap mt-1" style={{ color: '#5A6E8A' }}>{taskDesc}</p>}
+                            {taskAttachments.length > 0 && (
+                                <div className="flex gap-2 mt-3 flex-wrap">
+                                    {taskAttachments.map((att, i) => {
+                                        const src = typeof att === 'string' ? att : (att.data || att.url || '');
+                                        return src ? (
+                                            <img key={i} src={src} className="w-16 h-16 rounded-xl object-cover cursor-pointer hover:scale-105 transition-all"
+                                                style={{ border: '2px solid #FFE8D0' }}
+                                                onClick={() => { setPreviewImages(taskAttachments.map(a => typeof a === 'string' ? a : (a.data || a.url || ''))); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} />
+                                        ) : null;
+                                    })}
                                 </div>
                             )}
                         </div>
-
-                        {/* ── Footer controls ── */}
-                        <div className="shrink-0 px-5 py-4 space-y-3"
-                            style={{ borderTop: '1px solid #F0EBE1', paddingBottom: 'max(1rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))' }}>
-                            {/* Big play/pause button */}
-                            <button onClick={() => setTimerPaused(!timerPaused)}
-                                className="w-full py-4 rounded-2xl font-black text-base transition-all active:scale-[0.97] flex items-center justify-center gap-2"
-                                style={{
-                                    background: timerPaused ? theme.ring : `${theme.ring}15`,
-                                    color: timerPaused ? '#FFFFFF' : theme.ring,
-                                    boxShadow: timerPaused ? `0 4px 20px ${theme.ringGlow}` : 'none',
-                                }}>
-                                {timerPaused
-                                    ? <><Icons.Play size={20} /> 继续学习</>
-                                    : <><Icons.Pause size={20} /> 暂停</>
-                                }
-                            </button>
-                            {/* Secondary row */}
-                            <div className="flex items-center gap-2.5">
-                                <button onClick={finishTimer}
-                                    className="flex-1 py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.97] flex items-center justify-center gap-1.5"
-                                    style={{ background: '#E8F5E9', color: '#4CAF50', border: '1px solid #C8E6C9' }}>
-                                    <Icons.CheckCircle size={16} /> 完成学习
-                                </button>
-                                {timerMode === 'pomodoro' && (
-                                    <button onClick={skipPomodoroStage}
-                                        className="py-3 px-4 rounded-xl font-bold text-sm transition-all active:scale-[0.97] flex items-center justify-center gap-1.5"
-                                        style={{ background: `${theme.ring}10`, color: theme.textSub || '#9CAABE', border: `1px solid ${theme.ring}20` }}>
-                                        <Icons.SkipForward size={16} /> 跳过
-                                    </button>
-                                )}
-                            </div>
-                        </div>
                     </div>
-                )}
+
+                    {/* ── Footer (only when running) ── */}
+                    {isRunning && (
+                        <div className="shrink-0 px-5 py-3"
+                            style={{ borderTop: `1px solid ${theme.ring}15`, paddingBottom: 'max(0.75rem, calc(env(safe-area-inset-bottom, 0px) + 0.75rem))' }}>
+                            <button onClick={finishTimer}
+                                className="w-full py-3.5 rounded-2xl font-black text-sm transition-all active:scale-[0.97]"
+                                style={{ background: '#E8F5E9', color: '#4CAF50', border: '1px solid #C8E6C9' }}>
+                                ✅ 完成学习
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
         );
     };
