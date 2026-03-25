@@ -599,6 +599,16 @@ const handleQuickComplete = async () => {
   }
   const taskToSubmit = quickCompleteTask;
   if (!taskToSubmit) return;
+
+  // Check if already completed/pending for this kid on this date
+  const existingEntry = taskToSubmit.kidId === 'all'
+    ? taskToSubmit.history?.[selectedDate]?.[activeKidId]
+    : taskToSubmit.history?.[selectedDate];
+  if (existingEntry && (existingEntry.status === 'completed' || existingEntry.status === 'pending_approval')) {
+    setQuickCompleteTask(null);
+    return notify(existingEntry.status === 'completed' ? '该任务今天已完成，无需重复提交' : '该任务已提交等待审核中', 'error');
+  }
+
   // Auto-approve logic check
   const isAutoApprove = taskToSubmit.requireApproval === false;
   const finalStatus = isAutoApprove ? 'completed' : 'pending_approval';
