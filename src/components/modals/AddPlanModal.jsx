@@ -410,7 +410,7 @@ export const AddPlanModal = ({ context }) => {
                                                     style={{ background: '#FBF7F0', border: '1.5px dashed #D0C9BD', color: '#9CAABE' }}>
                                                     <Icons.Image size={16} />
                                                     <span style={{ fontSize: 9, marginTop: 2 }}>添加图片</span>
-                                                    <input type="file" accept="image/*,video/*" multiple className="hidden" onChange={e => {
+                                                    <input type="file" accept="image/*,video/*" multiple style={{ position: 'absolute', opacity: 0, width: 0, height: 0, overflow: 'hidden' }} onChange={e => {
                                                         const files = Array.from(e.target.files);
                                                         files.forEach(file => {
                                                             const reader = new FileReader();
