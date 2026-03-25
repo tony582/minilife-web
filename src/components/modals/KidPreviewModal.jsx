@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Icons } from '../../utils/Icons';
 
 export const KidPreviewModal = ({ context }) => {
     const {
         showPreviewModal, setShowPreviewModal,
         previewTask, setPreviewTask,
-        activeKidId, appState, parentKidFilter,
+        activeKidId, setActiveKidId, appState, parentKidFilter,
         kids, selectedDate, formatDate,
         getTaskStatusOnDate, getCategoryGradient,
         renderIcon, getIconForCategory,
@@ -19,12 +19,23 @@ export const KidPreviewModal = ({ context }) => {
         AvatarDisplay
     } = context;
 
+    // Local state for kid selection override (parent multi-kid review)
+    const [overrideKidId, setOverrideKidId] = useState(null);
+
+    // Reset override when modal opens with new task
+    useEffect(() => {
+        setOverrideKidId(null);
+    }, [previewTask?.id, showPreviewModal]);
+
     if (!showPreviewModal || !previewTask) return null;
 
     // P1: Resolve the correct kid context for the preview modal.
     let resolvedKidId = activeKidId;
     if (appState === 'parent_app') {
-        if (previewTask._previewKidId) {
+        if (overrideKidId) {
+            // User explicitly selected a kid via the switcher
+            resolvedKidId = overrideKidId;
+        } else if (previewTask._previewKidId) {
             resolvedKidId = previewTask._previewKidId;
         } else if (parentKidFilter && parentKidFilter !== 'all') {
             resolvedKidId = parentKidFilter;
@@ -39,6 +50,13 @@ export const KidPreviewModal = ({ context }) => {
             resolvedKidId = kids.length > 0 ? kids[0].id : activeKidId;
         }
     }
+
+    // For parent multi-kid tasks: compute per-kid statuses
+    const isMultiKidParent = appState === 'parent_app' && previewTask.kidId === 'all' && kids.length > 1;
+    const kidStatuses = isMultiKidParent ? kids.map(k => ({
+        ...k,
+        status: getTaskStatusOnDate(previewTask, selectedDate, k.id)
+    })) : [];
 
     // Extract history specific to resolvedKidId
     let kidHistory = {};
@@ -117,6 +135,43 @@ export const KidPreviewModal = ({ context }) => {
 
                 {/* — Scrollable Body — */}
                 <div className="flex-1 overflow-y-auto p-5 space-y-4 min-h-0">
+                    {/* Multi-kid status bar (parent side, all-kids tasks only) */}
+                    {isMultiKidParent && (
+                        <div className="rounded-2xl p-3" style={{ background: '#fff', border: '1px solid #E8E0D4' }}>
+                            <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: '#9CAABE' }}>👨‍👩‍👧‍👦 各孩子状态 · 点击切换</div>
+                            <div className="flex flex-wrap gap-2">
+                                {kidStatuses.map(k => {
+                                    const isActive = k.id === resolvedKidId;
+                                    const statusConfig = {
+                                        'pending_approval': { label: '待审核', bg: '#FFF7ED', color: '#EA580C', border: '#FED7AA' },
+                                        'completed': { label: '已完成', bg: '#F0FDF4', color: '#16A34A', border: '#BBF7D0' },
+                                        'in_progress': { label: '进行中', bg: '#EFF6FF', color: '#2563EB', border: '#BFDBFE' },
+                                        'failed': { label: '被打回', bg: '#FFF0F0', color: '#EF4444', border: '#FECACA' },
+                                        'todo': { label: '未完成', bg: '#F8FAFC', color: '#94A3B8', border: '#E2E8F0' },
+                                    };
+                                    const sc = statusConfig[k.status] || statusConfig['todo'];
+                                    return (
+                                        <button key={k.id} onClick={() => setOverrideKidId(k.id)}
+                                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95"
+                                            style={{
+                                                background: isActive ? sc.color : sc.bg,
+                                                color: isActive ? '#fff' : sc.color,
+                                                border: `2px solid ${isActive ? sc.color : sc.border}`,
+                                                boxShadow: isActive ? `0 2px 8px ${sc.color}30` : 'none'
+                                            }}>
+                                            <div className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center text-[10px] shrink-0"
+                                                style={{ background: isActive ? 'rgba(255,255,255,0.3)' : '#fff' }}>
+                                                <AvatarDisplay avatar={k.avatar} />
+                                            </div>
+                                            {k.name}
+                                            <span className="text-[9px] opacity-80">· {sc.label}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Review Mode Overlay for Parents */}
                     {(appState === 'parent_app' && getTaskStatusOnDate(previewTask, selectedDate, resolvedKidId) === 'pending_approval') ? (
                         <div className="w-full text-left space-y-4">
@@ -533,67 +588,161 @@ export const KidPreviewModal = ({ context }) => {
                     })()}
 
                     {/* Parent Controls */}
-                    {appState === 'parent_app' && (
-                        <>
-                            {getTaskStatusOnDate(previewTask, selectedDate, resolvedKidId) === 'pending_approval' ? (
-                                <>
-                                    <button onClick={() => { setShowPreviewModal(false); setRejectingTaskInfo({ task: previewTask, dateStr: selectedDate, kidId: resolvedKidId }); setShowRejectModal(true); }}
-                                        className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
-                                        style={{ background: '#FFF0F0', color: '#EF4444', border: '1px solid #FECACA' }}>
-                                        <Icons.X size={16} strokeWidth={3} /> 打回
-                                    </button>
-                                    <button onClick={async () => { const t = previewTask; const d = selectedDate; const k = resolvedKidId; setShowPreviewModal(false); setPreviewTask(null); await handleApproveTask(t, d, k); }}
-                                        className="flex-[2] py-3 rounded-xl text-sm font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
-                                        style={{ background: '#4ECDC4', boxShadow: '0 4px 15px rgba(78,205,196,0.35)' }}>
-                                        <Icons.Check size={16} strokeWidth={3} /> 确认通过
-                                    </button>
-                                </>
-                            ) : (
-                                <>
-                                    <button onClick={() => {
-                                        setShowPreviewModal(false);
-                                        setEditingTask(previewTask);
-                                        setPlanType(previewTask.type || 'study');
-                                        setPlanForm({
-                                            targetKids: [previewTask.kidId || 'all'],
-                                            category: previewTask.category || '技能',
-                                            title: previewTask.title,
-                                            desc: previewTask.standards || previewTask.desc || '',
-                                            startDate: previewTask.startDate || new Date().toISOString().split('T')[0],
-                                            endDate: previewTask.repeatConfig?.endDate || '',
-                                            repeatType: previewTask.repeatConfig?.type || (previewTask.frequency === '仅当天' ? 'today' : (previewTask.frequency === '每周一至周五' ? 'weekly_custom' : 'daily')),
-                                            weeklyDays: previewTask.repeatConfig?.weeklyDays || [1, 2, 3, 4, 5],
-                                            ebbStrength: previewTask.repeatConfig?.ebbStrength || 'normal',
-                                            periodDaysType: previewTask.repeatConfig?.periodDaysType || 'any',
-                                            periodCustomDays: previewTask.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5],
-                                            periodTargetCount: previewTask.repeatConfig?.periodTargetCount || 1,
-                                            periodMaxPerDay: previewTask.repeatConfig?.periodMaxPerDay || 1,
-                                            timeSetting: previewTask.timeStr && String(previewTask.timeStr) !== '--:--' ? (String(previewTask.timeStr).includes('-') ? 'range' : 'duration') : 'none',
-                                            startTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[0] : '',
-                                            endTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[1] : '',
-                                            durationPreset: previewTask.timeStr && String(previewTask.timeStr).includes('分钟') ? parseInt(String(previewTask.timeStr)) : 25,
-                                            pointRule: (previewTask.pointRule && previewTask.pointRule === 'custom') || (previewTask.type === 'habit') ? 'custom' : 'default',
-                                            reward: String(previewTask.reward ?? ''),
-                                            iconEmoji: previewTask.iconEmoji || '📚',
-                                            habitColor: previewTask.catColor || 'from-blue-400 to-blue-500',
-                                            habitType: previewTask.habitType || 'daily_once',
-                                            attachments: previewTask.attachments || [],
-                                            requireApproval: previewTask.requireApproval !== undefined ? previewTask.requireApproval : true
-                                        });
-                                        setShowAddPlanModal(true);
-                                    }} className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
-                                        style={{ background: '#E3F2FD', color: '#2196F3' }}>
-                                        <Icons.Edit3 size={14} /> 编辑
-                                    </button>
-                                    <button onClick={() => { setShowPreviewModal(false); setDeleteConfirmTask(previewTask); }}
-                                        className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
-                                        style={{ background: '#FFF0F0', color: '#EF4444' }}>
-                                        <Icons.Trash2 size={14} /> 删除
-                                    </button>
-                                </>
-                            )}
-                        </>
-                    )}
+                    {appState === 'parent_app' && (() => {
+                        const currentKidStatus = getTaskStatusOnDate(previewTask, selectedDate, resolvedKidId);
+                        const currentKidInfo = kids.find(k => k.id === resolvedKidId);
+                        return (
+                            <>
+                                {currentKidStatus === 'pending_approval' ? (
+                                    <>
+                                        <button onClick={() => { setShowPreviewModal(false); setRejectingTaskInfo({ task: previewTask, dateStr: selectedDate, kidId: resolvedKidId }); setShowRejectModal(true); }}
+                                            className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                            style={{ background: '#FFF0F0', color: '#EF4444', border: '1px solid #FECACA' }}>
+                                            <Icons.X size={16} strokeWidth={3} /> 打回
+                                        </button>
+                                        <button onClick={async () => { const t = previewTask; const d = selectedDate; const k = resolvedKidId; setShowPreviewModal(false); setPreviewTask(null); await handleApproveTask(t, d, k); }}
+                                            className="flex-[2] py-3 rounded-xl text-sm font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                            style={{ background: '#4ECDC4', boxShadow: '0 4px 15px rgba(78,205,196,0.35)' }}>
+                                            <Icons.Check size={16} strokeWidth={3} /> 确认通过{isMultiKidParent && currentKidInfo ? ` (${currentKidInfo.name})` : ''}
+                                        </button>
+                                    </>
+                                ) : (currentKidStatus === 'todo' || currentKidStatus === 'failed') ? (
+                                    <>
+                                        <button onClick={() => {
+                                            setActiveKidId(resolvedKidId);
+                                            setShowPreviewModal(false);
+                                            openQuickComplete({ ...previewTask, requireApproval: false });
+                                        }}
+                                            className="flex-[2] py-3 rounded-xl text-sm font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                            style={{ background: '#4ECDC4', boxShadow: '0 4px 15px rgba(78,205,196,0.35)' }}>
+                                            <Icons.Check size={16} strokeWidth={3} /> 帮{currentKidInfo?.name || '孩子'}完成
+                                        </button>
+                                        <button onClick={() => {
+                                            setShowPreviewModal(false);
+                                            setEditingTask(previewTask);
+                                            setPlanType(previewTask.type || 'study');
+                                            setPlanForm({
+                                                targetKids: [previewTask.kidId || 'all'],
+                                                category: previewTask.category || '技能',
+                                                title: previewTask.title,
+                                                desc: previewTask.standards || previewTask.desc || '',
+                                                startDate: previewTask.startDate || new Date().toISOString().split('T')[0],
+                                                endDate: previewTask.repeatConfig?.endDate || '',
+                                                repeatType: previewTask.repeatConfig?.type || (previewTask.frequency === '仅当天' ? 'today' : (previewTask.frequency === '每周一至周五' ? 'weekly_custom' : 'daily')),
+                                                weeklyDays: previewTask.repeatConfig?.weeklyDays || [1, 2, 3, 4, 5],
+                                                ebbStrength: previewTask.repeatConfig?.ebbStrength || 'normal',
+                                                periodDaysType: previewTask.repeatConfig?.periodDaysType || 'any',
+                                                periodCustomDays: previewTask.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5],
+                                                periodTargetCount: previewTask.repeatConfig?.periodTargetCount || 1,
+                                                periodMaxPerDay: previewTask.repeatConfig?.periodMaxPerDay || 1,
+                                                timeSetting: previewTask.timeStr && String(previewTask.timeStr) !== '--:--' ? (String(previewTask.timeStr).includes('-') ? 'range' : 'duration') : 'none',
+                                                startTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[0] : '',
+                                                endTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[1] : '',
+                                                durationPreset: previewTask.timeStr && String(previewTask.timeStr).includes('分钟') ? parseInt(String(previewTask.timeStr)) : 25,
+                                                pointRule: (previewTask.pointRule && previewTask.pointRule === 'custom') || (previewTask.type === 'habit') ? 'custom' : 'default',
+                                                reward: String(previewTask.reward ?? ''),
+                                                iconEmoji: previewTask.iconEmoji || '📚',
+                                                habitColor: previewTask.catColor || 'from-blue-400 to-blue-500',
+                                                habitType: previewTask.habitType || 'daily_once',
+                                                attachments: previewTask.attachments || [],
+                                                requireApproval: previewTask.requireApproval !== undefined ? previewTask.requireApproval : true
+                                            });
+                                            setShowAddPlanModal(true);
+                                        }} className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                            style={{ background: '#E3F2FD', color: '#2196F3' }}>
+                                            <Icons.Edit3 size={14} /> 编辑
+                                        </button>
+                                    </>
+                                ) : currentKidStatus === 'completed' ? (
+                                    <>
+                                        <button onClick={() => {
+                                            setShowPreviewModal(false);
+                                            setEditingTask(previewTask);
+                                            setPlanType(previewTask.type || 'study');
+                                            setPlanForm({
+                                                targetKids: [previewTask.kidId || 'all'],
+                                                category: previewTask.category || '技能',
+                                                title: previewTask.title,
+                                                desc: previewTask.standards || previewTask.desc || '',
+                                                startDate: previewTask.startDate || new Date().toISOString().split('T')[0],
+                                                endDate: previewTask.repeatConfig?.endDate || '',
+                                                repeatType: previewTask.repeatConfig?.type || (previewTask.frequency === '仅当天' ? 'today' : (previewTask.frequency === '每周一至周五' ? 'weekly_custom' : 'daily')),
+                                                weeklyDays: previewTask.repeatConfig?.weeklyDays || [1, 2, 3, 4, 5],
+                                                ebbStrength: previewTask.repeatConfig?.ebbStrength || 'normal',
+                                                periodDaysType: previewTask.repeatConfig?.periodDaysType || 'any',
+                                                periodCustomDays: previewTask.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5],
+                                                periodTargetCount: previewTask.repeatConfig?.periodTargetCount || 1,
+                                                periodMaxPerDay: previewTask.repeatConfig?.periodMaxPerDay || 1,
+                                                timeSetting: previewTask.timeStr && String(previewTask.timeStr) !== '--:--' ? (String(previewTask.timeStr).includes('-') ? 'range' : 'duration') : 'none',
+                                                startTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[0] : '',
+                                                endTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[1] : '',
+                                                durationPreset: previewTask.timeStr && String(previewTask.timeStr).includes('分钟') ? parseInt(String(previewTask.timeStr)) : 25,
+                                                pointRule: (previewTask.pointRule && previewTask.pointRule === 'custom') || (previewTask.type === 'habit') ? 'custom' : 'default',
+                                                reward: String(previewTask.reward ?? ''),
+                                                iconEmoji: previewTask.iconEmoji || '📚',
+                                                habitColor: previewTask.catColor || 'from-blue-400 to-blue-500',
+                                                habitType: previewTask.habitType || 'daily_once',
+                                                attachments: previewTask.attachments || [],
+                                                requireApproval: previewTask.requireApproval !== undefined ? previewTask.requireApproval : true
+                                            });
+                                            setShowAddPlanModal(true);
+                                        }} className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                            style={{ background: '#E3F2FD', color: '#2196F3' }}>
+                                            <Icons.Edit3 size={14} /> 编辑
+                                        </button>
+                                        <button onClick={() => { setShowPreviewModal(false); setDeleteConfirmTask(previewTask); }}
+                                            className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                            style={{ background: '#FFF0F0', color: '#EF4444' }}>
+                                            <Icons.Trash2 size={14} /> 删除
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button onClick={() => {
+                                            setShowPreviewModal(false);
+                                            setEditingTask(previewTask);
+                                            setPlanType(previewTask.type || 'study');
+                                            setPlanForm({
+                                                targetKids: [previewTask.kidId || 'all'],
+                                                category: previewTask.category || '技能',
+                                                title: previewTask.title,
+                                                desc: previewTask.standards || previewTask.desc || '',
+                                                startDate: previewTask.startDate || new Date().toISOString().split('T')[0],
+                                                endDate: previewTask.repeatConfig?.endDate || '',
+                                                repeatType: previewTask.repeatConfig?.type || (previewTask.frequency === '仅当天' ? 'today' : (previewTask.frequency === '每周一至周五' ? 'weekly_custom' : 'daily')),
+                                                weeklyDays: previewTask.repeatConfig?.weeklyDays || [1, 2, 3, 4, 5],
+                                                ebbStrength: previewTask.repeatConfig?.ebbStrength || 'normal',
+                                                periodDaysType: previewTask.repeatConfig?.periodDaysType || 'any',
+                                                periodCustomDays: previewTask.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5],
+                                                periodTargetCount: previewTask.repeatConfig?.periodTargetCount || 1,
+                                                periodMaxPerDay: previewTask.repeatConfig?.periodMaxPerDay || 1,
+                                                timeSetting: previewTask.timeStr && String(previewTask.timeStr) !== '--:--' ? (String(previewTask.timeStr).includes('-') ? 'range' : 'duration') : 'none',
+                                                startTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[0] : '',
+                                                endTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[1] : '',
+                                                durationPreset: previewTask.timeStr && String(previewTask.timeStr).includes('分钟') ? parseInt(String(previewTask.timeStr)) : 25,
+                                                pointRule: (previewTask.pointRule && previewTask.pointRule === 'custom') || (previewTask.type === 'habit') ? 'custom' : 'default',
+                                                reward: String(previewTask.reward ?? ''),
+                                                iconEmoji: previewTask.iconEmoji || '📚',
+                                                habitColor: previewTask.catColor || 'from-blue-400 to-blue-500',
+                                                habitType: previewTask.habitType || 'daily_once',
+                                                attachments: previewTask.attachments || [],
+                                                requireApproval: previewTask.requireApproval !== undefined ? previewTask.requireApproval : true
+                                            });
+                                            setShowAddPlanModal(true);
+                                        }} className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                            style={{ background: '#E3F2FD', color: '#2196F3' }}>
+                                            <Icons.Edit3 size={14} /> 编辑
+                                        </button>
+                                        <button onClick={() => { setShowPreviewModal(false); setDeleteConfirmTask(previewTask); }}
+                                            className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                            style={{ background: '#FFF0F0', color: '#EF4444' }}>
+                                            <Icons.Trash2 size={14} /> 删除
+                                        </button>
+                                    </>
+                                )}
+                            </>
+                        );
+                    })()}
                 </div>
             </div>
         </div>
