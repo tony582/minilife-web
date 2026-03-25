@@ -26,6 +26,10 @@ import { RejectModal } from '../modals/RejectModal';
 import { TimerModal } from '../modals/TimerModal';
 import { QuickCompleteModal } from '../modals/QuickCompleteModal';
 import { ShopConfirmModal } from '../modals/ShopConfirmModal';
+import { TransactionHistoryModal } from '../modals/TransactionHistoryModal';
+import { ImagePreviewModal } from '../modals/ImagePreviewModal';
+import { QrZoomModal } from '../modals/QrZoomModal';
+import { QrScannerModal } from '../modals/QrScannerModal';
 
 
 export const GlobalModals = () => {
@@ -3771,11 +3775,11 @@ export const GlobalModals = () => {
             <RewardModal context={context} />
             <EmotionalReminderModal context={context} />
             <RejectModal context={context} />
-            {renderQrScannerModal()}
+            <QrScannerModal context={context} />
             <ShopConfirmModal context={context} />
-            {renderQrZoomModal()}
-            {renderTransactionHistoryModal()}
-            {renderImagePreviewModal && renderImagePreviewModal()}
+            <QrZoomModal context={context} />
+            <TransactionHistoryModal context={context} />
+            <ImagePreviewModal context={context} />
             {renderParentSettingsModals()}
 
             {/* ═══ AI Task Creator ═══ */}
