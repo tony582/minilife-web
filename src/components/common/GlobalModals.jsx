@@ -2331,8 +2331,20 @@ export const GlobalModals = () => {
                             } catch (e) {}
                             return (
                                 <>
-                                    {pStatus === 'todo' && (
+                                    {(pStatus === 'todo' || pStatus === 'failed') && (
                                         <>
+                                            {pStatus === 'failed' && (() => {
+                                                const hist = previewTask?.history || {};
+                                                const entry = previewTask?.kidId === 'all' 
+                                                    ? hist[selectedDate]?.[activeKidId] 
+                                                    : hist[selectedDate];
+                                                const feedback = entry?.rejectFeedback;
+                                                return feedback ? (
+                                                    <div className="w-full mb-2 px-3 py-2 rounded-xl text-xs" style={{ background: '#FFF3E8', color: '#E65100', border: '1px solid #FFE0B2' }}>
+                                                        <span className="font-bold">家长反馈：</span>{feedback}
+                                                    </div>
+                                                ) : null;
+                                            })()}
                                             <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); openQuickComplete(previewTask); }}
                                                 className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
                                                 style={{ background: '#F0EBE1', color: '#5A6E8A' }}>
@@ -2341,7 +2353,7 @@ export const GlobalModals = () => {
                                             <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleStartTask(previewTask.id); }}
                                                 className="flex-[2] py-3 rounded-xl text-sm font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
                                                 style={{ background: hasSavedTimer ? '#3B82F6' : '#FF8C42', boxShadow: hasSavedTimer ? '0 4px 15px rgba(59,130,246,0.3)' : '0 4px 15px rgba(255,140,66,0.35)' }}>
-                                                <Icons.Play size={16} fill="currentColor" /> {hasSavedTimer ? '继续计时' : '开始计时'}
+                                                <Icons.Play size={16} fill="currentColor" /> {pStatus === 'failed' ? '重新计时' : (hasSavedTimer ? '继续计时' : '开始计时')}
                                             </button>
                                         </>
                                     )}
