@@ -1555,9 +1555,11 @@ export const GlobalModals = () => {
         if (!showImagePreviewModal || !previewImages || previewImages.length === 0) return null;
 
         const currentImg = previewImages[currentPreviewIndex];
+        const imgSrc = typeof currentImg === 'string' ? currentImg : (currentImg?.data || currentImg?.url || '');
+        const imgName = typeof currentImg === 'string' ? 'minilife-evidence.jpg' : (currentImg?.name || 'minilife-evidence.jpg');
 
         return (
-            <div className="fixed inset-0 bg-black/95 z-[9999] flex flex-col animate-fade-in">
+            <div className="fixed inset-0 bg-black/95 z-[20000] flex flex-col animate-fade-in">
                 {/* Header Toolbar */}
                 <div className="flex items-center justify-between p-4 text-white/50 absolute top-0 left-0 right-0 z-10">
                     <div className="text-sm font-bold bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm">
@@ -1565,8 +1567,8 @@ export const GlobalModals = () => {
                     </div>
                     <div className="flex gap-4">
                         <a
-                            href={currentImg.data || currentImg.url}
-                            download={currentImg.name || 'minilife-evidence.jpg'}
+                            href={imgSrc}
+                            download={imgName}
                             className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 hover:text-white transition-all backdrop-blur-sm cursor-pointer"
                             title="下载原始图片"
                         >
@@ -1596,8 +1598,8 @@ export const GlobalModals = () => {
                     )}
 
                     <img
-                        src={currentImg.data || currentImg.url}
-                        alt={currentImg.name || "Evidence"}
+                        src={imgSrc}
+                        alt={imgName}
                         className="max-w-full max-h-full object-contain rounded-lg shadow-2xl transition-transform duration-300"
                     />
 
