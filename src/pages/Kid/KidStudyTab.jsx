@@ -407,18 +407,19 @@ export const KidStudyTab = () => {
                     const catColor = getCatColor(t.category);
                     const isCompleted = status === 'completed';
                     const isPending = status === 'pending_approval';
+                    const isFailed = status === 'failed';
 
                     return (
                         <div key={t.id}
                             className="rounded-2xl transition-all duration-200 group relative overflow-hidden flex items-stretch"
                             style={{
-                                background: isCompleted ? '#F0FDF4' : '#fff',
+                                background: isCompleted ? '#F0FDF4' : isFailed ? '#FFF5F5' : '#fff',
                                 boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-                                border: isCompleted ? '1px solid #BBF7D0' : '1px solid #f0f0f0',
+                                border: isCompleted ? '1px solid #BBF7D0' : isFailed ? '1px solid #FECACA' : '1px solid #f0f0f0',
                             }}
                         >
                             {/* Left accent bar */}
-                            <div className="w-1 shrink-0 rounded-l-2xl" style={{ background: isCompleted ? '#22C55E' : catColor }}></div>
+                            <div className="w-1 shrink-0 rounded-l-2xl" style={{ background: isCompleted ? '#22C55E' : isFailed ? '#EF4444' : catColor }}></div>
 
                             <button onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className="absolute inset-0 z-0 cursor-pointer hidden sm:block"></button>
 
@@ -455,6 +456,12 @@ export const KidStudyTab = () => {
                                             <span className="text-[10px] font-bold px-1.5 py-px rounded animate-pulse flex items-center gap-0.5"
                                                 style={{ background: `${C.teal}18`, color: C.teal }}>
                                                 <Icons.Play size={8} fill="currentColor" /> {Math.floor((new Date() - new Date(t.actualStartTime)) / 60000)}min
+                                            </span>
+                                        )}
+                                        {isFailed && (
+                                            <span className="text-[10px] font-bold px-1.5 py-px rounded flex items-center gap-0.5"
+                                                style={{ background: '#FEE2E2', color: '#DC2626' }}>
+                                                ✕ 被打回
                                             </span>
                                         )}
                                     </div>
