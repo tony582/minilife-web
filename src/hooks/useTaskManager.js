@@ -16,7 +16,8 @@ export const useTaskManager = (authC, dataC, uiC) => {
     const { 
         activeKidId, kids, setKids, tasks, setTasks, transactions, setTransactions, notify, 
         pauseSync, resumeSync,
-        setTimerTargetId, setTimerTotalSeconds, setTimerMode, setIsTimerRunning, setTimerPaused, 
+        setTimerTargetId, setTimerTotalSeconds, setTimerMode, setIsTimerRunning, setTimerPaused,
+        setTimerSeconds, setPomodoroSession, setPomodoroIsBreak,
         setShowTimerModal, setDeleteConfirmTask, setTaskToSubmit, setCelebrationData, 
         setQuickCompleteTask, setQcTimeMode, setQcHours, setQcMinutes, setQcSeconds, 
         setQcStartTime, setQcEndTime, setQcNote, setQcAttachments, qcTimeMode, qcHours, 
@@ -385,9 +386,12 @@ const getTaskStatusOnDate = (t, date, kidId) => {
     }
   } catch (e) { /* ignore */ }
 
-  // Fresh start — clear any stale saved state first
+  // Fresh start — clear any stale saved state and fully reset ALL timer state
   try { localStorage.removeItem(TIMER_KEY); } catch (e) { /* ignore */ }
   setTimerTargetId(id);
+  setTimerSeconds(0);
+  setPomodoroSession(1);
+  setPomodoroIsBreak(false);
   let secs = 900; // default 15min
   if (task && task.timeStr) {
     // Time range: "17:00-18:00" → calculate difference

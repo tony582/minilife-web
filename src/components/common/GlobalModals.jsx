@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuthContext } from '../../context/AuthContext.jsx';
 import { useDataContext } from '../../context/DataContext.jsx';
@@ -69,46 +69,38 @@ export const GlobalModals = () => {
         return () => clearInterval(interval);
     }, [isTimerRunning, timerPaused, timerMode, pomodoroIsBreak, pomodoroSession]);
 
+    // ═══ TIMER: Refs for current values (avoid stale closures) ═══
+    const timerTargetIdRef = useRef(timerTargetId);
+    const timerModeRef = useRef(timerMode);
+    const timerSecondsRef = useRef(timerSeconds);
+    const timerTotalSecondsRef = useRef(timerTotalSeconds);
+    const timerPausedRef = useRef(timerPaused);
+    const pomodoroSessionRef = useRef(pomodoroSession);
+    const pomodoroIsBreakRef = useRef(pomodoroIsBreak);
+    useEffect(() => { timerTargetIdRef.current = timerTargetId; }, [timerTargetId]);
+    useEffect(() => { timerModeRef.current = timerMode; }, [timerMode]);
+    useEffect(() => { timerSecondsRef.current = timerSeconds; }, [timerSeconds]);
+    useEffect(() => { timerTotalSecondsRef.current = timerTotalSeconds; }, [timerTotalSeconds]);
+    useEffect(() => { timerPausedRef.current = timerPaused; }, [timerPaused]);
+    useEffect(() => { pomodoroSessionRef.current = pomodoroSession; }, [pomodoroSession]);
+    useEffect(() => { pomodoroIsBreakRef.current = pomodoroIsBreak; }, [pomodoroIsBreak]);
+
     // ═══ TIMER: localStorage persistence ═══
     const TIMER_KEY = 'minilife_timer_state';
     useEffect(() => {
-        // Only auto-save when timer modal is visible AND running
-        if (isTimerRunning && timerTargetId && showTimerModal) {
+        // Only auto-save when modal is visible, running, and the mode has actually been started
+        if (isTimerRunning && timerTargetId && showTimerModal && timerMode !== 'select') {
             localStorage.setItem(TIMER_KEY, JSON.stringify({
                 taskId: timerTargetId, mode: timerMode, seconds: timerSeconds,
-                totalSeconds: timerTotalSeconds, running: isTimerRunning, paused: timerPaused,
+                totalSeconds: timerTotalSeconds, running: true, paused: timerPaused,
                 pomodoroSession, pomodoroIsBreak, savedAt: Date.now()
             }));
         }
     }, [timerSeconds, isTimerRunning, timerPaused, timerMode, timerTargetId, showTimerModal]);
 
-    // ═══ TIMER: Restore on mount ═══
-    useEffect(() => {
-        try {
-            const saved = JSON.parse(localStorage.getItem(TIMER_KEY));
-            if (saved && saved.taskId && saved.running) {
-                const task = tasks.find(t => t.id === saved.taskId);
-                if (task) {
-                    // Calculate elapsed time while away
-                    const elapsed = Math.floor((Date.now() - saved.savedAt) / 1000);
-                    let restoredSeconds = saved.seconds;
-                    if (!saved.paused) {
-                        if (saved.mode === 'forward') restoredSeconds += elapsed;
-                        else restoredSeconds = Math.max(0, restoredSeconds - elapsed);
-                    }
-                    setTimerTargetId(saved.taskId);
-                    setTimerMode(saved.mode);
-                    setTimerSeconds(restoredSeconds);
-                    setTimerTotalSeconds(saved.totalSeconds);
-                    setIsTimerRunning(true);
-                    setTimerPaused(saved.paused);
-                    setPomodoroSession(saved.pomodoroSession || 1);
-                    setPomodoroIsBreak(saved.pomodoroIsBreak || false);
-                    setShowTimerModal(true);
-                }
-            }
-        } catch (e) { /* ignore */ }
-    }, []);
+    // ═══ TIMER: NO auto-restore on mount ═══
+    // Saved state is only checked when user clicks a task's "开始计时" button
+    // (handled by handleStartTask in useTaskManager.js)
 
     const clearTimerState = () => {
         localStorage.removeItem(TIMER_KEY);
@@ -134,16 +126,20 @@ export const GlobalModals = () => {
     };
 
     const handleTimerSaveAndLeave = () => {
-        // Explicitly write a paused save snapshot so it persists correctly
+        // Read from refs to avoid stale closures
         try {
             localStorage.setItem(TIMER_KEY, JSON.stringify({
-                taskId: timerTargetId, mode: timerMode, seconds: timerSeconds,
-                totalSeconds: timerTotalSeconds, running: true, paused: true,
-                pomodoroSession, pomodoroIsBreak, savedAt: Date.now()
+                taskId: timerTargetIdRef.current,
+                mode: timerModeRef.current,
+                seconds: timerSecondsRef.current,
+                totalSeconds: timerTotalSecondsRef.current,
+                running: true, paused: true,
+                pomodoroSession: pomodoroSessionRef.current,
+                pomodoroIsBreak: pomodoroIsBreakRef.current,
+                savedAt: Date.now()
             }));
         } catch (e) { /* ignore */ }
-        // Close the modal and stop timer -- clear timerTargetId LAST to prevent
-        // the auto-save useEffect from overwriting with stale data
+        // Close the modal and stop timer
         setShowTimerLeaveConfirm(false);
         setShowTimerModal(false);
         setIsTimerRunning(false);
