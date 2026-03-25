@@ -2143,94 +2143,83 @@ export const GlobalModals = () => {
                         {/* Review Mode Overlay for Parents */}
                         {(appState === 'parent_app' && getTaskStatusOnDate(previewTask, selectedDate, resolvedKidId) === 'pending_approval') ? (
                             <div className="w-full text-left space-y-4">
-                                {/* Cleaner Comparative Layout */}
+                                {/* Ultra-clean comparative layout */}
                                 {(() => {
                                     const hr = kidHistory[selectedDate] || {};
                                     return (
-                                        <div className="space-y-3">
-                                            {/* Top Row: Expected vs Actual Time */}
-                                            <div className="bg-white rounded-2xl p-4 flex items-center justify-between shadow-sm" style={{ border: '1px solid #FFE8D0' }}>
-                                                <div className="flex flex-col gap-1">
-                                                    <div className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
-                                                        <Icons.Target size={12} /> 计划时间
-                                                    </div>
-                                                    <div className="text-sm font-black text-slate-700">{previewTask.timeStr || '--:--'}</div>
-                                                </div>
-                                                
-                                                <div className="w-px h-8 bg-slate-100"></div>
-
-                                                <div className="flex flex-col gap-1 items-end">
-                                                    <div className="text-[10px] font-bold text-orange-400 flex items-center gap-1">
-                                                        实际用时 <Icons.CheckCircle size={12} />
-                                                    </div>
-                                                    <div className="text-sm font-black text-orange-600">{hr.timeSpent || hr.actualDuration || '已完成'}</div>
-                                                    {hr.submittedAt && (
-                                                        <div className="text-[9px] text-slate-400">
-                                                            {new Date(hr.submittedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })} 提交
-                                                        </div>
-                                                    )}
+                                        <div className="bg-white rounded-2xl p-5 shadow-sm space-y-6" style={{ border: '1px solid #E8E0D4' }}>
+                                            
+                                            {/* Header */}
+                                            <div className="flex items-center justify-between pb-4" style={{ borderBottom: '1px solid #F0EBE1' }}>
+                                                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">验收对比</div>
+                                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50 text-orange-600 font-bold text-[11px] border border-orange-100">
+                                                    <Icons.Star size={12} fill="currentColor" />
+                                                    奖励 {previewTask.reward} 金币
                                                 </div>
                                             </div>
 
-                                            {/* Middle Row: Task Requirements vs Student Submission */}
-                                            <div className="bg-white rounded-2xl p-4 shadow-sm space-y-4" style={{ border: '1px solid #F0EBE1' }}>
-                                                
-                                                {/* Parent's Request */}
+                                            {/* Time Comparison */}
+                                            <div className="grid grid-cols-2 gap-6">
                                                 <div>
-                                                    <div className="flex items-center justify-between mb-2">
-                                                        <span className="text-[11px] font-bold text-slate-400 uppercase">📋 任务要求</span>
-                                                        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-50 border border-orange-100">
-                                                            <Icons.Star size={10} style={{ color: '#D97706' }} fill="currentColor" />
-                                                            <span className="text-[10px] font-bold text-orange-600">奖励 {previewTask.reward} 金币</span>
-                                                        </div>
+                                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 mb-1.5 uppercase">
+                                                        <Icons.Target size={12} /> 计划时间
                                                     </div>
-                                                    <div className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
-                                                        {previewTask.desc || previewTask.standards || '无特别说明'}
+                                                    <div className="text-base font-black text-slate-700">{previewTask.timeStr || '--:--'}</div>
+                                                </div>
+                                                <div>
+                                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-orange-400 mb-1.5 uppercase">
+                                                        <Icons.CheckCircle size={12} /> 实际提交
+                                                    </div>
+                                                    <div className="flex items-baseline gap-2">
+                                                        <span className="text-base font-black text-orange-600">{hr.timeSpent || hr.actualDuration || '已完成'}</span>
+                                                        {hr.submittedAt && (
+                                                            <span className="text-[10px] text-slate-400 font-medium">({new Date(hr.submittedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })})</span>
+                                                        )}
                                                     </div>
                                                 </div>
+                                            </div>
 
-                                                <div className="h-px w-full bg-slate-100"></div>
+                                            <div className="h-px w-full bg-slate-50"></div>
 
-                                                {/* Child's Submission */}
+                                            {/* Content Comparison */}
+                                            <div className="grid grid-cols-2 gap-6">
+                                                {/* Parent's Request */}
                                                 <div>
-                                                    <div className="text-[11px] font-bold text-slate-400 uppercase mb-2">✍️ 孩子提交</div>
-                                                    <div className="space-y-3">
-                                                        {/* Note */}
-                                                        {hr.note && (
-                                                            <div className="text-sm text-slate-700 bg-orange-50/50 p-3 rounded-xl border border-orange-100/50">
-                                                                <span className="text-xs font-bold text-orange-400 mr-2">留言:</span>
-                                                                {hr.note}
-                                                            </div>
-                                                        )}
-                                                        
-                                                        {/* Attachments */}
-                                                        {hr.attachments && hr.attachments.length > 0 && (
-                                                            <div>
-                                                                <span className="text-xs font-bold text-slate-400 mb-2 block">完成证据:</span>
-                                                                <div className="flex flex-wrap gap-2">
-                                                                    {hr.attachments.map((att, i) => {
-                                                                        const src = typeof att === 'string' ? att : (att.data || att.url || '');
-                                                                        const isVideo = (typeof att === 'string' && (att.endsWith('.mp4') || att.endsWith('.webm'))) || (att.type && att.type.startsWith('video/'));
-                                                                        return (
-                                                                            <div key={i} onClick={(e) => { e.stopPropagation(); setPreviewImages(hr.attachments.map(a => typeof a === 'string' ? a : (a.data || a.url || ''))); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} className="relative w-16 h-16 rounded-xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md hover:scale-105 transition-all border-2 border-white ring-1 ring-slate-200">
-                                                                                {isVideo ? (
-                                                                                    <video src={src} className="w-full h-full object-cover" />
-                                                                                ) : (
-                                                                                    <img src={src} className="w-full h-full object-cover" alt="证据" />
-                                                                                )}
-                                                                            </div>
-                                                                        );
-                                                                    })}
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                        
-                                                        {!hr.note && (!hr.attachments || hr.attachments.length === 0) && (
-                                                            <div className="text-xs text-slate-400 italic text-center py-2">
-                                                                除打卡外，没有附加留言或图片
-                                                            </div>
-                                                        )}
+                                                    <div className="text-[10px] font-bold text-slate-400 mb-2 uppercase">🎯 任务要求</div>
+                                                    <div className="text-[13px] text-slate-600 leading-relaxed whitespace-pre-wrap">
+                                                        {previewTask.desc || previewTask.standards || '无附加说明'}
                                                     </div>
+                                                </div>
+                                                
+                                                {/* Child's Submission */}
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <div className="text-[10px] font-bold text-slate-400 mb-2 uppercase">✍️ 学习备注</div>
+                                                        <div className="text-[13px] text-slate-700 leading-relaxed">
+                                                            {hr.note || <span className="text-slate-300 italic">无留言</span>}
+                                                        </div>
+                                                    </div>
+
+                                                    {hr.attachments && hr.attachments.length > 0 && (
+                                                        <div>
+                                                            <div className="text-[10px] font-bold text-slate-400 mb-2 uppercase">📸 完成证据</div>
+                                                            <div className="flex flex-wrap gap-2 pt-1">
+                                                                {hr.attachments.map((att, i) => {
+                                                                    const src = typeof att === 'string' ? att : (att.data || att.url || '');
+                                                                    const isVideo = (typeof att === 'string' && (att.endsWith('.mp4') || att.endsWith('.webm'))) || (att.type && att.type.startsWith('video/'));
+                                                                    return (
+                                                                        <div key={i} onClick={(e) => { e.stopPropagation(); setPreviewImages(hr.attachments.map(a => typeof a === 'string' ? a : (a.data || a.url || ''))); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} className="relative w-14 h-14 rounded-xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md hover:scale-105 transition-all ring-1 ring-slate-200">
+                                                                            {isVideo ? (
+                                                                                <video src={src} className="w-full h-full object-cover" />
+                                                                            ) : (
+                                                                                <img src={src} className="w-full h-full object-cover" alt="证据" />
+                                                                            )}
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
 
