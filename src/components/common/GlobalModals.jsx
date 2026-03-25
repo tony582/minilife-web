@@ -23,6 +23,9 @@ import { TaskSubmitModal } from '../modals/TaskSubmitModal';
 import { TransferModal } from '../modals/TransferModal';
 import { ReviewModal } from '../modals/ReviewModal';
 import { RejectModal } from '../modals/RejectModal';
+import { TimerModal } from '../modals/TimerModal';
+import { QuickCompleteModal } from '../modals/QuickCompleteModal';
+import { ShopConfirmModal } from '../modals/ShopConfirmModal';
 
 
 export const GlobalModals = () => {
@@ -3755,13 +3758,13 @@ export const GlobalModals = () => {
             />
 
             <TaskSubmitModal context={context} />
-            {renderQuickCompleteModal()}
+            <QuickCompleteModal context={context} />
             {renderKidPreviewModal()}
             <TransferModal context={context} />
             <ReviewModal context={context} />
             {renderAddItemModal()}
             {renderAddPlanModal()}
-            {renderTimerModal()}
+            <TimerModal context={context} />
             <CalendarModal context={context} />
             {renderAddKidModal()}
             <PenaltyModal context={context} />
@@ -3769,7 +3772,7 @@ export const GlobalModals = () => {
             <EmotionalReminderModal context={context} />
             <RejectModal context={context} />
             {renderQrScannerModal()}
-            {renderShopConfirmModal()}
+            <ShopConfirmModal context={context} />
             {renderQrZoomModal()}
             {renderTransactionHistoryModal()}
             {renderImagePreviewModal && renderImagePreviewModal()}
