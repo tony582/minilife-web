@@ -419,7 +419,7 @@ export const KidStudyTab = () => {
                             }}
                         >
                             {/* Left accent bar */}
-                            <div className="w-1 shrink-0 rounded-l-2xl" style={{ background: isCompleted ? '#22C55E' : isFailed ? '#EF4444' : catColor }}></div>
+                            <div className="w-1 shrink-0 rounded-l-2xl" style={{ background: isCompleted ? '#22C55E' : catColor }}></div>
 
                             <button onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className="absolute inset-0 z-0 cursor-pointer hidden sm:block"></button>
 
@@ -480,8 +480,8 @@ export const KidStudyTab = () => {
                                     ) : (
                                         <button onClick={() => openQuickComplete(t)}
                                             className="rounded-full py-1.5 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
-                                            style={{ background: C.teal }}>
-                                            <Icons.Check size={12} strokeWidth={3} /> 完成
+                                            style={{ background: isFailed ? '#EF4444' : C.teal }}>
+                                            {isFailed ? <><Icons.RotateCcw size={12} /> 重来</> : <><Icons.Check size={12} strokeWidth={3} /> 完成</>}
                                         </button>
                                     )
                                 )}
