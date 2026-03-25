@@ -2239,6 +2239,45 @@ export const GlobalModals = () => {
                                         );
                                     })()}
                                 </div>
+
+                                {/* Audit Trail */}
+                                {(() => {
+                                    const hr = kidHistory[selectedDate];
+                                    const log = hr?.auditLog;
+                                    if (!log || log.length === 0) return null;
+                                    const actionMap = {
+                                        submitted: { label: '提交审核', color: '#3B82F6', icon: '📤' },
+                                        rejected: { label: '被打回', color: '#EF4444', icon: '↩️' },
+                                        approved: { label: '审核通过', color: '#22C55E', icon: '✅' },
+                                    };
+                                    return (
+                                        <div className="rounded-2xl p-4" style={{ background: '#FAFAF8', border: '1px solid #F0EBE1' }}>
+                                            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: '#9CAABE' }}>📜 审核记录</div>
+                                            <div className="space-y-0">
+                                                {log.map((entry, i) => {
+                                                    const info = actionMap[entry.action] || { label: entry.action, color: '#9CAABE', icon: '•' };
+                                                    const time = new Date(entry.timestamp);
+                                                    return (
+                                                        <div key={i} className="flex items-start gap-3 relative">
+                                                            {/* Timeline line */}
+                                                            {i < log.length - 1 && <div className="absolute left-[9px] top-5 bottom-0 w-px" style={{ background: '#E8E0D4' }} />}
+                                                            {/* Dot */}
+                                                            <div className="w-[19px] h-[19px] rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] z-10 border-2 border-white" style={{ background: info.color + '20', color: info.color }}>{info.icon}</div>
+                                                            {/* Content */}
+                                                            <div className="flex-1 pb-3">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-xs font-black" style={{ color: info.color }}>{info.label}</span>
+                                                                    <span className="text-[10px] text-slate-400">{time.toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })} {time.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                                </div>
+                                                                {entry.detail && <div className="text-[11px] text-slate-500 mt-0.5">{entry.detail}</div>}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         ) : (
                             <>
@@ -2355,6 +2394,37 @@ export const GlobalModals = () => {
                                                             <Icons.Paperclip size={12} /> {record.attachmentCount} 个附件
                                                         </div>
                                                     )
+                                                )}
+                                                
+                                                {/* Audit Trail in History */}
+                                                {record.auditLog && record.auditLog.length > 0 && (
+                                                    <div className="mt-3 pt-3" style={{ borderTop: '1px dashed #E8E0D4' }}>
+                                                        <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: '#9CAABE' }}>审核记录</div>
+                                                        <div className="space-y-0 pl-1">
+                                                            {record.auditLog.map((entry, i) => {
+                                                                const actionMap = {
+                                                                    submitted: { label: '提交审核', color: '#3B82F6', icon: '📤' },
+                                                                    rejected: { label: '被打回', color: '#EF4444', icon: '↩️' },
+                                                                    approved: { label: '审核通过', color: '#22C55E', icon: '✅' },
+                                                                };
+                                                                const info = actionMap[entry.action] || { label: entry.action, color: '#9CAABE', icon: '•' };
+                                                                const time = new Date(entry.timestamp);
+                                                                return (
+                                                                    <div key={i} className="flex items-start gap-2.5 relative">
+                                                                        {i < record.auditLog.length - 1 && <div className="absolute left-[7px] top-4 bottom-[-4px] w-px" style={{ background: '#E8E0D4' }} />}
+                                                                        <div className="w-[15px] h-[15px] rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[8px] z-10 border border-white" style={{ background: info.color + '20', color: info.color }}>{info.icon}</div>
+                                                                        <div className="flex-1 pb-2">
+                                                                            <div className="flex items-center gap-1.5 align-baseline">
+                                                                                <span className="text-[11px] font-bold" style={{ color: info.color }}>{info.label}</span>
+                                                                                <span className="text-[9px]" style={{ color: '#9CAABE' }}>{time.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                                            </div>
+                                                                            {entry.detail && <div className="text-[10px] mt-0.5" style={{ color: '#5A6E8A' }}>{entry.detail}</div>}
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
                                                 )}
                                             </div>
                                         ))}

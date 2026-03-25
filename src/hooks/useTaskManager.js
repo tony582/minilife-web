@@ -609,7 +609,11 @@ const handleQuickComplete = async () => {
     timeSpent: spentStr,
     note: qcNote,
     attachments: qcAttachments,
-    submittedAt: Date.now()
+    submittedAt: Date.now(),
+    auditLog: [
+      ...((taskToSubmit.history?.[selectedDate]?.[activeKidId]?.auditLog) || (taskToSubmit.history?.[selectedDate]?.auditLog) || []),
+      { action: 'submitted', timestamp: Date.now(), detail: `用时: ${spentStr}` }
+    ]
   };
   let newHistory = {
     ...(taskToSubmit.history || {})
@@ -928,8 +932,13 @@ const handleQuickComplete = async () => {
       [kidId]: {
         ...oldHistory,
         status: 'failed',
-        rejectFeedback: reason
-      } // preserve timeSpent and current note, add feedback
+        rejectFeedback: reason,
+        rejectedAt: Date.now(),
+        auditLog: [
+          ...(oldHistory.auditLog || []),
+          { action: 'rejected', timestamp: Date.now(), detail: reason || '未说明原因' }
+        ]
+      }
     };
     await apiFetch(`/api/tasks/${task.id}`, {
       method: 'PUT',
@@ -1122,7 +1131,12 @@ const handleQuickComplete = async () => {
     }
     // Then Update Task History
     const histUpdate = {
-      status: 'completed'
+      status: 'completed',
+      approvedAt: Date.now(),
+      auditLog: [
+        ...((task.history?.[date]?.[actualKidId]?.auditLog) || (task.history?.[date]?.auditLog) || []),
+        { action: 'approved', timestamp: Date.now() }
+      ]
     };
     let newHistory = {
       ...(task.history || {})
