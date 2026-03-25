@@ -218,8 +218,12 @@ export const GlobalModals = () => {
         const taskAttachments = task.attachments || [];
 
         return (
-            <div className="fixed inset-0 flex flex-col overflow-hidden animate-fade-in"
-                style={{ background: theme.bg, zIndex: 9999 }}>
+            <div className="fixed inset-0 flex items-center justify-center overflow-hidden animate-fade-in"
+                style={{ zIndex: 9999 }}>
+                {/* Desktop: blurred backdrop overlay for all modes */}
+                <div className="absolute inset-0 hidden md:block" style={{ background: 'rgba(27,46,75,0.3)', backdropFilter: 'blur(8px)' }} />
+                {/* Mobile: full-screen solid bg */}
+                <div className="absolute inset-0 md:hidden" style={{ background: timerMode === 'select' ? '#FBF7F0' : theme.bg }} />
 
                 {/* ── Leave confirmation (flat style) ── */}
                 {showTimerLeaveConfirm && (() => {
@@ -256,8 +260,8 @@ export const GlobalModals = () => {
 
                 {/* ══════ MODE SELECTION (parent-modal structure) ══════ */}
                 {timerMode === 'select' ? (
-                    <div className="w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg md:mx-auto md:my-auto flex flex-col md:rounded-3xl overflow-hidden"
-                        style={{ background: '#FBF7F0' }}>
+                    <div className="relative z-10 w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden"
+                        style={{ background: '#FBF7F0', boxShadow: '0 20px 60px rgba(27,46,75,0.15)' }}>
 
                         {/* — Header — */}
                         <div className="shrink-0 px-5 py-4 flex items-center justify-between"
@@ -329,8 +333,8 @@ export const GlobalModals = () => {
                     </div>
                 ) : (
                     /* ══════ TIMER RUNNING (flat cute) ══════ */
-                    <div className="flex-1 flex flex-col w-full overflow-hidden"
-                        style={{ paddingTop: 'max(env(safe-area-inset-top), 8px)' }}>
+                    <div className="relative z-10 w-full h-full md:h-auto md:max-h-[90vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden"
+                        style={{ background: theme.bg, boxShadow: '0 20px 60px rgba(27,46,75,0.15)' }}>
 
                         {/* Top bar: task name + mode */}
                         <div className="shrink-0 px-5 py-3 flex items-center justify-between"
