@@ -107,6 +107,8 @@ export const Icons = {
     Columns: (p) => <IconWrapper {...p}><rect x="3" y="3" width="8" height="18" rx="1" /><rect x="13" y="3" width="8" height="18" rx="1" /></IconWrapper>,
     Timer: (p) => <IconWrapper {...p}><line x1="10" x2="14" y1="2" y2="2" /><line x1="12" x2="12" y1="14" y2="10" /><circle cx="12" cy="14" r="8" /></IconWrapper>,
     SkipForward: (p) => <IconWrapper {...p}><polygon points="5 4 15 12 5 20 5 4" /><line x1="19" x2="19" y1="5" y2="19" /></IconWrapper>,
+    MessageSquare: (p) => <IconWrapper {...p}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></IconWrapper>,
+    RotateCcw: (p) => <IconWrapper {...p}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></IconWrapper>,
 };
 
 export const renderIcon = (name, size = 20, className = "") => {
