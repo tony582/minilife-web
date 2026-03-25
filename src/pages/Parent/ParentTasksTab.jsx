@@ -570,7 +570,7 @@ export const ParentTasksTab = () => {
                             </div>
 
                             {/* Inline action buttons — right side */}
-                            <div className="relative z-10 flex items-center gap-1 pr-3 shrink-0">
+                            <div className="relative z-10 flex items-center pr-3 shrink-0">
                                 {isPending ? (
                                     <button onClick={(e) => { e.stopPropagation(); setPreviewTask(t); setShowPreviewModal(true); }}
                                         className="rounded-full py-1.5 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
@@ -582,82 +582,30 @@ export const ParentTasksTab = () => {
                                         style={{ color: '#16A34A' }}>
                                         <Icons.CheckCircle size={12} /> 已完成
                                     </div>
-                                ) : (
-                                    <>
-                                        {/* Complete — primary action for parents */}
-                                        {(status === 'todo' || status === 'failed') && (
-                                            <button onClick={(e) => {
-                                                e.stopPropagation();
-                                                // Determine which kid to complete for
-                                                let targetKid = null;
-                                                if (t.kidId === 'all') {
-                                                    if (effectiveFilter !== 'all') {
-                                                        targetKid = effectiveFilter;
-                                                    } else if (kids.length === 1) {
-                                                        targetKid = kids[0].id;
-                                                    } else {
-                                                        // Multiple kids — show picker
-                                                        setKidPickerTask(t);
-                                                        return;
-                                                    }
-                                                } else {
-                                                    targetKid = t.kidId;
-                                                }
-                                                setActiveKidId(targetKid);
-                                                openQuickComplete({ ...t, requireApproval: false });
-                                            }}
-                                                className="rounded-full py-1.5 px-3 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
-                                                style={{ background: C.teal, boxShadow: `0 2px 8px ${C.teal}40` }}>
-                                                <Icons.Check size={12} strokeWidth={3} /> 完成
-                                            </button>
-                                        )}
-                                        {/* Edit — icon only */}
-                                        <button onClick={(e) => {
-                                            e.stopPropagation();
-                                            setEditingTask(t);
-                                            setPlanType(t.type || 'study');
-                                            setPlanForm({
-                                                targetKids: [t.kidId || 'all'],
-                                                category: t.category || '技能',
-                                                title: t.title,
-                                                desc: t.standards || t.desc || '',
-                                                startDate: t.startDate || new Date().toISOString().split('T')[0],
-                                                endDate: t.repeatConfig?.endDate || '',
-                                                repeatType: t.repeatConfig?.type || (t.frequency === '仅当天' ? 'today' : (t.frequency === '每周一至周五' ? 'weekly_custom' : 'daily')),
-                                                weeklyDays: t.repeatConfig?.weeklyDays || [1, 2, 3, 4, 5],
-                                                ebbStrength: t.repeatConfig?.ebbStrength || 'normal',
-                                                periodDaysType: t.repeatConfig?.periodDaysType || 'any',
-                                                periodCustomDays: t.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5],
-                                                periodTargetCount: t.repeatConfig?.periodTargetCount || 1,
-                                                periodMaxPerDay: t.repeatConfig?.periodMaxPerDay || 1,
-                                                periodMaxType: t.periodMaxType || 'daily',
-                                                timeSetting: t.timeStr && String(t.timeStr) !== '--:--' ? (String(t.timeStr).includes('-') ? 'range' : 'duration') : 'none',
-                                                startTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[0] : '',
-                                                endTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[1] : '',
-                                                durationPreset: t.timeStr && String(t.timeStr).includes('分钟') ? parseInt(String(t.timeStr)) : 25,
-                                                pointRule: (t.pointRule && t.pointRule === 'custom') || (t.type === 'habit') ? 'custom' : 'default',
-                                                reward: String(t.reward ?? ''),
-                                                iconEmoji: t.iconEmoji || '📚',
-                                                habitColor: t.catColor || 'from-blue-400 to-blue-500',
-                                                habitType: t.habitType || 'daily_once',
-                                                attachments: t.attachments || [],
-                                                requireApproval: t.requireApproval !== undefined ? t.requireApproval : true
-                                            });
-                                            setShowAddPlanModal(true);
-                                        }} className="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90 hover:bg-blue-50"
-                                            style={{ color: '#3B82F6' }}
-                                            title="编辑">
-                                            <Icons.Edit3 size={14} />
-                                        </button>
-                                        {/* Delete — icon only */}
-                                        <button onClick={(e) => { e.stopPropagation(); setDeleteConfirmTask(t); }}
-                                            className="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90 hover:bg-red-50"
-                                            style={{ color: '#CBD5E1' }}
-                                            title="删除">
-                                            <Icons.Trash2 size={14} />
-                                        </button>
-                                    </>
-                                )}
+                                ) : (status === 'todo' || status === 'failed') ? (
+                                    <button onClick={(e) => {
+                                        e.stopPropagation();
+                                        let targetKid = null;
+                                        if (t.kidId === 'all') {
+                                            if (effectiveFilter !== 'all') {
+                                                targetKid = effectiveFilter;
+                                            } else if (kids.length === 1) {
+                                                targetKid = kids[0].id;
+                                            } else {
+                                                setKidPickerTask(t);
+                                                return;
+                                            }
+                                        } else {
+                                            targetKid = t.kidId;
+                                        }
+                                        setActiveKidId(targetKid);
+                                        openQuickComplete({ ...t, requireApproval: false });
+                                    }}
+                                        className="rounded-full py-1.5 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
+                                        style={{ background: C.teal, boxShadow: `0 2px 8px ${C.teal}40` }}>
+                                        <Icons.Check size={12} strokeWidth={3} /> 完成
+                                    </button>
+                                ) : null}
                             </div>
                         </div>
                     );
