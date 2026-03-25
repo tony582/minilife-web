@@ -599,7 +599,7 @@ export const ParentTasksTab = () => {
                                                 targetKid = kids[0].id;
                                             } else {
                                                 // Open preview modal so parent can see per-kid status
-                                                setSelectedDate(date);
+                                                setSelectedDate(selectedDate);
                                                 setPreviewTask(t);
                                                 setShowPreviewModal(true);
                                                 return;
