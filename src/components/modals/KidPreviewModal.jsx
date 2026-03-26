@@ -608,7 +608,10 @@ export const KidPreviewModal = ({ context }) => {
                                             style={{ background: '#FFF0F0', color: '#EF4444', border: '1px solid #FECACA' }}>
                                             <Icons.X size={16} strokeWidth={3} /> 打回
                                         </button>
-                                        <button onClick={async () => { await handleApproveTask(previewTask, selectedDate, resolvedKidId); }}
+                                        <button onClick={async () => {
+                                            await handleApproveTask(previewTask, selectedDate, resolvedKidId);
+                                            if (!isMultiKidParent) { setShowPreviewModal(false); setPreviewTask(null); }
+                                        }}
                                             className="flex-[2] py-3 rounded-xl text-sm font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
                                             style={{ background: '#4ECDC4', boxShadow: '0 4px 15px rgba(78,205,196,0.35)' }}>
                                             <Icons.Check size={16} strokeWidth={3} /> 确认通过{isMultiKidParent && currentKidInfo ? ` (${currentKidInfo.name})` : ''}
