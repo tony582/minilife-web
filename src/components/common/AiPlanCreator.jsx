@@ -15,6 +15,7 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
     const [refineInput, setRefineInput] = useState('');
     const [isRefining, setIsRefining] = useState(false);
     const [editingIdx, setEditingIdx] = useState(null);
+    const [confirmDeleteIdx, setConfirmDeleteIdx] = useState(null);
 
     if (!isOpen) return null;
 
@@ -369,16 +370,24 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                                         </div>
                                         {/* Action buttons */}
                                         <div className="flex items-center gap-1.5 pr-3 shrink-0">
-                                            <button onClick={() => setEditingIdx(isEditing ? null : idx)}
+                                            <button onClick={() => { setEditingIdx(isEditing ? null : idx); setConfirmDeleteIdx(null); }}
                                                 className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all active:scale-90"
                                                 style={isEditing ? { background: '#667eea', color: '#fff' } : { background: '#EEF2FF', color: '#667eea' }}>
                                                 <Icons.Edit3 size={12} />
                                             </button>
-                                            <button onClick={() => setParsedTasks(parsedTasks.filter((_, i) => i !== idx))}
-                                                className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all active:scale-90"
-                                                style={{ background: '#FEE2E2', color: '#EF4444' }}>
-                                                <Icons.Trash2 size={12} />
-                                            </button>
+                                            {confirmDeleteIdx === idx ? (
+                                                <button onClick={() => { setParsedTasks(parsedTasks.filter((_, i) => i !== idx)); setConfirmDeleteIdx(null); }}
+                                                    className="h-7 px-2 rounded-lg flex items-center justify-center shrink-0 transition-all active:scale-90 text-[10px] font-bold"
+                                                    style={{ background: '#EF4444', color: '#fff' }}>
+                                                    确认?
+                                                </button>
+                                            ) : (
+                                                <button onClick={() => setConfirmDeleteIdx(idx)}
+                                                    className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all active:scale-90"
+                                                    style={{ background: '#FEE2E2', color: '#EF4444' }}>
+                                                    <Icons.Trash2 size={12} />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                     {/* Inline edit panel */}
