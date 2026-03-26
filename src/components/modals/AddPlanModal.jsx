@@ -755,16 +755,18 @@ export const AddPlanModal = ({ context }) => {
                                     </div>
 
                                     {/* ═══ 时间要求 (独立卡片) ═══ */}
-                                    <div className="rounded-2xl p-4" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
+                                    <div className="rounded-2xl p-4 space-y-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
+                                        <label className="text-[11px] font-bold uppercase tracking-wider block" style={{ color: '#9CAABE' }}>时间要求</label>
                                         {planForm.timeSetting === 'none' ? (
                                             <button
                                                 onClick={() => setPlanForm({ ...planForm, timeSetting: 'range' })}
-                                                className="w-full py-4 rounded-2xl border-2 border-dashed border-slate-200 text-slate-500 font-bold hover:bg-slate-50 hover:border-blue-300 hover:text-blue-600 transition-all flex items-center justify-center gap-2"
+                                                className="w-full py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                                                style={{ background: '#FBF7F0', color: '#FF8C42', border: '1.5px dashed #FFD4AD' }}
                                             >
-                                                <Icons.Plus size={18} /> 添加具体时间要求 (可选)
+                                                <Icons.Plus size={16} /> 添加具体时间要求 (可选)
                                             </button>
                                         ) : (
-                                            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-4 animate-fade-in relative">
+                                            <div className="rounded-xl p-4 space-y-4 animate-fade-in relative" style={{ background: '#FBF7F0', border: '1px solid #F0EBE1' }}>
                                                 <button
                                                     onClick={() => setPlanForm({ ...planForm, timeSetting: 'none', startTime: '', endTime: '', durationPreset: null })}
                                                     className="absolute top-4 right-4 text-slate-400 hover:text-red-500 p-1 rounded-lg hover:bg-white transition-colors"
