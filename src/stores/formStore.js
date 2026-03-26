@@ -27,21 +27,21 @@ const defaultPlanForm = {
 export const useFormStore = create((set) => ({
     // Transfer form
     transferForm: { amount: '', target: 'vault' },
-    setTransferForm: (v) => set({ transferForm: v }),
+    setTransferForm: (v) => set((state) => ({ transferForm: typeof v === 'function' ? v(state.transferForm) : v })),
 
     // New kid form
     newKidForm: { name: '', gender: 'boy', avatar: '' },
-    setNewKidForm: (v) => set({ newKidForm: v }),
+    setNewKidForm: (v) => set((state) => ({ newKidForm: typeof v === 'function' ? v(state.newKidForm) : v })),
 
     // New item form
     newItem: { name: '', desc: '', price: '', iconEmoji: '🧸', type: 'single', walletTarget: 'spend', charityTarget: '', maxExchanges: 1, periodMaxType: 'lifetime' },
-    setNewItem: (v) => set({ newItem: v }),
+    setNewItem: (v) => set((state) => ({ newItem: typeof v === 'function' ? v(state.newItem) : v })),
 
     // Plan form
     planType: 'study',
     setPlanType: (v) => set({ planType: v }),
     planFormErrors: {},
-    setPlanFormErrors: (v) => set({ planFormErrors: v }),
+    setPlanFormErrors: (v) => set((state) => ({ planFormErrors: typeof v === 'function' ? v(state.planFormErrors) : v })),
     lastSavedEndTime: '',
     setLastSavedEndTime: (v) => set({ lastSavedEndTime: v }),
     planForm: { ...defaultPlanForm },
