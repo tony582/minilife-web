@@ -1,12 +1,13 @@
 import React from 'react';
 import { Icons } from '../../utils/Icons';
+import { apiFetch } from '../../api/client';
 
 export const AddKidModal = ({ context }) => {
     const {
         showAddKidModal, setShowAddKidModal,
         newKidForm, setNewKidForm,
         kids, setKids,
-        notify, apiFetch
+        notify
     } = context;
 
     if (!showAddKidModal) return null;
