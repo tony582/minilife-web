@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { useSwipeBack } from '../../hooks/useSwipeBack';
 import { Icons } from '../../utils/Icons';
 import { CategoryManagerModal } from './CategoryManagerModal';
-import { getCatHexColor } from '../../utils/categoryUtils';
 
 export const AddPlanModal = ({ context }) => {
     const {
