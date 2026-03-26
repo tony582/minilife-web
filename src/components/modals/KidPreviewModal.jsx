@@ -569,6 +569,32 @@ export const KidPreviewModal = ({ context }) => {
                                 {(() => {
                                     // For period tasks: allow continuing even when today's status is 'completed'
                                     const ppFooter = getPeriodProgress(previewTask, activeKidId, selectedDate);
+
+                                    // Option C: Period done but rejected → show re-submit button
+                                    if (ppFooter?.periodDone && ppFooter?.periodFailed) {
+                                        return (
+                                            <>
+                                                {(() => {
+                                                    const hist = previewTask?.history || {};
+                                                    const entry = previewTask?.kidId === 'all'
+                                                        ? hist[selectedDate]?.[activeKidId]
+                                                        : hist[selectedDate];
+                                                    const feedback = entry?.rejectFeedback;
+                                                    return feedback ? (
+                                                        <div className="w-full mb-2 px-3 py-2 rounded-xl text-xs" style={{ background: '#FFF3E8', color: '#E65100', border: '1px solid #FFE0B2' }}>
+                                                            <span className="font-bold">家长反馈：</span>{feedback}
+                                                        </div>
+                                                    ) : null;
+                                                })()}
+                                                <button onClick={() => { const t = previewTask; setShowPreviewModal(false); setPreviewTask(null); setTimeout(() => openQuickComplete(t), 50); }}
+                                                    className="w-full py-3 rounded-xl text-sm font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                                    style={{ background: '#FF8C42', boxShadow: '0 4px 15px rgba(255,140,66,0.35)' }}>
+                                                    <Icons.RefreshCw size={16} /> 重新提交审核
+                                                </button>
+                                            </>
+                                        );
+                                    }
+
                                     const canStillAct = ppFooter && !ppFooter.periodDone && !ppFooter.todayMaxed;
                                     const showActionBtns = pStatus === 'todo' || pStatus === 'failed' || (canStillAct && pStatus === 'completed');
                                     return (

@@ -146,14 +146,15 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
     }
   });
   if (periodCompletions >= rc.periodTargetCount) {
-    // Allow one more submission ONLY if it's to transition to pending_approval
-    // Check if any entry in the period is already pending_approval
+    // Check period-wide status: already pending? already failed (can re-submit)?
     let alreadyPending = false;
+    let hasFailed = false;
     Object.keys(hist).forEach(dStr => {
       const histDt = new Date(dStr);
       if (histDt >= periodStartDt && histDt <= periodEndDt) {
         const e = task.kidId === 'all' ? hist[dStr]?.[kidId] : hist[dStr];
         if (e?.status === 'pending_approval') alreadyPending = true;
+        if (e?.status === 'failed') hasFailed = true;
       }
     });
     if (alreadyPending) {
@@ -162,7 +163,13 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
         reason: '该任务已提交审核，等待家长审核中'
       };
     }
-    // If target met but not yet pending, still block — the last submit already set pending
+    // Option C: if rejected, allow re-submit to go back to pending_approval
+    if (hasFailed) {
+      return {
+        canSubmit: true,
+        isResubmit: true // Flag so submission knows to set pending_approval directly
+      };
+    }
     return {
       canSubmit: false,
       reason: `本周期已达成目标(${rc.periodTargetCount}次)啦！`
@@ -758,6 +765,47 @@ const handleQuickComplete = async () => {
   // === Period task special flow ===
   // Individual completions auto-approve; only the LAST one triggers parent review
   const isPeriodTask = taskToSubmit.repeatConfig?.type?.includes('_1') || taskToSubmit.repeatConfig?.type?.includes('_n');
+
+  // === Option C: Re-submit after rejection ===
+  // If period is done + status is failed → re-submit directly to pending_approval (no new count)
+  if (isPeriodTask && existingEntry?.status === 'failed') {
+    const pp = getPeriodProgress(taskToSubmit, activeKidId, selectedDate);
+    if (pp?.periodDone) {
+      // Re-submit: keep existing count, just change status to pending_approval
+      const histUpdate = {
+        ...existingEntry,
+        status: taskToSubmit.requireApproval === false ? 'completed' : 'pending_approval',
+        resubmittedAt: Date.now(),
+        auditLog: [
+          ...(existingEntry.auditLog || []),
+          { action: 'resubmitted', timestamp: Date.now(), detail: '退回后重新提交' }
+        ]
+      };
+      // Remove rejectFeedback from the update
+      delete histUpdate.rejectFeedback;
+      delete histUpdate.rejectedAt;
+
+      let newHistory = { ...(taskToSubmit.history || {}) };
+      if (taskToSubmit.kidId === 'all') {
+        newHistory[selectedDate] = { ...(newHistory[selectedDate] || {}), [activeKidId]: histUpdate };
+      } else {
+        newHistory[selectedDate] = histUpdate;
+      }
+      pauseSync();
+      setTasks(prev => prev.map(t => t.id === taskToSubmit.id ? { ...t, history: newHistory } : t));
+      setQuickCompleteTask(null);
+      try {
+        await apiFetch(`/api/tasks/${taskToSubmit.id}`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ history: newHistory })
+        });
+        notify('已重新提交审核，等待家长确认 🙌', 'success');
+      } catch (e) { notify('网络请求失败', 'error'); }
+      isSubmittingRef.current = false;
+      resumeSync();
+      return;
+    }
+  }
 
   if (existingEntry && (existingEntry.status === 'completed' || existingEntry.status === 'pending_approval')) {
     if (isPeriodTask) {

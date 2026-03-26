@@ -143,15 +143,17 @@ export const getPeriodProgress = (task, kidId, dateStr) => {
 
     let periodCompletions = 0;
     let todayCount = 0;
+    let periodFailed = false; // Track if any entry in period has failed status (for re-submit)
     const hist = task.history || {};
     Object.keys(hist).forEach(dStr => {
         const histDt = new Date(dStr);
         if (histDt >= periodStartDt && histDt <= periodEndDt) {
             const entry = task.kidId === 'all' ? hist[dStr]?.[kidId] : hist[dStr];
-            if (entry && (entry.status === 'completed' || entry.status === 'pending_approval')) {
+            if (entry && (entry.status === 'completed' || entry.status === 'pending_approval' || entry.status === 'failed')) {
                 const count = entry.count || 1;
                 periodCompletions += count;
                 if (dStr === dateStr) todayCount += count;
+                if (entry.status === 'failed') periodFailed = true;
             }
         }
     });
@@ -161,5 +163,5 @@ export const getPeriodProgress = (task, kidId, dateStr) => {
     const periodDone = periodCompletions >= periodTarget;
     const todayMaxed = todayCount >= dailyMax;
 
-    return { periodCompletions, periodTarget, periodLabel, periodDone, todayCount, dailyMax, todayMaxed };
+    return { periodCompletions, periodTarget, periodLabel, periodDone, todayCount, dailyMax, todayMaxed, periodFailed };
 };

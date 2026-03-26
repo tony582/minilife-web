@@ -507,6 +507,12 @@ export const KidStudyTab = () => {
                                         style={{ background: '#FFF7ED', color: '#EA580C', border: '1px solid #FED7AA' }}>
                                         <Icons.Clock size={10} /> 待审批
                                     </div>
+                                ) : pp?.periodDone && pp?.periodFailed ? (
+                                    <button onClick={() => openQuickComplete(t)}
+                                        className="rounded-full py-1.5 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
+                                        style={{ background: '#EF4444' }}>
+                                        <Icons.RefreshCw size={12} /> 重新提交
+                                    </button>
                                 ) : pp?.periodDone ? (
                                     <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
                                         style={{ color: '#16A34A' }}>
