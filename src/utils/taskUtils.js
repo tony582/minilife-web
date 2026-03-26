@@ -103,10 +103,11 @@ export const getPeriodProgress = (task, kidId, dateStr) => {
     const currentDt = new Date(dateStr);
     let periodStartDt, periodEndDt, periodLabel;
 
+    const isEvery = rc.type.includes('every_');
     if (rc.type.includes('month')) {
         periodStartDt = new Date(currentDt.getFullYear(), currentDt.getMonth(), 1);
         periodEndDt = new Date(currentDt.getFullYear(), currentDt.getMonth() + 1, 0, 23, 59, 59, 999);
-        periodLabel = '本月';
+        periodLabel = isEvery ? '每月' : '本月';
     } else if (rc.type.includes('biweek')) {
         const day = currentDt.getDay() || 7;
         periodStartDt = new Date(currentDt);
@@ -125,7 +126,7 @@ export const getPeriodProgress = (task, kidId, dateStr) => {
         periodEndDt = new Date(periodStartDt);
         periodEndDt.setDate(periodStartDt.getDate() + 13);
         periodEndDt.setHours(23, 59, 59, 999);
-        periodLabel = '本双周';
+        periodLabel = isEvery ? '每双周' : '本双周';
     } else {
         // weekly
         const day = currentDt.getDay() || 7;
@@ -135,7 +136,7 @@ export const getPeriodProgress = (task, kidId, dateStr) => {
         periodEndDt = new Date(periodStartDt);
         periodEndDt.setDate(periodStartDt.getDate() + 6);
         periodEndDt.setHours(23, 59, 59, 999);
-        periodLabel = '本周';
+        periodLabel = isEvery ? '每周' : '本周';
     }
 
     let periodCompletions = 0;

@@ -502,7 +502,12 @@ export const KidStudyTab = () => {
 
                             {/* Inline action button — right side */}
                             <div className="relative z-10 flex items-center pr-3 shrink-0">
-                                {pp?.periodDone ? (
+                                {isPending ? (
+                                    <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
+                                        style={{ background: '#FFF7ED', color: '#EA580C', border: '1px solid #FED7AA' }}>
+                                        <Icons.Clock size={10} /> 待审批
+                                    </div>
+                                ) : pp?.periodDone ? (
                                     <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
                                         style={{ color: '#16A34A' }}>
                                         <Icons.CheckCircle size={12} /> 已达标
@@ -534,12 +539,6 @@ export const KidStudyTab = () => {
                                                 style={{ background: `${C.orange}15`, color: C.orange }}>
                                                 <Icons.Check size={12} strokeWidth={3} /> 达标
                                             </button>
-                                        )}
-                                        {!showActionBtn && isPending && (
-                                            <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
-                                                style={{ background: '#FFF7ED', color: '#EA580C', border: '1px solid #FED7AA' }}>
-                                                <Icons.Clock size={10} /> 待审批
-                                            </div>
                                         )}
                                         {!showActionBtn && isCompleted && (
                                             pp && pp.todayMaxed && !pp.periodDone ? (

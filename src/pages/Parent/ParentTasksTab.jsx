@@ -688,12 +688,7 @@ export const ParentTasksTab = () => {
 
                             {/* Inline action buttons — right side */}
                             <div className="relative z-10 flex items-center pr-3 shrink-0">
-                                {pp?.periodDone ? (
-                                    <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
-                                        style={{ color: '#16A34A' }}>
-                                        <Icons.CheckCircle size={12} /> 已达标
-                                    </div>
-                                ) : isPending ? (
+                                {isPending ? (
                                     <button onClick={(e) => { e.stopPropagation(); setPreviewTask(t); setShowPreviewModal(true); }}
                                         className="rounded-full py-1.5 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
                                         style={{ background: '#10B981' }}>
@@ -727,6 +722,12 @@ export const ParentTasksTab = () => {
                                         style={{ background: C.teal, boxShadow: `0 2px 8px ${C.teal}40` }}>
                                         <Icons.Check size={12} strokeWidth={3} /> 完成
                                     </button>
+                                    );
+                                    if (pp?.periodDone) return (
+                                        <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
+                                            style={{ color: '#16A34A' }}>
+                                            <Icons.CheckCircle size={12} /> 已达标
+                                        </div>
                                     );
                                     if (isCompleted) return (
                                         pp && pp.todayMaxed && !pp.periodDone ? (
