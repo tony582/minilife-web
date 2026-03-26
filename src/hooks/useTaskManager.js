@@ -445,7 +445,19 @@ const getTaskStatusOnDate = (t, date, kidId) => {
             const task = tasks.find(t => t.id === id);
             if (!task) return;
             const history = { ...(task.history || {}) };
-            history[dateStr] = { status: 'skipped', updatedAt: new Date().toISOString() };
+            if (task.kidId === 'all') {
+                // Multi-kid: set skipped for each kid
+                const dateEntry = { ...(history[dateStr] || {}) };
+                kids.forEach(k => {
+                    const existing = dateEntry[k.id];
+                    if (!existing || existing.status === 'todo' || !existing.status) {
+                        dateEntry[k.id] = { status: 'skipped', updatedAt: new Date().toISOString() };
+                    }
+                });
+                history[dateStr] = dateEntry;
+            } else {
+                history[dateStr] = { status: 'skipped', updatedAt: new Date().toISOString() };
+            }
             await apiFetch(`/api/tasks/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history }) });
             setTasks(prev => prev.map(t => t.id === id ? { ...t, history } : t));
             setDeleteConfirmTask(null);
