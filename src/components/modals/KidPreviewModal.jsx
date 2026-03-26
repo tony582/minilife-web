@@ -626,36 +626,41 @@ export const KidPreviewModal = ({ context }) => {
                                             <Icons.Check size={16} strokeWidth={3} /> 帮{currentKidInfo?.name || '孩子'}完成
                                         </button>
                                         <button onClick={() => {
+                                            const t = previewTask;
                                             setShowPreviewModal(false);
-                                            setEditingTask(previewTask);
-                                            setPlanType(previewTask.type || 'study');
-                                            setPlanForm({
-                                                targetKids: [previewTask.kidId || 'all'],
-                                                category: previewTask.category || '技能',
-                                                title: previewTask.title,
-                                                desc: previewTask.standards || previewTask.desc || '',
-                                                startDate: previewTask.startDate || new Date().toISOString().split('T')[0],
-                                                endDate: previewTask.repeatConfig?.endDate || '',
-                                                repeatType: previewTask.repeatConfig?.type || (previewTask.frequency === '仅当天' ? 'today' : (previewTask.frequency === '每周一至周五' ? 'weekly_custom' : 'daily')),
-                                                weeklyDays: previewTask.repeatConfig?.weeklyDays || [1, 2, 3, 4, 5],
-                                                ebbStrength: previewTask.repeatConfig?.ebbStrength || 'normal',
-                                                periodDaysType: previewTask.repeatConfig?.periodDaysType || 'any',
-                                                periodCustomDays: previewTask.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5],
-                                                periodTargetCount: previewTask.repeatConfig?.periodTargetCount || 1,
-                                                periodMaxPerDay: previewTask.repeatConfig?.periodMaxPerDay || 1,
-                                                timeSetting: previewTask.timeStr && String(previewTask.timeStr) !== '--:--' ? (String(previewTask.timeStr).includes('-') ? 'range' : 'duration') : 'none',
-                                                startTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[0] : '',
-                                                endTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[1] : '',
-                                                durationPreset: previewTask.timeStr && String(previewTask.timeStr).includes('分钟') ? parseInt(String(previewTask.timeStr)) : 25,
-                                                pointRule: (previewTask.pointRule && previewTask.pointRule === 'custom') || (previewTask.type === 'habit') ? 'custom' : 'default',
-                                                reward: String(previewTask.reward ?? ''),
-                                                iconEmoji: previewTask.iconEmoji || '📚',
-                                                habitColor: previewTask.catColor || 'from-blue-400 to-blue-500',
-                                                habitType: previewTask.habitType || 'daily_once',
-                                                attachments: previewTask.attachments || [],
-                                                requireApproval: previewTask.requireApproval !== undefined ? previewTask.requireApproval : true
-                                            });
-                                            setShowAddPlanModal(true);
+                                            setPreviewTask(null);
+                                            setTimeout(() => {
+                                                setEditingTask(t);
+                                                setPlanType(t.type || 'study');
+                                                setPlanForm({
+                                                    targetKids: [t.kidId || 'all'],
+                                                    category: t.category || '技能',
+                                                    iconName: t.iconName || '',
+                                                    title: t.title,
+                                                    desc: t.standards || t.desc || '',
+                                                    startDate: t.startDate || new Date().toISOString().split('T')[0],
+                                                    endDate: t.repeatConfig?.endDate || '',
+                                                    repeatType: t.repeatConfig?.type || (t.frequency === '仅当天' ? 'today' : (t.frequency === '每周一至周五' ? 'weekly_custom' : 'daily')),
+                                                    weeklyDays: t.repeatConfig?.weeklyDays || [1, 2, 3, 4, 5],
+                                                    ebbStrength: t.repeatConfig?.ebbStrength || 'normal',
+                                                    periodDaysType: t.repeatConfig?.periodDaysType || 'any',
+                                                    periodCustomDays: t.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5],
+                                                    periodTargetCount: t.repeatConfig?.periodTargetCount || 1,
+                                                    periodMaxPerDay: t.repeatConfig?.periodMaxPerDay || 1,
+                                                    timeSetting: t.timeStr && String(t.timeStr) !== '--:--' ? (String(t.timeStr).includes('-') ? 'range' : 'duration') : 'none',
+                                                    startTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[0] : '',
+                                                    endTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[1] : '',
+                                                    durationPreset: t.timeStr && String(t.timeStr).includes('分钟') ? parseInt(String(t.timeStr)) : 25,
+                                                    pointRule: (t.pointRule && t.pointRule === 'custom') || (t.type === 'habit') ? 'custom' : 'default',
+                                                    reward: String(t.reward ?? ''),
+                                                    iconEmoji: t.iconEmoji || '📚',
+                                                    habitColor: t.catColor || 'from-blue-400 to-blue-500',
+                                                    habitType: t.habitType || 'daily_once',
+                                                    attachments: t.attachments || [],
+                                                    requireApproval: t.requireApproval !== undefined ? t.requireApproval : true
+                                                });
+                                                setShowAddPlanModal(true);
+                                            }, 50);
                                         }} className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
                                             style={{ background: '#E3F2FD', color: '#2196F3' }}>
                                             <Icons.Edit3 size={14} /> 编辑
@@ -664,36 +669,41 @@ export const KidPreviewModal = ({ context }) => {
                                 ) : currentKidStatus === 'completed' ? (
                                     <>
                                         <button onClick={() => {
+                                            const t = previewTask;
                                             setShowPreviewModal(false);
-                                            setEditingTask(previewTask);
-                                            setPlanType(previewTask.type || 'study');
-                                            setPlanForm({
-                                                targetKids: [previewTask.kidId || 'all'],
-                                                category: previewTask.category || '技能',
-                                                title: previewTask.title,
-                                                desc: previewTask.standards || previewTask.desc || '',
-                                                startDate: previewTask.startDate || new Date().toISOString().split('T')[0],
-                                                endDate: previewTask.repeatConfig?.endDate || '',
-                                                repeatType: previewTask.repeatConfig?.type || (previewTask.frequency === '仅当天' ? 'today' : (previewTask.frequency === '每周一至周五' ? 'weekly_custom' : 'daily')),
-                                                weeklyDays: previewTask.repeatConfig?.weeklyDays || [1, 2, 3, 4, 5],
-                                                ebbStrength: previewTask.repeatConfig?.ebbStrength || 'normal',
-                                                periodDaysType: previewTask.repeatConfig?.periodDaysType || 'any',
-                                                periodCustomDays: previewTask.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5],
-                                                periodTargetCount: previewTask.repeatConfig?.periodTargetCount || 1,
-                                                periodMaxPerDay: previewTask.repeatConfig?.periodMaxPerDay || 1,
-                                                timeSetting: previewTask.timeStr && String(previewTask.timeStr) !== '--:--' ? (String(previewTask.timeStr).includes('-') ? 'range' : 'duration') : 'none',
-                                                startTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[0] : '',
-                                                endTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[1] : '',
-                                                durationPreset: previewTask.timeStr && String(previewTask.timeStr).includes('分钟') ? parseInt(String(previewTask.timeStr)) : 25,
-                                                pointRule: (previewTask.pointRule && previewTask.pointRule === 'custom') || (previewTask.type === 'habit') ? 'custom' : 'default',
-                                                reward: String(previewTask.reward ?? ''),
-                                                iconEmoji: previewTask.iconEmoji || '📚',
-                                                habitColor: previewTask.catColor || 'from-blue-400 to-blue-500',
-                                                habitType: previewTask.habitType || 'daily_once',
-                                                attachments: previewTask.attachments || [],
-                                                requireApproval: previewTask.requireApproval !== undefined ? previewTask.requireApproval : true
-                                            });
-                                            setShowAddPlanModal(true);
+                                            setPreviewTask(null);
+                                            setTimeout(() => {
+                                                setEditingTask(t);
+                                                setPlanType(t.type || 'study');
+                                                setPlanForm({
+                                                    targetKids: [t.kidId || 'all'],
+                                                    category: t.category || '技能',
+                                                    iconName: t.iconName || '',
+                                                    title: t.title,
+                                                    desc: t.standards || t.desc || '',
+                                                    startDate: t.startDate || new Date().toISOString().split('T')[0],
+                                                    endDate: t.repeatConfig?.endDate || '',
+                                                    repeatType: t.repeatConfig?.type || (t.frequency === '仅当天' ? 'today' : (t.frequency === '每周一至周五' ? 'weekly_custom' : 'daily')),
+                                                    weeklyDays: t.repeatConfig?.weeklyDays || [1, 2, 3, 4, 5],
+                                                    ebbStrength: t.repeatConfig?.ebbStrength || 'normal',
+                                                    periodDaysType: t.repeatConfig?.periodDaysType || 'any',
+                                                    periodCustomDays: t.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5],
+                                                    periodTargetCount: t.repeatConfig?.periodTargetCount || 1,
+                                                    periodMaxPerDay: t.repeatConfig?.periodMaxPerDay || 1,
+                                                    timeSetting: t.timeStr && String(t.timeStr) !== '--:--' ? (String(t.timeStr).includes('-') ? 'range' : 'duration') : 'none',
+                                                    startTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[0] : '',
+                                                    endTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[1] : '',
+                                                    durationPreset: t.timeStr && String(t.timeStr).includes('分钟') ? parseInt(String(t.timeStr)) : 25,
+                                                    pointRule: (t.pointRule && t.pointRule === 'custom') || (t.type === 'habit') ? 'custom' : 'default',
+                                                    reward: String(t.reward ?? ''),
+                                                    iconEmoji: t.iconEmoji || '📚',
+                                                    habitColor: t.catColor || 'from-blue-400 to-blue-500',
+                                                    habitType: t.habitType || 'daily_once',
+                                                    attachments: t.attachments || [],
+                                                    requireApproval: t.requireApproval !== undefined ? t.requireApproval : true
+                                                });
+                                                setShowAddPlanModal(true);
+                                            }, 50);
                                         }} className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
                                             style={{ background: '#E3F2FD', color: '#2196F3' }}>
                                             <Icons.Edit3 size={14} /> 编辑
@@ -707,36 +717,41 @@ export const KidPreviewModal = ({ context }) => {
                                 ) : (
                                     <>
                                         <button onClick={() => {
+                                            const t = previewTask;
                                             setShowPreviewModal(false);
-                                            setEditingTask(previewTask);
-                                            setPlanType(previewTask.type || 'study');
-                                            setPlanForm({
-                                                targetKids: [previewTask.kidId || 'all'],
-                                                category: previewTask.category || '技能',
-                                                title: previewTask.title,
-                                                desc: previewTask.standards || previewTask.desc || '',
-                                                startDate: previewTask.startDate || new Date().toISOString().split('T')[0],
-                                                endDate: previewTask.repeatConfig?.endDate || '',
-                                                repeatType: previewTask.repeatConfig?.type || (previewTask.frequency === '仅当天' ? 'today' : (previewTask.frequency === '每周一至周五' ? 'weekly_custom' : 'daily')),
-                                                weeklyDays: previewTask.repeatConfig?.weeklyDays || [1, 2, 3, 4, 5],
-                                                ebbStrength: previewTask.repeatConfig?.ebbStrength || 'normal',
-                                                periodDaysType: previewTask.repeatConfig?.periodDaysType || 'any',
-                                                periodCustomDays: previewTask.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5],
-                                                periodTargetCount: previewTask.repeatConfig?.periodTargetCount || 1,
-                                                periodMaxPerDay: previewTask.repeatConfig?.periodMaxPerDay || 1,
-                                                timeSetting: previewTask.timeStr && String(previewTask.timeStr) !== '--:--' ? (String(previewTask.timeStr).includes('-') ? 'range' : 'duration') : 'none',
-                                                startTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[0] : '',
-                                                endTime: previewTask.timeStr && String(previewTask.timeStr).includes('-') ? String(previewTask.timeStr).split('-')[1] : '',
-                                                durationPreset: previewTask.timeStr && String(previewTask.timeStr).includes('分钟') ? parseInt(String(previewTask.timeStr)) : 25,
-                                                pointRule: (previewTask.pointRule && previewTask.pointRule === 'custom') || (previewTask.type === 'habit') ? 'custom' : 'default',
-                                                reward: String(previewTask.reward ?? ''),
-                                                iconEmoji: previewTask.iconEmoji || '📚',
-                                                habitColor: previewTask.catColor || 'from-blue-400 to-blue-500',
-                                                habitType: previewTask.habitType || 'daily_once',
-                                                attachments: previewTask.attachments || [],
-                                                requireApproval: previewTask.requireApproval !== undefined ? previewTask.requireApproval : true
-                                            });
-                                            setShowAddPlanModal(true);
+                                            setPreviewTask(null);
+                                            setTimeout(() => {
+                                                setEditingTask(t);
+                                                setPlanType(t.type || 'study');
+                                                setPlanForm({
+                                                    targetKids: [t.kidId || 'all'],
+                                                    category: t.category || '技能',
+                                                    iconName: t.iconName || '',
+                                                    title: t.title,
+                                                    desc: t.standards || t.desc || '',
+                                                    startDate: t.startDate || new Date().toISOString().split('T')[0],
+                                                    endDate: t.repeatConfig?.endDate || '',
+                                                    repeatType: t.repeatConfig?.type || (t.frequency === '仅当天' ? 'today' : (t.frequency === '每周一至周五' ? 'weekly_custom' : 'daily')),
+                                                    weeklyDays: t.repeatConfig?.weeklyDays || [1, 2, 3, 4, 5],
+                                                    ebbStrength: t.repeatConfig?.ebbStrength || 'normal',
+                                                    periodDaysType: t.repeatConfig?.periodDaysType || 'any',
+                                                    periodCustomDays: t.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5],
+                                                    periodTargetCount: t.repeatConfig?.periodTargetCount || 1,
+                                                    periodMaxPerDay: t.repeatConfig?.periodMaxPerDay || 1,
+                                                    timeSetting: t.timeStr && String(t.timeStr) !== '--:--' ? (String(t.timeStr).includes('-') ? 'range' : 'duration') : 'none',
+                                                    startTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[0] : '',
+                                                    endTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[1] : '',
+                                                    durationPreset: t.timeStr && String(t.timeStr).includes('分钟') ? parseInt(String(t.timeStr)) : 25,
+                                                    pointRule: (t.pointRule && t.pointRule === 'custom') || (t.type === 'habit') ? 'custom' : 'default',
+                                                    reward: String(t.reward ?? ''),
+                                                    iconEmoji: t.iconEmoji || '📚',
+                                                    habitColor: t.catColor || 'from-blue-400 to-blue-500',
+                                                    habitType: t.habitType || 'daily_once',
+                                                    attachments: t.attachments || [],
+                                                    requireApproval: t.requireApproval !== undefined ? t.requireApproval : true
+                                                });
+                                                setShowAddPlanModal(true);
+                                            }, 50);
                                         }} className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
                                             style={{ background: '#E3F2FD', color: '#2196F3' }}>
                                             <Icons.Edit3 size={14} /> 编辑
