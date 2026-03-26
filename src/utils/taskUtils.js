@@ -13,7 +13,9 @@ export const isTaskDueOnDate = (task, dateStr) => {
         const rc = task.repeatConfig;
 
         // 1. Boundary Checks
-        if (task.startDate && dateStr < task.startDate) return false;
+        // Skip startDate check for period tasks — they use their period window instead
+        const isPeriod = rc.type?.includes('_1') || rc.type?.includes('_n');
+        if (!isPeriod && task.startDate && dateStr < task.startDate) return false;
         if (rc.endDate && dateStr > rc.endDate) return false;
 
         // 2. Type-specific Resolution
