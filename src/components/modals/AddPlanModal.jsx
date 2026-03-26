@@ -570,6 +570,24 @@ export const AddPlanModal = ({ context }) => {
                                                 </button>
                                             ))}
                                         </div>
+                                        <select
+                                            value={!['today', 'daily', 'weekly_custom'].includes(planForm.repeatType || '') ? planForm.repeatType : ''}
+                                            onChange={e => { if (e.target.value) setPlanForm({ ...planForm, repeatType: e.target.value }) }}
+                                            className="w-full py-2.5 rounded-xl text-sm font-bold transition-all outline-none appearance-none text-center mb-2"
+                                            style={!['today', 'daily', 'weekly_custom'].includes(planForm.repeatType || '')
+                                                ? { background: '#FF8C42', color: '#fff', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }
+                                                : { background: '#FBF7F0', color: '#5A6E8A', border: '1.5px solid #F0EBE1' }}
+                                        >
+                                            <option value="" disabled>... 更多安排</option>
+                                            <option value="biweekly_custom">隔周重复（按双周）</option>
+                                            <option value="ebbinghaus">记忆曲线（艾宾浩斯）</option>
+                                            <option value="weekly_1">本周内完成（可选次数）</option>
+                                            <option value="biweekly_1">本双周内完成（可选次数）</option>
+                                            <option value="monthly_1">本月内完成（可选次数）</option>
+                                            <option value="every_week_1">每周循环完成（可选次数）</option>
+                                            <option value="every_biweek_1">每双周循环完成（可选次数）</option>
+                                            <option value="every_month_1">每月循环完成（可选次数）</option>
+                                        </select>
                                         {/* P3: 安排说明小字 */}
                                         <div className="text-[11px] font-medium mb-1 px-1" style={{ color: '#9CAABE' }}>
                                             {planForm.repeatType === 'today' && '📌 任务仅在今天出现，完成后不再重复'}
