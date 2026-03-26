@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Icons } from '../../utils/Icons';
 import { apiFetch } from '../../api/client';
+import { getIconForCategory, getCategoryGradient } from '../../utils/categoryUtils';
 
 /**
  * AI Plan Creator — overlay modal for AI-powered homework-to-task conversion
@@ -70,16 +71,6 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
         setIsRefining(false);
     };
 
-    const getCategoryGradient = (cat) => {
-        const map = {
-            '语文': 'from-red-400 to-red-500', '数学': 'from-blue-400 to-blue-500',
-            '英语': 'from-green-400 to-green-500', '科学': 'from-purple-400 to-purple-500',
-            '编程': 'from-cyan-400 to-cyan-500', '阅读': 'from-amber-400 to-amber-500',
-            '写作': 'from-pink-400 to-pink-500', '音乐': 'from-violet-400 to-violet-500',
-            '美术': 'from-rose-400 to-rose-500', '体育': 'from-teal-400 to-teal-500'
-        };
-        return map[cat] || 'from-orange-400 to-orange-500';
-    };
 
     const handleBatchCreate = async () => {
         try {
@@ -122,9 +113,10 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                     type: 'study',
                     status: 'todo',
                     iconEmoji: task.iconEmoji || '📚',
+                    iconName: getIconForCategory(task.category || '技能'),
                     standards: task.desc || '',
                     category: task.category || '技能',
-                    catColor: getCategoryGradient(task.category),
+                    catColor: getCategoryGradient(task.category || '技能'),
                     frequency,
                     timeStr: task.durationPreset ? `${task.durationPreset}分钟` : '--:--',
                     startDate: today,
