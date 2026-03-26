@@ -552,7 +552,7 @@ export const AddPlanModal = ({ context }) => {
                                         <label className="text-[11px] font-bold uppercase tracking-wider mb-3 block" style={{ color: '#9CAABE' }}>任务安排</label>
 
                                         {/* Quick Chips for Repeat Type */}
-                                        <div className="flex flex-wrap gap-2 mb-2">
+                                        <div className="flex gap-2 mb-2">
                                             {[
                                                 { v: 'today', l: '仅今天', d: '只在今天出现一次' },
                                                 { v: 'daily', l: '每天', d: '每天都需要完成' },
@@ -561,7 +561,7 @@ export const AddPlanModal = ({ context }) => {
                                                 <button
                                                     key={opt.v}
                                                     onClick={() => setPlanForm({ ...planForm, repeatType: opt.v })}
-                                                    className="px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95"
+                                                    className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 text-center"
                                                     style={planForm.repeatType === opt.v
                                                         ? { background: '#FF8C42', color: '#fff', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }
                                                         : { background: '#FBF7F0', color: '#5A6E8A', border: '1.5px solid #F0EBE1' }}
