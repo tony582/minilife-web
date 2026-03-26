@@ -618,7 +618,7 @@ export const AddPlanModal = ({ context }) => {
                                         <select
                                             value={!['today', 'daily', 'weekly_custom'].includes(planForm.repeatType || '') ? planForm.repeatType : ''}
                                             onChange={e => { if (e.target.value) setPlanForm({ ...planForm, repeatType: e.target.value }) }}
-                                            className="w-full py-2.5 rounded-xl text-sm font-bold transition-all outline-none appearance-none text-center mb-2"
+                                            className="w-full py-2.5 rounded-xl text-sm font-bold transition-all outline-none appearance-none text-center mb-2 mt-3"
                                             style={{
                                                 textAlignLast: 'center', textAlign: 'center',
                                                 ...(!['today', 'daily', 'weekly_custom'].includes(planForm.repeatType || '')
@@ -679,54 +679,60 @@ export const AddPlanModal = ({ context }) => {
                                                             <input type="number" min="1" max="99" value={planForm.periodTargetCount || 1} onChange={e => setPlanForm({ ...planForm, periodTargetCount: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold bg-white text-orange-700" />
                                                         </div>
                                                         <div>
-                                                            <label className="block text-xs font-bold text-slate-600 mb-2">每次奖励上限次数 <span className="opacity-50">(防刷)</span></label>
+                                                            <label className="block text-xs font-bold text-slate-600 mb-2">每天最多完成次数</label>
                                                             <input type="number" min="1" max="10" value={planForm.periodMaxPerDay || 1} onChange={e => setPlanForm({ ...planForm, periodMaxPerDay: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold bg-white text-orange-700" />
                                                         </div>
                                                     </div>
 
                                                     <div>
-                                                        <label className="block text-xs font-bold text-slate-600 mb-2">允许执行的日期限制</label>
-                                                        <div className="flex flex-wrap gap-2 mb-3">
-                                                            {[
-                                                                { v: 'any', l: '任意时间' },
-                                                                { v: 'workdays', l: '仅工作日' },
-                                                                { v: 'weekends', l: '仅周末' },
-                                                                { v: 'custom', l: '自定义' }
-                                                            ].map(opt => (
-                                                                <button
-                                                                    key={opt.v}
-                                                                    onClick={() => {
-                                                                        const dayMap = { any: [1,2,3,4,5,6,7], workdays: [1,2,3,4,5], weekends: [6,7], custom: planForm.periodCustomDays || [1,2,3,4,5] };
-                                                                        setPlanForm({ ...planForm, periodDaysType: opt.v, periodCustomDays: dayMap[opt.v] });
-                                                                    }}
-                                                                    className="px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95"
-                                                                    style={(planForm.periodDaysType || 'any') === opt.v
-                                                                        ? { background: '#FF8C42', color: '#fff', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }
-                                                                        : { background: '#FBF7F0', color: '#5A6E8A', border: '1.5px solid #F0EBE1' }}
-                                                                >
-                                                                    {opt.l}
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                        <div className="grid grid-cols-7 gap-1 bg-white p-2 rounded-xl border border-slate-100">
-                                                            {[{ d: 1, l: '一' }, { d: 2, l: '二' }, { d: 3, l: '三' }, { d: 4, l: '四' }, { d: 5, l: '五' }, { d: 6, l: '六' }, { d: 7, l: '日' }].map(w => {
-                                                                const isSelected = (planForm.periodCustomDays || [1,2,3,4,5,6,7]).includes(w.d);
-                                                                return (
-                                                                    <button key={w.d} onClick={() => {
-                                                                        const current = planForm.periodCustomDays || [1,2,3,4,5,6,7];
-                                                                        const newDays = isSelected ? current.filter(d => d !== w.d) : [...current, w.d];
-                                                                        const sorted = [...newDays].sort().join(',');
-                                                                        let newType = 'custom';
-                                                                        if (sorted === '1,2,3,4,5,6,7') newType = 'any';
-                                                                        else if (sorted === '1,2,3,4,5') newType = 'workdays';
-                                                                        else if (sorted === '6,7') newType = 'weekends';
-                                                                        setPlanForm({ ...planForm, periodDaysType: newType, periodCustomDays: newDays });
-                                                                    }} className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full font-bold transition-all flex items-center justify-center text-xs sm:text-sm mx-auto ${isSelected ? 'bg-orange-500 text-white shadow-md' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>
-                                                                        {w.l}
-                                                                    </button>
-                                                                )
-                                                            })}
-                                                        </div>
+                                                        <label className="text-[11px] font-bold mb-2 block" style={{ color: '#5A6E8A' }}>允许执行的日期</label>
+                                                        {(() => {
+                                                            const pDays = planForm.periodCustomDays || [1,2,3,4,5,6,7];
+                                                            const pSorted = [...pDays].sort((a, b) => a - b);
+                                                            const pIsWorkdays = pSorted.join() === '1,2,3,4,5';
+                                                            const pIsWeekend = pSorted.join() === '6,7';
+                                                            const pIsEveryday = pSorted.join() === '1,2,3,4,5,6,7';
+                                                            return (
+                                                                <>
+                                                                    <div className="flex gap-2 mb-2.5">
+                                                                        {[
+                                                                            { key: 'workdays', label: '工作日', val: [1,2,3,4,5], active: pIsWorkdays },
+                                                                            { key: 'weekend', label: '周末', val: [6,7], active: pIsWeekend },
+                                                                            { key: 'everyday', label: '每天', val: [1,2,3,4,5,6,7], active: pIsEveryday },
+                                                                        ].map(f => (
+                                                                            <button key={f.key} onClick={() => setPlanForm({ ...planForm, periodCustomDays: f.val, periodDaysType: f.key === 'workdays' ? 'workdays' : f.key === 'weekend' ? 'weekends' : 'any' })}
+                                                                                className="flex-1 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 text-center"
+                                                                                style={f.active
+                                                                                    ? { background: '#FF8C42', color: '#fff', boxShadow: '0 2px 8px rgba(255,140,66,0.3)' }
+                                                                                    : { background: '#FFFFFF', color: '#5A6E8A', border: '1px solid #F0EBE1' }}>
+                                                                                {f.label}
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                    <div className="grid grid-cols-7 gap-1.5">
+                                                                        {[{ d: 1, l: '一' }, { d: 2, l: '二' }, { d: 3, l: '三' }, { d: 4, l: '四' }, { d: 5, l: '五' }, { d: 6, l: '六' }, { d: 7, l: '日' }].map(w => {
+                                                                            const isSelected = pDays.includes(w.d);
+                                                                            return (
+                                                                                <button key={w.d} onClick={() => {
+                                                                                    const newDays = isSelected ? pDays.filter(d => d !== w.d) : [...pDays, w.d];
+                                                                                    const sorted = [...newDays].sort((a, b) => a - b).join();
+                                                                                    let newType = 'custom';
+                                                                                    if (sorted === '1,2,3,4,5,6,7') newType = 'any';
+                                                                                    else if (sorted === '1,2,3,4,5') newType = 'workdays';
+                                                                                    else if (sorted === '6,7') newType = 'weekends';
+                                                                                    setPlanForm({ ...planForm, periodDaysType: newType, periodCustomDays: newDays });
+                                                                                }} className="w-9 h-9 rounded-full font-bold transition-all flex items-center justify-center text-xs active:scale-90"
+                                                                                    style={isSelected
+                                                                                        ? { background: '#FF8C42', color: '#fff', boxShadow: '0 2px 8px rgba(255,140,66,0.3)' }
+                                                                                        : { background: '#FFFFFF', color: '#5A6E8A', border: '1px solid #F0EBE1' }}>
+                                                                                    {w.l}
+                                                                                </button>
+                                                                            )
+                                                                        })}
+                                                                    </div>
+                                                                </>
+                                                            );
+                                                        })()}
                                                     </div>
                                                 </div>
                                             )}
