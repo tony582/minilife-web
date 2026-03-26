@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Icons, renderIcon } from '../../utils/Icons';
 import { apiFetch } from '../../api/client';
-import { getIconForCategory, getCategoryGradient, getCatHexColor } from '../../utils/categoryUtils';
+import { getIconForCategory, getCategoryGradient, getCatHexColor, allCategories } from '../../utils/categoryUtils';
 
 /**
  * AI Plan Creator — overlay modal for AI-powered homework-to-task conversion
@@ -14,6 +14,7 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
     const [parsedTasks, setParsedTasks] = useState([]);
     const [refineInput, setRefineInput] = useState('');
     const [isRefining, setIsRefining] = useState(false);
+    const [editingIdx, setEditingIdx] = useState(null);
 
     if (!isOpen) return null;
 
@@ -317,60 +318,138 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                             {/* Task cards — matching parent task list layout */}
                             {parsedTasks.map((task, idx) => {
                                 const accentColor = getCatHexColor(task.category);
+                                const isEditing = editingIdx === idx;
+                                const updateField = (field, value) => {
+                                    const updated = [...parsedTasks];
+                                    updated[idx] = { ...updated[idx], [field]: value };
+                                    setParsedTasks(updated);
+                                };
                                 return (
-                                <div key={task._id} className="rounded-2xl transition-all flex items-stretch overflow-hidden"
-                                    style={{ background: '#fff', border: '1px solid #f0f0f0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-                                    {/* Left accent bar */}
-                                    <div className="w-1 shrink-0 rounded-l-2xl" style={{ background: accentColor }}></div>
-                                    <div className="flex items-center gap-3 flex-1 min-w-0 px-3 py-3">
-                                        {/* Icon */}
-                                        <div className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-white"
-                                            style={{ background: accentColor }}>
-                                            {renderIcon(getIconForCategory(task.category), 18)}
-                                        </div>
-                                        {/* Title + meta */}
-                                        <div className="flex-1 min-w-0">
-                                            <input
-                                                value={task.title}
-                                                onChange={e => {
-                                                    const updated = [...parsedTasks];
-                                                    updated[idx] = { ...updated[idx], title: e.target.value };
-                                                    setParsedTasks(updated);
-                                                }}
-                                                className="w-full font-bold text-sm outline-none bg-transparent leading-tight"
-                                                style={{ color: '#1E293B' }}
-                                            />
-                                            <div className="flex flex-wrap gap-1 items-center mt-1">
-                                                <span className="text-[10px] font-bold px-1.5 py-px rounded"
-                                                    style={{ background: `${accentColor}12`, color: accentColor }}>
-                                                    {task.category}
-                                                </span>
-                                                <span className="text-[10px] font-bold px-1 py-px rounded flex items-center gap-0.5"
-                                                    style={{ color: '#D97706' }}>
-                                                    {task.reward}<Icons.Star size={8} fill="currentColor" />
-                                                </span>
-                                                <span className="text-[10px] text-slate-400 flex items-center gap-0.5">
-                                                    <Icons.Clock size={8} />{task.durationPreset}分钟
-                                                </span>
-                                                <span className="text-[10px] text-slate-400">
-                                                    {task.schedule === 'daily' ? '每天' : task.schedule === 'weekly' ? `每周${(task.weeklyDays || []).map(d => ['','一','二','三','四','五','六','日'][d]).join('、')}` : '仅当天'}
-                                                </span>
+                                <div key={task._id} className="rounded-2xl transition-all overflow-hidden"
+                                    style={{ background: '#fff', border: isEditing ? `1.5px solid ${accentColor}` : '1px solid #f0f0f0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                                    <div className="flex items-stretch">
+                                        {/* Left accent bar */}
+                                        <div className="w-1 shrink-0 rounded-l-2xl" style={{ background: accentColor }}></div>
+                                        <div className="flex items-center gap-3 flex-1 min-w-0 px-3 py-3">
+                                            {/* Icon */}
+                                            <div className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-white"
+                                                style={{ background: accentColor }}>
+                                                {renderIcon(getIconForCategory(task.category), 18)}
                                             </div>
-                                            {task.desc && (
-                                                <div className="text-[10px] font-bold mt-1 leading-relaxed" style={{ color: '#9CAABE' }}>
-                                                    {task.desc}
+                                            {/* Title + meta */}
+                                            <div className="flex-1 min-w-0">
+                                                <input
+                                                    value={task.title}
+                                                    onChange={e => updateField('title', e.target.value)}
+                                                    className="w-full font-bold text-sm outline-none bg-transparent leading-tight"
+                                                    style={{ color: '#1E293B' }}
+                                                />
+                                                <div className="flex flex-wrap gap-1 items-center mt-1">
+                                                    <span className="text-[10px] font-bold px-1.5 py-px rounded"
+                                                        style={{ background: `${accentColor}12`, color: accentColor }}>
+                                                        {task.category}
+                                                    </span>
+                                                    <span className="text-[10px] font-bold px-1 py-px rounded flex items-center gap-0.5"
+                                                        style={{ color: '#D97706' }}>
+                                                        {task.reward}<Icons.Star size={8} fill="currentColor" />
+                                                    </span>
+                                                    <span className="text-[10px] text-slate-400 flex items-center gap-0.5">
+                                                        <Icons.Clock size={8} />{task.durationPreset}分钟
+                                                    </span>
+                                                    <span className="text-[10px] text-slate-400">
+                                                        {task.schedule === 'daily' ? '每天' : task.schedule === 'weekly' ? `每周${(task.weeklyDays || []).map(d => ['','一','二','三','四','五','六','日'][d]).join('、')}` : '仅当天'}
+                                                    </span>
                                                 </div>
-                                            )}
+                                                {!isEditing && task.desc && (
+                                                    <div className="text-[10px] font-bold mt-1 leading-relaxed" style={{ color: '#9CAABE' }}>
+                                                        {task.desc}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {/* Action buttons */}
+                                        <div className="flex items-center gap-1.5 pr-3 shrink-0">
+                                            <button onClick={() => setEditingIdx(isEditing ? null : idx)}
+                                                className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all active:scale-90"
+                                                style={isEditing ? { background: '#667eea', color: '#fff' } : { background: '#EEF2FF', color: '#667eea' }}>
+                                                <Icons.Edit3 size={12} />
+                                            </button>
+                                            <button onClick={() => setParsedTasks(parsedTasks.filter((_, i) => i !== idx))}
+                                                className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all active:scale-90"
+                                                style={{ background: '#FEE2E2', color: '#EF4444' }}>
+                                                <Icons.Trash2 size={12} />
+                                            </button>
                                         </div>
                                     </div>
-                                    {/* Delete button */}
-                                    <div className="flex items-center pr-3 shrink-0">
-                                        <button onClick={() => setParsedTasks(parsedTasks.filter((_, i) => i !== idx))}
-                                            className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all active:scale-90"
-                                            style={{ background: '#FEE2E2', color: '#EF4444' }}>
-                                            <Icons.Trash2 size={12} />
-                                        </button>
-                                    </div>
+                                    {/* Inline edit panel */}
+                                    {isEditing && (
+                                        <div className="px-4 pb-3 pt-1 space-y-2.5 border-t" style={{ borderColor: '#f0f0f0', background: '#FAFAFA' }}>
+                                            {/* Category */}
+                                            <div>
+                                                <label className="text-[9px] font-bold text-slate-400 mb-1 block">分类</label>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {allCategories.map(cat => (
+                                                        <button key={cat} onClick={() => updateField('category', cat)}
+                                                            className="text-[10px] font-bold px-2 py-1 rounded-lg transition-all active:scale-95"
+                                                            style={task.category === cat
+                                                                ? { background: getCatHexColor(cat), color: '#fff' }
+                                                                : { background: '#F0EBE1', color: '#6B7A8D' }}>
+                                                            {cat}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            {/* Duration + Reward row */}
+                                            <div className="flex gap-3">
+                                                <div className="flex-1">
+                                                    <label className="text-[9px] font-bold text-slate-400 mb-1 block">时长（分钟）</label>
+                                                    <div className="flex gap-1">
+                                                        {[10, 15, 20, 25, 30, 45, 60].map(d => (
+                                                            <button key={d} onClick={() => updateField('durationPreset', d)}
+                                                                className="text-[10px] font-bold px-2 py-1 rounded-lg transition-all active:scale-95"
+                                                                style={task.durationPreset === d
+                                                                    ? { background: '#667eea', color: '#fff' }
+                                                                    : { background: '#F0EBE1', color: '#6B7A8D' }}>
+                                                                {d}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="w-20">
+                                                    <label className="text-[9px] font-bold text-slate-400 mb-1 block">奖励分</label>
+                                                    <input type="number" value={task.reward || ''}
+                                                        onChange={e => updateField('reward', parseInt(e.target.value) || 0)}
+                                                        className="w-full text-xs font-bold px-2 py-1 rounded-lg outline-none"
+                                                        style={{ background: '#fff', border: '1px solid #E8E0D4', color: '#D97706' }} />
+                                                </div>
+                                            </div>
+                                            {/* Schedule */}
+                                            <div>
+                                                <label className="text-[9px] font-bold text-slate-400 mb-1 block">频率</label>
+                                                <div className="flex gap-1.5">
+                                                    {[['today', '仅当天'], ['daily', '每天'], ['weekly', '每周']].map(([val, label]) => (
+                                                        <button key={val} onClick={() => updateField('schedule', val)}
+                                                            className="text-[10px] font-bold px-3 py-1 rounded-lg transition-all active:scale-95"
+                                                            style={task.schedule === val
+                                                                ? { background: '#667eea', color: '#fff' }
+                                                                : { background: '#F0EBE1', color: '#6B7A8D' }}>
+                                                            {label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            {/* Description */}
+                                            <div>
+                                                <label className="text-[9px] font-bold text-slate-400 mb-1 block">任务描述</label>
+                                                <textarea value={task.desc || ''}
+                                                    onChange={e => updateField('desc', e.target.value)}
+                                                    rows={2}
+                                                    className="w-full text-xs font-bold px-2 py-1.5 rounded-lg outline-none resize-none"
+                                                    style={{ background: '#fff', border: '1px solid #E8E0D4', color: '#1E293B' }}
+                                                    placeholder="具体标准或要求…" />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                                 );
                             })}
