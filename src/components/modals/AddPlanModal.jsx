@@ -761,7 +761,13 @@ export const AddPlanModal = ({ context }) => {
                             {/* ═══ 时间要求 ═══ */}
                             {planType === 'study' && (
                                 <div className="rounded-2xl p-4 space-y-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
-                                    <label className="text-[11px] font-bold uppercase tracking-wider block" style={{ color: '#9CAABE' }}>时间要求</label>
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-[11px] font-bold uppercase tracking-wider" style={{ color: '#9CAABE' }}>时间要求</label>
+                                        {planForm.timeSetting !== 'none' && (
+                                            <button onClick={() => setPlanForm({ ...planForm, timeSetting: 'none', startTime: '', endTime: '', durationPreset: null })}
+                                                className="text-[10px] font-bold transition-all" style={{ color: '#E57373' }}>清除</button>
+                                        )}
+                                    </div>
                                     {planForm.timeSetting === 'none' ? (
                                         <button
                                             onClick={() => setPlanForm({ ...planForm, timeSetting: 'range' })}
@@ -771,73 +777,68 @@ export const AddPlanModal = ({ context }) => {
                                             <Icons.Plus size={16} /> 添加具体时间要求 (可选)
                                         </button>
                                     ) : (
-                                        <div className="rounded-xl p-4 space-y-4 animate-fade-in relative" style={{ background: '#FBF7F0', border: '1px solid #F0EBE1' }}>
-                                                <button
-                                                    onClick={() => setPlanForm({ ...planForm, timeSetting: 'none', startTime: '', endTime: '', durationPreset: null })}
-                                                    className="absolute top-4 right-4 text-slate-400 hover:text-red-500 p-1 rounded-lg hover:bg-white transition-colors"
-                                                    title="移除时间要求"
-                                                >
-                                                    <Icons.Trash2 size={16} />
+                                        <>
+                                            <div className="flex gap-2">
+                                                <button onClick={() => setPlanForm({ ...planForm, timeSetting: 'range' })}
+                                                    className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 text-center"
+                                                    style={planForm.timeSetting === 'range'
+                                                        ? { background: '#FF8C42', color: '#fff', boxShadow: '0 2px 8px rgba(255,140,66,0.3)' }
+                                                        : { background: '#FBF7F0', color: '#5A6E8A', border: '1.5px solid #F0EBE1' }}>
+                                                    指定时段
                                                 </button>
+                                                <button onClick={() => setPlanForm({ ...planForm, timeSetting: 'duration' })}
+                                                    className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 text-center"
+                                                    style={planForm.timeSetting === 'duration'
+                                                        ? { background: '#FF8C42', color: '#fff', boxShadow: '0 2px 8px rgba(255,140,66,0.3)' }
+                                                        : { background: '#FBF7F0', color: '#5A6E8A', border: '1.5px solid #F0EBE1' }}>
+                                                    要求时长
+                                                </button>
+                                            </div>
 
-
-                                                <div className="flex bg-white p-1.5 rounded-xl border border-slate-200 w-full mb-2">
-                                                    <button onClick={() => setPlanForm({ ...planForm, timeSetting: 'range' })} className={`flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all ${planForm.timeSetting === 'range' ? 'bg-blue-600 shadow text-white' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>
-                                                        指定时段
-                                                    </button>
-                                                    <button onClick={() => setPlanForm({ ...planForm, timeSetting: 'duration' })} className={`flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all ${planForm.timeSetting === 'duration' ? 'bg-emerald-500 shadow text-white' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>
-                                                        要求时长
-                                                    </button>
+                                            {planForm.timeSetting === 'range' && (
+                                                <div className="animate-fade-in" data-field-error={planFormErrors?.time ? 'time' : undefined}>
+                                                    {planFormErrors?.time && <div className="text-xs font-bold text-red-500 mb-2 flex items-center gap-1">⚠️ {planFormErrors.time}</div>}
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <div className="w-full min-w-0">
+                                                            <label className="text-[10px] font-bold mb-1.5 block" style={{ color: planFormErrors?.time ? '#EF4444' : '#9CAABE' }}>开始时间</label>
+                                                            <input type="time" value={planForm.startTime || ''} onChange={e => { setPlanForm({ ...planForm, startTime: e.target.value }); if (planFormErrors?.time) setPlanFormErrors(prev => ({ ...prev, time: undefined })); }}
+                                                                className="w-full box-border rounded-xl px-3 py-2.5 outline-none font-bold text-xs appearance-none"
+                                                                style={{ background: '#FBF7F0', border: `1.5px solid ${planFormErrors?.time ? '#EF4444' : '#F0EBE1'}`, color: '#1B2E4B' }} />
+                                                        </div>
+                                                        <div className="w-full min-w-0">
+                                                            <label className="text-[10px] font-bold mb-1.5 block" style={{ color: planFormErrors?.time ? '#EF4444' : '#9CAABE' }}>结束时间</label>
+                                                            <input type="time" value={planForm.endTime || ''} onChange={e => { setPlanForm({ ...planForm, endTime: e.target.value }); if (planFormErrors?.time) setPlanFormErrors(prev => ({ ...prev, time: undefined })); }}
+                                                                className="w-full box-border rounded-xl px-3 py-2.5 outline-none font-bold text-xs appearance-none"
+                                                                style={{ background: '#FBF7F0', border: `1.5px solid ${planFormErrors?.time ? '#EF4444' : '#F0EBE1'}`, color: '#1B2E4B' }} />
+                                                        </div>
+                                                    </div>
                                                 </div>
+                                            )}
 
-                                                {planForm.timeSetting === 'range' && (
-                                                    <div className="animate-fade-in" data-field-error={planFormErrors?.time ? 'time' : undefined}>
-                                                        {planFormErrors?.time && <div className="text-xs font-bold text-red-500 mb-2 flex items-center gap-1">⚠️ {planFormErrors.time}</div>}
-                                                        <div className="grid grid-cols-2 gap-3 md:gap-4">
-                                                            <div className="w-full min-w-0">
-                                                                <label className="block text-xs font-bold mb-2 truncate" style={{ color: planFormErrors?.time ? '#EF4444' : '#475569' }}>开始时间</label>
-                                                                <input type="time" value={planForm.startTime || ''} onChange={e => { setPlanForm({ ...planForm, startTime: e.target.value }); if (planFormErrors?.time) setPlanFormErrors(prev => ({ ...prev, time: undefined })); }} className={`w-full box-border rounded-xl px-2 py-2.5 outline-none focus:border-blue-500 font-bold bg-white text-xs sm:text-sm appearance-none ${planFormErrors?.time ? 'animate-shake' : ''}`} style={{ border: `2px solid ${planFormErrors?.time ? '#EF4444' : '#e2e8f0'}` }} />
-                                                            </div>
-                                                            <div className="w-full min-w-0">
-                                                                <label className="block text-xs font-bold mb-2 truncate" style={{ color: planFormErrors?.time ? '#EF4444' : '#475569' }}>结束时间</label>
-                                                                <input type="time" value={planForm.endTime || ''} onChange={e => { setPlanForm({ ...planForm, endTime: e.target.value }); if (planFormErrors?.time) setPlanFormErrors(prev => ({ ...prev, time: undefined })); }} className={`w-full box-border rounded-xl px-2 py-2.5 outline-none focus:border-blue-500 font-bold bg-white text-xs sm:text-sm appearance-none ${planFormErrors?.time ? 'animate-shake' : ''}`} style={{ border: `2px solid ${planFormErrors?.time ? '#EF4444' : '#e2e8f0'}` }} />
-                                                            </div>
-                                                        </div>
+                                            {planForm.timeSetting === 'duration' && (
+                                                <div className="animate-fade-in space-y-3">
+                                                    <div className="grid grid-cols-3 gap-2">
+                                                        {[{ label: '15分钟', val: 15 }, { label: '30分钟', val: 30 }, { label: '45分钟', val: 45 }, { label: '1小时', val: 60 }, { label: '1.5小时', val: 90 }, { label: '2小时', val: 120 }].map(opt => (
+                                                            <button key={opt.val} onClick={() => setPlanForm({ ...planForm, durationPreset: opt.val })}
+                                                                className="py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
+                                                                style={planForm.durationPreset === opt.val
+                                                                    ? { background: '#FF8C42', color: '#fff', boxShadow: '0 2px 8px rgba(255,140,66,0.3)' }
+                                                                    : { background: '#FBF7F0', color: '#5A6E8A', border: '1.5px solid #F0EBE1' }}>
+                                                                {opt.label}
+                                                            </button>
+                                                        ))}
                                                     </div>
-                                                )}
-
-                                                {planForm.timeSetting === 'duration' && (
-                                                    <div className="animate-fade-in space-y-4 pt-2">
-                                                        <div>
-                                                            <span className="text-xs font-bold text-emerald-700 mb-3 block">常用时长</span>
-                                                            <div className="grid grid-cols-3 gap-2">
-                                                                {[{ label: '15分钟', val: 15 }, { label: '30分钟', val: 30 }, { label: '45分钟', val: 45 }, { label: '1小时', val: 60 }, { label: '1.5小时', val: 90 }, { label: '2小时', val: 120 }].map(opt => (
-                                                                    <button key={opt.val} onClick={() => setPlanForm({ ...planForm, durationPreset: opt.val })}
-                                                                        className={`py-2 text-xs font-bold rounded-lg border-2 transition-all
-                                                                ${planForm.durationPreset === opt.val ? 'border-emerald-500 bg-white text-emerald-600 shadow-sm' : 'border-transparent bg-slate-200/50 text-slate-600 hover:bg-slate-200'}`}
-                                                                    >
-                                                                        {opt.label}
-                                                                    </button>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                        <div>
-                                                            <span className="text-xs font-bold text-emerald-700 mb-2 block">自定义其它时长</span>
-                                                            <div className="flex items-center gap-3">
-                                                                <input
-                                                                    type="number"
-                                                                    min="1"
-                                                                    placeholder="例如：25"
-                                                                    value={planForm.durationPreset || ''}
-                                                                    onChange={e => setPlanForm({ ...planForm, durationPreset: Math.max(0, parseInt(e.target.value) || 0) })}
-                                                                    className="flex-1 w-full min-w-0 border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-emerald-500 font-bold bg-white text-emerald-800"
-                                                                />
-                                                                <span className="font-bold text-emerald-600 shrink-0 whitespace-nowrap">分钟</span>
-                                                            </div>
-                                                        </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <input type="number" min="1" placeholder="自定义分钟"
+                                                            value={planForm.durationPreset || ''}
+                                                            onChange={e => setPlanForm({ ...planForm, durationPreset: Math.max(0, parseInt(e.target.value) || 0) })}
+                                                            className="flex-1 w-full min-w-0 rounded-xl px-3 py-2.5 outline-none font-bold text-xs appearance-none"
+                                                            style={{ background: '#FBF7F0', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }} />
+                                                        <span className="font-bold text-xs shrink-0" style={{ color: '#9CAABE' }}>分钟</span>
                                                     </div>
-                                                )}
-                                        </div>
+                                                </div>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             )}
