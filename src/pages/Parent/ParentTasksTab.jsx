@@ -19,13 +19,14 @@ export const ParentTasksTab = () => {
     const { kids, tasks, setTasks, activeKidId, setActiveKidId } = dataC;
     const {
         selectedDate, setSelectedDate,
-        setShowAddPlanModal, setShowAiTaskCreator,
+        setShowAddPlanModal, showAddPlanModal, setShowAiTaskCreator,
         setEditingTask, setPlanType, setPlanForm,
-        setPreviewTask, setShowPreviewModal,
+        setPreviewTask, setShowPreviewModal, showPreviewModal,
         setDeleteConfirmTask, setShowCalendarModal,
         lastSavedEndTime, apiFetch,
         parentKidFilter, setParentKidFilter,
-        currentViewDate, setCurrentViewDate
+        currentViewDate, setCurrentViewDate,
+        quickCompleteTask
     } = uiC;
 
     const {
@@ -206,7 +207,7 @@ export const ParentTasksTab = () => {
 
             {/* ═══ Compact Sticky Calendar (portal) ═══ */}
             {createPortal(
-                <div className={`fixed top-0 left-0 right-0 z-[9998] sm:hidden transition-all duration-300 ${showCompactCalendar ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}`}>
+                <div className={`fixed top-0 left-0 right-0 z-[9998] sm:hidden transition-all duration-300 ${showCompactCalendar && !showPreviewModal && !quickCompleteTask && !showAddPlanModal ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}`}>
                     <div style={{ background: '#FBF7F0ee', backdropFilter: 'blur(20px)', borderBottom: '1px solid #F0EBE1', paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }} className="px-3 py-2">
                         <div className="flex items-center gap-1">
                             {getDisplayDateArray(currentViewDate).map((day, i) => {
