@@ -146,6 +146,23 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
     }
   });
   if (periodCompletions >= rc.periodTargetCount) {
+    // Allow one more submission ONLY if it's to transition to pending_approval
+    // Check if any entry in the period is already pending_approval
+    let alreadyPending = false;
+    Object.keys(hist).forEach(dStr => {
+      const histDt = new Date(dStr);
+      if (histDt >= periodStartDt && histDt <= periodEndDt) {
+        const e = task.kidId === 'all' ? hist[dStr]?.[kidId] : hist[dStr];
+        if (e?.status === 'pending_approval') alreadyPending = true;
+      }
+    });
+    if (alreadyPending) {
+      return {
+        canSubmit: false,
+        reason: '该任务已提交审核，等待家长审核中'
+      };
+    }
+    // If target met but not yet pending, still block — the last submit already set pending
     return {
       canSubmit: false,
       reason: `本周期已达成目标(${rc.periodTargetCount}次)啦！`
@@ -538,18 +555,31 @@ const getTaskStatusOnDate = (t, date, kidId) => {
   // Period task: auto-approve individual completions; only final triggers review
   const isPeriodTask = taskToSubmit.repeatConfig?.type?.includes('_1') || taskToSubmit.repeatConfig?.type?.includes('_n');
   let submitStatus = 'pending_approval';
+  let newCount = 1;
   if (isPeriodTask) {
     const pp = getPeriodProgress(taskToSubmit, activeKidId, selectedDate);
+    // Calculate today's count for this submission
+    const existEntry = taskToSubmit.kidId === 'all'
+      ? taskToSubmit.history?.[selectedDate]?.[activeKidId]
+      : taskToSubmit.history?.[selectedDate];
+    newCount = (existEntry?.count || (existEntry ? 1 : 0)) + 1;
     if (pp) {
       const willComplete = (pp.periodCompletions + 1) >= pp.periodTarget;
-      submitStatus = willComplete ? 'pending_approval' : 'completed';
+      if (willComplete) {
+        submitStatus = taskToSubmit.requireApproval === false ? 'completed' : 'pending_approval';
+      } else {
+        submitStatus = 'completed';
+      }
     }
+  } else {
+    submitStatus = taskToSubmit.requireApproval === false ? 'completed' : 'pending_approval';
   }
 
   // Construct payload specifically based on whether history is 1D or 2D (unified)
   const histUpdate = {
     status: submitStatus,
-    submittedAt: Date.now()
+    submittedAt: Date.now(),
+    ...(isPeriodTask ? { count: newCount } : {})
   };
   let newHistory = {
     ...(taskToSubmit.history || {})
