@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { useSwipeBack } from '../../hooks/useSwipeBack';
 import { Icons } from '../../utils/Icons';
+import { getPeriodProgress } from '../../utils/taskUtils';
 
 export const QuickCompleteModal = ({ context }) => {
     const {
@@ -16,7 +17,8 @@ export const QuickCompleteModal = ({ context }) => {
         handleQcQuickDuration,
         handleQcFileUpload,
         handleQuickComplete,
-        selectedDate
+        selectedDate,
+        activeKidId,
     } = context;
 
     const closeModal = useCallback(() => setQuickCompleteTask(null), [setQuickCompleteTask]);
@@ -26,6 +28,7 @@ export const QuickCompleteModal = ({ context }) => {
     const t = quickCompleteTask;
     const totalMins = qcHours * 60 + qcMinutes + Math.round(qcSeconds / 60);
     const totalDisplay = totalMins >= 60 ? `${Math.floor(totalMins / 60)}小时${totalMins % 60 > 0 ? totalMins % 60 + '分钟' : ''}` : `${totalMins}分钟`;
+    const pp = getPeriodProgress(t, activeKidId, selectedDate);
 
     return (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4 pb-[5rem] md:pb-4 animate-fade-in">
@@ -57,9 +60,26 @@ export const QuickCompleteModal = ({ context }) => {
                                 {t.category || '任务'}
                             </div>
                             <span className="text-xs font-bold" style={{ color: '#9CAABE' }}>{selectedDate}</span>
+                            {t.frequency && <span className="text-xs font-bold" style={{ color: '#9CAABE' }}>{t.frequency}</span>}
                         </div>
                         <div className="font-black text-lg" style={{ color: '#1B2E4B' }}>{t.title}</div>
                         {t.standards && <p className="text-xs mt-1" style={{ color: '#5A6E8A' }}>{t.standards}</p>}
+                        {/* Period progress banner */}
+                        {pp && (
+                            <div className="mt-3 p-3 rounded-xl" style={{ background: pp.periodDone ? '#D1FAE533' : '#FF8C4210', border: pp.periodDone ? '1px solid #A7F3D0' : '1px solid #FF8C4225' }}>
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <span className="text-xs font-black" style={{ color: pp.periodDone ? '#059669' : '#FF8C42' }}>
+                                        {pp.periodDone ? `✓ ${pp.periodLabel}已达标` : `${pp.periodLabel}进度`}
+                                    </span>
+                                    <span className="text-xs font-bold" style={{ color: '#5A6E8A' }}>
+                                        {pp.periodCompletions}/{pp.periodTarget}次 · 今日{pp.todayCount}/{pp.dailyMax}次
+                                    </span>
+                                </div>
+                                <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: pp.periodDone ? '#A7F3D0' : '#FF8C4220' }}>
+                                    <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, pp.periodCompletions / pp.periodTarget * 100)}%`, background: pp.periodDone ? '#10B981' : '#FF8C42' }}></div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Time input */}

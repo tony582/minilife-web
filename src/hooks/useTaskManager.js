@@ -1608,14 +1608,25 @@ const handleSavePlan = async () => {
       'weekly_custom': '按周重复',
       'biweekly_custom': '按双周重复',
       'ebbinghaus': '记忆曲线',
-      'weekly_1': '本周1次',
-      'biweekly_1': '本双周1次',
-      'monthly_1': '本月1次',
-      'every_week_1': '每周1次',
-      'every_biweek_1': '每双周1次',
-      'every_month_1': '每月1次'
     };
-    if (freqMap[planForm.repeatType]) frequency = freqMap[planForm.repeatType];else frequency = planForm.repeatType;
+    const rt = planForm.repeatType;
+    if (freqMap[rt]) {
+      frequency = freqMap[rt];
+    } else if (rt?.includes('_1') || rt?.includes('_n')) {
+      // Dynamic period label: 本周5次(工作日)
+      const pTarget = Number(planForm.periodTargetCount) || 1;
+      const pDaysType = planForm.periodDaysType || 'any';
+      const daysLabel = pDaysType === 'workdays' ? '·工作日' : pDaysType === 'weekends' ? '·周末' : pDaysType === 'custom' ? '·指定日' : '';
+      let periodName = '本周';
+      if (rt.includes('month')) periodName = '本月';
+      else if (rt.includes('biweek')) periodName = '本双周';
+      else if (rt.includes('every_week')) periodName = '每周';
+      else if (rt.includes('every_biweek')) periodName = '每双周';
+      else if (rt.includes('every_month')) periodName = '每月';
+      frequency = `${periodName}${pTarget}次${daysLabel}`;
+    } else {
+      frequency = rt || '每天';
+    }
     if (planForm.timeSetting === 'range' && planForm.startTime && planForm.endTime) {
       timeStr = `${planForm.startTime}-${planForm.endTime}`;
     } else if (planForm.timeSetting === 'duration' && planForm.durationPreset) {

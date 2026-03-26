@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSwipeBack } from '../../hooks/useSwipeBack';
 import { Icons } from '../../utils/Icons';
+import { getPeriodProgress } from '../../utils/taskUtils';
 
 export const KidPreviewModal = ({ context }) => {
     const {
@@ -397,6 +398,34 @@ export const KidPreviewModal = ({ context }) => {
                                 </div>
                             )}
 
+                            {/* 周期进度 (period tasks only) */}
+                            {(() => {
+                                const ppModal = getPeriodProgress(previewTask, resolvedKidId, selectedDate);
+                                if (!ppModal) return null;
+                                const rc = previewTask.repeatConfig || {};
+                                const daysTypeLabel = rc.periodDaysType === 'workdays' ? '工作日执行' : rc.periodDaysType === 'weekends' ? '周末执行' : rc.periodDaysType === 'custom' ? '指定日执行' : '每天可执行';
+                                return (
+                                    <div className="rounded-2xl p-4" style={{ background: ppModal.periodDone ? '#F0FDF4' : '#FFFFFF', border: `1px solid ${ppModal.periodDone ? '#BBF7D0' : '#F0EBE1'}` }}>
+                                        <label className="text-[11px] font-bold uppercase tracking-wider block mb-3" style={{ color: '#9CAABE' }}>📊 {ppModal.periodLabel}进度</label>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-lg font-black" style={{ color: ppModal.periodDone ? '#059669' : '#FF8C42' }}>
+                                                {ppModal.periodCompletions}/{ppModal.periodTarget}次
+                                            </span>
+                                            <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: ppModal.periodDone ? '#D1FAE5' : '#FFF7ED', color: ppModal.periodDone ? '#059669' : '#EA580C' }}>
+                                                {ppModal.periodDone ? '✓ 已达标' : `还差${ppModal.periodTarget - ppModal.periodCompletions}次`}
+                                            </span>
+                                        </div>
+                                        <div className="w-full h-3 rounded-full overflow-hidden mb-2" style={{ background: ppModal.periodDone ? '#A7F3D0' : '#FF8C4218' }}>
+                                            <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, ppModal.periodCompletions / ppModal.periodTarget * 100)}%`, background: ppModal.periodDone ? '#10B981' : '#FF8C42' }}></div>
+                                        </div>
+                                        <div className="flex items-center justify-between text-[11px] font-bold" style={{ color: '#9CAABE' }}>
+                                            <span>今日已完成 {ppModal.todayCount}/{ppModal.dailyMax}次</span>
+                                            <span>{daysTypeLabel}</span>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+
                             {/* 任务详情 */}
                             <div className="rounded-2xl p-4 space-y-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
                                 <label className="text-[11px] font-bold uppercase tracking-wider block" style={{ color: '#9CAABE' }}>任务详情</label>
@@ -537,60 +566,77 @@ export const KidPreviewModal = ({ context }) => {
                         } catch (e) {}
                         return (
                             <>
-                                {(pStatus === 'todo' || pStatus === 'failed') && (
-                                    <>
-                                        {pStatus === 'failed' && (() => {
-                                            const hist = previewTask?.history || {};
-                                            const entry = previewTask?.kidId === 'all'
-                                                ? hist[selectedDate]?.[activeKidId]
-                                                : hist[selectedDate];
-                                            const feedback = entry?.rejectFeedback;
-                                            return feedback ? (
-                                                <div className="w-full mb-2 px-3 py-2 rounded-xl text-xs" style={{ background: '#FFF3E8', color: '#E65100', border: '1px solid #FFE0B2' }}>
-                                                    <span className="font-bold">家长反馈：</span>{feedback}
-                                                </div>
-                                            ) : null;
-                                        })()}
-                                        <button onClick={() => { const t = previewTask; setShowPreviewModal(false); setPreviewTask(null); setTimeout(() => openQuickComplete(t), 50); }}
-                                            className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
-                                            style={{ background: '#F0EBE1', color: '#5A6E8A' }}>
-                                            <Icons.Check size={16} /> 快速打卡
-                                        </button>
-                                        <button onClick={() => { const tid = previewTask.id; setShowPreviewModal(false); setPreviewTask(null); setTimeout(() => handleStartTask(tid), 50); }}
-                                            className="flex-[2] py-3 rounded-xl text-sm font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
-                                            style={{ background: hasSavedTimer ? '#3B82F6' : '#FF8C42', boxShadow: hasSavedTimer ? '0 4px 15px rgba(59,130,246,0.3)' : '0 4px 15px rgba(255,140,66,0.35)' }}>
-                                            <Icons.Play size={16} fill="currentColor" /> {pStatus === 'failed' ? '重新计时' : (hasSavedTimer ? '继续计时' : '开始计时')}
-                                        </button>
-                                    </>
-                                )}
-                                {pStatus === 'in_progress' && (
-                                    <>
-                                        {hasSavedTimer && (
-                                            <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleStartTask(previewTask.id); }}
-                                                className="flex-1 py-3 rounded-xl text-sm font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
-                                                style={{ background: '#3B82F6', boxShadow: '0 4px 15px rgba(59,130,246,0.3)' }}>
-                                                <Icons.Play size={16} fill="currentColor" /> 继续计时
-                                            </button>
+                                {(() => {
+                                    // For period tasks: allow continuing even when today's status is 'completed'
+                                    const ppFooter = getPeriodProgress(previewTask, activeKidId, selectedDate);
+                                    const canStillAct = ppFooter && !ppFooter.periodDone && !ppFooter.todayMaxed;
+                                    const showActionBtns = pStatus === 'todo' || pStatus === 'failed' || (canStillAct && pStatus === 'completed');
+                                    return (
+                                        <>
+                                        {showActionBtns && (
+                                            <>
+                                                {pStatus === 'failed' && (() => {
+                                                    const hist = previewTask?.history || {};
+                                                    const entry = previewTask?.kidId === 'all'
+                                                        ? hist[selectedDate]?.[activeKidId]
+                                                        : hist[selectedDate];
+                                                    const feedback = entry?.rejectFeedback;
+                                                    return feedback ? (
+                                                        <div className="w-full mb-2 px-3 py-2 rounded-xl text-xs" style={{ background: '#FFF3E8', color: '#E65100', border: '1px solid #FFE0B2' }}>
+                                                            <span className="font-bold">家长反馈：</span>{feedback}
+                                                        </div>
+                                                    ) : null;
+                                                })()}
+                                                <button onClick={() => { const t = previewTask; setShowPreviewModal(false); setPreviewTask(null); setTimeout(() => openQuickComplete(t), 50); }}
+                                                    className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                                    style={{ background: '#F0EBE1', color: '#5A6E8A' }}>
+                                                    <Icons.Check size={16} /> 快速打卡
+                                                </button>
+                                                <button onClick={() => { const tid = previewTask.id; setShowPreviewModal(false); setPreviewTask(null); setTimeout(() => handleStartTask(tid), 50); }}
+                                                    className="flex-[2] py-3 rounded-xl text-sm font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                                    style={{ background: hasSavedTimer ? '#3B82F6' : '#FF8C42', boxShadow: hasSavedTimer ? '0 4px 15px rgba(59,130,246,0.3)' : '0 4px 15px rgba(255,140,66,0.35)' }}>
+                                                    <Icons.Play size={16} fill="currentColor" /> {pStatus === 'failed' ? '重新计时' : (hasSavedTimer ? '继续计时' : '开始计时')}
+                                                </button>
+                                            </>
                                         )}
-                                        <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleAttemptSubmit(previewTask); }}
-                                            className={`${hasSavedTimer ? 'flex-1' : 'w-full'} py-3 rounded-xl text-sm font-black transition-all active:scale-95 flex items-center justify-center gap-1.5`}
-                                            style={{ background: '#E8EAF6', color: '#3F51B5' }}>
-                                            <Icons.CheckSquare size={16} /> 提交验收
-                                        </button>
-                                    </>
-                                )}
-                                {pStatus === 'pending_approval' && (
-                                    <div className="w-full py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 cursor-not-allowed"
-                                        style={{ background: '#FFF3E8', color: '#FF8C42', border: '1px solid #FFE8D0' }}>
-                                        <Icons.Clock size={16} /> 待家长审核发放奖励...
-                                    </div>
-                                )}
-                                {pStatus === 'completed' && (
-                                    <div className="w-full py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 cursor-not-allowed"
-                                        style={{ background: '#E8F5E9', color: '#4CAF50', border: '1px solid #C8E6C9' }}>
-                                        <Icons.CheckCircle size={16} /> 此任务已完成
-                                    </div>
-                                )}
+                                        {!showActionBtns && pStatus === 'in_progress' && (
+                                            <>
+                                                {hasSavedTimer && (
+                                                    <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleStartTask(previewTask.id); }}
+                                                        className="flex-1 py-3 rounded-xl text-sm font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                                        style={{ background: '#3B82F6', boxShadow: '0 4px 15px rgba(59,130,246,0.3)' }}>
+                                                        <Icons.Play size={16} fill="currentColor" /> 继续计时
+                                                    </button>
+                                                )}
+                                                <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleAttemptSubmit(previewTask); }}
+                                                    className={`${hasSavedTimer ? 'flex-1' : 'w-full'} py-3 rounded-xl text-sm font-black transition-all active:scale-95 flex items-center justify-center gap-1.5`}
+                                                    style={{ background: '#E8EAF6', color: '#3F51B5' }}>
+                                                    <Icons.CheckSquare size={16} /> 提交验收
+                                                </button>
+                                            </>
+                                        )}
+                                        {!showActionBtns && pStatus === 'pending_approval' && (
+                                            <div className="w-full py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 cursor-not-allowed"
+                                                style={{ background: '#FFF3E8', color: '#FF8C42', border: '1px solid #FFE8D0' }}>
+                                                <Icons.Clock size={16} /> 待家长审核发放奖励...
+                                            </div>
+                                        )}
+                                        {!showActionBtns && pStatus === 'completed' && (
+                                            ppFooter && ppFooter.todayMaxed && !ppFooter.periodDone ? (
+                                                <div className="w-full py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 cursor-not-allowed"
+                                                    style={{ background: '#F3F4F6', color: '#9CA3AF', border: '1px solid #E5E7EB' }}>
+                                                    <Icons.Clock size={16} /> 今日已达上限，明天继续
+                                                </div>
+                                            ) : (
+                                                <div className="w-full py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 cursor-not-allowed"
+                                                    style={{ background: '#E8F5E9', color: '#4CAF50', border: '1px solid #C8E6C9' }}>
+                                                    <Icons.CheckCircle size={16} /> 此任务已完成
+                                                </div>
+                                            )
+                                        )}
+                                        </>
+                                    );
+                                })()}
                             </>
                         );
                     })()}
@@ -617,7 +663,12 @@ export const KidPreviewModal = ({ context }) => {
                                             <Icons.Check size={16} strokeWidth={3} /> 确认通过{isMultiKidParent && currentKidInfo ? ` (${currentKidInfo.name})` : ''}
                                         </button>
                                     </>
-                                ) : (currentKidStatus === 'todo' || currentKidStatus === 'failed') ? (
+                                ) : (() => {
+                                    const ppParent = getPeriodProgress(previewTask, resolvedKidId, selectedDate);
+                                    const canParentComplete = currentKidStatus === 'todo' || currentKidStatus === 'failed'
+                                        || (ppParent && !ppParent.periodDone && !ppParent.todayMaxed && currentKidStatus === 'completed');
+                                    return canParentComplete;
+                                })() ? (
                                     <>
                                         <button onClick={() => {
                                             const t = { ...previewTask, requireApproval: false };
