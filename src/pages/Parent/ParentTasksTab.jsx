@@ -672,7 +672,7 @@ export const ParentTasksTab = () => {
 
 
 
-            {showReorderModal && ReactDOM.createPortal(
+            {showReorderModal && createPortal(
                 <div className="z-[200]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: C.bg }}>
                     <div className="flex items-center justify-between p-4" style={{ borderBottom: `1px solid ${C.bgLight}` }}>
                         <button onClick={() => setShowReorderModal(false)} className="p-2 rounded-full" style={{ color: C.textSoft }}><Icons.X size={24} /></button>
