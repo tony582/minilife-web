@@ -574,9 +574,12 @@ export const AddPlanModal = ({ context }) => {
                                             value={!['today', 'daily', 'weekly_custom'].includes(planForm.repeatType || '') ? planForm.repeatType : ''}
                                             onChange={e => { if (e.target.value) setPlanForm({ ...planForm, repeatType: e.target.value }) }}
                                             className="w-full py-2.5 rounded-xl text-sm font-bold transition-all outline-none appearance-none text-center mb-2"
-                                            style={!['today', 'daily', 'weekly_custom'].includes(planForm.repeatType || '')
-                                                ? { background: '#FF8C42', color: '#fff', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }
-                                                : { background: '#FBF7F0', color: '#5A6E8A', border: '1.5px solid #F0EBE1' }}
+                                            style={{
+                                                textAlignLast: 'center', textAlign: 'center',
+                                                ...(!['today', 'daily', 'weekly_custom'].includes(planForm.repeatType || '')
+                                                    ? { background: '#FF8C42', color: '#fff', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }
+                                                    : { background: '#FBF7F0', color: '#5A6E8A', border: '1.5px solid #F0EBE1' })
+                                            }}
                                         >
                                             <option value="" disabled>... 更多安排</option>
                                             <option value="biweekly_custom">隔周重复（按双周）</option>
