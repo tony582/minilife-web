@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Icons } from '../../utils/Icons';
+import { Icons, renderIcon } from '../../utils/Icons';
 import { apiFetch } from '../../api/client';
-import { getIconForCategory, getCategoryGradient } from '../../utils/categoryUtils';
+import { getIconForCategory, getCategoryGradient, getCatHexColor } from '../../utils/categoryUtils';
 
 /**
  * AI Plan Creator — overlay modal for AI-powered homework-to-task conversion
@@ -320,8 +320,8 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                                     style={{ background: '#FFFFFF', border: '1.5px solid #F0EBE1' }}>
                                     <div className="flex items-start gap-3">
                                         <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0"
-                                            style={{ background: '#667eea12' }}>
-                                            {task.iconEmoji || '📚'}
+                                            style={{ background: `${getCatHexColor(task.category)}15`, color: getCatHexColor(task.category) }}>
+                                            {renderIcon(getIconForCategory(task.category), 20)}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <input
@@ -336,7 +336,7 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                                             />
                                             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                                                 <span className="text-[9px] font-bold px-2 py-0.5 rounded-full"
-                                                    style={{ background: '#667eea12', color: '#667eea' }}>
+                                                    style={{ background: `${getCatHexColor(task.category)}15`, color: getCatHexColor(task.category) }}>
                                                     {task.category}
                                                 </span>
                                                 <span className="text-[9px] font-bold" style={{ color: '#9CAABE' }}>
