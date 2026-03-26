@@ -722,12 +722,25 @@ export const AddPlanModal = ({ context }) => {
 
                                                     <div>
                                                         <label className="block text-xs font-bold text-slate-600 mb-2">允许执行的日期限制</label>
-                                                        <select value={planForm.periodDaysType || 'any'} onChange={e => setPlanForm({ ...planForm, periodDaysType: e.target.value })} className="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 outline-none focus:border-orange-500 font-bold text-base text-slate-700 appearance-none">
-                                                            <option value="any">⏳ 任意时间都可以完成</option>
-                                                            <option value="workdays">💼 仅限工作日完成</option>
-                                                            <option value="weekends">🎉 仅限周末完成</option>
-                                                            <option value="custom">⚙️ 自定义每周哪几天</option>
-                                                        </select>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {[
+                                                                { v: 'any', l: '⏳ 任意时间' },
+                                                                { v: 'workdays', l: '💼 仅工作日' },
+                                                                { v: 'weekends', l: '🎉 仅周末' },
+                                                                { v: 'custom', l: '⚙️ 自定义' }
+                                                            ].map(opt => (
+                                                                <button
+                                                                    key={opt.v}
+                                                                    onClick={() => setPlanForm({ ...planForm, periodDaysType: opt.v })}
+                                                                    className="px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95"
+                                                                    style={(planForm.periodDaysType || 'any') === opt.v
+                                                                        ? { background: '#FF8C42', color: '#fff', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }
+                                                                        : { background: '#FBF7F0', color: '#5A6E8A', border: '1.5px solid #F0EBE1' }}
+                                                                >
+                                                                    {opt.l}
+                                                                </button>
+                                                            ))}
+                                                        </div>
                                                         {planForm.periodDaysType === 'custom' && (
                                                             <div className="grid grid-cols-7 gap-1 mt-3 bg-white p-2 rounded-xl border border-slate-100">
                                                                 {[{ d: 1, l: '一' }, { d: 2, l: '二' }, { d: 3, l: '三' }, { d: 4, l: '四' }, { d: 5, l: '五' }, { d: 6, l: '六' }, { d: 7, l: '日' }].map(w => {
