@@ -36,6 +36,7 @@ export const ParentApp = () => {
                     <div className="flex items-center gap-2 shrink-0 mr-4 lg:mr-8">
                         <img src="/minilife_logo.png" className="w-8 h-8 rounded-lg" alt="Logo" />
                         <span className="font-black text-base tracking-tight hidden lg:inline" style={{ color: C.textPrimary }}>MiniLife</span>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden lg:inline" style={{ background: C.orange + '18', color: C.orange }}>家长端</span>
                     </div>
 
                     {/* Center: Tabs */}
@@ -62,8 +63,8 @@ export const ParentApp = () => {
                     <button onClick={() => changeAppState('profiles')}
                         className="shrink-0 flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all active:scale-95"
                         style={{ background: C.bgLight, color: C.textSoft }}>
-                        <Icons.ArrowLeft size={14} />
-                        切换角色
+                        学生端
+                        <Icons.ArrowRight size={14} />
                     </button>
                 </div>
             </div>
@@ -79,7 +80,7 @@ export const ParentApp = () => {
                     <button onClick={() => changeAppState('profiles')}
                         className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all"
                         style={{ background: C.bgLight, color: C.textSoft }}>
-                        切换
+                        学生端
                         <Icons.ArrowRight size={14} />
                     </button>
                 </div>
