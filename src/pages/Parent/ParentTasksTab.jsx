@@ -74,6 +74,7 @@ export const ParentTasksTab = () => {
         if (t.kidId === 'all' && effectiveFilter === 'all') {
             let statuses = kids.map(k => getTaskStatusOnDate(t, selectedDate, k.id));
             if (statuses.length === 0) return 'todo';
+            if (statuses.every(s => s === 'skipped')) return 'skipped';
             if (statuses.includes('pending_approval')) return 'pending_approval';
             if (statuses.includes('failed')) return 'failed';
             if (statuses.includes('in_progress')) return 'in_progress';
@@ -88,6 +89,9 @@ export const ParentTasksTab = () => {
     if (parentTaskFilter.length > 0) {
         parentTasks = parentTasks.filter(t => parentTaskFilter.includes(t.category || '计划'));
     }
+
+    // Filter out skipped tasks
+    parentTasks = parentTasks.filter(t => getDailyStatus(t) !== 'skipped');
 
     if (parentTaskStatusFilter !== 'all') {
         parentTasks = parentTasks.filter(t => {
@@ -108,7 +112,7 @@ export const ParentTasksTab = () => {
         }
         if (parentTaskSort === 'category') return (a.category || '').localeCompare(b.category || '');
         if (parentTaskSort === 'status') {
-            const statusWeight = { completed: 3, pending_approval: 2, in_progress: 1, failed: 0, todo: 0 };
+            const statusWeight = { completed: 3, skipped: 3, pending_approval: 2, in_progress: 1, failed: 0, todo: 0 };
             return statusWeight[getDailyStatus(a)] - statusWeight[getDailyStatus(b)];
         }
         if (parentTaskSort === 'created_desc') return (b.createdAt || '').localeCompare(a.createdAt || '');
