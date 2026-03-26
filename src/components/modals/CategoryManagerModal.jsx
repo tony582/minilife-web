@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import { Icons, renderIcon } from '../../utils/Icons';
-import { useSwipeBack } from '../../hooks/useSwipeBack';
 import { getCatHexColor } from '../../utils/categoryUtils';
 
 const ICON_OPTIONS = [
@@ -22,9 +21,6 @@ export const CategoryManagerModal = ({ show, onClose, parentSettings, setParentS
     const [newIcon, setNewIcon] = useState('Star');
     const [newColor, setNewColor] = useState('#F97316');
     const [showAddForm, setShowAddForm] = useState(false);
-
-    const closeModal = useCallback(() => { onClose(); }, [onClose]);
-    const { swipeRef, swipeHandlers } = useSwipeBack(closeModal, { enabled: show });
 
     if (!show) return null;
 
@@ -59,9 +55,9 @@ export const CategoryManagerModal = ({ show, onClose, parentSettings, setParentS
 
     return (
         <div className="fixed inset-0 z-[10100] flex items-center justify-center p-0 md:p-6 animate-fade-in"
-            style={{ background: 'rgba(27,46,75,0.3)', backdropFilter: 'blur(8px)' }}>
-            <div ref={swipeRef} {...swipeHandlers}
-                className="w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden animate-bounce-in"
+            style={{ background: 'rgba(27,46,75,0.3)', backdropFilter: 'blur(8px)' }}
+            onClick={onClose}>
+            <div className="w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden animate-bounce-in"
                 style={{ background: C.bg }}
                 onClick={e => e.stopPropagation()}>
 
