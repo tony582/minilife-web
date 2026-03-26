@@ -5,7 +5,7 @@ import { useUIContext } from '../context/UIContext.jsx';
 import { getLevelTier, getLevelReq } from '../utils/levelUtils';
 import { getCategoryGradient, getIconForCategory } from '../utils/categoryUtils';
 import { apiFetch } from '../api/client';
-import { isTaskDueOnDate } from '../utils/taskUtils';
+import { isTaskDueOnDate, getPeriodProgress } from '../utils/taskUtils';
 
 let globalAudioCtx = null;
 
@@ -534,9 +534,21 @@ const getTaskStatusOnDate = (t, date, kidId) => {
     const confirmSubmitTask = async () => {
   if (!taskToSubmit) return;
   playSuccessSound(); // Fire exactly on click to bypass iOS async suspensions
+
+  // Period task: auto-approve individual completions; only final triggers review
+  const isPeriodTask = taskToSubmit.repeatConfig?.type?.includes('_1') || taskToSubmit.repeatConfig?.type?.includes('_n');
+  let submitStatus = 'pending_approval';
+  if (isPeriodTask) {
+    const pp = getPeriodProgress(taskToSubmit, activeKidId, selectedDate);
+    if (pp) {
+      const willComplete = (pp.periodCompletions + 1) >= pp.periodTarget;
+      submitStatus = willComplete ? 'pending_approval' : 'completed';
+    }
+  }
+
   // Construct payload specifically based on whether history is 1D or 2D (unified)
   const histUpdate = {
-    status: 'pending_approval',
+    status: submitStatus,
     submittedAt: Date.now()
   };
   let newHistory = {
@@ -567,14 +579,23 @@ const getTaskStatusOnDate = (t, date, kidId) => {
     setTaskToSubmit(null);
     // Clear any saved timer state for this task
     try { localStorage.removeItem('minilife_timer_state'); } catch (e) { /* ignore */ }
-    // S4: Random encouragement on quick-complete submission
-    const quickEncouragements = [
-      '提交成功！等待家长审核中，你真棒！🌟',
-      '做得好！已提交审核，继续保持！💪',
-      '任务已提交！家长审核后就能获得奖励哦！✨',
-      '很棒！又完成了一个任务，等审核结果吧！🎯',
-    ];
-    notify(quickEncouragements[Math.floor(Math.random() * quickEncouragements.length)], 'success');
+
+    if (isPeriodTask && submitStatus === 'completed') {
+      const pp = getPeriodProgress(taskToSubmit, activeKidId, selectedDate);
+      const nextCount = (pp?.periodCompletions || 0) + 1;
+      const target = pp?.periodTarget || 1;
+      const label = pp?.periodLabel || '本周';
+      notify(`打卡成功！${label}进度 ${nextCount}/${target}，继续加油！💪`, 'success');
+    } else {
+      // S4: Random encouragement on quick-complete submission
+      const quickEncouragements = [
+        '提交成功！等待家长审核中，你真棒！🌟',
+        '做得好！已提交审核，继续保持！💪',
+        '任务已提交！家长审核后就能获得奖励哦！✨',
+        '很棒！又完成了一个任务，等审核结果吧！🎯',
+      ];
+      notify(quickEncouragements[Math.floor(Math.random() * quickEncouragements.length)], 'success');
+    }
   } catch (e) {
     notify("网络请求失败", "error");
   }
@@ -708,9 +729,33 @@ const handleQuickComplete = async () => {
     return notify(existingEntry.status === 'completed' ? '该任务今天已完成，无需重复提交' : '该任务已提交等待审核中', 'error');
   }
 
-  // Auto-approve logic check
-  const isAutoApprove = taskToSubmit.requireApproval === false;
-  const finalStatus = isAutoApprove ? 'completed' : 'pending_approval';
+  // === Period task special flow ===
+  // Individual completions auto-approve; only the LAST one triggers parent review
+  const isPeriodTask = taskToSubmit.repeatConfig?.type?.includes('_1') || taskToSubmit.repeatConfig?.type?.includes('_n');
+  let finalStatus;
+  let skipReward = false; // Don't give coins for intermediate period completions
+
+  if (isPeriodTask) {
+    const pp = getPeriodProgress(taskToSubmit, activeKidId, selectedDate);
+    if (pp) {
+      const willComplete = (pp.periodCompletions + 1) >= pp.periodTarget;
+      if (willComplete) {
+        // Final completion → send for parent review (or auto-approve if no review required)
+        finalStatus = taskToSubmit.requireApproval === false ? 'completed' : 'pending_approval';
+        skipReward = taskToSubmit.requireApproval !== false; // Only skip if parent will approve
+      } else {
+        // Intermediate completion → auto-approve, no coins yet
+        finalStatus = 'completed';
+        skipReward = true;
+      }
+    } else {
+      finalStatus = taskToSubmit.requireApproval === false ? 'completed' : 'pending_approval';
+    }
+  } else {
+    // Regular task: original logic
+    const isAutoApprove = taskToSubmit.requireApproval === false;
+    finalStatus = isAutoApprove ? 'completed' : 'pending_approval';
+  }
 
   // Construct payload specifically based on whether history is 1D or 2D (unified)
   const histUpdate = {
@@ -757,7 +802,7 @@ const handleQuickComplete = async () => {
       })
     });
 
-    if (isAutoApprove && taskToSubmit.reward > 0) {
+    if (!skipReward && taskToSubmit.requireApproval === false && taskToSubmit.reward > 0) {
       // Instantly generate transaction and family coins
       const newTrans = {
         id: `trans_${Date.now()}`,
@@ -817,8 +862,18 @@ const handleQuickComplete = async () => {
 
         notify('奖励发放失败，请重试', 'error');
       }
-    } else {
-
+    } else if (isPeriodTask && skipReward) {
+      // Period task intermediate completion — friendly message
+      const pp = getPeriodProgress(taskToSubmit, activeKidId, selectedDate);
+      const nextCount = (pp?.periodCompletions || 0) + 1;
+      const target = pp?.periodTarget || 1;
+      const label = pp?.periodLabel || '本周';
+      if (nextCount >= target) {
+        notify(`${label}目标已达成！等待家长最终审核 🎯`, 'success');
+      } else {
+        notify(`打卡成功！${label}进度 ${nextCount}/${target}，继续加油！💪`, 'success');
+      }
+    } else if (finalStatus === 'pending_approval') {
       // S4: Random encouragement for pending approval
       const pendingEncouragements = [
         '已提交审核！坚持打卡的你真了不起！🌈',
