@@ -71,17 +71,17 @@ export const ParentApp = () => {
             {/* ═══ Mobile Header ═══ */}
             <div className="md:hidden sticky top-0 z-[110]" style={{ background: C.bgCard, borderBottom: `1px solid ${C.bgLight}` }}>
                 <div className="flex items-center justify-between px-4 py-3">
-                    <button onClick={() => changeAppState('profiles')}
-                        className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all"
-                        style={{ background: C.bgLight, color: C.textSoft }}>
-                        <Icons.ArrowLeft size={14} />
-                        切换
-                    </button>
                     <div className="flex items-center gap-2">
                         <img src="/minilife_logo.png" className="w-7 h-7 rounded-lg" alt="Logo" />
                         <span className="font-black text-base" style={{ color: C.textPrimary }}>MiniLife</span>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: C.orange + '18', color: C.orange }}>家长端</span>
                     </div>
-                    <div className="w-16"></div>
+                    <button onClick={() => changeAppState('profiles')}
+                        className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all"
+                        style={{ background: C.bgLight, color: C.textSoft }}>
+                        切换
+                        <Icons.ArrowRight size={14} />
+                    </button>
                 </div>
             </div>
 
