@@ -742,7 +742,7 @@ export const AddPlanModal = ({ context }) => {
                             )}
 
                             {/* ═══ 计划周期 ═══ */}
-                            {planType === 'study' && (
+                            {planType === 'study' && !['today', 'weekly_1', 'biweekly_1', 'monthly_1'].includes(planForm.repeatType) && (
                                 <div className="rounded-2xl p-4 space-y-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
                                     <label className="text-[11px] font-bold uppercase tracking-wider block" style={{ color: '#9CAABE' }}>计划周期</label>
                                     <div className="grid grid-cols-2 gap-3">
