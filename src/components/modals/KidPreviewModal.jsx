@@ -670,6 +670,11 @@ export const KidPreviewModal = ({ context }) => {
                                             style={{ background: '#E3F2FD', color: '#2196F3' }}>
                                             <Icons.Edit3 size={14} /> 编辑
                                         </button>
+                                        <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); setDeleteConfirmTask(previewTask); }}
+                                            className="py-3 px-4 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                            style={{ background: '#FFF0F0', color: '#EF4444' }}>
+                                            <Icons.Trash2 size={14} /> 删除
+                                        </button>
                                     </>
                                 ) : currentKidStatus === 'completed' ? (
                                     <>
