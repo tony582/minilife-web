@@ -1,75 +1,36 @@
-import React, { useState, useMemo } from 'react';
-import { Icons, renderIcon } from '../../utils/Icons';
-import { isTaskDueOnDate } from '../../utils/taskUtils';
-import { getIconForCategory } from '../../utils/categoryUtils';
+import React, { useState } from 'react';
+import { Icons } from '../../utils/Icons';
 import { formatDate } from '../../utils/dateUtils';
 
-export const MigrateTasksModal = ({ show, onClose, tasks, kids, getTaskStatusOnDate, handleMigrateTasks, parentKidFilter }) => {
-    const [selectedSourceDate, setSelectedSourceDate] = useState(null);
+export const MigrateTasksModal = ({ show, onClose, incompleteTasks, sourceDate, handleMigrateTasks }) => {
     const [selectedTaskIds, setSelectedTaskIds] = useState([]);
     const [targetDate, setTargetDate] = useState(formatDate(new Date()));
     const [showDatePicker, setShowDatePicker] = useState(false);
 
-    // Scan past 7 days for incomplete one-time tasks
-    const pastDatesWithTasks = useMemo(() => {
-        const today = formatDate(new Date());
-        const results = [];
-        for (let i = 1; i <= 7; i++) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
-            const dateStr = formatDate(d);
-
-            const incompleteTasks = tasks.filter(t => {
-                if (t.type !== 'study') return false;
-                // Only one-time tasks
-                const rc = t.repeatConfig;
-                const isOneTime = (rc && rc.type === 'today') || t.frequency === '仅当天';
-                if (!isOneTime) return false;
-                if (!isTaskDueOnDate(t, dateStr)) return false;
-                // Kid filter
-                if (parentKidFilter !== 'all' && t.kidId !== 'all' && t.kidId !== parentKidFilter) return false;
-
-                // Check status — only include truly incomplete (todo/in_progress)
-                if (t.kidId === 'all') {
-                    const targetKids = parentKidFilter !== 'all' ? [parentKidFilter] : kids.map(k => k.id);
-                    return targetKids.some(kId => {
-                        const st = getTaskStatusOnDate(t, dateStr, kId);
-                        return st === 'todo' || st === 'in_progress';
-                    });
-                } else {
-                    const st = getTaskStatusOnDate(t, dateStr, t.kidId);
-                    return st === 'todo' || st === 'in_progress';
-                }
-            });
-
-            if (incompleteTasks.length > 0) {
-                results.push({ dateStr, tasks: incompleteTasks, dayLabel: getDayLabel(dateStr, i) });
-            }
+    // Reset selections when modal opens with new data
+    React.useEffect(() => {
+        if (show) {
+            setSelectedTaskIds([]);
+            setTargetDate(formatDate(new Date()));
+            setShowDatePicker(false);
         }
-        return results;
-    }, [tasks, kids, parentKidFilter]);
-
-    // Auto-select first date
-    const activeSource = selectedSourceDate || (pastDatesWithTasks[0]?.dateStr || null);
-    const activeTasks = pastDatesWithTasks.find(d => d.dateStr === activeSource)?.tasks || [];
-
-    const totalIncomplete = pastDatesWithTasks.reduce((sum, d) => sum + d.tasks.length, 0);
+    }, [show, sourceDate]);
 
     const toggleTask = (id) => {
         setSelectedTaskIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
     };
 
     const selectAll = () => {
-        if (selectedTaskIds.length === activeTasks.length) {
+        if (selectedTaskIds.length === incompleteTasks.length) {
             setSelectedTaskIds([]);
         } else {
-            setSelectedTaskIds(activeTasks.map(t => t.id));
+            setSelectedTaskIds(incompleteTasks.map(t => t.id));
         }
     };
 
     const handleConfirm = async () => {
-        if (selectedTaskIds.length === 0 || !activeSource) return;
-        await handleMigrateTasks(selectedTaskIds, activeSource, targetDate);
+        if (selectedTaskIds.length === 0) return;
+        await handleMigrateTasks(selectedTaskIds, sourceDate, targetDate);
         setSelectedTaskIds([]);
         onClose();
     };
@@ -82,6 +43,15 @@ export const MigrateTasksModal = ({ show, onClose, tasks, kids, getTaskStatusOnD
         bgCard: '#FFFFFF', bgLight: '#F0EBE1',
     };
 
+    const sourceDateLabel = (() => {
+        const today = new Date();
+        const src = new Date(sourceDate);
+        const diffDays = Math.round((today - src) / (24 * 60 * 60 * 1000));
+        if (diffDays === 1) return '昨天';
+        if (diffDays === 2) return '前天';
+        return sourceDate.slice(5).replace('-', '/');
+    })();
+
     return (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[10200] flex items-end sm:items-center justify-center animate-fade-in" onClick={onClose}>
             <div className="bg-white w-full sm:max-w-md sm:rounded-3xl rounded-t-3xl max-h-[80vh] flex flex-col shadow-2xl animate-scale-in" onClick={e => e.stopPropagation()}>
@@ -89,37 +59,22 @@ export const MigrateTasksModal = ({ show, onClose, tasks, kids, getTaskStatusOnD
                 {/* Header */}
                 <div className="px-5 pt-5 pb-3 flex items-center justify-between border-b border-slate-100">
                     <div>
-                        <h3 className="text-lg font-black" style={{ color: C.textPrimary }}>📋 迁移未完成任务</h3>
-                        <p className="text-xs mt-0.5" style={{ color: C.textMuted }}>共 {totalIncomplete} 个未完成</p>
+                        <h3 className="text-lg font-black" style={{ color: C.textPrimary }}>📋 迁移任务</h3>
+                        <p className="text-xs mt-0.5" style={{ color: C.textMuted }}>{sourceDateLabel} · {incompleteTasks.length} 个未完成</p>
                     </div>
                     <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: C.bgLight }}>
                         <Icons.X size={16} style={{ color: C.textSoft }} />
                     </button>
                 </div>
 
-                {/* Source date tabs */}
-                <div className="flex gap-2 px-5 py-3 overflow-x-auto hide-scrollbar border-b border-slate-50">
-                    {pastDatesWithTasks.map(d => (
-                        <button key={d.dateStr}
-                            onClick={() => { setSelectedSourceDate(d.dateStr); setSelectedTaskIds([]); }}
-                            className="shrink-0 py-1.5 px-3 rounded-full text-xs font-bold transition-all"
-                            style={{
-                                background: activeSource === d.dateStr ? C.orange : C.bgLight,
-                                color: activeSource === d.dateStr ? '#fff' : C.textSoft,
-                            }}>
-                            {d.dayLabel} ({d.tasks.length})
-                        </button>
-                    ))}
-                </div>
-
                 {/* Task list */}
                 <div className="flex-1 overflow-y-auto px-5 py-3 space-y-2">
-                    {activeTasks.length > 0 && (
+                    {incompleteTasks.length > 0 && (
                         <button onClick={selectAll} className="text-xs font-bold mb-1" style={{ color: C.orange }}>
-                            {selectedTaskIds.length === activeTasks.length ? '取消全选' : '全选'}
+                            {selectedTaskIds.length === incompleteTasks.length ? '取消全选' : '全选'}
                         </button>
                     )}
-                    {activeTasks.map(t => {
+                    {incompleteTasks.map(t => {
                         const isSelected = selectedTaskIds.includes(t.id);
                         return (
                             <button key={t.id} onClick={() => toggleTask(t.id)}
@@ -145,9 +100,6 @@ export const MigrateTasksModal = ({ show, onClose, tasks, kids, getTaskStatusOnD
                             </button>
                         );
                     })}
-                    {activeTasks.length === 0 && (
-                        <div className="text-center py-8 text-sm" style={{ color: C.textMuted }}>没有可迁移的任务</div>
-                    )}
                 </div>
 
                 {/* Footer: target date + confirm */}
@@ -194,9 +146,3 @@ export const MigrateTasksModal = ({ show, onClose, tasks, kids, getTaskStatusOnD
         </div>
     );
 };
-
-function getDayLabel(dateStr, daysAgo) {
-    if (daysAgo === 1) return '昨天';
-    if (daysAgo === 2) return '前天';
-    return dateStr.slice(5).replace('-', '/');
-}

@@ -203,30 +203,26 @@ export const ParentTasksTab = () => {
     };
     const getCatHex = (cat) => catHexMap[cat] || catHexMap['计划'];
 
-    // Count past incomplete one-time tasks (past 7 days)
-    const pastIncompleteCount = React.useMemo(() => {
-        const today = formatDate(new Date());
-        let count = 0;
-        for (let i = 1; i <= 7; i++) {
-            const d = new Date(); d.setDate(d.getDate() - i);
-            const ds = formatDate(d);
-            tasks.forEach(t => {
-                if (t.type !== 'study') return;
-                const rc = t.repeatConfig;
-                const isOneTime = (rc && rc.type === 'today') || t.frequency === '仅当天';
-                if (!isOneTime || !isTaskDueOnDate(t, ds)) return;
-                if (parentKidFilter !== 'all' && t.kidId !== 'all' && t.kidId !== parentKidFilter) return;
-                if (t.kidId === 'all') {
-                    const kIds = parentKidFilter !== 'all' ? [parentKidFilter] : kids.map(k => k.id);
-                    if (kIds.some(kId => { const s = getTaskStatusOnDate(t, ds, kId); return s === 'todo' || s === 'in_progress'; })) count++;
-                } else {
-                    const s = getTaskStatusOnDate(t, ds, t.kidId);
-                    if (s === 'todo' || s === 'in_progress') count++;
-                }
-            });
-        }
-        return count;
-    }, [tasks, kids, parentKidFilter]);
+    // Count incomplete one-time tasks on the currently selected date (only for past dates)
+    const today = formatDate(new Date());
+    const isPastDate = selectedDate < today;
+    const selectedDateIncompleteTasks = React.useMemo(() => {
+        if (!isPastDate) return [];
+        return tasks.filter(t => {
+            if (t.type !== 'study') return false;
+            const rc = t.repeatConfig;
+            const isOneTime = (rc && rc.type === 'today') || t.frequency === '仅当天';
+            if (!isOneTime || !isTaskDueOnDate(t, selectedDate)) return false;
+            if (parentKidFilter !== 'all' && t.kidId !== 'all' && t.kidId !== parentKidFilter) return false;
+            if (t.kidId === 'all') {
+                const kIds = parentKidFilter !== 'all' ? [parentKidFilter] : kids.map(k => k.id);
+                return kIds.some(kId => { const s = getTaskStatusOnDate(t, selectedDate, kId); return s === 'todo' || s === 'in_progress'; });
+            } else {
+                const s = getTaskStatusOnDate(t, selectedDate, t.kidId);
+                return s === 'todo' || s === 'in_progress';
+            }
+        });
+    }, [tasks, kids, parentKidFilter, selectedDate, isPastDate]);
 
     const completedCount = parentTasks.filter(t => getDailyStatus(t) === 'completed').length;
     const totalCount = parentTasks.length;
@@ -527,7 +523,7 @@ export const ParentTasksTab = () => {
             </div>
 
             {/* ═══ Migrate Banner ═══ */}
-            {pastIncompleteCount > 0 && selectedDate === formatDate(new Date()) && (
+            {isPastDate && selectedDateIncompleteTasks.length > 0 && (
                 <div className="px-4 mb-3">
                     <button onClick={() => setShowMigrateModal(true)}
                         className="w-full py-2.5 px-4 rounded-2xl flex items-center gap-3 transition-all active:scale-[0.99]"
@@ -536,7 +532,7 @@ export const ParentTasksTab = () => {
                             <Icons.ArrowRight size={14} className="text-white" />
                         </div>
                         <div className="flex-1 text-left">
-                            <span className="text-white text-sm font-black">有 {pastIncompleteCount} 个过去的任务未完成</span>
+                            <span className="text-white text-sm font-black">有 {selectedDateIncompleteTasks.length} 个任务未完成</span>
                         </div>
                         <span className="text-white/90 text-xs font-bold px-3 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.2)' }}>迁移</span>
                     </button>
@@ -760,11 +756,9 @@ export const ParentTasksTab = () => {
             <MigrateTasksModal
                 show={showMigrateModal}
                 onClose={() => setShowMigrateModal(false)}
-                tasks={tasks}
-                kids={kids}
-                getTaskStatusOnDate={getTaskStatusOnDate}
+                incompleteTasks={selectedDateIncompleteTasks}
+                sourceDate={selectedDate}
                 handleMigrateTasks={handleMigrateTasks}
-                parentKidFilter={parentKidFilter}
             />
 
           </div>
