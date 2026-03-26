@@ -77,22 +77,30 @@ export const MigrateTasksModal = ({ show, onClose, incompleteTasks, sourceDate, 
                 style={{ background: C.bg }}
                 onClick={e => e.stopPropagation()}>
 
-                {/* Header */}
-                <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: `1px solid ${C.bgLight}` }}>
-                    <button onClick={onClose} className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: C.bgLight }}>
-                        <Icons.X size={18} style={{ color: C.textSoft }} />
+                {/* — Header — */}
+                <div className="shrink-0 px-5 py-4 flex items-center justify-between"
+                    style={{ background: '#FFFFFF', borderBottom: '1px solid #F0EBE1' }}>
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
+                            style={{ background: '#FF8C4218', color: '#FF8C42' }}>📋</div>
+                        <div>
+                            <h2 className="font-black text-base" style={{ color: '#1B2E4B' }}>迁移任务</h2>
+                            <div className="text-[11px] font-bold mt-0.5" style={{ color: '#9CAABE' }}>
+                                {sourceDateLabel}（{sourceDate.slice(5).replace('-', '/')}）· {incompleteTasks.length} 个未完成
+                            </div>
+                        </div>
+                    </div>
+                    <button onClick={onClose}
+                        className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90"
+                        style={{ background: '#F0EBE1', color: '#9CAABE' }}>
+                        <Icons.X size={18} />
                     </button>
-                    <h2 className="text-lg font-black" style={{ color: C.textPrimary }}>📋 迁移任务</h2>
-                    <div className="w-9" />
                 </div>
 
                 {/* Scrollable content */}
                 <div className="flex-1 overflow-y-auto">
                     {/* Source info */}
                     <div className="px-5 pt-4 pb-2">
-                        <div className="text-xs font-bold mb-3" style={{ color: C.textMuted }}>
-                            {sourceDateLabel}（{sourceDate.slice(5).replace('-', '/')}）的未完成任务
-                        </div>
 
                         {/* Select all */}
                         {incompleteTasks.length > 1 && (
