@@ -5,7 +5,7 @@ import { useAuthContext } from '../../context/AuthContext.jsx';
 import { useUIContext } from '../../context/UIContext.jsx';
 import { useTaskManager } from '../../hooks/useTaskManager';
 import { Icons, AvatarDisplay, renderIcon } from '../../utils/Icons';
-import { isTaskDueOnDate } from '../../utils/taskUtils';
+import { isTaskDueOnDate, getPeriodProgress } from '../../utils/taskUtils';
 import { getCategoryGradient, getIconForCategory } from '../../utils/categoryUtils';
 import { getWeekNumber, getDisplayDateArray, formatDate } from '../../utils/dateUtils';
 import useOnClickOutside from '../../hooks/useOnClickOutside';
@@ -604,20 +604,22 @@ export const ParentTasksTab = () => {
                     const isCompleted = status === 'completed';
                     const isPending = status === 'pending_approval';
 
-                    // Use the outer catHexMap (synced with KidStudyTab)
                     const accentColor = getCatHex(t.category || '计划');
+                    // Period progress for the active kid filter
+                    const ppKidId = effectiveFilter === 'all' ? (kids.length === 1 ? kids[0].id : null) : effectiveFilter;
+                    const pp = ppKidId ? getPeriodProgress(t, ppKidId, selectedDate) : null;
 
                     return (
                         <div key={t.id}
                             className="rounded-2xl transition-all duration-200 group relative overflow-hidden flex items-stretch mb-2 hover:-translate-y-0.5 hover:shadow-md"
                             style={{
-                                background: isCompleted ? '#F0FDF4' : '#fff',
+                                background: isCompleted || pp?.periodDone ? '#F0FDF4' : '#fff',
                                 boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-                                border: isCompleted ? '1px solid #BBF7D0' : isPending ? '1px solid #FED7AA' : '1px solid #f0f0f0',
+                                border: isCompleted || pp?.periodDone ? '1px solid #BBF7D0' : isPending ? '1px solid #FED7AA' : '1px solid #f0f0f0',
                             }}
                         >
                             {/* Left accent bar */}
-                            <div className="w-1 shrink-0 rounded-l-2xl" style={{ background: isCompleted ? '#22C55E' : isPending ? '#F97316' : accentColor }}></div>
+                            <div className="w-1 shrink-0 rounded-l-2xl" style={{ background: isCompleted || pp?.periodDone ? '#22C55E' : isPending ? '#F97316' : accentColor }}></div>
 
                             <button onClick={() => { setSelectedDate(selectedDate); setPreviewTask(t); setShowPreviewModal(true); }} className="absolute inset-0 z-0 cursor-pointer hidden sm:block" aria-label="查看任务详情"></button>
 
@@ -626,7 +628,7 @@ export const ParentTasksTab = () => {
                                 className="flex items-center gap-3 flex-1 min-w-0 px-3 py-3 relative z-10 cursor-pointer">
                                 {/* Icon */}
                                 <div className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-white transition-transform group-hover:scale-110"
-                                    style={{ background: accentColor, opacity: isCompleted ? 0.6 : 1 }}>
+                                    style={{ background: accentColor, opacity: isCompleted || pp?.periodDone ? 0.6 : 1 }}>
                                     {renderIcon(t.iconName || getIconForCategory(t.category), 18)}
                                 </div>
 
@@ -634,7 +636,7 @@ export const ParentTasksTab = () => {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-0.5">
                                         <h3 className="font-bold text-sm leading-tight truncate"
-                                            style={{ color: isCompleted ? '#6B7280' : '#1E293B', textDecoration: isCompleted ? 'line-through' : 'none' }}>
+                                            style={{ color: isCompleted || pp?.periodDone ? '#6B7280' : '#1E293B', textDecoration: isCompleted ? 'line-through' : 'none' }}>
                                             {t.title}
                                         </h3>
                                         <span className="bg-slate-100 text-slate-500 text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap flex items-center gap-1 shrink-0">
@@ -657,7 +659,23 @@ export const ParentTasksTab = () => {
                                         <span className="text-[10px] text-slate-400">
                                             {t.frequency || '每天'}
                                         </span>
-
+                                        {/* Period progress tag */}
+                                        {pp && (
+                                            pp.periodDone ? (
+                                                <span className="text-[10px] font-bold px-1.5 py-px rounded flex items-center gap-0.5"
+                                                    style={{ background: '#D1FAE5', color: '#059669' }}>
+                                                    ✓ {pp.periodLabel}已达标
+                                                </span>
+                                            ) : (
+                                                <span className="text-[10px] font-bold px-1.5 py-px rounded flex items-center gap-1"
+                                                    style={{ background: `${C.orange}15`, color: C.orange }}>
+                                                    {pp.periodLabel} {pp.periodCompletions}/{pp.periodTarget}
+                                                    <span className="inline-block w-8 h-1.5 rounded-full overflow-hidden" style={{ background: `${C.orange}20` }}>
+                                                        <span className="block h-full rounded-full transition-all" style={{ width: `${Math.min(100, pp.periodCompletions / pp.periodTarget * 100)}%`, background: C.orange }}></span>
+                                                    </span>
+                                                </span>
+                                            )
+                                        )}
                                         {isPending && (
                                             <span className="text-[10px] font-bold flex items-center gap-0.5 px-1.5 py-px rounded"
                                                 style={{ background: '#FFF7ED', color: '#EA580C', border: '1px solid #FED7AA' }}>
@@ -670,7 +688,12 @@ export const ParentTasksTab = () => {
 
                             {/* Inline action buttons — right side */}
                             <div className="relative z-10 flex items-center pr-3 shrink-0">
-                                {isPending ? (
+                                {pp?.periodDone ? (
+                                    <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
+                                        style={{ color: '#16A34A' }}>
+                                        <Icons.CheckCircle size={12} /> 已达标
+                                    </div>
+                                ) : isPending ? (
                                     <button onClick={(e) => { e.stopPropagation(); setPreviewTask(t); setShowPreviewModal(true); }}
                                         className="rounded-full py-1.5 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
                                         style={{ background: '#10B981' }}>
@@ -691,7 +714,6 @@ export const ParentTasksTab = () => {
                                             } else if (kids.length === 1) {
                                                 targetKid = kids[0].id;
                                             } else {
-                                                // Open preview modal so parent can see per-kid status
                                                 setSelectedDate(selectedDate);
                                                 setPreviewTask(t);
                                                 setShowPreviewModal(true);

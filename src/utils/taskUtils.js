@@ -90,3 +90,73 @@ export const isTaskDueOnDate = (task, dateStr) => {
 
     return task.dates?.includes(dateStr) || false;
 };
+
+/**
+ * Calculate period progress for N-times-per-period tasks.
+ * Returns null if the task is not a period task.
+ */
+export const getPeriodProgress = (task, kidId, dateStr) => {
+    if (!task?.repeatConfig) return null;
+    const rc = task.repeatConfig;
+    if (!rc.type.includes('_1') && !rc.type.includes('_n')) return null;
+
+    const currentDt = new Date(dateStr);
+    let periodStartDt, periodEndDt, periodLabel;
+
+    if (rc.type.includes('month')) {
+        periodStartDt = new Date(currentDt.getFullYear(), currentDt.getMonth(), 1);
+        periodEndDt = new Date(currentDt.getFullYear(), currentDt.getMonth() + 1, 0, 23, 59, 59, 999);
+        periodLabel = '本月';
+    } else if (rc.type.includes('biweek')) {
+        const day = currentDt.getDay() || 7;
+        periodStartDt = new Date(currentDt);
+        periodStartDt.setDate(currentDt.getDate() - day + 1);
+        // For biweekly, if task has startDate, align to that; otherwise just use 2-week window
+        if (task.startDate) {
+            const startDt = new Date(task.startDate);
+            const msPerDay = 24 * 60 * 60 * 1000;
+            const diffDays = Math.floor((periodStartDt - startDt) / msPerDay);
+            const weeksFromStart = Math.floor(diffDays / 7);
+            if (weeksFromStart % 2 !== 0) {
+                periodStartDt.setDate(periodStartDt.getDate() - 7);
+            }
+        }
+        periodStartDt.setHours(0, 0, 0, 0);
+        periodEndDt = new Date(periodStartDt);
+        periodEndDt.setDate(periodStartDt.getDate() + 13);
+        periodEndDt.setHours(23, 59, 59, 999);
+        periodLabel = '本双周';
+    } else {
+        // weekly
+        const day = currentDt.getDay() || 7;
+        periodStartDt = new Date(currentDt);
+        periodStartDt.setDate(currentDt.getDate() - day + 1);
+        periodStartDt.setHours(0, 0, 0, 0);
+        periodEndDt = new Date(periodStartDt);
+        periodEndDt.setDate(periodStartDt.getDate() + 6);
+        periodEndDt.setHours(23, 59, 59, 999);
+        periodLabel = '本周';
+    }
+
+    let periodCompletions = 0;
+    let todayCount = 0;
+    const hist = task.history || {};
+    Object.keys(hist).forEach(dStr => {
+        const histDt = new Date(dStr);
+        if (histDt >= periodStartDt && histDt <= periodEndDt) {
+            const entry = task.kidId === 'all' ? hist[dStr]?.[kidId] : hist[dStr];
+            if (entry && (entry.status === 'completed' || entry.status === 'pending_approval')) {
+                const count = entry.count || 1;
+                periodCompletions += count;
+                if (dStr === dateStr) todayCount += count;
+            }
+        }
+    });
+
+    const periodTarget = rc.periodTargetCount || 1;
+    const dailyMax = rc.periodMaxPerDay || 1;
+    const periodDone = periodCompletions >= periodTarget;
+    const todayMaxed = todayCount >= dailyMax;
+
+    return { periodCompletions, periodTarget, periodLabel, periodDone, todayCount, dailyMax, todayMaxed };
+};

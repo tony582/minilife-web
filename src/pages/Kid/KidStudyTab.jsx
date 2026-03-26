@@ -8,7 +8,7 @@ import { apiFetch } from '../../api/client';
 import { Icons, renderIcon } from '../../utils/Icons';
 import { formatDate, getDisplayDateArray, getWeekNumber } from '../../utils/dateUtils';
 import { getCategoryGradient, getIconForCategory } from '../../utils/categoryUtils';
-import { isTaskDueOnDate } from '../../utils/taskUtils';
+import { isTaskDueOnDate, getPeriodProgress } from '../../utils/taskUtils';
 import useOnClickOutside from '../../hooks/useOnClickOutside';
 import { ReorderableList } from '../../components/common/ReorderableList';
 
@@ -408,18 +408,19 @@ export const KidStudyTab = () => {
                     const isCompleted = status === 'completed';
                     const isPending = status === 'pending_approval';
                     const isFailed = status === 'failed';
+                    const pp = getPeriodProgress(t, activeKidId, selectedDate);
 
                     return (
                         <div key={t.id}
                             className="rounded-2xl transition-all duration-200 group relative overflow-hidden flex items-stretch"
                             style={{
-                                background: isCompleted ? '#F0FDF4' : isFailed ? '#FFF5F5' : '#fff',
+                                background: isCompleted || pp?.periodDone ? '#F0FDF4' : isFailed ? '#FFF5F5' : '#fff',
                                 boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-                                border: isCompleted ? '1px solid #BBF7D0' : isFailed ? '1px solid #FECACA' : '1px solid #f0f0f0',
+                                border: isCompleted || pp?.periodDone ? '1px solid #BBF7D0' : isFailed ? '1px solid #FECACA' : '1px solid #f0f0f0',
                             }}
                         >
                             {/* Left accent bar */}
-                            <div className="w-1 shrink-0 rounded-l-2xl" style={{ background: isCompleted ? '#22C55E' : catColor }}></div>
+                            <div className="w-1 shrink-0 rounded-l-2xl" style={{ background: isCompleted || pp?.periodDone ? '#22C55E' : catColor }}></div>
 
                             <button onClick={() => { setPreviewTask(t); setShowPreviewModal(true); }} className="absolute inset-0 z-0 cursor-pointer hidden sm:block"></button>
 
@@ -429,7 +430,7 @@ export const KidStudyTab = () => {
                                 <div className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-white transition-transform group-hover:scale-110"
                                     style={{
                                         background: catColor,
-                                        opacity: isCompleted ? 0.6 : 1,
+                                        opacity: isCompleted || pp?.periodDone ? 0.6 : 1,
                                     }}>
                                     {renderIcon(t.iconName || getIconForCategory(t.category), 18)}
                                 </div>
@@ -437,7 +438,7 @@ export const KidStudyTab = () => {
                                 {/* Title + meta */}
                                 <div className="flex-1 min-w-0">
                                     <h3 className="font-bold text-sm leading-tight truncate"
-                                        style={{ color: isCompleted ? '#6B7280' : '#1E293B', textDecoration: isCompleted ? 'line-through' : 'none' }}>
+                                        style={{ color: isCompleted || pp?.periodDone ? '#6B7280' : '#1E293B', textDecoration: isCompleted ? 'line-through' : 'none' }}>
                                         {t.title}
                                     </h3>
                                     <div className="flex flex-wrap gap-1 items-center mt-1">
@@ -452,6 +453,23 @@ export const KidStudyTab = () => {
                                         <span className="text-[10px] text-slate-400 flex items-center gap-0.5">
                                             <Icons.Clock size={8} />{t.timeStr || '--:--'}
                                         </span>
+                                        {/* Period progress tag */}
+                                        {pp && (
+                                            pp.periodDone ? (
+                                                <span className="text-[10px] font-bold px-1.5 py-px rounded flex items-center gap-0.5"
+                                                    style={{ background: '#D1FAE5', color: '#059669' }}>
+                                                    ✓ {pp.periodLabel}已达标
+                                                </span>
+                                            ) : (
+                                                <span className="text-[10px] font-bold px-1.5 py-px rounded flex items-center gap-1"
+                                                    style={{ background: `${C.orange}15`, color: C.orange }}>
+                                                    {pp.periodLabel} {pp.periodCompletions}/{pp.periodTarget}
+                                                    <span className="inline-block w-8 h-1.5 rounded-full overflow-hidden" style={{ background: `${C.orange}20` }}>
+                                                        <span className="block h-full rounded-full transition-all" style={{ width: `${Math.min(100, pp.periodCompletions / pp.periodTarget * 100)}%`, background: C.orange }}></span>
+                                                    </span>
+                                                </span>
+                                            )
+                                        )}
                                         {status === 'in_progress' && t.actualStartTime && (
                                             <span className="text-[10px] font-bold px-1.5 py-px rounded animate-pulse flex items-center gap-0.5"
                                                 style={{ background: `${C.teal}18`, color: C.teal }}>
@@ -484,7 +502,12 @@ export const KidStudyTab = () => {
 
                             {/* Inline action button — right side */}
                             <div className="relative z-10 flex items-center pr-3 shrink-0">
-                                {(status === 'todo' || status === 'failed') && (
+                                {pp?.periodDone ? (
+                                    <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
+                                        style={{ color: '#16A34A' }}>
+                                        <Icons.CheckCircle size={12} /> 已达标
+                                    </div>
+                                ) : (status === 'todo' || status === 'failed') && (
                                     t.durationPreset || t.timeSetting === 'range' ? (
                                         <button onClick={() => handleStartTask(t.id)}
                                             className="rounded-full py-1.5 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
@@ -499,20 +522,20 @@ export const KidStudyTab = () => {
                                         </button>
                                     )
                                 )}
-                                {status === 'in_progress' && (
+                                {!pp?.periodDone && status === 'in_progress' && (
                                     <button onClick={() => handleAttemptSubmit(t)}
                                         className="rounded-full py-1.5 px-4 text-xs font-black transition-all active:scale-95 flex items-center gap-1"
                                         style={{ background: `${C.orange}15`, color: C.orange }}>
                                         <Icons.Check size={12} strokeWidth={3} /> 达标
                                     </button>
                                 )}
-                                {isPending && (
+                                {!pp?.periodDone && isPending && (
                                     <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
                                         style={{ background: '#FFF7ED', color: '#EA580C', border: '1px solid #FED7AA' }}>
                                         <Icons.Clock size={10} /> 待审批
                                     </div>
                                 )}
-                                {isCompleted && (
+                                {!pp?.periodDone && isCompleted && (
                                     <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
                                         style={{ color: '#16A34A' }}>
                                         <Icons.CheckCircle size={12} /> 已完成
