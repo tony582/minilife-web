@@ -753,13 +753,16 @@ export const ParentTasksTab = () => {
                 document.body
             )}
 
-            <MigrateTasksModal
-                show={showMigrateModal}
-                onClose={() => setShowMigrateModal(false)}
-                incompleteTasks={selectedDateIncompleteTasks}
-                sourceDate={selectedDate}
-                handleMigrateTasks={handleMigrateTasks}
-            />
+            {createPortal(
+                <MigrateTasksModal
+                    show={showMigrateModal}
+                    onClose={() => setShowMigrateModal(false)}
+                    incompleteTasks={selectedDateIncompleteTasks}
+                    sourceDate={selectedDate}
+                    handleMigrateTasks={handleMigrateTasks}
+                />,
+                document.body
+            )}
 
           </div>
         </div>
