@@ -75,7 +75,7 @@ export const useFormStore = create((set) => ({
     qcNote: '',
     setQcNote: (v) => set({ qcNote: v }),
     qcAttachments: [],
-    setQcAttachments: (v) => set({ qcAttachments: v }),
+    setQcAttachments: (v) => set((state) => ({ qcAttachments: typeof v === 'function' ? v(state.qcAttachments) : v })),
 
     // Reset plan form to defaults
     resetPlanForm: () => set({ planForm: { ...defaultPlanForm }, planFormErrors: {} }),
