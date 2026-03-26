@@ -428,6 +428,9 @@ export const GlobalModals = () => {
                 deleteConfirmTask={deleteConfirmTask}
                 setDeleteConfirmTask={setDeleteConfirmTask}
                 handleDeleteTask={handleDeleteTask}
+                handleSkipTask={handleSkipTask}
+                handleStopRecurring={handleStopRecurring}
+                selectedDate={selectedDate}
             />
 
             <TaskSubmitModal context={context} />

@@ -439,6 +439,39 @@ const getTaskStatusOnDate = (t, date, kidId) => {
   }
 };
 
+    // Skip a single day for a recurring task
+    const handleSkipTask = async (id, dateStr) => {
+        try {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+            const history = { ...(task.history || {}) };
+            history[dateStr] = { status: 'skipped', updatedAt: new Date().toISOString() };
+            await apiFetch(`/api/tasks/${id}`, { method: 'PUT', body: JSON.stringify({ history }) });
+            setTasks(prev => prev.map(t => t.id === id ? { ...t, history } : t));
+            setDeleteConfirmTask(null);
+            notify('今天已跳过，明天继续', 'success');
+        } catch (e) {
+            console.error(e);
+            notify('操作失败', 'error');
+        }
+    };
+
+    // Stop a recurring task from today onwards (keep history)
+    const handleStopRecurring = async (id, dateStr) => {
+        try {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+            const rc = { ...(task.repeatConfig || {}), endDate: dateStr };
+            await apiFetch(`/api/tasks/${id}`, { method: 'PUT', body: JSON.stringify({ repeatConfig: rc }) });
+            setTasks(prev => prev.map(t => t.id === id ? { ...t, repeatConfig: rc } : t));
+            setDeleteConfirmTask(null);
+            notify('任务已停止，历史记录已保留', 'success');
+        } catch (e) {
+            console.error(e);
+            notify('操作失败', 'error');
+        }
+    };
+
     const confirmSubmitTask = async () => {
   if (!taskToSubmit) return;
   playSuccessSound(); // Fire exactly on click to bypass iOS async suspensions
@@ -1618,6 +1651,8 @@ const handleSavePlan = async () => {
         getTaskTimeSpent,
         handleStartTask,
         handleDeleteTask,
+        handleSkipTask,
+        handleStopRecurring,
         confirmSubmitTask,
         openQuickComplete,
         handleQcQuickDuration,
