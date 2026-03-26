@@ -1,5 +1,5 @@
-import React, { useRef, useState, useCallback } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useDataContext } from '../../context/DataContext.jsx';
 import { useAuthContext } from '../../context/AuthContext.jsx';
 import { useUIContext } from '../../context/UIContext.jsx';
@@ -47,9 +47,23 @@ export const ParentTasksTab = () => {
 
     const parentFilterRef = useRef(null);
     const parentSortRef = useRef(null);
+    const calendarSentinelRef = useRef(null);
+    const [showCompactCalendar, setShowCompactCalendar] = useState(false);
 
     useOnClickOutside(parentFilterRef, () => setShowFilterDropdown(false));
     useOnClickOutside(parentSortRef, () => setShowSortDropdown(false));
+
+    useEffect(() => {
+        const sentinel = calendarSentinelRef.current;
+        if (!sentinel) return;
+        const onScroll = () => setShowCompactCalendar(sentinel.getBoundingClientRect().bottom < 10);
+        const targets = [window];
+        let el = sentinel.parentElement;
+        while (el) { const s = getComputedStyle(el); if (s.overflowY === 'auto' || s.overflowY === 'scroll') targets.push(el); el = el.parentElement; }
+        targets.forEach(t => t.addEventListener('scroll', onScroll, { passive: true }));
+        onScroll();
+        return () => targets.forEach(t => t.removeEventListener('scroll', onScroll));
+    }, []);
 
     const getDefaultTimeRange = () => {
         if (!lastSavedEndTime) return { start: "17:00", end: "18:00" };
@@ -190,6 +204,36 @@ export const ParentTasksTab = () => {
         <div className="animate-fade-in -mx-4 md:-mx-8 px-0 pb-10" style={{ background: C.bg, minHeight: '100vh' }}>
           <div className="max-w-5xl mx-auto">
 
+            {/* ═══ Compact Sticky Calendar (portal) ═══ */}
+            {createPortal(
+                <div className={`fixed top-0 left-0 right-0 z-[9998] sm:hidden transition-all duration-300 ${showCompactCalendar ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}`}>
+                    <div style={{ background: '#FBF7F0ee', backdropFilter: 'blur(20px)', borderBottom: '1px solid #F0EBE1', paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }} className="px-3 py-2">
+                        <div className="flex items-center gap-1">
+                            {getDisplayDateArray(currentViewDate).map((day, i) => {
+                                const isSel = selectedDate === day.dateStr;
+                                const isToday = day.dateStr === formatDate(new Date());
+                                const { count, total } = getIncompleteStudyTasksCount(day.dateStr);
+                                return (
+                                    <button key={i} onClick={() => setSelectedDate(day.dateStr)}
+                                        className="flex-1 flex flex-col items-center py-1.5 rounded-2xl transition-all"
+                                        style={isSel ? { background: C.orange, boxShadow: `0 4px 14px ${C.orange}60` } : {}}
+                                    >
+                                        <span className="text-[9px] font-bold" style={{ color: isSel ? '#fff9' : C.textMuted }}>{day.d}</span>
+                                        <span className="text-sm font-black leading-tight" style={{ color: isSel ? '#fff' : (isToday ? C.orange : C.textSoft) }}>{day.displayDate.split('/')[1]}</span>
+                                        <div className="mt-0.5 h-2 flex items-center justify-center">
+                                            {count > 0 ? <span className="w-1.5 h-1.5 rounded-full" style={{ background: C.coral }}></span>
+                                            : total > 0 ? <span className="w-1.5 h-1.5 rounded-full" style={{ background: C.teal }}></span>
+                                            : null}
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
+
             {/* ═══ Hero Section with Orange Blob ═══ */}
             <div className="relative overflow-hidden pb-4 px-4">
                 <div className="absolute -top-32 -left-20 w-56 h-56 rounded-full opacity-15" style={{ background: C.orange }}></div>
@@ -230,7 +274,7 @@ export const ParentTasksTab = () => {
                 </div>
 
                 {/* ═══ Week Calendar ═══ */}
-                <div className="grid grid-cols-7 gap-1.5">
+                <div ref={calendarSentinelRef} className="grid grid-cols-7 gap-1.5">
                     {getDisplayDateArray(currentViewDate).map((day, i) => {
                         const { count, total } = getIncompleteStudyTasksCount(day.dateStr);
                         const isSel = selectedDate === day.dateStr;
