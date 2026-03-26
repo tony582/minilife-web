@@ -244,6 +244,11 @@ export const GlobalModals = () => {
         setShowRejectModal(false);
         setRejectingTaskInfo(null);
         setRejectReason('');
+        // Single kid: close preview and return to list
+        if (kids.length <= 1 || (rejectingTaskInfo.task && rejectingTaskInfo.task.kidId !== 'all')) {
+            setShowPreviewModal(false);
+            setPreviewTask(null);
+        }
     };
 
     const confirmPenalty = () => {
