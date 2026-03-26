@@ -2,9 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { apiFetch } from '../api/client';
 
 export const useAppData = (token, setToken, user, setUser, setAuthLoading, notify) => {
-    // Sync lock: prevents SSE-triggered refetches during multi-step operations
-    // (e.g. task completion that updates tasks, transactions, AND kid balances)
-    const syncPausedRef = useRef(false);
+    // Sync lock: refcount to prevent SSE-triggered refetches during multi-step operations
+    // Each pauseSync() increments, each resumeSync() decrements.
+    // SSE sync only fires when count reaches 0 (all operations done).
+    const syncPausedRef = useRef(0);
     const pendingSyncRef = useRef(false);
     const [kids, setKids] = useState([]);
     const [tasks, setTasks] = useState([]);
@@ -42,7 +43,7 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
         const checkAuthAndFetch = async () => {
             // Skip refetch if sync is paused (multi-step operation in progress)
             // but always allow the initial load to complete
-            if (initialLoadDone && syncPausedRef.current) {
+            if (initialLoadDone && syncPausedRef.current > 0) {
                 pendingSyncRef.current = true;
                 return;
             }
@@ -124,7 +125,7 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
                         // If sync is paused (multi-step operation in progress),
                         // just mark that a sync is pending. We'll do ONE clean
                         // refetch when the operation completes.
-                        if (syncPausedRef.current) {
+                        if (syncPausedRef.current > 0) {
                             pendingSyncRef.current = true;
                             return;
                         }
@@ -135,7 +136,7 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
                         sseSyncDebounce = setTimeout(() => {
                             // Double-check lock at fire time (in case pause started
                             // after this timer was queued)
-                            if (syncPausedRef.current) {
+                            if (syncPausedRef.current > 0) {
                                 pendingSyncRef.current = true;
                                 return;
                             }
@@ -209,24 +210,19 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
 
     // Pause SSE-triggered refetches during multi-step operations
     const pauseSync = useCallback(() => {
-        syncPausedRef.current = true;
+        syncPausedRef.current += 1;
         pendingSyncRef.current = false;
     }, []);
 
-    // Resume SSE sync; if any events arrived while paused, do ONE clean refetch
+    // Resume SSE sync; if all operations done (refcount=0), allow sync again
     const resumeSync = useCallback(() => {
-        syncPausedRef.current = false;
-        // Don't eagerly refetch — trust the local state that was already set.
-        // Only refetch if we want cross-device sync to catch up, but delay it
-        // enough so the DB has the latest data.
-        if (pendingSyncRef.current) {
+        syncPausedRef.current = Math.max(0, syncPausedRef.current - 1);
+        if (syncPausedRef.current === 0 && pendingSyncRef.current) {
             pendingSyncRef.current = false;
-            // Use a generous delay so the server has definitely committed
+            // Delay so server has committed all data
             setTimeout(() => {
-                if (!syncPausedRef.current) {
-                    // no-op: the local state is already correct from setKids calls
-                    // If we still want a background refresh for cross-device:
-                    // checkAuthAndFetch();  // uncomment for full consistency
+                if (syncPausedRef.current === 0) {
+                    // no-op: trust local state
                 }
             }, 5000);
         }
