@@ -676,11 +676,19 @@ export const AddPlanModal = ({ context }) => {
                                                     <div className="grid grid-cols-2 gap-4">
                                                         <div>
                                                             <label className="block text-xs font-bold text-slate-600 mb-2">该周期内需完成几次？</label>
-                                                            <input type="number" min="1" max="99" value={planForm.periodTargetCount || 1} onChange={e => setPlanForm({ ...planForm, periodTargetCount: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold bg-white text-orange-700" />
+                                                            <input type="number" min="1" max="99"
+                                                                value={planForm.periodTargetCount ?? 1}
+                                                                onChange={e => setPlanForm({ ...planForm, periodTargetCount: e.target.value === '' ? '' : parseInt(e.target.value) || '' })}
+                                                                onBlur={e => { const v = parseInt(e.target.value); setPlanForm({ ...planForm, periodTargetCount: (isNaN(v) || v < 1) ? 1 : Math.min(v, 99) }); }}
+                                                                className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold bg-white text-orange-700" />
                                                         </div>
                                                         <div>
                                                             <label className="block text-xs font-bold text-slate-600 mb-2">每天最多完成次数</label>
-                                                            <input type="number" min="1" max="10" value={planForm.periodMaxPerDay || 1} onChange={e => setPlanForm({ ...planForm, periodMaxPerDay: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold bg-white text-orange-700" />
+                                                            <input type="number" min="1" max="99"
+                                                                value={planForm.periodMaxPerDay ?? 1}
+                                                                onChange={e => setPlanForm({ ...planForm, periodMaxPerDay: e.target.value === '' ? '' : parseInt(e.target.value) || '' })}
+                                                                onBlur={e => { const v = parseInt(e.target.value); setPlanForm({ ...planForm, periodMaxPerDay: (isNaN(v) || v < 1) ? 1 : Math.min(v, 99) }); }}
+                                                                className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold bg-white text-orange-700" />
                                                         </div>
                                                     </div>
 
