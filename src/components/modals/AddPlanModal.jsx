@@ -732,41 +732,46 @@ export const AddPlanModal = ({ context }) => {
                                             )}
                                         </div>
                                     </div>
+                                </div>
+                            )}
 
-                                    {/* ═══ 计划周期 (独立卡片) ═══ */}
-                                    <div className="rounded-2xl p-4 space-y-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
-                                        <label className="text-[11px] font-bold uppercase tracking-wider block" style={{ color: '#9CAABE' }}>计划周期</label>
-                                        <div className="grid grid-cols-2 gap-3">
+                            {/* ═══ 计划周期 ═══ */}
+                            {planType === 'study' && (
+                                <div className="rounded-2xl p-4 space-y-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
+                                    <label className="text-[11px] font-bold uppercase tracking-wider block" style={{ color: '#9CAABE' }}>计划周期</label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="w-full min-w-0">
+                                            <label className="text-[10px] font-bold mb-1.5 block" style={{ color: '#9CAABE' }}>开始日期</label>
+                                            <input type="date" value={planForm.startDate || ''} onChange={e => setPlanForm({ ...planForm, startDate: e.target.value })}
+                                                className="w-full box-border rounded-xl px-3 py-2.5 outline-none font-bold text-xs appearance-none"
+                                                style={{ background: '#FBF7F0', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }} />
+                                        </div>
+                                        {planForm.repeatType !== 'today' && (
                                             <div className="w-full min-w-0">
-                                                <label className="text-[10px] font-bold mb-1.5 block" style={{ color: '#9CAABE' }}>开始日期</label>
-                                                <input type="date" value={planForm.startDate || ''} onChange={e => setPlanForm({ ...planForm, startDate: e.target.value })}
+                                                <label className="text-[10px] font-bold mb-1.5 block" style={{ color: '#9CAABE' }}>结束日期 <span style={{ color: '#C0C8D4' }}>(可选)</span></label>
+                                                <input type="date" value={planForm.endDate || ''} onChange={e => setPlanForm({ ...planForm, endDate: e.target.value })}
                                                     className="w-full box-border rounded-xl px-3 py-2.5 outline-none font-bold text-xs appearance-none"
                                                     style={{ background: '#FBF7F0', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }} />
                                             </div>
-                                            {planForm.repeatType !== 'today' && (
-                                                <div className="w-full min-w-0">
-                                                    <label className="text-[10px] font-bold mb-1.5 block" style={{ color: '#9CAABE' }}>结束日期 <span style={{ color: '#C0C8D4' }}>(可选)</span></label>
-                                                    <input type="date" value={planForm.endDate || ''} onChange={e => setPlanForm({ ...planForm, endDate: e.target.value })}
-                                                        className="w-full box-border rounded-xl px-3 py-2.5 outline-none font-bold text-xs appearance-none"
-                                                        style={{ background: '#FBF7F0', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }} />
-                                                </div>
-                                            )}
-                                        </div>
+                                        )}
                                     </div>
+                                </div>
+                            )}
 
-                                    {/* ═══ 时间要求 (独立卡片) ═══ */}
-                                    <div className="rounded-2xl p-4 space-y-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
-                                        <label className="text-[11px] font-bold uppercase tracking-wider block" style={{ color: '#9CAABE' }}>时间要求</label>
-                                        {planForm.timeSetting === 'none' ? (
-                                            <button
-                                                onClick={() => setPlanForm({ ...planForm, timeSetting: 'range' })}
-                                                className="w-full py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                                                style={{ background: '#FBF7F0', color: '#FF8C42', border: '1.5px dashed #FFD4AD' }}
-                                            >
-                                                <Icons.Plus size={16} /> 添加具体时间要求 (可选)
-                                            </button>
-                                        ) : (
-                                            <div className="rounded-xl p-4 space-y-4 animate-fade-in relative" style={{ background: '#FBF7F0', border: '1px solid #F0EBE1' }}>
+                            {/* ═══ 时间要求 ═══ */}
+                            {planType === 'study' && (
+                                <div className="rounded-2xl p-4 space-y-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
+                                    <label className="text-[11px] font-bold uppercase tracking-wider block" style={{ color: '#9CAABE' }}>时间要求</label>
+                                    {planForm.timeSetting === 'none' ? (
+                                        <button
+                                            onClick={() => setPlanForm({ ...planForm, timeSetting: 'range' })}
+                                            className="w-full py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                                            style={{ background: '#FBF7F0', color: '#FF8C42', border: '1.5px dashed #FFD4AD' }}
+                                        >
+                                            <Icons.Plus size={16} /> 添加具体时间要求 (可选)
+                                        </button>
+                                    ) : (
+                                        <div className="rounded-xl p-4 space-y-4 animate-fade-in relative" style={{ background: '#FBF7F0', border: '1px solid #F0EBE1' }}>
                                                 <button
                                                     onClick={() => setPlanForm({ ...planForm, timeSetting: 'none', startTime: '', endTime: '', durationPreset: null })}
                                                     className="absolute top-4 right-4 text-slate-400 hover:text-red-500 p-1 rounded-lg hover:bg-white transition-colors"
@@ -775,10 +780,6 @@ export const AddPlanModal = ({ context }) => {
                                                     <Icons.Trash2 size={16} />
                                                 </button>
 
-                                                <label className="flex items-center gap-2 text-sm font-black text-slate-800">
-                                                    <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><Icons.Clock size={16} /></div>
-                                                    时间要求
-                                                </label>
 
                                                 <div className="flex bg-white p-1.5 rounded-xl border border-slate-200 w-full mb-2">
                                                     <button onClick={() => setPlanForm({ ...planForm, timeSetting: 'range' })} className={`flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all ${planForm.timeSetting === 'range' ? 'bg-blue-600 shadow text-white' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>
@@ -836,9 +837,8 @@ export const AddPlanModal = ({ context }) => {
                                                         </div>
                                                     </div>
                                                 )}
-                                            </div>
-                                        )}
-                                    </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
