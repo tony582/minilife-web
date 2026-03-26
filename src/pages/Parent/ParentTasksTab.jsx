@@ -331,15 +331,15 @@ export const ParentTasksTab = () => {
                     </div>
                 )}
                 {totalCount === 0 && (
-                    <div className="flex flex-col items-center py-10 mb-4">
-                        <div className="text-4xl mb-3">📋</div>
-                        <div className="text-sm font-bold mb-1" style={{ color: C.textPrimary }}>今天暂无任务</div>
-                        <div className="text-xs mb-5" style={{ color: C.textMuted }}>快来创建一个学习任务吧</div>
-                        <div className="flex items-center gap-3">
+                    <div className="rounded-2xl mb-4" style={{ background: C.bgCard }}>
+                        <div className="p-4 flex items-center gap-4">
+                            <div className="text-sm font-black" style={{ color: C.textSoft }}>今日暂无任务</div>
+                        </div>
+                        <div className="flex items-center gap-2 px-4 pb-4">
                             <button onClick={() => setShowAiTaskCreator(true)}
-                                className="rounded-full py-2.5 px-5 text-xs font-bold text-white transition-all active:scale-95 flex items-center gap-1.5"
+                                className="flex-1 rounded-xl py-2.5 text-xs font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
                                 style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', boxShadow: '0 4px 14px rgba(102,126,234,0.3)' }}>
-                                ✨ AI 智能创建
+                                ✨ AI 智能生成
                             </button>
                             <button onClick={() => {
                                 const defaultTimes = getDefaultTimeRange();
@@ -347,9 +347,9 @@ export const ParentTasksTab = () => {
                                 setPlanType('study');
                                 setPlanForm({ targetKids: parentKidFilter === 'all' ? ['all'] : [parentKidFilter], category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5], periodTargetCount: 1, periodMaxPerDay: 1, periodMaxType: 'daily', timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
                                 setShowAddPlanModal(true);
-                            }} className="rounded-full py-2.5 px-5 text-xs font-bold text-white transition-all active:scale-95 flex items-center gap-1.5"
+                            }} className="flex-1 rounded-xl py-2.5 text-xs font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
                                 style={{ background: C.orange, boxShadow: `0 4px 14px ${C.orange}50` }}>
-                                <Icons.Plus size={14} /> 手动新建
+                                <Icons.Plus size={14} /> 新建任务
                             </button>
                         </div>
                     </div>
