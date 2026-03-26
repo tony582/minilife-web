@@ -41,8 +41,7 @@ export const AddPlanModal = ({ context }) => {
                 planType === 'habit' ? (
                 /* ═══ HABIT MODAL — full-screen mobile, warm Headspace style ═══ */
                 <div className="fixed inset-0 z-[10000] flex items-center justify-center p-0 md:p-6 animate-fade-in"
-                    style={{ background: 'rgba(27,46,75,0.3)', backdropFilter: 'blur(8px)' }}
-                    onClick={() => { setShowAddPlanModal(false); setEditingTask(null); }}>
+                    style={{ background: 'rgba(27,46,75,0.3)', backdropFilter: 'blur(8px)' }}>
                     <div ref={swipeRef} {...swipeHandlers}
                         className="w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden animate-bounce-in"
                         style={{ background: '#FBF7F0' }}
@@ -335,8 +334,7 @@ export const AddPlanModal = ({ context }) => {
                 ) : (
                 /* ═══ STUDY TASK MODAL — warm Headspace style (matches habit) ═══ */
                 <div className="fixed inset-0 z-[10000] flex items-center justify-center p-0 md:p-6 animate-fade-in"
-                    style={{ background: 'rgba(27,46,75,0.3)', backdropFilter: 'blur(8px)' }}
-                    onClick={() => { setShowAddPlanModal(false); setEditingTask(null); }}>
+                    style={{ background: 'rgba(27,46,75,0.3)', backdropFilter: 'blur(8px)' }}>
                     <div ref={swipeRef} {...swipeHandlers}
                         className="w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden animate-bounce-in"
                         style={{ background: '#FBF7F0' }}
