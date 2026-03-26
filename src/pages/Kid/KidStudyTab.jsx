@@ -542,10 +542,17 @@ export const KidStudyTab = () => {
                                             </div>
                                         )}
                                         {!showActionBtn && isCompleted && (
-                                            <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
-                                                style={{ color: '#16A34A' }}>
-                                                <Icons.CheckCircle size={12} /> 已完成
-                                            </div>
+                                            pp && pp.todayMaxed && !pp.periodDone ? (
+                                                <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
+                                                    style={{ color: '#9CA3AF' }}>
+                                                    <Icons.Clock size={10} /> 今日已达上限
+                                                </div>
+                                            ) : (
+                                                <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
+                                                    style={{ color: '#16A34A' }}>
+                                                    <Icons.CheckCircle size={12} /> 已完成
+                                                </div>
+                                            )
                                         )}
                                         </>
                                     );
