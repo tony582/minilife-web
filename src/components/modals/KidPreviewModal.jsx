@@ -7,7 +7,7 @@ export const KidPreviewModal = ({ context }) => {
         showPreviewModal, setShowPreviewModal,
         previewTask, setPreviewTask,
         activeKidId, setActiveKidId, appState, parentKidFilter,
-        kids, selectedDate, formatDate,
+        kids, tasks, selectedDate, formatDate,
         getTaskStatusOnDate, getCategoryGradient,
         renderIcon, getIconForCategory,
         setPreviewImages, setPreviewImageIndex, setShowImagePreviewModal,
@@ -33,6 +33,9 @@ export const KidPreviewModal = ({ context }) => {
 
     if (!showPreviewModal || !previewTask) return null;
 
+    // Use live task data from tasks array so status updates after approval
+    const liveTask = tasks?.find(t => t.id === previewTask.id) || previewTask;
+
     // P1: Resolve the correct kid context for the preview modal.
     let resolvedKidId = activeKidId;
     if (appState === 'parent_app') {
@@ -44,9 +47,9 @@ export const KidPreviewModal = ({ context }) => {
         } else if (parentKidFilter && parentKidFilter !== 'all') {
             resolvedKidId = parentKidFilter;
         } else if (previewTask.kidId === 'all' && kids.length > 0) {
-            const pendingKid = kids.find(k => getTaskStatusOnDate(previewTask, selectedDate, k.id) === 'pending_approval');
-            const progressKid = kids.find(k => getTaskStatusOnDate(previewTask, selectedDate, k.id) === 'in_progress');
-            const completedKid = kids.find(k => getTaskStatusOnDate(previewTask, selectedDate, k.id) === 'completed');
+            const pendingKid = kids.find(k => getTaskStatusOnDate(liveTask, selectedDate, k.id) === 'pending_approval');
+            const progressKid = kids.find(k => getTaskStatusOnDate(liveTask, selectedDate, k.id) === 'in_progress');
+            const completedKid = kids.find(k => getTaskStatusOnDate(liveTask, selectedDate, k.id) === 'completed');
             resolvedKidId = (pendingKid || progressKid || completedKid || kids[0]).id;
         } else if (previewTask.kidId && previewTask.kidId !== 'all') {
             resolvedKidId = previewTask.kidId;
@@ -59,7 +62,7 @@ export const KidPreviewModal = ({ context }) => {
     const isMultiKidParent = appState === 'parent_app' && previewTask.kidId === 'all' && kids.length > 1;
     const kidStatuses = isMultiKidParent ? kids.map(k => ({
         ...k,
-        status: getTaskStatusOnDate(previewTask, selectedDate, k.id)
+        status: getTaskStatusOnDate(liveTask, selectedDate, k.id)
     })) : [];
 
     // Extract history specific to resolvedKidId
@@ -178,7 +181,7 @@ export const KidPreviewModal = ({ context }) => {
                     )}
 
                     {/* Review Mode Overlay for Parents */}
-                    {(appState === 'parent_app' && getTaskStatusOnDate(previewTask, selectedDate, resolvedKidId) === 'pending_approval') ? (
+                    {(appState === 'parent_app' && getTaskStatusOnDate(liveTask, selectedDate, resolvedKidId) === 'pending_approval') ? (
                         <div className="w-full text-left space-y-4">
                             {(() => {
                                 const hr = kidHistory[selectedDate] || {};
@@ -311,7 +314,7 @@ export const KidPreviewModal = ({ context }) => {
                     ) : (
                         <>
                             {/* ═══ Rejection Feedback Banner (student-side) ═══ */}
-                            {appState === 'kid_app' && getTaskStatusOnDate(previewTask, selectedDate, activeKidId) === 'failed' && (() => {
+                            {appState === 'kid_app' && getTaskStatusOnDate(liveTask, selectedDate, activeKidId) === 'failed' && (() => {
                                 const hist = previewTask?.history || {};
                                 const entry = previewTask?.kidId === 'all'
                                     ? hist[selectedDate]?.[activeKidId]
@@ -526,7 +529,7 @@ export const KidPreviewModal = ({ context }) => {
                 <div className="shrink-0 px-5 py-4 flex gap-3" style={{ background: '#FFFFFF', borderTop: '1px solid #F0EBE1', paddingBottom: 'max(1rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))' }}>
                     {/* Kid Controls */}
                     {appState === 'kid_app' && (() => {
-                        const pStatus = getTaskStatusOnDate(previewTask, selectedDate, activeKidId);
+                        const pStatus = getTaskStatusOnDate(liveTask, selectedDate, activeKidId);
                         let hasSavedTimer = false;
                         try {
                             const saved = JSON.parse(localStorage.getItem('minilife_timer_state'));
@@ -594,7 +597,7 @@ export const KidPreviewModal = ({ context }) => {
 
                     {/* Parent Controls */}
                     {appState === 'parent_app' && (() => {
-                        const currentKidStatus = getTaskStatusOnDate(previewTask, selectedDate, resolvedKidId);
+                        const currentKidStatus = getTaskStatusOnDate(liveTask, selectedDate, resolvedKidId);
                         const currentKidInfo = kids.find(k => k.id === resolvedKidId);
                         return (
                             <>
