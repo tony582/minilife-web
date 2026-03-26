@@ -796,34 +796,34 @@ export const AddPlanModal = ({ context }) => {
                                             </div>
 
                                             {planForm.timeSetting === 'range' && (
-                                                <div className="animate-fade-in" data-field-error={planFormErrors?.time ? 'time' : undefined}>
+                                                <div className="animate-fade-in rounded-xl p-3" style={{ background: '#FBF7F0', border: '1px solid #F0EBE1' }} data-field-error={planFormErrors?.time ? 'time' : undefined}>
                                                     {planFormErrors?.time && <div className="text-xs font-bold text-red-500 mb-2 flex items-center gap-1">⚠️ {planFormErrors.time}</div>}
                                                     <div className="grid grid-cols-2 gap-3">
                                                         <div className="w-full min-w-0">
-                                                            <label className="text-[10px] font-bold mb-1.5 block" style={{ color: planFormErrors?.time ? '#EF4444' : '#9CAABE' }}>开始时间</label>
+                                                            <label className="text-[10px] font-bold mb-1.5 block" style={{ color: planFormErrors?.time ? '#EF4444' : '#5A6E8A' }}>开始时间</label>
                                                             <input type="time" value={planForm.startTime || ''} onChange={e => { setPlanForm({ ...planForm, startTime: e.target.value }); if (planFormErrors?.time) setPlanFormErrors(prev => ({ ...prev, time: undefined })); }}
                                                                 className="w-full box-border rounded-xl px-3 py-2.5 outline-none font-bold text-xs appearance-none"
-                                                                style={{ background: '#FBF7F0', border: `1.5px solid ${planFormErrors?.time ? '#EF4444' : '#F0EBE1'}`, color: '#1B2E4B' }} />
+                                                                style={{ background: '#FFFFFF', border: `1.5px solid ${planFormErrors?.time ? '#EF4444' : '#F0EBE1'}`, color: '#1B2E4B' }} />
                                                         </div>
                                                         <div className="w-full min-w-0">
-                                                            <label className="text-[10px] font-bold mb-1.5 block" style={{ color: planFormErrors?.time ? '#EF4444' : '#9CAABE' }}>结束时间</label>
+                                                            <label className="text-[10px] font-bold mb-1.5 block" style={{ color: planFormErrors?.time ? '#EF4444' : '#5A6E8A' }}>结束时间</label>
                                                             <input type="time" value={planForm.endTime || ''} onChange={e => { setPlanForm({ ...planForm, endTime: e.target.value }); if (planFormErrors?.time) setPlanFormErrors(prev => ({ ...prev, time: undefined })); }}
                                                                 className="w-full box-border rounded-xl px-3 py-2.5 outline-none font-bold text-xs appearance-none"
-                                                                style={{ background: '#FBF7F0', border: `1.5px solid ${planFormErrors?.time ? '#EF4444' : '#F0EBE1'}`, color: '#1B2E4B' }} />
+                                                                style={{ background: '#FFFFFF', border: `1.5px solid ${planFormErrors?.time ? '#EF4444' : '#F0EBE1'}`, color: '#1B2E4B' }} />
                                                         </div>
                                                     </div>
                                                 </div>
                                             )}
 
                                             {planForm.timeSetting === 'duration' && (
-                                                <div className="animate-fade-in space-y-3">
+                                                <div className="animate-fade-in rounded-xl p-3 space-y-3" style={{ background: '#FBF7F0', border: '1px solid #F0EBE1' }}>
                                                     <div className="grid grid-cols-3 gap-2">
                                                         {[{ label: '15分钟', val: 15 }, { label: '30分钟', val: 30 }, { label: '45分钟', val: 45 }, { label: '1小时', val: 60 }, { label: '1.5小时', val: 90 }, { label: '2小时', val: 120 }].map(opt => (
                                                             <button key={opt.val} onClick={() => setPlanForm({ ...planForm, durationPreset: opt.val })}
                                                                 className="py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
                                                                 style={planForm.durationPreset === opt.val
                                                                     ? { background: '#FF8C42', color: '#fff', boxShadow: '0 2px 8px rgba(255,140,66,0.3)' }
-                                                                    : { background: '#FBF7F0', color: '#5A6E8A', border: '1.5px solid #F0EBE1' }}>
+                                                                    : { background: '#FFFFFF', color: '#5A6E8A', border: '1.5px solid #F0EBE1' }}>
                                                                 {opt.label}
                                                             </button>
                                                         ))}
@@ -833,7 +833,7 @@ export const AddPlanModal = ({ context }) => {
                                                             value={planForm.durationPreset || ''}
                                                             onChange={e => setPlanForm({ ...planForm, durationPreset: Math.max(0, parseInt(e.target.value) || 0) })}
                                                             className="flex-1 w-full min-w-0 rounded-xl px-3 py-2.5 outline-none font-bold text-xs appearance-none"
-                                                            style={{ background: '#FBF7F0', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }} />
+                                                            style={{ background: '#FFFFFF', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }} />
                                                         <span className="font-bold text-xs shrink-0" style={{ color: '#9CAABE' }}>分钟</span>
                                                     </div>
                                                 </div>
