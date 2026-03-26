@@ -1154,17 +1154,20 @@ const handleQuickComplete = async () => {
       });
       setTransactions([newTrans, ...transactions]);
     }
-    // Then Update Task History
+    // CRITICAL: Read LIVE task data from state, not the stale `task` param.
+    // Without this, approving kid B overwrites kid A's just-approved status
+    // because `task.history` is a snapshot from when the modal opened.
+    const liveTaskData = tasks.find(t => t.id === task.id) || task;
     const histUpdate = {
       status: 'completed',
       approvedAt: Date.now(),
       auditLog: [
-        ...((task.history?.[date]?.[actualKidId]?.auditLog) || (task.history?.[date]?.auditLog) || []),
+        ...((liveTaskData.history?.[date]?.[actualKidId]?.auditLog) || (liveTaskData.history?.[date]?.auditLog) || []),
         { action: 'approved', timestamp: Date.now() }
       ]
     };
     let newHistory = {
-      ...(task.history || {})
+      ...(liveTaskData.history || {})
     };
     if (task.kidId === 'all') {
       newHistory[date] = {
