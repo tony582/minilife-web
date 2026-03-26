@@ -11,7 +11,7 @@ export const RejectModal = ({ context }) => {
     if (!showRejectModal || !rejectingTaskInfo) return null;
 
     return (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[10100] flex items-center justify-center p-4 animate-fade-in">
             <div className="bg-white w-full max-w-md rounded-[2rem] p-6 shadow-2xl text-left">
                 <h2 className="text-xl font-black text-rose-600 mb-2">打回</h2>
                 <p className="text-slate-500 text-sm mb-6">觉得孩子完成的不够好？写下原因让Ta修改吧：</p>
