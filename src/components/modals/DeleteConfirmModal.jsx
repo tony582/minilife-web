@@ -30,8 +30,8 @@ export const DeleteConfirmModal = ({ deleteConfirmTask, setDeleteConfirmTask, ha
                                     <Icons.SkipForward size={14} className="text-slate-500" />
                                 </div>
                                 <div>
-                                    <div className="text-sm font-bold text-slate-700">仅跳过今天</div>
-                                    <div className="text-[10px] text-slate-400">今天不做，明天照常</div>
+                                    <div className="text-sm font-bold text-slate-700">删除今天</div>
+                                    <div className="text-[10px] text-slate-400">仅删除今天，明天照常继续</div>
                                 </div>
                             </button>
 
@@ -43,7 +43,7 @@ export const DeleteConfirmModal = ({ deleteConfirmTask, setDeleteConfirmTask, ha
                                 </div>
                                 <div>
                                     <div className="text-sm font-bold" style={{ color: '#B45309' }}>从今天起停止</div>
-                                    <div className="text-[10px]" style={{ color: '#D97706' }}>以后不再出现，保留历史记录</div>
+                                    <div className="text-[10px]" style={{ color: '#D97706' }}>删除今天及以后，已赚家庭币保留</div>
                                 </div>
                             </button>
 

@@ -71,6 +71,8 @@ export const isTaskDueOnDate = (task, dateStr) => {
     }
 
     // ================= V1: Legacy Fallback =================
+    // Still check endDate from repeatConfig if it was set by handleStopRecurring
+    if (task.repeatConfig?.endDate && dateStr > task.repeatConfig.endDate) return false;
     if (task.frequency === '每天') return true;
     if (task.frequency === '仅当天') return task.dates?.includes(dateStr);
     if (task.frequency === '每周一至周五') return d >= 1 && d <= 5;

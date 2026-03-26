@@ -439,7 +439,7 @@ const getTaskStatusOnDate = (t, date, kidId) => {
   }
 };
 
-    // Skip a single day for a recurring task
+    // Skip a single day for a recurring task (removes from today's list)
     const handleSkipTask = async (id, dateStr) => {
         try {
             const task = tasks.find(t => t.id === id);
@@ -449,23 +449,28 @@ const getTaskStatusOnDate = (t, date, kidId) => {
             await apiFetch(`/api/tasks/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history }) });
             setTasks(prev => prev.map(t => t.id === id ? { ...t, history } : t));
             setDeleteConfirmTask(null);
-            notify('今天已跳过，明天继续', 'success');
+            notify('今天已移除，明天继续', 'success');
         } catch (e) {
             console.error(e);
             notify('操作失败', 'error');
         }
     };
 
-    // Stop a recurring task from today onwards (keep history)
+    // Stop a recurring task from today onwards (keep history & earned coins)
     const handleStopRecurring = async (id, dateStr) => {
         try {
             const task = tasks.find(t => t.id === id);
             if (!task) return;
-            const rc = { ...(task.repeatConfig || {}), endDate: dateStr };
+            // Set endDate to yesterday so today is also excluded
+            const yesterday = new Date(dateStr);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const endDate = yesterday.toISOString().split('T')[0];
+            // Build or update repeatConfig
+            const rc = { ...(task.repeatConfig || { type: 'daily' }), endDate };
             await apiFetch(`/api/tasks/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ repeatConfig: rc }) });
             setTasks(prev => prev.map(t => t.id === id ? { ...t, repeatConfig: rc } : t));
             setDeleteConfirmTask(null);
-            notify('任务已停止，历史记录已保留', 'success');
+            notify('任务已停止，已获家庭币保留', 'success');
         } catch (e) {
             console.error(e);
             notify('操作失败', 'error');
