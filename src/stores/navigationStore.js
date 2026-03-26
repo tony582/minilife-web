@@ -33,5 +33,5 @@ export const useNavigationStore = create((set) => ({
 
     // Parent settings
     parentSettings: { pinEnabled: false, pinCode: '1234' },
-    setParentSettings: (v) => set({ parentSettings: v }),
+    setParentSettings: (v) => set((state) => ({ parentSettings: typeof v === 'function' ? v(state.parentSettings) : v })),
 }));
