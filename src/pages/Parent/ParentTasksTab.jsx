@@ -10,6 +10,7 @@ import { getCategoryGradient, getIconForCategory } from '../../utils/categoryUti
 import { getWeekNumber, getDisplayDateArray, formatDate } from '../../utils/dateUtils';
 import useOnClickOutside from '../../hooks/useOnClickOutside';
 import { ReorderableList } from '../../components/common/ReorderableList';
+import { MigrateTasksModal } from '../../components/modals/MigrateTasksModal';
 
 export const ParentTasksTab = () => {
     const authC = useAuthContext();
@@ -31,7 +32,7 @@ export const ParentTasksTab = () => {
 
     const {
         handleApproveAllTasks, getIncompleteStudyTasksCount,
-        getTaskStatusOnDate, openQuickComplete
+        getTaskStatusOnDate, openQuickComplete, handleMigrateTasks
     } = useTaskManager(authC, dataC, uiC);
 
     // Parent-side kid picker for completing "all kids" tasks
@@ -45,6 +46,7 @@ export const ParentTasksTab = () => {
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
     const [showSortDropdown, setShowSortDropdown] = useState(false);
     const [searchKeyword, setSearchKeyword] = useState('');
+    const [showMigrateModal, setShowMigrateModal] = useState(false);
 
     const parentFilterRef = useRef(null);
     const parentSortRef = useRef(null);
@@ -90,6 +92,7 @@ export const ParentTasksTab = () => {
             let statuses = kids.map(k => getTaskStatusOnDate(t, selectedDate, k.id));
             if (statuses.length === 0) return 'todo';
             if (statuses.every(s => s === 'skipped')) return 'skipped';
+            if (statuses.every(s => s === 'migrated')) return 'migrated';
             if (statuses.includes('pending_approval')) return 'pending_approval';
             if (statuses.includes('failed')) return 'failed';
             if (statuses.includes('in_progress')) return 'in_progress';
@@ -105,8 +108,11 @@ export const ParentTasksTab = () => {
         parentTasks = parentTasks.filter(t => parentTaskFilter.includes(t.category || '计划'));
     }
 
-    // Filter out skipped tasks
-    parentTasks = parentTasks.filter(t => getDailyStatus(t) !== 'skipped');
+    // Filter out skipped and migrated tasks
+    parentTasks = parentTasks.filter(t => {
+        const st = getDailyStatus(t);
+        return st !== 'skipped' && st !== 'migrated';
+    });
 
     if (parentTaskStatusFilter !== 'all') {
         parentTasks = parentTasks.filter(t => {
@@ -196,6 +202,31 @@ export const ParentTasksTab = () => {
         '娱乐': '#EAB308', '兴趣班': '#EC4899', '其他': '#64748B', '计划': '#FF8C42',
     };
     const getCatHex = (cat) => catHexMap[cat] || catHexMap['计划'];
+
+    // Count past incomplete one-time tasks (past 7 days)
+    const pastIncompleteCount = React.useMemo(() => {
+        const today = formatDate(new Date());
+        let count = 0;
+        for (let i = 1; i <= 7; i++) {
+            const d = new Date(); d.setDate(d.getDate() - i);
+            const ds = formatDate(d);
+            tasks.forEach(t => {
+                if (t.type !== 'study') return;
+                const rc = t.repeatConfig;
+                const isOneTime = (rc && rc.type === 'today') || t.frequency === '仅当天';
+                if (!isOneTime || !isTaskDueOnDate(t, ds)) return;
+                if (parentKidFilter !== 'all' && t.kidId !== 'all' && t.kidId !== parentKidFilter) return;
+                if (t.kidId === 'all') {
+                    const kIds = parentKidFilter !== 'all' ? [parentKidFilter] : kids.map(k => k.id);
+                    if (kIds.some(kId => { const s = getTaskStatusOnDate(t, ds, kId); return s === 'todo' || s === 'in_progress'; })) count++;
+                } else {
+                    const s = getTaskStatusOnDate(t, ds, t.kidId);
+                    if (s === 'todo' || s === 'in_progress') count++;
+                }
+            });
+        }
+        return count;
+    }, [tasks, kids, parentKidFilter]);
 
     const completedCount = parentTasks.filter(t => getDailyStatus(t) === 'completed').length;
     const totalCount = parentTasks.length;
@@ -495,6 +526,23 @@ export const ParentTasksTab = () => {
                 </div>
             </div>
 
+            {/* ═══ Migrate Banner ═══ */}
+            {pastIncompleteCount > 0 && selectedDate === formatDate(new Date()) && (
+                <div className="px-4 mb-3">
+                    <button onClick={() => setShowMigrateModal(true)}
+                        className="w-full py-2.5 px-4 rounded-2xl flex items-center gap-3 transition-all active:scale-[0.99]"
+                        style={{ background: 'linear-gradient(135deg, #FF8C42 0%, #FF6B1A 100%)', boxShadow: '0 4px 14px #FF8C4250' }}>
+                        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                            <Icons.ArrowRight size={14} className="text-white" />
+                        </div>
+                        <div className="flex-1 text-left">
+                            <span className="text-white text-sm font-black">有 {pastIncompleteCount} 个过去的任务未完成</span>
+                        </div>
+                        <span className="text-white/90 text-xs font-bold px-3 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.2)' }}>迁移</span>
+                    </button>
+                </div>
+            )}
+
             {/* ═══ Pending Approvals Banner ═══ */}
             {pendingApprovals.length > 0 && (
                 <div className="px-4 mb-4">
@@ -708,6 +756,16 @@ export const ParentTasksTab = () => {
                 </div>,
                 document.body
             )}
+
+            <MigrateTasksModal
+                show={showMigrateModal}
+                onClose={() => setShowMigrateModal(false)}
+                tasks={tasks}
+                kids={kids}
+                getTaskStatusOnDate={getTaskStatusOnDate}
+                handleMigrateTasks={handleMigrateTasks}
+                parentKidFilter={parentKidFilter}
+            />
 
           </div>
         </div>

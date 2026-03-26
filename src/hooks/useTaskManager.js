@@ -489,6 +489,48 @@ const getTaskStatusOnDate = (t, date, kidId) => {
         }
     };
 
+    // Migrate one-time tasks from a past date to a target date
+    const handleMigrateTasks = async (taskIds, sourceDate, targetDate) => {
+        try {
+            let migratedCount = 0;
+            for (const id of taskIds) {
+                const task = tasks.find(t => t.id === id);
+                if (!task) continue;
+                // Add target date to dates array
+                const dates = [...(task.dates || [])];
+                if (!dates.includes(targetDate)) dates.push(targetDate);
+                // Mark source date as migrated in history
+                const history = { ...(task.history || {}) };
+                if (task.kidId === 'all') {
+                    const dateEntry = { ...(history[sourceDate] || {}) };
+                    kids.forEach(k => {
+                        const existing = dateEntry[k.id];
+                        if (!existing || existing.status === 'todo' || !existing.status) {
+                            dateEntry[k.id] = { status: 'migrated', migratedTo: targetDate, updatedAt: new Date().toISOString() };
+                        }
+                    });
+                    history[sourceDate] = dateEntry;
+                } else {
+                    const existing = history[sourceDate];
+                    if (!existing || existing.status === 'todo' || !existing.status) {
+                        history[sourceDate] = { status: 'migrated', migratedTo: targetDate, updatedAt: new Date().toISOString() };
+                    }
+                }
+                await apiFetch(`/api/tasks/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ dates, history })
+                });
+                setTasks(prev => prev.map(t => t.id === id ? { ...t, dates, history } : t));
+                migratedCount++;
+            }
+            notify(`已迁移 ${migratedCount} 个任务`, 'success');
+        } catch (e) {
+            console.error(e);
+            notify('迁移失败', 'error');
+        }
+    };
+
     const confirmSubmitTask = async () => {
   if (!taskToSubmit) return;
   playSuccessSound(); // Fire exactly on click to bypass iOS async suspensions
@@ -1682,6 +1724,7 @@ const handleSavePlan = async () => {
         handleApproveAllTasks,
         handleSavePlan,
         playSuccessSound,
-        getIncompleteStudyTasksCount
+        getIncompleteStudyTasksCount,
+        handleMigrateTasks
     };
 };
