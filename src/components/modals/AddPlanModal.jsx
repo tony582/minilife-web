@@ -602,7 +602,7 @@ export const AddPlanModal = ({ context }) => {
                                                             <button key={w.d} onClick={() => {
                                                                 const newDays = isSelected ? days.filter(d => d !== w.d) : [...days, w.d];
                                                                 setPlanForm({ ...planForm, weeklyDays: newDays });
-                                                            }} className="aspect-square rounded-xl font-bold transition-all flex items-center justify-center text-xs active:scale-90"
+                                                            }} className="w-9 h-9 rounded-full font-bold transition-all flex items-center justify-center text-xs active:scale-90"
                                                                 style={isSelected
                                                                     ? { background: '#FF8C42', color: '#fff', boxShadow: '0 2px 8px rgba(255,140,66,0.3)' }
                                                                     : { background: '#FFFFFF', color: '#5A6E8A', border: '1px solid #F0EBE1' }}>
@@ -651,25 +651,8 @@ export const AddPlanModal = ({ context }) => {
                                             {planForm.repeatType?.includes('every_month_1') && '🔄 每月循环，在每月内完成指定次数'}
                                         </div>
 
-                                        {/* Dynamic Sub-configs based on Repeat Type */}
-                                        <div className="mt-3 space-y-4">
-                                            {/* Date range */}
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <div className="w-full min-w-0">
-                                                    <label className="text-[10px] font-bold mb-1.5 block" style={{ color: '#9CAABE' }}>开始日期</label>
-                                                    <input type="date" value={planForm.startDate || ''} onChange={e => setPlanForm({ ...planForm, startDate: e.target.value })}
-                                                        className="w-full box-border rounded-xl px-3 py-2.5 outline-none font-bold text-xs appearance-none"
-                                                        style={{ background: '#FBF7F0', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }} />
-                                                </div>
-                                                {planForm.repeatType !== 'today' && (
-                                                    <div className="w-full min-w-0">
-                                                        <label className="text-[10px] font-bold mb-1.5 block" style={{ color: '#9CAABE' }}>结束日期 <span style={{ color: '#C0C8D4' }}>(可选)</span></label>
-                                                        <input type="date" value={planForm.endDate || ''} onChange={e => setPlanForm({ ...planForm, endDate: e.target.value })}
-                                                            className="w-full box-border rounded-xl px-3 py-2.5 outline-none font-bold text-xs appearance-none"
-                                                            style={{ background: '#FBF7F0', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }} />
-                                                    </div>
-                                                )}
-                                            </div>
+                                        {/* Dynamic Sub-configs: ebbinghaus, n-times etc */}
+                                        <div className="space-y-4">
 
 
                                             {/* Ebbinghaus Config */}
@@ -732,7 +715,6 @@ export const AddPlanModal = ({ context }) => {
                                                                     <button key={w.d} onClick={() => {
                                                                         const current = planForm.periodCustomDays || [1,2,3,4,5,6,7];
                                                                         const newDays = isSelected ? current.filter(d => d !== w.d) : [...current, w.d];
-                                                                        // Auto-detect preset
                                                                         const sorted = [...newDays].sort().join(',');
                                                                         let newType = 'custom';
                                                                         if (sorted === '1,2,3,4,5,6,7') newType = 'any';
@@ -751,8 +733,29 @@ export const AddPlanModal = ({ context }) => {
                                         </div>
                                     </div>
 
-                                    {/* Advanced Time Configuration Toggle */}
-                                    <div className="pt-2">
+                                    {/* ═══ 计划周期 (独立卡片) ═══ */}
+                                    <div className="rounded-2xl p-4 space-y-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
+                                        <label className="text-[11px] font-bold uppercase tracking-wider block" style={{ color: '#9CAABE' }}>计划周期</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="w-full min-w-0">
+                                                <label className="text-[10px] font-bold mb-1.5 block" style={{ color: '#9CAABE' }}>开始日期</label>
+                                                <input type="date" value={planForm.startDate || ''} onChange={e => setPlanForm({ ...planForm, startDate: e.target.value })}
+                                                    className="w-full box-border rounded-xl px-3 py-2.5 outline-none font-bold text-xs appearance-none"
+                                                    style={{ background: '#FBF7F0', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }} />
+                                            </div>
+                                            {planForm.repeatType !== 'today' && (
+                                                <div className="w-full min-w-0">
+                                                    <label className="text-[10px] font-bold mb-1.5 block" style={{ color: '#9CAABE' }}>结束日期 <span style={{ color: '#C0C8D4' }}>(可选)</span></label>
+                                                    <input type="date" value={planForm.endDate || ''} onChange={e => setPlanForm({ ...planForm, endDate: e.target.value })}
+                                                        className="w-full box-border rounded-xl px-3 py-2.5 outline-none font-bold text-xs appearance-none"
+                                                        style={{ background: '#FBF7F0', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }} />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* ═══ 时间要求 (独立卡片) ═══ */}
+                                    <div className="rounded-2xl p-4" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
                                         {planForm.timeSetting === 'none' ? (
                                             <button
                                                 onClick={() => setPlanForm({ ...planForm, timeSetting: 'range' })}
