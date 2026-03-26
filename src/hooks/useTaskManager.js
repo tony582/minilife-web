@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { useAuthContext } from '../context/AuthContext.jsx';
 import { useDataContext } from '../context/DataContext.jsx';
 import { useUIContext } from '../context/UIContext.jsx';
@@ -28,6 +29,9 @@ export const useTaskManager = (authC, dataC, uiC) => {
         setShowRejectModal, setRejectCode, setRejectingTaskInfo, setCelebrateKids, 
         setShowPreviewModal, setPreviewTask
     } = context;
+
+    // Loading guard to prevent double-tap submissions
+    const isSubmittingRef = useRef(false);
 
     const updateActiveKid = (updates) => {
         setKids(prevKids => prevKids.map(k => k.id === activeKidId ? { ...k, ...updates } : k));
@@ -586,9 +590,12 @@ const getTaskStatusOnDate = (t, date, kidId) => {
 
     // 快速完成功能 
 const handleQuickComplete = async () => {
+  // Prevent duplicate submissions
+  if (isSubmittingRef.current) return;
   if (qcTimeMode === 'actual' && (!qcStartTime || !qcEndTime)) {
     return notify('请填写完整的起止时间', 'error');
   }
+  isSubmittingRef.current = true;
   playSuccessSound(); // Fire exactly on click to bypass iOS async suspensions
   let spentStr = '';
   if (qcTimeMode === 'duration') {
@@ -731,6 +738,7 @@ const handleQuickComplete = async () => {
     notify('提交失败', 'error');
   } finally {
 
+    isSubmittingRef.current = false;
     resumeSync(); // Always unlock SSE sync
   }
 };
