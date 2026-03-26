@@ -7,6 +7,7 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
     // SSE sync only fires when count reaches 0 (all operations done).
     const syncPausedRef = useRef(0);
     const pendingSyncRef = useRef(false);
+    const syncCooldownRef = useRef(0); // Timestamp: don't refetch until this time
     const [kids, setKids] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [inventory, setInventory] = useState([]);
@@ -129,19 +130,21 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
                             pendingSyncRef.current = true;
                             return;
                         }
-                        // Debounce: a single user action (e.g. habit check-in) triggers
-                        // multiple API writes, each sending a sync event. Wait for all
-                        // writes to finish before refetching.
+                        // Debounce: wait for burst of writes to settle before refetching.
+                        // 8 seconds is long enough for rapid multi-task completion flows.
                         if (sseSyncDebounce) clearTimeout(sseSyncDebounce);
                         sseSyncDebounce = setTimeout(() => {
-                            // Double-check lock at fire time (in case pause started
-                            // after this timer was queued)
+                            // Double-check: still not paused AND cooldown has elapsed
                             if (syncPausedRef.current > 0) {
                                 pendingSyncRef.current = true;
                                 return;
                             }
+                            // Skip refetch if we're in cooldown (just finished an operation)
+                            if (syncCooldownRef.current > Date.now()) {
+                                return;
+                            }
                             checkAuthAndFetch();
-                        }, 3000);
+                        }, 8000);
                     }
                 } catch (err) {}
             };
@@ -214,18 +217,11 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
         pendingSyncRef.current = false;
     }, []);
 
-    // Resume SSE sync; if all operations done (refcount=0), allow sync again
+    // Resume SSE sync; if all operations done (refcount=0), set cooldown
     const resumeSync = useCallback(() => {
         syncPausedRef.current = Math.max(0, syncPausedRef.current - 1);
-        if (syncPausedRef.current === 0 && pendingSyncRef.current) {
-            pendingSyncRef.current = false;
-            // Delay so server has committed all data
-            setTimeout(() => {
-                if (syncPausedRef.current === 0) {
-                    // no-op: trust local state
-                }
-            }, 5000);
-        }
+        // Set a 10-second cooldown so SSE won't refetch and overwrite optimistic state
+        syncCooldownRef.current = Date.now() + 10000;
     }, []);
 
     const updateKidData = async (targetKidId, updates) => {
