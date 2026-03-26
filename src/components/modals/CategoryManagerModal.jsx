@@ -250,6 +250,15 @@ export const CategoryManagerModal = ({ show, onClose, parentSettings, setParentS
                         </button>
                     )}
                 </div>
+
+                {/* — Footer — */}
+                <div className="shrink-0 px-5 py-4" style={{ borderTop: '1px solid #F0EBE1' }}>
+                    <button onClick={onClose}
+                        className="w-full py-3.5 rounded-2xl font-black text-white transition-all active:scale-[0.98]"
+                        style={{ background: '#FF8C42', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }}>
+                        完成
+                    </button>
+                </div>
             </div>
         </div>
     );
