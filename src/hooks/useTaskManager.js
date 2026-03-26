@@ -446,7 +446,7 @@ const getTaskStatusOnDate = (t, date, kidId) => {
             if (!task) return;
             const history = { ...(task.history || {}) };
             history[dateStr] = { status: 'skipped', updatedAt: new Date().toISOString() };
-            await apiFetch(`/api/tasks/${id}`, { method: 'PUT', body: JSON.stringify({ history }) });
+            await apiFetch(`/api/tasks/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history }) });
             setTasks(prev => prev.map(t => t.id === id ? { ...t, history } : t));
             setDeleteConfirmTask(null);
             notify('今天已跳过，明天继续', 'success');
@@ -462,7 +462,7 @@ const getTaskStatusOnDate = (t, date, kidId) => {
             const task = tasks.find(t => t.id === id);
             if (!task) return;
             const rc = { ...(task.repeatConfig || {}), endDate: dateStr };
-            await apiFetch(`/api/tasks/${id}`, { method: 'PUT', body: JSON.stringify({ repeatConfig: rc }) });
+            await apiFetch(`/api/tasks/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ repeatConfig: rc }) });
             setTasks(prev => prev.map(t => t.id === id ? { ...t, repeatConfig: rc } : t));
             setDeleteConfirmTask(null);
             notify('任务已停止，历史记录已保留', 'success');
