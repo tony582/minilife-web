@@ -154,9 +154,9 @@ export const QuickCompleteModal = ({ context }) => {
                             <span className="font-bold text-slate-700 text-sm">完成证据</span>
                             <span className="text-xs text-slate-400">(可选，最多5个)</span>
                         </div>
-                        {qcAttachments.length > 0 && (
+                        {(qcAttachments || []).length > 0 && (
                             <div className="grid grid-cols-4 gap-2 mb-3">
-                                {qcAttachments.map((att, idx) => (
+                                {(qcAttachments || []).map((att, idx) => (
                                     <div key={idx} className="relative group">
                                         {att.type.startsWith('image/') ? (
                                             <img src={att.data} alt={att.name} className="w-full aspect-square object-cover rounded-xl border-2 border-slate-200" />
@@ -174,7 +174,7 @@ export const QuickCompleteModal = ({ context }) => {
                                 ))}
                             </div>
                         )}
-                        {qcAttachments.length < 5 && (
+                        {(qcAttachments || []).length < 5 && (
                             <label className="flex flex-col items-center justify-center py-6 border-2 border-dashed border-slate-200 rounded-2xl hover:border-indigo-300 hover:bg-indigo-50/30 transition-all cursor-pointer group">
                                 <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center mb-2 group-hover:bg-indigo-100 transition-colors">
                                     <Icons.Upload size={20} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
