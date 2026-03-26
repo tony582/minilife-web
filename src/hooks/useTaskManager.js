@@ -724,16 +724,39 @@ const handleQuickComplete = async () => {
   const existingEntry = taskToSubmit.kidId === 'all'
     ? taskToSubmit.history?.[selectedDate]?.[activeKidId]
     : taskToSubmit.history?.[selectedDate];
-  if (existingEntry && (existingEntry.status === 'completed' || existingEntry.status === 'pending_approval')) {
-    setQuickCompleteTask(null);
-    return notify(existingEntry.status === 'completed' ? '该任务今天已完成，无需重复提交' : '该任务已提交等待审核中', 'error');
-  }
 
   // === Period task special flow ===
   // Individual completions auto-approve; only the LAST one triggers parent review
   const isPeriodTask = taskToSubmit.repeatConfig?.type?.includes('_1') || taskToSubmit.repeatConfig?.type?.includes('_n');
+
+  if (existingEntry && (existingEntry.status === 'completed' || existingEntry.status === 'pending_approval')) {
+    if (isPeriodTask) {
+      // Period tasks: allow re-submission if today's count < dailyMax
+      const dailyMax = taskToSubmit.repeatConfig?.periodMaxPerDay || 1;
+      const todayCount = existingEntry.count || 1;
+      if (todayCount >= dailyMax) {
+        isSubmittingRef.current = false;
+        setQuickCompleteTask(null);
+        return notify(`今天已达上限(${dailyMax}次)啦，改天再做吧～`, 'error');
+      }
+      if (existingEntry.status === 'pending_approval') {
+        isSubmittingRef.current = false;
+        setQuickCompleteTask(null);
+        return notify('该任务已提交等待审核中', 'error');
+      }
+    } else {
+      // Non-period tasks: original one-per-day block
+      isSubmittingRef.current = false;
+      setQuickCompleteTask(null);
+      return notify(existingEntry.status === 'completed' ? '该任务今天已完成，无需重复提交' : '该任务已提交等待审核中', 'error');
+    }
+  }
+
   let finalStatus;
   let skipReward = false; // Don't give coins for intermediate period completions
+  // Track how many completions today including this one
+  const existingTodayCount = existingEntry?.count || (existingEntry ? 1 : 0);
+  const newTodayCount = existingTodayCount + 1;
 
   if (isPeriodTask) {
     const pp = getPeriodProgress(taskToSubmit, activeKidId, selectedDate);
@@ -764,9 +787,10 @@ const handleQuickComplete = async () => {
     note: qcNote,
     attachments: qcAttachments,
     submittedAt: Date.now(),
+    ...(isPeriodTask ? { count: newTodayCount } : {}),
     auditLog: [
       ...((taskToSubmit.history?.[selectedDate]?.[activeKidId]?.auditLog) || (taskToSubmit.history?.[selectedDate]?.auditLog) || []),
-      { action: 'submitted', timestamp: Date.now(), detail: `用时: ${spentStr}` }
+      { action: 'submitted', timestamp: Date.now(), detail: `用时: ${spentStr}${isPeriodTask ? ` (今日第${newTodayCount}次)` : ''}` }
     ]
   };
   let newHistory = {

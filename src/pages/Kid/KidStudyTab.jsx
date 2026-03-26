@@ -507,40 +507,49 @@ export const KidStudyTab = () => {
                                         style={{ color: '#16A34A' }}>
                                         <Icons.CheckCircle size={12} /> 已达标
                                     </div>
-                                ) : (status === 'todo' || status === 'failed') && (
-                                    t.durationPreset || t.timeSetting === 'range' ? (
-                                        <button onClick={() => handleStartTask(t.id)}
-                                            className="rounded-full py-1.5 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
-                                            style={{ background: C.orange }}>
-                                            <Icons.Play size={12} fill="currentColor" /> {status === 'failed' ? '重来' : 'START'}
-                                        </button>
-                                    ) : (
-                                        <button onClick={() => openQuickComplete(t)}
-                                            className="rounded-full py-1.5 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
-                                            style={{ background: isFailed ? '#EF4444' : C.teal }}>
-                                            {isFailed ? <><Icons.RefreshCw size={12} /> 重来</> : <><Icons.Check size={12} strokeWidth={3} /> 完成</>}
-                                        </button>
-                                    )
-                                )}
-                                {!pp?.periodDone && status === 'in_progress' && (
-                                    <button onClick={() => handleAttemptSubmit(t)}
-                                        className="rounded-full py-1.5 px-4 text-xs font-black transition-all active:scale-95 flex items-center gap-1"
-                                        style={{ background: `${C.orange}15`, color: C.orange }}>
-                                        <Icons.Check size={12} strokeWidth={3} /> 达标
-                                    </button>
-                                )}
-                                {!pp?.periodDone && isPending && (
-                                    <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
-                                        style={{ background: '#FFF7ED', color: '#EA580C', border: '1px solid #FED7AA' }}>
-                                        <Icons.Clock size={10} /> 待审批
-                                    </div>
-                                )}
-                                {!pp?.periodDone && isCompleted && (
-                                    <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
-                                        style={{ color: '#16A34A' }}>
-                                        <Icons.CheckCircle size={12} /> 已完成
-                                    </div>
-                                )}
+                                ) : (() => {
+                                    // For period tasks: allow multi-completion per day
+                                    const canStillComplete = pp && !pp.periodDone && !pp.todayMaxed;
+                                    const showActionBtn = status === 'todo' || status === 'failed' || (canStillComplete && status === 'completed');
+                                    return (
+                                        <>
+                                        {showActionBtn && (
+                                            t.durationPreset || t.timeSetting === 'range' ? (
+                                                <button onClick={() => handleStartTask(t.id)}
+                                                    className="rounded-full py-1.5 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
+                                                    style={{ background: C.orange }}>
+                                                    <Icons.Play size={12} fill="currentColor" /> {status === 'failed' ? '重来' : 'START'}
+                                                </button>
+                                            ) : (
+                                                <button onClick={() => openQuickComplete(t)}
+                                                    className="rounded-full py-1.5 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
+                                                    style={{ background: status === 'failed' ? '#EF4444' : C.teal }}>
+                                                    {status === 'failed' ? <><Icons.RefreshCw size={12} /> 重来</> : <><Icons.Check size={12} strokeWidth={3} /> 完成</>}
+                                                </button>
+                                            )
+                                        )}
+                                        {!showActionBtn && status === 'in_progress' && (
+                                            <button onClick={() => handleAttemptSubmit(t)}
+                                                className="rounded-full py-1.5 px-4 text-xs font-black transition-all active:scale-95 flex items-center gap-1"
+                                                style={{ background: `${C.orange}15`, color: C.orange }}>
+                                                <Icons.Check size={12} strokeWidth={3} /> 达标
+                                            </button>
+                                        )}
+                                        {!showActionBtn && isPending && (
+                                            <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
+                                                style={{ background: '#FFF7ED', color: '#EA580C', border: '1px solid #FED7AA' }}>
+                                                <Icons.Clock size={10} /> 待审批
+                                            </div>
+                                        )}
+                                        {!showActionBtn && isCompleted && (
+                                            <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
+                                                style={{ color: '#16A34A' }}>
+                                                <Icons.CheckCircle size={12} /> 已完成
+                                            </div>
+                                        )}
+                                        </>
+                                    );
+                                })()}
                             </div>
                         </div>
                     );

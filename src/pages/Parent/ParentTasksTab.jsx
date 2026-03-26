@@ -699,12 +699,10 @@ export const ParentTasksTab = () => {
                                         style={{ background: '#10B981' }}>
                                         <Icons.CheckCircle size={12} /> 去审核
                                     </button>
-                                ) : isCompleted ? (
-                                    <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
-                                        style={{ color: '#16A34A' }}>
-                                        <Icons.CheckCircle size={12} /> 已完成
-                                    </div>
-                                ) : (status === 'todo' || status === 'failed') ? (
+                                ) : (() => {
+                                    const canStillComplete = pp && !pp.periodDone && !pp.todayMaxed;
+                                    const showCompleteBtn = status === 'todo' || status === 'failed' || (canStillComplete && status === 'completed');
+                                    if (showCompleteBtn) return (
                                     <button onClick={(e) => {
                                         e.stopPropagation();
                                         let targetKid = null;
@@ -729,7 +727,15 @@ export const ParentTasksTab = () => {
                                         style={{ background: C.teal, boxShadow: `0 2px 8px ${C.teal}40` }}>
                                         <Icons.Check size={12} strokeWidth={3} /> 完成
                                     </button>
-                                ) : null}
+                                    );
+                                    if (isCompleted) return (
+                                        <div className="rounded-full py-1.5 px-3 text-[11px] font-bold flex items-center gap-1"
+                                            style={{ color: '#16A34A' }}>
+                                            <Icons.CheckCircle size={12} /> 已完成
+                                        </div>
+                                    );
+                                    return null;
+                                })()}
                             </div>
                         </div>
                     );
