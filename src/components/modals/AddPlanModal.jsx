@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useSwipeBack } from '../../hooks/useSwipeBack';
 import { Icons } from '../../utils/Icons';
@@ -23,6 +23,7 @@ export const AddPlanModal = ({ context }) => {
     } = context;
 
     const fileInputRef = useRef(null);
+    const [showCategoryManager, setShowCategoryManager] = useState(false);
     const closeModal = useCallback(() => { setShowAddPlanModal(false); setEditingTask(null); }, [setShowAddPlanModal, setEditingTask]);
     const { swipeRef, swipeHandlers } = useSwipeBack(closeModal, { enabled: showAddPlanModal });
 
@@ -468,7 +469,7 @@ export const AddPlanModal = ({ context }) => {
                                                     </select>
                                                 </div>
                                                 <button
-                                                    onClick={() => setPlanForm({ ...planForm, _showCategoryManager: true })}
+                                                    onClick={() => setShowCategoryManager(true)}
                                                     className="shrink-0 px-3 py-2.5 rounded-xl text-[11px] font-bold transition-all active:scale-95 flex items-center gap-1"
                                                     style={{ background: '#FBF7F0', color: '#9CAABE', border: '1.5px solid #F0EBE1' }}
                                                 >
@@ -478,10 +479,10 @@ export const AddPlanModal = ({ context }) => {
                                         </div>
 
                                         {/* 分类管理弹窗 — 使用标准弹窗 */}
-                                        {planForm._showCategoryManager && createPortal(
+                                        {showCategoryManager && createPortal(
                                             <CategoryManagerModal
                                                 show={true}
-                                                onClose={() => setPlanForm({ ...planForm, _showCategoryManager: false })}
+                                                onClose={() => setShowCategoryManager(false)}
                                                 parentSettings={parentSettings}
                                                 setParentSettings={setParentSettings}
                                                 allCategories={allCategories}
