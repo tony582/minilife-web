@@ -275,9 +275,9 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                                     AI 解析出 <span style={{ color: '#667eea' }}>{parsedTasks.length}</span> 条任务
                                 </div>
                                 <button onClick={() => setMode('input')}
-                                    className="text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all active:scale-95"
-                                    style={{ background: '#F0EBE1', color: '#9CAABE' }}>
-                                    🔄 重新解析
+                                    className="text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all active:scale-95 flex items-center gap-1"
+                                    style={{ background: '#fff', color: '#667eea', border: '1.5px solid #667eea' }}>
+                                    <Icons.RefreshCw size={11} /> 重新解析
                                 </button>
                             </div>
 
@@ -314,15 +314,21 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                             </div>
                             )}
 
-                            {/* Task cards */}
-                            {parsedTasks.map((task, idx) => (
-                                <div key={task._id} className="rounded-2xl p-4 transition-all"
-                                    style={{ background: '#FFFFFF', border: '1.5px solid #F0EBE1' }}>
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0"
-                                            style={{ background: `${getCatHexColor(task.category)}15`, color: getCatHexColor(task.category) }}>
-                                            {renderIcon(getIconForCategory(task.category), 20)}
+                            {/* Task cards — matching parent task list layout */}
+                            {parsedTasks.map((task, idx) => {
+                                const accentColor = getCatHexColor(task.category);
+                                return (
+                                <div key={task._id} className="rounded-2xl transition-all flex items-stretch overflow-hidden"
+                                    style={{ background: '#fff', border: '1px solid #f0f0f0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                                    {/* Left accent bar */}
+                                    <div className="w-1 shrink-0 rounded-l-2xl" style={{ background: accentColor }}></div>
+                                    <div className="flex items-center gap-3 flex-1 min-w-0 px-3 py-3">
+                                        {/* Icon */}
+                                        <div className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-white"
+                                            style={{ background: accentColor }}>
+                                            {renderIcon(getIconForCategory(task.category), 18)}
                                         </div>
+                                        {/* Title + meta */}
                                         <div className="flex-1 min-w-0">
                                             <input
                                                 value={task.title}
@@ -331,33 +337,34 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                                                     updated[idx] = { ...updated[idx], title: e.target.value };
                                                     setParsedTasks(updated);
                                                 }}
-                                                className="w-full font-black text-sm outline-none bg-transparent"
-                                                style={{ color: '#1B2E4B' }}
+                                                className="w-full font-bold text-sm outline-none bg-transparent leading-tight"
+                                                style={{ color: '#1E293B' }}
                                             />
-                                            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                                                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full"
-                                                    style={{ background: `${getCatHexColor(task.category)}15`, color: getCatHexColor(task.category) }}>
+                                            <div className="flex flex-wrap gap-1 items-center mt-1">
+                                                <span className="text-[10px] font-bold px-1.5 py-px rounded"
+                                                    style={{ background: `${accentColor}12`, color: accentColor }}>
                                                     {task.category}
                                                 </span>
-                                                <span className="text-[9px] font-bold" style={{ color: '#9CAABE' }}>
-                                                    ⏱ {task.durationPreset}分钟
+                                                <span className="text-[10px] font-bold px-1 py-px rounded flex items-center gap-0.5"
+                                                    style={{ color: '#D97706' }}>
+                                                    {task.reward}<Icons.Star size={8} fill="currentColor" />
                                                 </span>
-                                                <span className="text-[9px] font-bold" style={{ color: '#FF8C42' }}>
-                                                    ⭐ {task.reward}分
+                                                <span className="text-[10px] text-slate-400 flex items-center gap-0.5">
+                                                    <Icons.Clock size={8} />{task.durationPreset}分钟
                                                 </span>
-                                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{
-                                                    background: task.schedule === 'daily' ? '#DBEAFE' : task.schedule === 'weekly' ? '#E0E7FF' : '#F0EBE1',
-                                                    color: task.schedule === 'daily' ? '#2563EB' : task.schedule === 'weekly' ? '#4F46E5' : '#9CAABE'
-                                                }}>
-                                                    {task.schedule === 'daily' ? '🔄 每天' : task.schedule === 'weekly' ? `📆 每周${(task.weeklyDays || []).map(d => ['','一','二','三','四','五','六','日'][d]).join('、')}` : '📅 仅今天'}
+                                                <span className="text-[10px] text-slate-400">
+                                                    {task.schedule === 'daily' ? '每天' : task.schedule === 'weekly' ? `每周${(task.weeklyDays || []).map(d => ['','一','二','三','四','五','六','日'][d]).join('、')}` : '仅当天'}
                                                 </span>
                                             </div>
                                             {task.desc && (
-                                                <div className="text-[10px] font-bold mt-1.5 leading-relaxed" style={{ color: '#9CAABE' }}>
+                                                <div className="text-[10px] font-bold mt-1 leading-relaxed" style={{ color: '#9CAABE' }}>
                                                     {task.desc}
                                                 </div>
                                             )}
                                         </div>
+                                    </div>
+                                    {/* Delete button */}
+                                    <div className="flex items-center pr-3 shrink-0">
                                         <button onClick={() => setParsedTasks(parsedTasks.filter((_, i) => i !== idx))}
                                             className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all active:scale-90"
                                             style={{ background: '#FEE2E2', color: '#EF4444' }}>
@@ -365,7 +372,8 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                                         </button>
                                     </div>
                                 </div>
-                            ))}
+                                );
+                            })}
 
                             {parsedTasks.length === 0 && (
                                 <div className="text-center py-10">
