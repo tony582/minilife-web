@@ -645,6 +645,15 @@ const handleQuickComplete = async () => {
   }
   pauseSync(); // Prevent SSE refetch from overwriting in-flight balance updates
 
+  // Optimistic UI update: update local state IMMEDIATELY so the button
+  // changes to "待审批" without waiting for the server round-trip.
+  const oldHistory = taskToSubmit.history;
+  setTasks(prev => prev.map(t => t.id === taskToSubmit.id ? {
+    ...t,
+    history: newHistory
+  } : t));
+  setQuickCompleteTask(null); // Close modal immediately
+
   try {
     const putRes = await apiFetch(`/api/tasks/${taskToSubmit.id}`, {
       method: 'PUT',
@@ -655,12 +664,6 @@ const handleQuickComplete = async () => {
         history: newHistory
       })
     });
-
-    setTasks(prev => prev.map(t => t.id === taskToSubmit.id ? {
-      ...t,
-      history: newHistory
-    } : t));
-    setQuickCompleteTask(null);
 
     if (isAutoApprove && taskToSubmit.reward > 0) {
       // Instantly generate transaction and family coins
@@ -734,7 +737,11 @@ const handleQuickComplete = async () => {
       notify(pendingEncouragements[Math.floor(Math.random() * pendingEncouragements.length)], 'success');
     }
   } catch (e) {
-
+    // Rollback the optimistic update
+    setTasks(prev => prev.map(t => t.id === taskToSubmit.id ? {
+      ...t,
+      history: oldHistory
+    } : t));
     notify('提交失败', 'error');
   } finally {
 
