@@ -551,12 +551,12 @@ export const KidPreviewModal = ({ context }) => {
                                                 </div>
                                             ) : null;
                                         })()}
-                                        <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); openQuickComplete(previewTask); }}
+                                        <button onClick={() => { const t = previewTask; setShowPreviewModal(false); setPreviewTask(null); setTimeout(() => openQuickComplete(t), 50); }}
                                             className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
                                             style={{ background: '#F0EBE1', color: '#5A6E8A' }}>
                                             <Icons.Check size={16} /> 快速打卡
                                         </button>
-                                        <button onClick={() => { setShowPreviewModal(false); setPreviewTask(null); handleStartTask(previewTask.id); }}
+                                        <button onClick={() => { const tid = previewTask.id; setShowPreviewModal(false); setPreviewTask(null); setTimeout(() => handleStartTask(tid), 50); }}
                                             className="flex-[2] py-3 rounded-xl text-sm font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
                                             style={{ background: hasSavedTimer ? '#3B82F6' : '#FF8C42', boxShadow: hasSavedTimer ? '0 4px 15px rgba(59,130,246,0.3)' : '0 4px 15px rgba(255,140,66,0.35)' }}>
                                             <Icons.Play size={16} fill="currentColor" /> {pStatus === 'failed' ? '重新计时' : (hasSavedTimer ? '继续计时' : '开始计时')}
@@ -617,9 +617,11 @@ export const KidPreviewModal = ({ context }) => {
                                 ) : (currentKidStatus === 'todo' || currentKidStatus === 'failed') ? (
                                     <>
                                         <button onClick={() => {
+                                            const t = { ...previewTask, requireApproval: false };
                                             setActiveKidId(resolvedKidId);
                                             setShowPreviewModal(false);
-                                            openQuickComplete({ ...previewTask, requireApproval: false });
+                                            setPreviewTask(null);
+                                            setTimeout(() => openQuickComplete(t), 50);
                                         }}
                                             className="flex-[2] py-3 rounded-xl text-sm font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
                                             style={{ background: '#4ECDC4', boxShadow: '0 4px 15px rgba(78,205,196,0.35)' }}>
