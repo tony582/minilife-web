@@ -1651,17 +1651,21 @@ const handleSavePlan = async () => {
       category: planType === 'study' ? planForm.category : "行为",
       catColor: color,
       frequency: frequency,
-      // V1 fallback
-      repeatConfig: planType === 'study' ? {
-        type: planForm.repeatType,
-        endDate: planForm.endDate || null,
-        weeklyDays: planForm.weeklyDays,
-        ebbStrength: planForm.ebbStrength,
-        periodDaysType: planForm.periodDaysType,
-        periodCustomDays: planForm.periodCustomDays,
-        periodTargetCount: Number(planForm.periodTargetCount),
-        periodMaxPerDay: Number(planForm.periodMaxPerDay)
-      } : null,
+      // V1 fallback — derive periodDaysType from periodCustomDays for consistency
+      repeatConfig: planType === 'study' ? (() => {
+        const pd = [...(planForm.periodCustomDays || [1,2,3,4,5,6,7])].sort((a, b) => a - b).join();
+        const dType = pd === '1,2,3,4,5,6,7' ? 'any' : pd === '1,2,3,4,5' ? 'workdays' : pd === '6,7' ? 'weekends' : 'custom';
+        return {
+          type: planForm.repeatType,
+          endDate: planForm.endDate || null,
+          weeklyDays: planForm.weeklyDays,
+          ebbStrength: planForm.ebbStrength,
+          periodDaysType: dType,
+          periodCustomDays: planForm.periodCustomDays,
+          periodTargetCount: Number(planForm.periodTargetCount) || 1,
+          periodMaxPerDay: Number(planForm.periodMaxPerDay) || 1
+        };
+      })() : null,
       // V2 explicit config
       timeStr: timeStr,
       standards: planForm.desc || "",
@@ -1721,16 +1725,20 @@ const handleSavePlan = async () => {
     periodMaxPerDay: planType === 'habit' ? Number(planForm.periodMaxPerDay) : undefined,
     periodMaxType: planType === 'habit' ? planForm.periodMaxType : undefined,
     dates: planForm.repeatType === 'today' || planForm.repeatType === '仅当天' ? [planForm.startDate] : [],
-    repeatConfig: planType === 'study' ? {
-      type: planForm.repeatType,
-      endDate: planForm.endDate || null,
-      weeklyDays: planForm.weeklyDays,
-      ebbStrength: planForm.ebbStrength,
-      periodDaysType: planForm.periodDaysType,
-      periodCustomDays: planForm.periodCustomDays,
-      periodTargetCount: Number(planForm.periodTargetCount),
-      periodMaxPerDay: Number(planForm.periodMaxPerDay)
-    } : null,
+    repeatConfig: planType === 'study' ? (() => {
+      const pd = [...(planForm.periodCustomDays || [1,2,3,4,5,6,7])].sort((a, b) => a - b).join();
+      const dType = pd === '1,2,3,4,5,6,7' ? 'any' : pd === '1,2,3,4,5' ? 'workdays' : pd === '6,7' ? 'weekends' : 'custom';
+      return {
+        type: planForm.repeatType,
+        endDate: planForm.endDate || null,
+        weeklyDays: planForm.weeklyDays,
+        ebbStrength: planForm.ebbStrength,
+        periodDaysType: dType,
+        periodCustomDays: planForm.periodCustomDays,
+        periodTargetCount: Number(planForm.periodTargetCount) || 1,
+        periodMaxPerDay: Number(planForm.periodMaxPerDay) || 1
+      };
+    })() : null,
     history: {} // History will now store { date: { kidId: { status } } }
   };
   if (!planForm.targetKids) planForm.targetKids = [planForm.targetKid || 'all'];
@@ -1772,7 +1780,7 @@ const handleSavePlan = async () => {
       weeklyDays: [1, 2, 3, 4, 5],
       ebbStrength: 'normal',
       periodDaysType: 'any',
-      periodCustomDays: [1, 2, 3, 4, 5],
+      periodCustomDays: [1, 2, 3, 4, 5, 6, 7],
       periodTargetCount: 1,
       periodMaxPerDay: 1,
       startTime: '',

@@ -10,7 +10,7 @@ const defaultPlanForm = {
     weeklyDays: [1, 2, 3, 4, 5],
     ebbStrength: 'normal',
     periodDaysType: 'any',
-    periodCustomDays: [1, 2, 3, 4, 5],
+    periodCustomDays: [1, 2, 3, 4, 5, 6, 7],
     periodTargetCount: 1,
     periodMaxPerDay: 1,
     periodMaxType: 'daily',
