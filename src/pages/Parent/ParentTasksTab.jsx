@@ -564,11 +564,7 @@ export const ParentTasksTab = () => {
                                         <span className="text-[10px] text-slate-400">
                                             {t.frequency || '每天'}
                                         </span>
-                                        {isCompleted && (
-                                            <span className="text-[10px] font-bold flex items-center gap-0.5" style={{ color: '#16A34A' }}>
-                                                <Icons.CheckCircle size={10} /> 已完成
-                                            </span>
-                                        )}
+
                                         {isPending && (
                                             <span className="text-[10px] font-bold flex items-center gap-0.5 px-1.5 py-px rounded"
                                                 style={{ background: '#FFF7ED', color: '#EA580C', border: '1px solid #FED7AA' }}>
