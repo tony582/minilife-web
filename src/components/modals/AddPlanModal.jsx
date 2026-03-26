@@ -372,78 +372,7 @@ export const AddPlanModal = ({ context }) => {
                             {planType === 'study' && (
                                 <div className="space-y-5 animate-fade-in relative z-0">
 
-                                    {/* 任务名称 */}
-                                    <div data-field-error={planFormErrors?.title ? 'title' : undefined}>
-                                        <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: planFormErrors?.title ? '#EF4444' : '#9CAABE' }}>任务名称 {planFormErrors?.title && <span className="text-red-500 normal-case">— {planFormErrors.title}</span>}</label>
-                                        <input
-                                            value={planForm.title || ''}
-                                            onChange={e => { setPlanForm({ ...planForm, title: e.target.value }); if (planFormErrors?.title) setPlanFormErrors(prev => ({ ...prev, title: undefined })); }}
-                                            placeholder="例如：练字30分钟、阅读打卡"
-                                            className={`w-full rounded-xl px-4 py-3 outline-none font-bold text-base transition-all ${planFormErrors?.title ? 'animate-shake' : ''}`}
-                                            style={{ background: '#FFFFFF', border: `1.5px solid ${planFormErrors?.title ? '#EF4444' : '#F0EBE1'}`, color: '#1B2E4B' }}
-                                            onFocus={e => e.target.style.borderColor = planFormErrors?.title ? '#EF4444' : '#FF8C42'}
-                                            onBlur={e => e.target.style.borderColor = planFormErrors?.title ? '#EF4444' : '#F0EBE1'}
-                                        />
-                                    </div>
-
-                                    {/* ═══ 任务说明 + 附件 (合并为一个卡片) ═══ */}
-                                    <div className="rounded-2xl p-4 space-y-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
-                                        <label className="text-[11px] font-bold uppercase tracking-wider block" style={{ color: '#9CAABE' }}>任务说明与附件 <span style={{ color: '#C0C8D4' }}>(可选)</span></label>
-                                        <textarea
-                                            value={planForm.desc || ''}
-                                            onChange={e => setPlanForm({ ...planForm, desc: e.target.value })}
-                                            placeholder="描述任务的具体要求或标准..."
-                                            className="w-full rounded-xl px-4 py-3 outline-none font-bold text-sm transition-all resize-y min-h-[60px]"
-                                            style={{ background: '#FBF7F0', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }}
-                                            onFocus={e => e.target.style.borderColor = '#FF8C42'}
-                                            onBlur={e => e.target.style.borderColor = '#F0EBE1'}
-                                        />
-                                        {/* 附件图片 — delete button always visible */}
-                                        <div className="flex flex-wrap gap-2">
-                                            {(planForm.attachments || []).map((att, i) => {
-                                                const src = typeof att === 'string' ? att : (att.data || att.url || '');
-                                                return src ? (
-                                                    <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden" style={{ border: '2px solid #FFE8D0' }}>
-                                                        <img src={src} className="w-full h-full object-cover" />
-                                                        <button onClick={() => {
-                                                            const newAtts = [...(planForm.attachments || [])];
-                                                            newAtts.splice(i, 1);
-                                                            setPlanForm({ ...planForm, attachments: newAtts });
-                                                        }} className="absolute -top-0 -right-0 w-5 h-5 bg-red-500 text-white rounded-bl-lg flex items-center justify-center" style={{ fontSize: 11 }}>✕</button>
-                                                    </div>
-                                                ) : null;
-                                            })}
-                                            {(!planForm.attachments || planForm.attachments.length < 6) && (
-                                                <>
-                                                    <input ref={fileInputRef} type="file" accept="image/*,video/*" multiple
-                                                        style={{ display: 'none' }}
-                                                        onChange={e => {
-                                                            const files = Array.from(e.target.files);
-                                                            files.forEach(file => {
-                                                                const reader = new FileReader();
-                                                                reader.onload = ev => {
-                                                                    setPlanForm(prev => ({
-                                                                        ...prev,
-                                                                        attachments: [...(prev.attachments || []), { data: ev.target.result, name: file.name }]
-                                                                    }));
-                                                                };
-                                                                reader.readAsDataURL(file);
-                                                            });
-                                                            e.target.value = '';
-                                                        }} />
-                                                    <button type="button"
-                                                        onClick={() => fileInputRef.current?.click()}
-                                                        className="w-16 h-16 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95"
-                                                        style={{ background: '#FBF7F0', border: '1.5px dashed #D0C9BD', color: '#9CAABE' }}>
-                                                        <Icons.Image size={16} />
-                                                        <span style={{ fontSize: 9, marginTop: 2 }}>添加图片</span>
-                                                    </button>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* ═══ 分类 + 指派 (紧凑行) ═══ */}
+                                    {/* ═══ 分类 + 指派 (moved to top) ═══ */}
                                     <div className="rounded-2xl p-4 space-y-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
                                         {/* 分类选择 — 下拉列表 + 管理按钮 */}
                                         <div>
@@ -538,6 +467,79 @@ export const AddPlanModal = ({ context }) => {
                                             </div>
                                         )}
                                     </div>
+
+                                    {/* 任务名称 */}
+                                    <div data-field-error={planFormErrors?.title ? 'title' : undefined}>
+                                        <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: planFormErrors?.title ? '#EF4444' : '#9CAABE' }}>任务名称 {planFormErrors?.title && <span className="text-red-500 normal-case">— {planFormErrors.title}</span>}</label>
+                                        <input
+                                            value={planForm.title || ''}
+                                            onChange={e => { setPlanForm({ ...planForm, title: e.target.value }); if (planFormErrors?.title) setPlanFormErrors(prev => ({ ...prev, title: undefined })); }}
+                                            placeholder="例如：练字30分钟、阅读打卡"
+                                            className={`w-full rounded-xl px-4 py-3 outline-none font-bold text-base transition-all ${planFormErrors?.title ? 'animate-shake' : ''}`}
+                                            style={{ background: '#FFFFFF', border: `1.5px solid ${planFormErrors?.title ? '#EF4444' : '#F0EBE1'}`, color: '#1B2E4B' }}
+                                            onFocus={e => e.target.style.borderColor = planFormErrors?.title ? '#EF4444' : '#FF8C42'}
+                                            onBlur={e => e.target.style.borderColor = planFormErrors?.title ? '#EF4444' : '#F0EBE1'}
+                                        />
+                                    </div>
+
+                                    {/* ═══ 任务说明 + 附件 (合并为一个卡片) ═══ */}
+                                    <div className="rounded-2xl p-4 space-y-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
+                                        <label className="text-[11px] font-bold uppercase tracking-wider block" style={{ color: '#9CAABE' }}>任务说明与附件 <span style={{ color: '#C0C8D4' }}>(可选)</span></label>
+                                        <textarea
+                                            value={planForm.desc || ''}
+                                            onChange={e => setPlanForm({ ...planForm, desc: e.target.value })}
+                                            placeholder="描述任务的具体要求或标准..."
+                                            className="w-full rounded-xl px-4 py-3 outline-none font-bold text-sm transition-all resize-y min-h-[60px]"
+                                            style={{ background: '#FBF7F0', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }}
+                                            onFocus={e => e.target.style.borderColor = '#FF8C42'}
+                                            onBlur={e => e.target.style.borderColor = '#F0EBE1'}
+                                        />
+                                        {/* 附件图片 — delete button always visible */}
+                                        <div className="flex flex-wrap gap-2">
+                                            {(planForm.attachments || []).map((att, i) => {
+                                                const src = typeof att === 'string' ? att : (att.data || att.url || '');
+                                                return src ? (
+                                                    <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden" style={{ border: '2px solid #FFE8D0' }}>
+                                                        <img src={src} className="w-full h-full object-cover" />
+                                                        <button onClick={() => {
+                                                            const newAtts = [...(planForm.attachments || [])];
+                                                            newAtts.splice(i, 1);
+                                                            setPlanForm({ ...planForm, attachments: newAtts });
+                                                        }} className="absolute -top-0 -right-0 w-5 h-5 bg-red-500 text-white rounded-bl-lg flex items-center justify-center" style={{ fontSize: 11 }}>✕</button>
+                                                    </div>
+                                                ) : null;
+                                            })}
+                                            {(!planForm.attachments || planForm.attachments.length < 6) && (
+                                                <>
+                                                    <input ref={fileInputRef} type="file" accept="image/*,video/*" multiple
+                                                        style={{ display: 'none' }}
+                                                        onChange={e => {
+                                                            const files = Array.from(e.target.files);
+                                                            files.forEach(file => {
+                                                                const reader = new FileReader();
+                                                                reader.onload = ev => {
+                                                                    setPlanForm(prev => ({
+                                                                        ...prev,
+                                                                        attachments: [...(prev.attachments || []), { data: ev.target.result, name: file.name }]
+                                                                    }));
+                                                                };
+                                                                reader.readAsDataURL(file);
+                                                            });
+                                                            e.target.value = '';
+                                                        }} />
+                                                    <button type="button"
+                                                        onClick={() => fileInputRef.current?.click()}
+                                                        className="w-16 h-16 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95"
+                                                        style={{ background: '#FBF7F0', border: '1.5px dashed #D0C9BD', color: '#9CAABE' }}>
+                                                        <Icons.Image size={16} />
+                                                        <span style={{ fontSize: 9, marginTop: 2 }}>添加图片</span>
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+
+
 
                                 </div>
                             )}
