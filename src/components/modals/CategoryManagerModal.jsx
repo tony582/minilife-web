@@ -112,10 +112,6 @@ export const CategoryManagerModal = ({ show, onClose, parentSettings, setParentS
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="text-sm font-bold truncate" style={{ color: C.textPrimary }}>{cat.name}</div>
-                                            <div className="flex items-center gap-1.5 mt-0.5">
-                                                <div className="w-2.5 h-2.5 rounded-full" style={{ background: cat.color }} />
-                                                <span className="text-[10px]" style={{ color: C.textMuted }}>{cat.icon}</span>
-                                            </div>
                                         </div>
                                         <div className="flex items-center gap-1.5 shrink-0">
                                             <button onClick={() => openEditForm(cat)}

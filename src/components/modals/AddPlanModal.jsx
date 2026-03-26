@@ -450,7 +450,10 @@ export const AddPlanModal = ({ context }) => {
                                             <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>分类</label>
                                             <div className="flex items-center gap-2">
                                                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                                                    <div className="w-3 h-3 rounded-full shrink-0" style={{ background: getCatHexColor(planForm.category) }} />
+                                                    <div className="w-3 h-3 rounded-full shrink-0" style={{ background: (() => {
+                                                        const cc = (parentSettings.customCategories || []).find(c => (typeof c === 'object' ? c.name : c) === planForm.category);
+                                                        return cc && typeof cc === 'object' ? cc.color : getCatHexColor(planForm.category);
+                                                    })() }} />
                                                     <select
                                                         value={planForm.category || ''}
                                                         onChange={e => {
