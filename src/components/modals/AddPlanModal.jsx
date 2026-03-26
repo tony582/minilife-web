@@ -1,6 +1,9 @@
 import React, { useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useSwipeBack } from '../../hooks/useSwipeBack';
 import { Icons } from '../../utils/Icons';
+import { CategoryManagerModal } from './CategoryManagerModal';
+import { getCatHexColor } from '../../utils/categoryUtils';
 
 export const AddPlanModal = ({ context }) => {
     const {
@@ -450,11 +453,16 @@ export const AddPlanModal = ({ context }) => {
                                                     <div className="w-3 h-3 rounded-full shrink-0" style={{ background: getCatHexColor(planForm.category) }} />
                                                     <select
                                                         value={planForm.category || ''}
-                                                        onChange={e => setPlanForm({ ...planForm, category: e.target.value, iconName: getIconForCategory(e.target.value) })}
+                                                        onChange={e => {
+                                                            const val = e.target.value;
+                                                            const customCat = (parentSettings.customCategories || []).find(c => (typeof c === 'string' ? c : c.name) === val);
+                                                            const iconName = customCat && typeof customCat === 'object' ? customCat.icon : getIconForCategory(val);
+                                                            setPlanForm({ ...planForm, category: val, iconName });
+                                                        }}
                                                         className="flex-1 min-w-0 rounded-xl px-3 py-2.5 outline-none font-bold text-sm appearance-none cursor-pointer"
                                                         style={{ background: '#FBF7F0', border: '1.5px solid #F0EBE1', color: '#1B2E4B' }}
                                                     >
-                                                        {[...allCategories, ...(parentSettings.customCategories || []).filter(c => !allCategories.includes(c))].map(c => (
+                                                        {[...allCategories, ...(parentSettings.customCategories || []).map(c => typeof c === 'string' ? c : c.name).filter(c => !allCategories.includes(c))].map(c => (
                                                             <option key={c} value={c}>{c}</option>
                                                         ))}
                                                     </select>
@@ -469,71 +477,17 @@ export const AddPlanModal = ({ context }) => {
                                             </div>
                                         </div>
 
-                                        {/* 分类管理弹窗 */}
-                                        {planForm._showCategoryManager && (
-                                            <div className="animate-fade-in rounded-xl p-3 space-y-2" style={{ background: '#FBF7F0', border: '1px solid #F0EBE1' }}>
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <span className="text-[11px] font-bold" style={{ color: '#5A6E8A' }}>管理自定义分类</span>
-                                                    <button onClick={() => setPlanForm({ ...planForm, _showCategoryManager: false })}
-                                                        className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#F0EBE1', color: '#9CAABE' }}><Icons.X size={12} /></button>
-                                                </div>
-                                                {/* 已有自定义分类 */}
-                                                {(parentSettings.customCategories || []).length > 0 ? (
-                                                    <div className="space-y-1">
-                                                        {(parentSettings.customCategories || []).map(c => (
-                                                            <div key={c} className="flex items-center justify-between rounded-lg px-3 py-2" style={{ background: '#FFFFFF' }}>
-                                                                <div className="flex items-center gap-2">
-                                                                    <div className="w-3 h-3 rounded-full" style={{ background: getCatHexColor(c) }} />
-                                                                    <span className="text-xs font-bold" style={{ color: '#1B2E4B' }}>{c}</span>
-                                                                </div>
-                                                                <button onClick={() => {
-                                                                    if (confirm(`删除自定义分类"${c}"？`)) {
-                                                                        setParentSettings(prev => ({
-                                                                            ...prev,
-                                                                            customCategories: (prev.customCategories || []).filter(cc => cc !== c)
-                                                                        }));
-                                                                        if (planForm.category === c) setPlanForm({ ...planForm, category: allCategories[0] });
-                                                                    }
-                                                                }} className="text-[10px] font-bold px-2 py-0.5 rounded-md transition-all active:scale-90"
-                                                                    style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444' }}>删除</button>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <p className="text-[10px] text-center py-2" style={{ color: '#9CAABE' }}>暂无自定义分类</p>
-                                                )}
-                                                {/* 添加新分类 */}
-                                                <div className="flex items-center gap-2 pt-1">
-                                                    <input
-                                                        value={planForm._newCategoryName || ''}
-                                                        onChange={e => setPlanForm({ ...planForm, _newCategoryName: e.target.value.substring(0, 6) })}
-                                                        onKeyDown={e => {
-                                                            if (e.key === 'Enter' && planForm._newCategoryName?.trim()) {
-                                                                const newCat = planForm._newCategoryName.trim();
-                                                                setParentSettings(prev => ({
-                                                                    ...prev,
-                                                                    customCategories: [...new Set([...(prev.customCategories || []), newCat])]
-                                                                }));
-                                                                setPlanForm({ ...planForm, category: newCat, _newCategoryName: '' });
-                                                            }
-                                                        }}
-                                                        placeholder="输入新分类名称..."
-                                                        className="flex-1 rounded-lg px-3 py-2 text-xs font-bold outline-none"
-                                                        style={{ background: '#FFFFFF', border: '1px solid #F0EBE1', color: '#1B2E4B' }}
-                                                    />
-                                                    <button onClick={() => {
-                                                        if (planForm._newCategoryName?.trim()) {
-                                                            const newCat = planForm._newCategoryName.trim();
-                                                            setParentSettings(prev => ({
-                                                                ...prev,
-                                                                customCategories: [...new Set([...(prev.customCategories || []), newCat])]
-                                                            }));
-                                                            setPlanForm({ ...planForm, category: newCat, _newCategoryName: '' });
-                                                        }
-                                                    }} className="shrink-0 px-3 py-2 rounded-lg text-xs font-bold text-white transition-all active:scale-95"
-                                                        style={{ background: '#4ECDC4' }}>添加</button>
-                                                </div>
-                                            </div>
+                                        {/* 分类管理弹窗 — 使用标准弹窗 */}
+                                        {planForm._showCategoryManager && createPortal(
+                                            <CategoryManagerModal
+                                                show={true}
+                                                onClose={() => setPlanForm({ ...planForm, _showCategoryManager: false })}
+                                                parentSettings={parentSettings}
+                                                setParentSettings={setParentSettings}
+                                                allCategories={allCategories}
+                                                getCatHexColor={getCatHexColor}
+                                            />,
+                                            document.body
                                         )}
 
                                         {/* 指派给谁 (hidden when only one kid) */}
