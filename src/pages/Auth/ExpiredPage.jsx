@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuthContext } from '../../context/AuthContext.jsx';
 import { useToast } from '../../hooks/useToast';
+import { apiFetch } from '../../api/client';
 import { Icons } from '../../utils/Icons';
 
 export const ExpiredPage = () => {
@@ -12,22 +13,21 @@ export const ExpiredPage = () => {
     const handleRedeem = async (e) => {
         e.preventDefault();
         try {
-            // Note: in a full refactor we might make this an apiFetch call
-            const token = localStorage.getItem('token');
-            const res = await fetch('/api/subscription/redeem', {
+            const res = await apiFetch('/api/redeem-code', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ code: activationCode })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: activationCode }),
             });
+            const ct = res.headers.get('content-type') || '';
+            if (!ct.includes('application/json')) {
+                notify('服务器响应异常，请稍后重试', 'error');
+                return;
+            }
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || '激活失败');
 
             notify('激活成功，感谢使用！', 'success');
             setActivationCode('');
-            await checkSubscriptionStatus(); // Refresh auth payload
             window.location.reload(); // Force app restart for updated state
         } catch (error) {
             notify(error.message, 'error');
