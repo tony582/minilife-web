@@ -571,7 +571,7 @@ export const AddPlanModal = ({ context }) => {
                                             ))}
                                         </div>
                                         {/* Weekly day picker — between main buttons and 更多安排 */}
-                                        {(planForm.repeatType === 'weekly_custom' || planForm.repeatType === 'biweekly_custom') && (() => {
+                                        {planForm.repeatType === 'weekly_custom' && (() => {
                                             const days = planForm.weeklyDays || [];
                                             const sorted = [...days].sort((a, b) => a - b);
                                             const isWorkdays = sorted.join() === '1,2,3,4,5';
@@ -650,6 +650,50 @@ export const AddPlanModal = ({ context }) => {
                                             {planForm.repeatType?.includes('every_biweek_1') && '🔄 每双周循环，在每个双周内完成指定次数'}
                                             {planForm.repeatType?.includes('every_month_1') && '🔄 每月循环，在每月内完成指定次数'}
                                         </div>
+                                        {/* Weekday picker for biweekly — shown below the dropdown */}
+                                        {planForm.repeatType === 'biweekly_custom' && (() => {
+                                            const days = planForm.weeklyDays || [];
+                                            const sorted = [...days].sort((a, b) => a - b);
+                                            const isWorkdays = sorted.join() === '1,2,3,4,5';
+                                            const isWeekend = sorted.join() === '6,7';
+                                            const isEveryday = sorted.join() === '1,2,3,4,5,6,7';
+                                            return (
+                                            <div className="animate-fade-in rounded-xl p-3" style={{ background: '#FBF7F0', border: '1px solid #F0EBE1' }}>
+                                                <label className="text-[11px] font-bold mb-2 block" style={{ color: '#5A6E8A' }}>在以下星期几重复？</label>
+                                                <div className="flex gap-2 mb-2.5">
+                                                    {[
+                                                        { key: 'workdays', label: '工作日', val: [1,2,3,4,5], active: isWorkdays },
+                                                        { key: 'weekend', label: '周末', val: [6,7], active: isWeekend },
+                                                        { key: 'everyday', label: '每天', val: [1,2,3,4,5,6,7], active: isEveryday },
+                                                    ].map(f => (
+                                                        <button key={f.key} onClick={() => setPlanForm({ ...planForm, weeklyDays: f.val })}
+                                                            className="flex-1 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 text-center"
+                                                            style={f.active
+                                                                ? { background: '#FF8C42', color: '#fff', boxShadow: '0 2px 8px rgba(255,140,66,0.3)' }
+                                                                : { background: '#FFFFFF', color: '#5A6E8A', border: '1px solid #F0EBE1' }}>
+                                                            {f.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                <div className="grid grid-cols-7 gap-1.5">
+                                                    {[{ d: 1, l: '一' }, { d: 2, l: '二' }, { d: 3, l: '三' }, { d: 4, l: '四' }, { d: 5, l: '五' }, { d: 6, l: '六' }, { d: 7, l: '日' }].map(w => {
+                                                        const isSelected = days.includes(w.d);
+                                                        return (
+                                                            <button key={w.d} onClick={() => {
+                                                                const newDays = isSelected ? days.filter(d => d !== w.d) : [...days, w.d];
+                                                                setPlanForm({ ...planForm, weeklyDays: newDays });
+                                                            }} className="w-9 h-9 rounded-full font-bold transition-all flex items-center justify-center text-xs active:scale-90"
+                                                                style={isSelected
+                                                                    ? { background: '#FF8C42', color: '#fff', boxShadow: '0 2px 8px rgba(255,140,66,0.3)' }
+                                                                    : { background: '#FFFFFF', color: '#5A6E8A', border: '1px solid #F0EBE1' }}>
+                                                                {w.l}
+                                                            </button>
+                                                        )
+                                                    })}
+                                                </div>
+                                            </div>
+                                            );
+                                        })()}
 
                                         {/* Dynamic Sub-configs: ebbinghaus, n-times etc */}
                                         <div className="space-y-4">
