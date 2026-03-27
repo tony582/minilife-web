@@ -1051,7 +1051,7 @@ export const AddPlanModal = ({ context }) => {
 
                             if (parts.length === 0) return null;
                             return (
-                                <div className="mx-5 mb-2 px-4 py-2.5 rounded-xl" style={{ background: '#FBF7F0', borderTop: '1px solid #F0EBE1' }}>
+                                <div className="mx-5 mb-2 px-4 py-2.5 rounded-xl" style={{ background: '#F5F0E8' }}>
                                     <p className="text-[12px] leading-relaxed" style={{ color: '#8A7A6A' }}>
                                         📋 <span className="font-bold" style={{ color: '#5A4A3A' }}>「{planForm.title}」</span>{parts.join('，')}。
                                     </p>
