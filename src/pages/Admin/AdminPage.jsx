@@ -80,6 +80,7 @@ export const AdminPage = () => {
     const [expiring, setExpiring] = useState([]);
     const [activity, setActivity] = useState([]);
     const [funnel, setFunnel] = useState(null);
+    const [health, setHealth] = useState(null);
     const [userSearch, setUserSearch] = useState('');
     const [userFilter, setUserFilter] = useState('all');
     const [selectedUser, setSelectedUser] = useState(null);
@@ -102,6 +103,7 @@ export const AdminPage = () => {
         apiFetch('/api/admin/stats/expiring').then(r => safeJsonOr(r, [])).then(d => d && setExpiring(d));
         apiFetch('/api/admin/stats/recent-activity').then(r => safeJsonOr(r, [])).then(d => d && setActivity(d));
         apiFetch('/api/admin/stats/funnel').then(r => safeJsonOr(r, null)).then(d => d && setFunnel(d));
+        apiFetch('/api/admin/stats/system-health').then(r => safeJsonOr(r, null)).then(d => d && setHealth(d));
     }, []);
     useEffect(() => { if (adminTab === 'dashboard') loadDashboard(); }, [adminTab, loadDashboard]);
 
@@ -383,6 +385,66 @@ export const AdminPage = () => {
                             </div>
 
                             <ActionBtn onClick={loadDashboard} variant="default"><Icons.RefreshCw size={12} className="inline mr-1" />刷新数据</ActionBtn>
+
+                            {/* ── Section: 系统监控 ── */}
+                            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">系统状态监控</div>
+                            {health && (
+                                <div className="grid md:grid-cols-3 gap-4">
+                                    {/* Server Info */}
+                                    <div className="bg-white rounded-xl border border-slate-200/80 p-5">
+                                        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 mb-3"><Icons.Monitor size={13} /> 服务器信息</div>
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between text-xs"><span className="text-slate-500">运行时长</span><span className="font-bold text-emerald-600">{health.server?.uptimeFormatted}</span></div>
+                                            <div className="flex justify-between text-xs"><span className="text-slate-500">Node.js</span><span className="font-semibold text-slate-700">{health.server?.nodeVersion}</span></div>
+                                            <div className="flex justify-between text-xs"><span className="text-slate-500">平台</span><span className="font-semibold text-slate-700">{health.server?.platform} / {health.server?.arch}</span></div>
+                                            <div className="flex justify-between text-xs"><span className="text-slate-500">PID</span><span className="font-mono text-slate-500">{health.server?.pid}</span></div>
+                                            <div className="flex justify-between text-xs"><span className="text-slate-500">启动时间</span><span className="text-slate-500">{health.server?.startedAt ? new Date(health.server.startedAt).toLocaleString() : '–'}</span></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Memory */}
+                                    <div className="bg-white rounded-xl border border-slate-200/80 p-5">
+                                        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 mb-3"><Icons.Activity size={13} /> 内存使用</div>
+                                        <div className="space-y-3">
+                                            {/* Process memory */}
+                                            <div>
+                                                <div className="flex justify-between text-xs mb-1"><span className="text-slate-500">进程 RSS</span><span className="font-semibold text-slate-700">{health.memory?.rssFormatted}</span></div>
+                                                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden"><div className="h-full rounded-full bg-indigo-500" style={{ width: `${Math.min((health.memory?.rss / (health.os?.totalMemory || 1)) * 100, 100)}%` }} /></div>
+                                            </div>
+                                            <div>
+                                                <div className="flex justify-between text-xs mb-1"><span className="text-slate-500">堆内存</span><span className="font-semibold text-slate-700">{health.memory?.heapUsedFormatted} / {health.memory?.heapTotalFormatted}</span></div>
+                                                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden"><div className="h-full rounded-full bg-purple-500" style={{ width: `${Math.min((health.memory?.heapUsed / (health.memory?.heapTotal || 1)) * 100, 100)}%` }} /></div>
+                                            </div>
+                                            {/* OS memory */}
+                                            <div className="pt-1 border-t border-slate-100">
+                                                <div className="flex justify-between text-xs mb-1"><span className="text-slate-500">系统内存</span><span className={`font-semibold ${(health.os?.memoryUsagePercent || 0) > 80 ? 'text-red-500' : 'text-emerald-600'}`}>{health.os?.usedMemoryFormatted} / {health.os?.totalMemoryFormatted} ({health.os?.memoryUsagePercent}%)</span></div>
+                                                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden"><div className={`h-full rounded-full ${(health.os?.memoryUsagePercent || 0) > 80 ? 'bg-red-500' : (health.os?.memoryUsagePercent || 0) > 60 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${health.os?.memoryUsagePercent || 0}%` }} /></div>
+                                            </div>
+                                            <div className="flex justify-between text-xs"><span className="text-slate-500">CPU 核心</span><span className="font-semibold text-slate-700">{health.os?.cpuCores}核</span></div>
+                                            <div className="flex justify-between text-xs"><span className="text-slate-500">负载均值</span><span className="font-mono text-slate-500">{health.os?.loadAvg?.map(v => v.toFixed(2)).join(' / ')}</span></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Database */}
+                                    <div className="bg-white rounded-xl border border-slate-200/80 p-5">
+                                        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 mb-3"><Icons.Landmark size={13} /> 数据库</div>
+                                        <div className="flex items-center gap-2.5 mb-3">
+                                            <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center"><Icons.Landmark size={18} className="text-indigo-600" /></div>
+                                            <div><div className="text-lg font-extrabold text-slate-800">{health.database?.sizeFormatted}</div><div className="text-[10px] text-slate-400">SQLite 数据库大小</div></div>
+                                        </div>
+                                        <div className="space-y-1 max-h-40 overflow-y-auto">
+                                            {health.database?.tables && Object.entries(health.database.tables).map(([name, count]) => (
+                                                <div key={name} className="flex justify-between text-xs py-0.5">
+                                                    <span className="text-slate-500 font-mono">{name}</span>
+                                                    <span className="font-semibold text-slate-700">{count >= 0 ? count : '–'} 行</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="flex justify-between text-xs mt-2 pt-2 border-t border-slate-100"><span className="text-slate-500">主机名</span><span className="font-mono text-slate-500">{health.os?.hostname}</span></div>
+                                    </div>
+                                </div>
+                            )}
+                            {!health && <div className="text-sm text-slate-400 text-center py-4">加载系统状态...</div>}
                         </div>
                     )}
 

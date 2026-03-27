@@ -1,5 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const os = require('os');
+const fs = require('fs');
+const path = require('path');
+
+const serverStartTime = Date.now();
 
 module.exports = (db, { authenticateToken, requireAdmin }) => {
 
@@ -150,5 +155,92 @@ module.exports = (db, { authenticateToken, requireAdmin }) => {
         }
     });
 
+    // --- System Health Monitoring ---
+    router.get('/system-health', authenticateToken, requireAdmin, async (req, res) => {
+        try {
+            const mem = process.memoryUsage();
+            const uptimeMs = Date.now() - serverStartTime;
+            const dbFilePath = path.resolve(__dirname, '..', 'minilife.sqlite');
+            let dbSizeBytes = 0;
+            try { dbSizeBytes = fs.statSync(dbFilePath).size; } catch {}
+
+            // Table row counts
+            const tables = ['users', 'kids', 'tasks', 'transactions', 'orders', 'activation_codes', 'login_log', 'ai_usage_log', 'classes', 'inventory'];
+            const tableCounts = {};
+            for (const t of tables) {
+                try {
+                    const row = await q(`SELECT COUNT(*) as c FROM ${t}`);
+                    tableCounts[t] = row.c;
+                } catch { tableCounts[t] = -1; }
+            }
+
+            // OS info
+            const totalMem = os.totalmem();
+            const freeMem = os.freemem();
+            const cpus = os.cpus();
+
+            res.json({
+                server: {
+                    uptimeMs,
+                    uptimeFormatted: formatUptime(uptimeMs),
+                    startedAt: new Date(serverStartTime).toISOString(),
+                    nodeVersion: process.version,
+                    platform: process.platform,
+                    arch: process.arch,
+                    pid: process.pid,
+                },
+                memory: {
+                    rss: mem.rss,
+                    heapUsed: mem.heapUsed,
+                    heapTotal: mem.heapTotal,
+                    external: mem.external,
+                    rssFormatted: formatBytes(mem.rss),
+                    heapUsedFormatted: formatBytes(mem.heapUsed),
+                    heapTotalFormatted: formatBytes(mem.heapTotal),
+                },
+                os: {
+                    hostname: os.hostname(),
+                    platform: os.platform(),
+                    release: os.release(),
+                    cpuCores: cpus.length,
+                    cpuModel: cpus.length > 0 ? cpus[0].model : '–',
+                    totalMemory: totalMem,
+                    freeMemory: freeMem,
+                    usedMemory: totalMem - freeMem,
+                    totalMemoryFormatted: formatBytes(totalMem),
+                    freeMemoryFormatted: formatBytes(freeMem),
+                    usedMemoryFormatted: formatBytes(totalMem - freeMem),
+                    memoryUsagePercent: Math.round(((totalMem - freeMem) / totalMem) * 100),
+                    loadAvg: os.loadavg(),
+                },
+                database: {
+                    sizeBytes: dbSizeBytes,
+                    sizeFormatted: formatBytes(dbSizeBytes),
+                    tables: tableCounts,
+                },
+            });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    });
+
     return router;
 };
+
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return (bytes / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
+}
+
+function formatUptime(ms) {
+    const s = Math.floor(ms / 1000);
+    const d = Math.floor(s / 86400);
+    const h = Math.floor((s % 86400) / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    if (d > 0) return `${d}天 ${h}小时 ${m}分`;
+    if (h > 0) return `${h}小时 ${m}分`;
+    return `${m}分钟`;
+}
