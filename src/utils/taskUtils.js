@@ -111,19 +111,10 @@ export const getPeriodProgress = (task, kidId, dateStr) => {
         periodEndDt = new Date(currentDt.getFullYear(), currentDt.getMonth() + 1, 0, 23, 59, 59, 999);
         periodLabel = isEvery ? '每月' : '本月';
     } else if (rc.type.includes('biweek')) {
+        // 本双周 = 本周一 → 下周日 (固定14天)
         const day = currentDt.getDay() || 7;
         periodStartDt = new Date(currentDt);
         periodStartDt.setDate(currentDt.getDate() - day + 1);
-        // For biweekly, if task has startDate, align to that; otherwise just use 2-week window
-        if (task.startDate) {
-            const startDt = new Date(task.startDate);
-            const msPerDay = 24 * 60 * 60 * 1000;
-            const diffDays = Math.floor((periodStartDt - startDt) / msPerDay);
-            const weeksFromStart = Math.floor(diffDays / 7);
-            if (weeksFromStart % 2 !== 0) {
-                periodStartDt.setDate(periodStartDt.getDate() - 7);
-            }
-        }
         periodStartDt.setHours(0, 0, 0, 0);
         periodEndDt = new Date(periodStartDt);
         periodEndDt.setDate(periodStartDt.getDate() + 13);

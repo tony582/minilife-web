@@ -120,7 +120,8 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
     periodStartDt.setDate(currentDt.getDate() - day + 1);
     periodStartDt.setHours(0, 0, 0, 0);
     periodEndDt = new Date(periodStartDt);
-    periodEndDt.setDate(periodStartDt.getDate() + 6);
+    // biweek = 本周一→下周日(14天), week = 本周一→本周日(7天)
+    periodEndDt.setDate(periodStartDt.getDate() + (rc.type.includes('biweek') ? 13 : 6));
     periodEndDt.setHours(23, 59, 59, 999);
   } else if (rc.type.includes('month')) {
     periodStartDt = new Date(currentDt.getFullYear(), currentDt.getMonth(), 1);
