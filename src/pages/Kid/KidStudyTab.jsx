@@ -92,7 +92,11 @@ const catColors = {
     '其他': '#64748B',    // slate-500
     '计划': '#FF8C42',    // orange (Headspace)
 };
-const getCatColor = (cat, customColor) => customColor || catColors[cat] || catColors['计划'];
+const getCatColor = (cat, customColor) => {
+    // Ignore old Tailwind gradient classes (e.g. "from-rose-500 to-rose-600"), only use valid CSS colors
+    const validColor = customColor && !customColor.includes('from-') ? customColor : null;
+    return validColor || catColors[cat] || catColors['计划'];
+};
 
 export const KidStudyTab = () => {
     const kidFilterRef = useRef();
