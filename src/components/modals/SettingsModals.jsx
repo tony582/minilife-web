@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Icons, AvatarDisplay } from '../../utils/Icons';
 import { apiFetch, safeJson } from '../../api/client';
 
@@ -11,12 +11,13 @@ export const SettingsModals = ({ context }) => {
         showAddKidModal, setShowAddKidModal,
         newKidForm, setNewKidForm,
         parentSettings, setParentSettings,
-        settingsCode, setSettingsCode,
+
         usedCodes, setUsedCodes,
         user, setUser,
         kids, setKids,
         notify
     } = context;
+    const [settingsCode, setSettingsCode] = useState('');
 
     return (
         <>
