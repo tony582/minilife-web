@@ -120,10 +120,11 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
     thisMonday.setDate(currentDt.getDate() - day + 1);
     thisMonday.setHours(0, 0, 0, 0);
     if (rc.type.includes('biweek')) {
-      // Same ISO week alignment as getPeriodProgress
-      const jan4 = new Date(thisMonday.getFullYear(), 0, 4);
-      const msPerDay = 24 * 60 * 60 * 1000;
-      const weekNum = Math.ceil(((thisMonday - jan4) / msPerDay + jan4.getDay() + 1) / 7);
+      // Same standard ISO week alignment as getPeriodProgress
+      const thu = new Date(thisMonday);
+      thu.setDate(thisMonday.getDate() + 3);
+      const yearStart = new Date(thu.getFullYear(), 0, 1);
+      const weekNum = Math.ceil((((thu - yearStart) / 86400000) + 1) / 7);
       if (weekNum % 2 === 0) {
         periodStartDt = new Date(thisMonday);
         periodStartDt.setDate(thisMonday.getDate() - 7);

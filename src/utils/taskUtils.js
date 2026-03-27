@@ -112,18 +112,17 @@ export const getPeriodProgress = (task, kidId, dateStr) => {
         periodLabel = isEvery ? '每月' : '本月';
     } else if (rc.type.includes('biweek')) {
         // 本双周 = 固定14天窗口，两周共享同一个周期
-        // 使用ISO周数判断：奇数周=双周第一周，偶数周=双周第二周
         const day = currentDt.getDay() || 7;
         const thisMonday = new Date(currentDt);
         thisMonday.setDate(currentDt.getDate() - day + 1);
         thisMonday.setHours(0, 0, 0, 0);
-        // Calculate ISO week number
-        const jan4 = new Date(thisMonday.getFullYear(), 0, 4);
-        const msPerDay = 24 * 60 * 60 * 1000;
-        const weekNum = Math.ceil(((thisMonday - jan4) / msPerDay + jan4.getDay() + 1) / 7);
+        // Standard ISO week number: find Thursday of this week, count weeks from Jan 1
+        const thu = new Date(thisMonday);
+        thu.setDate(thisMonday.getDate() + 3); // Thursday
+        const yearStart = new Date(thu.getFullYear(), 0, 1);
+        const weekNum = Math.ceil((((thu - yearStart) / 86400000) + 1) / 7);
         // Odd week = biweek starts here; Even week = biweek started last Monday
         if (weekNum % 2 === 0) {
-            // We're in the second week of the biweek → go back 7 days
             periodStartDt = new Date(thisMonday);
             periodStartDt.setDate(thisMonday.getDate() - 7);
         } else {
