@@ -9,7 +9,7 @@ export const KidPreviewModal = ({ context }) => {
         previewTask, setPreviewTask,
         activeKidId, setActiveKidId, appState, parentKidFilter,
         kids, tasks, selectedDate, formatDate,
-        getTaskStatusOnDate, getCategoryGradient,
+        getTaskStatusOnDate, getCatHexColor,
         renderIcon, getIconForCategory,
         setPreviewImages, setPreviewImageIndex, setShowImagePreviewModal,
         setCurrentPreviewIndex,
@@ -124,7 +124,8 @@ export const KidPreviewModal = ({ context }) => {
                 <div className="shrink-0 px-5 py-4 flex items-center justify-between"
                     style={{ background: '#FFFFFF', borderBottom: '1px solid #F0EBE1' }}>
                     <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br ${getCategoryGradient(previewTask.category || '计划任务')} flex items-center justify-center ${previewTask.type === 'habit' ? 'text-xl' : 'text-white'} shadow-sm`}>
+                        <div className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center shadow-sm"
+                            style={{ background: previewTask.categoryColor || getCatHexColor(previewTask.category || '计划任务'), color: previewTask.type === 'habit' ? undefined : '#fff' }}>
                             {previewTask.type === 'habit'
                                 ? (previewTask.iconEmoji || '⭐')
                                 : renderIcon(previewTask.iconName || getIconForCategory(previewTask.category), 20)
