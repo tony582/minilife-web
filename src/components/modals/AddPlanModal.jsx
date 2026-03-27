@@ -735,6 +735,22 @@ export const AddPlanModal = ({ context }) => {
                                                                 className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-orange-500 font-bold bg-white text-orange-700" />
                                                         </div>
                                                     </div>
+                                                    {/* Smart validation hint */}
+                                                    {(() => {
+                                                        const target = Number(planForm.periodTargetCount) || 1;
+                                                        const maxDay = Number(planForm.periodMaxPerDay) || 1;
+                                                        if (maxDay > target) return (
+                                                            <p className="text-[11px] mt-1 px-1" style={{ color: '#E67E22' }}>⚠️ 每天限额({maxDay}次) 大于周期目标({target}次)，一天就能完成了，建议调整</p>
+                                                        );
+                                                        const rt = planForm.repeatType || '';
+                                                        let periodDays = 7;
+                                                        if (rt.includes('biweek')) periodDays = 14;
+                                                        else if (rt.includes('month')) periodDays = 30;
+                                                        if (maxDay * periodDays < target) return (
+                                                            <p className="text-[11px] mt-1 px-1" style={{ color: '#E67E22' }}>⚠️ 按每天{maxDay}次算，{periodDays}天最多{maxDay * periodDays}次，不够完成{target}次目标哦</p>
+                                                        );
+                                                        return null;
+                                                    })()}
 
                                                     <div>
                                                         <label className="text-[11px] font-bold mb-2 block" style={{ color: '#5A6E8A' }}>允许执行的日期</label>
@@ -1035,14 +1051,9 @@ export const AddPlanModal = ({ context }) => {
 
                             if (parts.length === 0) return null;
                             return (
-                                <div className="mx-5 mb-3 rounded-2xl p-4" style={{ background: 'linear-gradient(135deg, #FFF8F0 0%, #FFF3E8 100%)', border: '1.5px dashed #FFD4A8' }}>
-                                    <div className="flex items-center gap-1.5 mb-2">
-                                        <span style={{ fontSize: 14 }}>📋</span>
-                                        <span className="text-[11px] font-black" style={{ color: '#E67E22' }}>任务概览</span>
-                                    </div>
-                                    <p className="text-[13px] leading-relaxed" style={{ color: '#5A4A3A' }}>
-                                        <span className="font-bold">「{planForm.title}」</span>
-                                        {parts.join('，')}。
+                                <div className="mx-5 mb-2 px-4 py-2.5 rounded-xl" style={{ background: '#FBF7F0', borderTop: '1px solid #F0EBE1' }}>
+                                    <p className="text-[12px] leading-relaxed" style={{ color: '#8A7A6A' }}>
+                                        📋 <span className="font-bold" style={{ color: '#5A4A3A' }}>「{planForm.title}」</span>{parts.join('，')}。
                                     </p>
                                 </div>
                             );
