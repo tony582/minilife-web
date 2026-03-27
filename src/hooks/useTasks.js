@@ -1,4 +1,4 @@
-import { apiFetch } from '../api/client';
+import { apiFetch, safeJsonOr } from '../api/client';
 import { getLevelReq } from '../utils/levelUtils';
 
 // Helper function to get weekly completion count
@@ -607,7 +607,7 @@ export const useTasks = (tasks, setTasks, kids, setKids, transactions, setTransa
                 return t;
             }));
 
-            apiFetch('/api/kids').then(r => r.json()).then(setKids).catch(console.error); // Reload kids to get fresh balances across the board
+            apiFetch('/api/kids').then(r => safeJsonOr(r, [])).then(d => d && setKids(d)).catch(console.error); // Reload kids to get fresh balances across the board
             notify(`一键审批完成！共计发放了 ${Object.values(kidRewardTotals).reduce((a, b) => a + b, 0) || 0} 家庭币。`, "success");
 
         } catch (e) {

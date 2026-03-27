@@ -42,6 +42,8 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: textInput || undefined, image: imageData || undefined })
             });
+            const ct = res.headers.get('content-type') || '';
+            if (!ct.includes('application/json')) throw new Error('服务器响应异常');
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'AI 解析失败');
             if (data.mock) notify('演示模式：使用模拟数据（未配置 AI API Key）', 'info');
@@ -62,6 +64,8 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ currentTasks: parsedTasks, refineInstruction: refineInput.trim() })
             });
+            const ct = res.headers.get('content-type') || '';
+            if (!ct.includes('application/json')) throw new Error('服务器响应异常');
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'AI 调整失败');
             setParsedTasks(data.tasks.map((t, i) => ({ ...t, _id: `ai_${Date.now()}_${i}` })));

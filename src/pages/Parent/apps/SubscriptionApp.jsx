@@ -3,7 +3,7 @@ import { useAuthContext } from '../../../context/AuthContext.jsx';
 import { useDataContext } from '../../../context/DataContext.jsx';
 import { useUIContext } from '../../../context/UIContext.jsx';
 import { useToast } from '../../../hooks/useToast';
-import { apiFetch } from '../../../api/client';
+import { apiFetch, safeJsonOr } from '../../../api/client';
 import { Icons } from '../../../utils/Icons';
 
 /**
@@ -25,15 +25,13 @@ export const SubscriptionApp = () => {
                 body: JSON.stringify({ code: settingsCode }),
             });
             const ct = res.headers.get('content-type') || '';
-            if (!ct.includes('application/json')) {
-                return notify("服务器响应异常，请稍后重试", 'error');
-            }
+            if (!ct.includes('application/json')) { notify('服务器响应异常，请稍后重试', 'error'); return; }
             const data = await res.json();
             if (!res.ok) return notify(data.error || "兑换失败", 'error');
             notify("兑换成功！", 'success');
             setUser(prev => ({ ...prev, sub_end_date: data.new_sub_end_date }));
             setSettingsCode('');
-            apiFetch('/api/me/codes').then(r => r.json()).then(setUsedCodes).catch(console.error);
+            apiFetch('/api/me/codes').then(r => safeJsonOr(r, [])).then(d => d && setUsedCodes(d)).catch(console.error);
         } catch (err) {
             notify("网络错误", "error");
         }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Icons, AvatarDisplay } from '../../utils/Icons';
-import { apiFetch, safeJson } from '../../api/client';
+import { apiFetch, safeJson, safeJsonOr } from '../../api/client';
 
 export const SettingsModals = ({ context }) => {
     const {
@@ -126,7 +126,7 @@ export const SettingsModals = ({ context }) => {
                                                 notify("兑换成功！", 'success');
                                                 setUser(prev => ({ ...prev, sub_end_date: data.new_sub_end_date }));
                                                 setSettingsCode('');
-                                                apiFetch('/api/me/codes').then(r => r.ok ? r.json() : []).then(setUsedCodes).catch(console.error);
+                                                apiFetch('/api/me/codes').then(r => safeJsonOr(r, [])).then(d => d && setUsedCodes(d)).catch(console.error);
                                             } catch (err) { notify("网络错误", "error"); }
                                         }} className="bg-rose-500 text-white px-6 rounded-xl font-bold shadow-md shadow-rose-200 hover:bg-rose-600 transition-colors shrink-0">兑换卡密</button>
                                     </div>

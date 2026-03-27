@@ -3,7 +3,7 @@ import { useAuthContext } from '../../context/AuthContext.jsx';
 import { useDataContext } from '../../context/DataContext.jsx';
 import { useToast } from '../../hooks/useToast';
 import { Icons } from '../../utils/Icons';
-import { apiFetch } from '../../api/client';
+import { apiFetch, safeJson, safeJsonOr } from '../../api/client';
 
 const PROVIDERS = [
     { id: 'gemini', name: 'Google Gemini', color: '#4285F4', icon: '✨', models: ['gemini-2.0-flash', 'gemini-2.0-pro', 'gemini-1.5-flash'] },
@@ -30,7 +30,8 @@ export const AdminPage = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ count: 5, duration_days: days })
             });
-            const data = await res.json();
+            const data = await safeJson(res);
+            if (data.error) { notify(data.error, 'error'); return; }
             setAdminCodes(prev => [...(data.codes || []).map(c => ({ code: c, duration_days: days, status: 'active' })), ...prev]);
             notify(`成功生成5个${days}天激活码！`, 'success');
         } catch (e) {
@@ -51,7 +52,7 @@ export const AdminPage = () => {
             setEditingConfig(null);
             notify('AI 配置已保存', 'success');
             // Refresh usage data
-            apiFetch('/api/admin/ai-usage').then(r => r.json()).then(setAdminAiUsage).catch(() => {});
+            apiFetch('/api/admin/ai-usage').then(r => safeJsonOr(r, [])).then(d => d && setAdminAiUsage(d)).catch(() => {});
         } catch (e) {
             notify('保存失败', 'error');
         }
@@ -347,7 +348,7 @@ export const AdminPage = () => {
                                         <div className="text-xs font-bold text-slate-500 mt-1">当月用量统计 · 可为单个用户设置自定义配额</div>
                                     </div>
                                     <button
-                                        onClick={() => apiFetch('/api/admin/ai-usage').then(r => r.json()).then(setAdminAiUsage).then(() => notify('已刷新', 'success')).catch(() => {})}
+                                        onClick={() => apiFetch('/api/admin/ai-usage').then(r => safeJsonOr(r, [])).then(d => d && setAdminAiUsage(d)).then(() => notify('已刷新', 'success')).catch(() => {})}
                                         className="bg-white text-slate-600 px-4 py-2 rounded-xl font-bold hover:bg-slate-50 transition-colors border border-slate-200 text-sm">
                                         🔄 刷新
                                     </button>

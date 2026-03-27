@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { apiFetch } from '../api/client';
+import { apiFetch, safeJsonOr } from '../api/client';
 import { useNavigationStore } from '../stores/navigationStore';
 
 export const useAppData = (token, setToken, user, setUser, setAuthLoading, notify) => {
@@ -29,10 +29,10 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
 
     useEffect(() => {
         if (user?.role === 'admin') {
-            apiFetch('/api/admin/users').then(r => r.json()).then(setAdminUsers).catch(console.error);
-            apiFetch('/api/admin/codes').then(r => r.json()).then(setAdminCodes).catch(console.error);
-            apiFetch('/api/admin/ai-config').then(r => r.json()).then(setAdminAiConfig).catch(console.error);
-            apiFetch('/api/admin/ai-usage').then(r => r.json()).then(setAdminAiUsage).catch(console.error);
+            apiFetch('/api/admin/users').then(r => safeJsonOr(r, [])).then(d => d && setAdminUsers(d)).catch(console.error);
+            apiFetch('/api/admin/codes').then(r => safeJsonOr(r, [])).then(d => d && setAdminCodes(d)).catch(console.error);
+            apiFetch('/api/admin/ai-config').then(r => safeJsonOr(r, null)).then(d => d && setAdminAiConfig(d)).catch(console.error);
+            apiFetch('/api/admin/ai-usage').then(r => safeJsonOr(r, [])).then(d => d && setAdminAiUsage(d)).catch(console.error);
         }
     }, [user]);
 
@@ -58,6 +58,8 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
             try {
                 const userRes = await apiFetch('/api/me');
                 if (!userRes.ok) throw new Error('Auth failed');
+                const ct = userRes.headers.get('content-type') || '';
+                if (!ct.includes('application/json')) throw new Error('Server returned non-JSON');
                 const userData = await userRes.json();
                 setUser(userData);
 

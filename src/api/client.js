@@ -34,3 +34,11 @@ export const safeJson = async (res) => {
         return { error: '服务器响应异常' };
     }
 };
+
+/** Chain-friendly: parse JSON or return fallback. Usage: apiFetch(url).then(r => safeJsonOr(r, [])) */
+export const safeJsonOr = async (res, fallback = null) => {
+    if (!res.ok) return fallback;
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) return fallback;
+    try { return await res.json(); } catch { return fallback; }
+};

@@ -240,6 +240,8 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
           body: JSON.stringify({ coins: task.reward, exp: expDiff })
         });
         if (rewardRes.ok) {
+          const _ct = rewardRes.headers.get('content-type') || '';
+          if (!_ct.includes('application/json')) return;
           const rewardData = await rewardRes.json();
           setKids(prev => prev.map(k => k.id === activeKidId ? {
             ...k,
@@ -949,6 +951,8 @@ const handleQuickComplete = async () => {
       });
       
       if (rewardRes.ok) {
+        const _ct = rewardRes.headers.get('content-type') || '';
+        if (!_ct.includes('application/json')) return;
         const rewardData = await rewardRes.json();
 
         // Update React state with server-returned values (always fresh)
@@ -1133,6 +1137,8 @@ const handleQuickComplete = async () => {
           body: JSON.stringify({ coins: task.reward, exp: expGained })
         });
         if (rewardRes.ok) {
+          const _ct = rewardRes.headers.get('content-type') || '';
+          if (!_ct.includes('application/json')) return;
           const rewardData = await rewardRes.json();
           setKids(prev => prev.map(k => k.id === task.kidId ? {
             ...k,
@@ -1156,6 +1162,8 @@ const handleQuickComplete = async () => {
           body: JSON.stringify({ coins: task.reward, exp: -expPenalty })
         });
         if (rewardRes.ok) {
+          const _ct = rewardRes.headers.get('content-type') || '';
+          if (!_ct.includes('application/json')) return;
           const rewardData = await rewardRes.json();
           setKids(prev => prev.map(k => k.id === task.kidId ? {
             ...k,
@@ -1254,6 +1262,8 @@ const handleQuickComplete = async () => {
           body: JSON.stringify({ coins: -absReward, exp: 0 })
         });
         if (rewardRes.ok) {
+          const _ct = rewardRes.headers.get('content-type') || '';
+          if (!_ct.includes('application/json')) return;
           const rewardData = await rewardRes.json();
           setKids(prev => prev.map(k => String(k.id) === String(kidId) ? {
             ...k,
@@ -1289,7 +1299,9 @@ const handleQuickComplete = async () => {
               body: JSON.stringify({ coins: -absReward, exp: expDeduct })
             });
             if (rewardRes.ok) {
-              const rewardData = await rewardRes.json();
+              const _ct = rewardRes.headers.get('content-type') || '';
+          if (!_ct.includes('application/json')) return;
+          const rewardData = await rewardRes.json();
               setKids(prev => prev.map(k => String(k.id) === String(kidId) ? {
                 ...k,
                 balances: { ...k.balances, spend: rewardData.spend },
@@ -1336,7 +1348,9 @@ const handleQuickComplete = async () => {
               body: JSON.stringify({ coins: absReward, exp: expRefund })
             });
             if (rewardRes.ok) {
-              const rewardData = await rewardRes.json();
+              const _ct = rewardRes.headers.get('content-type') || '';
+          if (!_ct.includes('application/json')) return;
+          const rewardData = await rewardRes.json();
               setKids(prev => prev.map(k => String(k.id) === String(kidId) ? {
                 ...k,
                 balances: { ...k.balances, spend: rewardData.spend },
