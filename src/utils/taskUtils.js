@@ -14,13 +14,24 @@ export const isTaskDueOnDate = (task, dateStr) => {
 
         // 1. Boundary Checks
         const isPeriod = rc.type?.includes('_1') || rc.type?.includes('_n');
+        const isRecurring = rc.type?.includes('every_');
         if (isPeriod && task.startDate) {
-            // For period tasks: use the period start date as boundary (not task.startDate)
-            // This allows showing on all days within the period, but not previous periods
+            // For period tasks: use the period start/end as boundary
+            // 本周/本月 = only within the creation period
+            // 每周/每月 = from creation period onwards (recurring)
             let periodBoundary = task.startDate;
+            let periodEnd = null; // Only set for non-recurring
             if (rc.type.includes('month')) {
-                // Boundary = 1st of the month containing startDate
                 periodBoundary = task.startDate.substring(0, 7) + '-01';
+                if (!isRecurring) {
+                    // End = last day of the month
+                    const sd = new Date(task.startDate);
+                    const lastDay = new Date(sd.getFullYear(), sd.getMonth() + 1, 0);
+                    const y = lastDay.getFullYear();
+                    const m = String(lastDay.getMonth() + 1).padStart(2, '0');
+                    const dd = String(lastDay.getDate()).padStart(2, '0');
+                    periodEnd = `${y}-${m}-${dd}`;
+                }
             } else if (rc.type.includes('week')) {
                 // Boundary = Monday of the week containing startDate
                 const startDt = new Date(task.startDate);
@@ -30,8 +41,19 @@ export const isTaskDueOnDate = (task, dateStr) => {
                 const m = String(startDt.getMonth() + 1).padStart(2, '0');
                 const dd = String(startDt.getDate()).padStart(2, '0');
                 periodBoundary = `${y}-${m}-${dd}`;
+                if (!isRecurring) {
+                    // End = Sunday (weekly) or +13 days (biweekly)
+                    const offset = rc.type.includes('biweek') ? 13 : 6;
+                    const endDt = new Date(startDt);
+                    endDt.setDate(startDt.getDate() + offset);
+                    const ey = endDt.getFullYear();
+                    const em = String(endDt.getMonth() + 1).padStart(2, '0');
+                    const edd = String(endDt.getDate()).padStart(2, '0');
+                    periodEnd = `${ey}-${em}-${edd}`;
+                }
             }
             if (dateStr < periodBoundary) return false;
+            if (periodEnd && dateStr > periodEnd) return false;
         } else if (!isPeriod && task.startDate && dateStr < task.startDate) {
             return false;
         }
