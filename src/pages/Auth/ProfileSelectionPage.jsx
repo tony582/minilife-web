@@ -26,9 +26,14 @@ export const ProfileSelectionPage = () => {
             <div className="flex flex-col items-center">
                 <div className="flex items-center gap-3">
                     <img src="/minilife_logo.png" className="w-14 h-14 md:w-16 md:h-16 rounded-2xl shadow-lg" alt="MiniLife" />
-                    <span className="font-black text-2xl md:text-3xl tracking-wider text-white/50">MiniLife</span>
+                    <span className="font-black text-2xl md:text-3xl tracking-wider text-white/60">MiniLife</span>
                 </div>
-                <p className="text-white/25 text-xs md:text-sm font-medium mt-2 tracking-widest">让成长看得见</p>
+                <div className="flex items-center gap-3 mt-3">
+                    <div className="w-8 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3))' }} />
+                    <p className="text-xs md:text-sm font-medium tracking-[0.25em]"
+                        style={{ color: 'rgba(255,255,255,0.35)' }}>让成长看得见</p>
+                    <div className="w-8 h-px" style={{ background: 'linear-gradient(90deg, rgba(255,255,255,0.3), transparent)' }} />
+                </div>
             </div>
 
             {/* Title */}
