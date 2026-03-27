@@ -16,79 +16,86 @@ export const ProfileSelectionPage = () => {
         }
     }, [kids]);
 
-    // Don't render while auto-skipping
     if (kids.length === 1) return null;
 
+    // Gradient palette per kid index
+    const gradients = [
+        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+        'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+        'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+        'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+    ];
+
     return (
-        <div className="min-h-screen flex flex-col items-center justify-between p-6 pt-12 pb-10"
-            style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
+        <div className="min-h-screen flex flex-col items-center justify-center px-6"
+            style={{ background: 'linear-gradient(160deg, #0f172a 0%, #1e293b 40%, #0f172a 100%)' }}>
 
-            {/* Top spacer */}
-            <div />
-
-            {/* Center content */}
-            <div className="flex flex-col items-center">
-                {/* Logo + Title */}
-                <div className="flex flex-col items-center mb-8 md:mb-12">
-                    <div className="flex items-center gap-2.5 mb-4 md:mb-6">
-                        <img src="/minilife_logo.png" className="w-9 h-9 md:w-10 md:h-10 rounded-2xl shadow-lg" alt="MiniLife Logo" />
-                        <span className="font-black text-lg md:text-xl tracking-wider text-white/50">MiniLife</span>
-                    </div>
-                    <h1 className="text-white text-2xl md:text-4xl font-black mb-1">谁在使用呢？</h1>
-                    <p className="text-white/40 text-xs md:text-sm font-medium">选择你的头像进入</p>
-                </div>
-
-                {/* Kid Avatars */}
-                <div className="flex flex-wrap justify-center gap-6 md:gap-14 max-w-5xl w-full px-4">
-                    {kids.map(k => (
-                        <div key={k.id}
-                            onClick={() => { changeActiveKid(k.id); changeAppState('kid_app'); setKidTab('study'); }}
-                            className="group cursor-pointer flex flex-col items-center"
-                        >
-                            <div className="relative">
-                                <div className="w-24 h-24 md:w-36 md:h-36 rounded-full flex items-center justify-center text-5xl md:text-6xl shadow-2xl group-hover:scale-110 transition-all duration-300 overflow-hidden border-4 border-white/20 group-hover:border-white/60"
-                                    style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-                                    <AvatarDisplay avatar={k.avatar} />
-                                </div>
-                                {/* Glow effect on hover */}
-                                <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                    style={{ boxShadow: '0 0 40px rgba(102, 126, 234, 0.4)' }} />
-                            </div>
-                            <span className="text-white/60 mt-3 md:mt-5 text-lg md:text-xl font-bold group-hover:text-white transition-colors duration-200">{k.name}</span>
-                        </div>
-                    ))}
-
-                    {/* Add Kid Button */}
-                    {kids.length < 5 && (
-                        <div onClick={() => {
-                            changeActiveKid(null);
-                            setNewKidForm({ name: '', gender: 'boy', avatar: '👦', dob: '' });
-                            setShowAddKidModal(true);
-                        }} className="group cursor-pointer flex flex-col items-center">
-                            <div className="w-24 h-24 md:w-36 md:h-36 rounded-full border-3 border-dashed border-white/15 flex items-center justify-center shadow-xl group-hover:scale-110 group-hover:border-white/30 transition-all duration-300"
-                                style={{ background: 'rgba(255,255,255,0.03)' }}>
-                                <Icons.Plus size={36} strokeWidth={2} className="text-white/20 group-hover:text-white/50 transition-colors" />
-                            </div>
-                            <span className="text-white/30 mt-3 md:mt-5 text-lg md:text-xl font-bold group-hover:text-white/50 transition-colors duration-200">添加</span>
-                        </div>
-                    )}
-                </div>
+            {/* Logo */}
+            <div className="flex items-center gap-2 mb-10">
+                <img src="/minilife_logo.png" className="w-9 h-9 rounded-xl" alt="MiniLife" />
+                <span className="font-black text-lg tracking-wider text-white/40">MiniLife</span>
             </div>
 
-            {/* Parent Management — in flow, always visible */}
+            {/* Title */}
+            <h1 className="text-white text-2xl md:text-3xl font-black mb-2">谁在使用呢？</h1>
+            <p className="text-white/35 text-sm mb-10">点击头像进入</p>
+
+            {/* Kid Cards */}
+            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 w-full max-w-md md:max-w-3xl">
+                {kids.map((k, i) => (
+                    <div key={k.id}
+                        onClick={() => { changeActiveKid(k.id); changeAppState('kid_app'); setKidTab('study'); }}
+                        className="group cursor-pointer w-full md:w-auto md:flex-1"
+                    >
+                        <div className="flex md:flex-col items-center gap-4 md:gap-0 rounded-2xl px-5 py-4 md:py-8 md:px-6 transition-all duration-200 group-hover:scale-[1.03] group-active:scale-[0.98]"
+                            style={{
+                                background: 'rgba(255,255,255,0.06)',
+                                border: '1px solid rgba(255,255,255,0.08)',
+                            }}>
+                            <div className="w-16 h-16 md:w-28 md:h-28 rounded-full flex items-center justify-center text-4xl md:text-6xl overflow-hidden border-[3px] border-white/20 group-hover:border-white/50 transition-colors shrink-0"
+                                style={{ background: gradients[i % gradients.length] }}>
+                                <AvatarDisplay avatar={k.avatar} />
+                            </div>
+                            <span className="text-white/70 md:mt-4 text-lg font-bold group-hover:text-white transition-colors">{k.name}</span>
+                        </div>
+                    </div>
+                ))}
+
+                {/* Add Kid */}
+                {kids.length < 5 && (
+                    <div onClick={() => {
+                        changeActiveKid(null);
+                        setNewKidForm({ name: '', gender: 'boy', avatar: '👦', dob: '' });
+                        setShowAddKidModal(true);
+                    }} className="group cursor-pointer w-full md:w-auto md:flex-1">
+                        <div className="flex md:flex-col items-center gap-4 md:gap-0 rounded-2xl px-5 py-4 md:py-8 md:px-6 transition-all duration-200 group-hover:scale-[1.03]"
+                            style={{
+                                background: 'rgba(255,255,255,0.02)',
+                                border: '1px dashed rgba(255,255,255,0.12)',
+                            }}>
+                            <div className="w-16 h-16 md:w-28 md:h-28 rounded-full flex items-center justify-center border-2 border-dashed border-white/15 group-hover:border-white/30 transition-colors shrink-0">
+                                <Icons.Plus size={28} strokeWidth={2} className="text-white/20 group-hover:text-white/40 transition-colors" />
+                            </div>
+                            <span className="text-white/30 md:mt-4 text-lg font-bold group-hover:text-white/50 transition-colors">添加小朋友</span>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Parent Management */}
             <button onClick={() => parentSettings.pinEnabled ? changeAppState('parent_pin') : changeAppState('parent_app')}
-                className="mt-10 md:mt-14 flex items-center gap-3 transition-all duration-200 active:scale-95 hover:scale-105 group shrink-0"
+                className="mt-12 flex items-center gap-2.5 transition-all duration-200 active:scale-95 hover:scale-105 group"
                 style={{
-                    background: 'rgba(255,255,255,0.15)',
-                    backdropFilter: 'blur(16px)',
-                    border: '1px solid rgba(255,255,255,0.25)',
-                    padding: '14px 32px',
+                    background: 'rgba(255,255,255,0.12)',
+                    backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(255,255,255,0.18)',
+                    padding: '12px 28px',
                     borderRadius: '9999px',
-                    boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
                 }}>
-                <Icons.Settings size={20} className="text-white/70 group-hover:text-white transition-colors" />
-                <span className="text-white/80 font-bold text-base group-hover:text-white transition-colors">家长管理</span>
-                <Icons.ChevronRight size={16} className="text-white/50 group-hover:text-white/80 transition-colors" />
+                <Icons.Settings size={18} className="text-white/60 group-hover:text-white transition-colors" />
+                <span className="text-white/70 font-bold text-sm group-hover:text-white transition-colors">家长管理</span>
+                <Icons.ChevronRight size={14} className="text-white/40 group-hover:text-white/70 transition-colors" />
             </button>
         </div>
     );
