@@ -19,7 +19,7 @@ export const ProfileSelectionPage = () => {
     if (kids.length === 1) return null;
 
     return (
-        <div className="min-h-[100dvh] flex flex-col items-center justify-center px-6"
+        <div className="min-h-[100dvh] flex flex-col items-center justify-evenly px-6 py-10"
             style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
 
             {/* Logo */}
