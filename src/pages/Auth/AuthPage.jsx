@@ -57,7 +57,11 @@ export const AuthPage = () => {
                         </button>
 
                         <div className="text-center mb-6">
-                            <div className="text-4xl mb-2">{resetStep === 1 ? '📧' : resetStep === 2 ? '🔢' : '🔐'}</div>
+                            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
+                                {resetStep === 1 ? <Icons.Bell size={28} className="text-indigo-500" /> :
+                                 resetStep === 2 ? <Icons.ShieldCheck size={28} className="text-indigo-500" /> :
+                                 <Icons.Lock size={28} className="text-emerald-500" />}
+                            </div>
                             <h2 className="text-xl font-black text-slate-800">
                                 {resetStep === 1 ? '找回密码' : resetStep === 2 ? '输入验证码' : '设置新密码'}
                             </h2>
