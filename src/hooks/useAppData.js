@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { apiFetch } from '../api/client';
-import { useUIContext } from '../stores/navigationStore';
+import { useNavigationStore } from '../stores/navigationStore';
 
 export const useAppData = (token, setToken, user, setUser, setAuthLoading, notify) => {
-    const { parentSettings, setParentSettings } = useUIContext();
+    const { parentSettings, setParentSettings } = useNavigationStore();
     // Sync lock: refcount to prevent SSE-triggered refetches during multi-step operations
     // Each pauseSync() increments, each resumeSync() decrements.
     // SSE sync only fires when count reaches 0 (all operations done).
