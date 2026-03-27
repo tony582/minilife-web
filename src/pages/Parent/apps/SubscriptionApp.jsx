@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuthContext } from '../../../context/AuthContext.jsx';
 import { useDataContext } from '../../../context/DataContext.jsx';
 import { useUIContext } from '../../../context/UIContext.jsx';
@@ -13,7 +13,7 @@ import { Icons } from '../../../utils/Icons';
 export const SubscriptionApp = () => {
     const { user, setUser } = useAuthContext();
     const { usedCodes, setUsedCodes } = useDataContext();
-    const { settingsCode, setSettingsCode } = useUIContext();
+    const [settingsCode, setSettingsCode] = useState('');
     const { notify } = useToast();
 
     const handleRedeem = async () => {
