@@ -22,17 +22,12 @@ export const ProfileSelectionPage = () => {
         <div className="min-h-[100dvh] flex flex-col items-center justify-evenly px-6 py-10"
             style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
 
-            {/* Logo + Slogan */}
-            <div className="flex flex-col items-center">
-                <div className="flex items-center gap-3">
-                    <img src="/minilife_logo.png" className="w-14 h-14 md:w-16 md:h-16 rounded-2xl shadow-lg" alt="MiniLife" />
-                    <span className="font-black text-2xl md:text-3xl tracking-wider text-white/60">MiniLife</span>
-                </div>
-                <div className="flex items-center gap-3 mt-3">
-                    <div className="w-8 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3))' }} />
-                    <p className="text-xs md:text-sm font-medium tracking-[0.25em]"
-                        style={{ color: 'rgba(255,255,255,0.35)' }}>让成长看得见</p>
-                    <div className="w-8 h-px" style={{ background: 'linear-gradient(90deg, rgba(255,255,255,0.3), transparent)' }} />
+            {/* Logo + Slogan — one tight branded unit */}
+            <div className="flex items-center gap-4">
+                <img src="/minilife_logo.png" className="w-16 h-16 md:w-20 md:h-20 rounded-2xl shadow-lg" alt="MiniLife" />
+                <div className="flex flex-col">
+                    <span className="font-black text-3xl md:text-4xl tracking-wide text-white/70 leading-tight">MiniLife</span>
+                    <span className="text-white/30 text-[11px] md:text-xs font-medium tracking-[0.15em] mt-0.5">让成长看得见 · Make Growth Visible</span>
                 </div>
             </div>
 
