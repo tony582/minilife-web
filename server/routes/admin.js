@@ -13,12 +13,17 @@ module.exports = (db, { authenticateToken, requireAdmin }) => {
             codes.push(`ACT-${Math.random().toString(36).substring(2, 10).toUpperCase()}`);
         }
 
-        const stmt = db.prepare("INSERT INTO activation_codes (code, duration_days, status, batch_id, created_at, note) VALUES (?, ?, 'active', ?, ?, ?)");
         const now = new Date().toISOString();
-        codes.forEach(c => stmt.run([c, duration_days, batchId, now, note || null]));
-        stmt.finalize();
-
-        res.json({ codes, batchId });
+        let completed = 0;
+        codes.forEach(c => {
+            db.run("INSERT INTO activation_codes (code, duration_days, status, batch_id, created_at, note) VALUES (?, ?, 'active', ?, ?, ?)",
+                [c, duration_days, batchId, now, note || null], (err) => {
+                    completed++;
+                    if (completed === codes.length) {
+                        res.json({ codes, batchId });
+                    }
+                });
+        });
     });
 
     // --- List activation codes ---
@@ -35,9 +40,9 @@ module.exports = (db, { authenticateToken, requireAdmin }) => {
     // --- Revoke activation code ---
     router.put('/codes/:code/revoke', authenticateToken, requireAdmin, (req, res) => {
         db.run("UPDATE activation_codes SET status = 'revoked' WHERE code = ? AND status = 'active'",
-            [req.params.code], function(err) {
+            [req.params.code], function(err, result) {
                 if (err) return res.status(500).json({ error: err.message });
-                if (this.changes === 0) return res.status(400).json({ error: '该激活码不可作废（已使用或已作废）' });
+                if (result && result.changes === 0) return res.status(400).json({ error: '该激活码不可作废（已使用或已作废）' });
                 res.json({ success: true });
             });
     });
@@ -45,9 +50,9 @@ module.exports = (db, { authenticateToken, requireAdmin }) => {
     // --- Delete activation code ---
     router.delete('/codes/:code', authenticateToken, requireAdmin, (req, res) => {
         db.run("DELETE FROM activation_codes WHERE code = ? AND status != 'used'",
-            [req.params.code], function(err) {
+            [req.params.code], function(err, result) {
                 if (err) return res.status(500).json({ error: err.message });
-                if (this.changes === 0) return res.status(400).json({ error: '已核销的激活码不可删除' });
+                if (result && result.changes === 0) return res.status(400).json({ error: '已核销的激活码不可删除' });
                 res.json({ success: true });
             });
     });
@@ -91,9 +96,9 @@ module.exports = (db, { authenticateToken, requireAdmin }) => {
             return res.status(400).json({ error: 'Invalid status' });
         }
         db.run("UPDATE users SET status = ? WHERE id = ? AND role != 'admin'",
-            [status, req.params.id], function(err) {
+            [status, req.params.id], function(err, result) {
                 if (err) return res.status(500).json({ error: err.message });
-                if (this.changes === 0) return res.status(400).json({ error: '操作失败（管理员不可禁用）' });
+                if (result && result.changes === 0) return res.status(400).json({ error: '操作失败（管理员不可禁用）' });
                 res.json({ success: true });
             });
     });
@@ -132,9 +137,9 @@ module.exports = (db, { authenticateToken, requireAdmin }) => {
             db.run("DELETE FROM user_settings WHERE userId = ?", [userId]);
             db.run("DELETE FROM login_log WHERE user_id = ?", [userId]);
             db.run("DELETE FROM ai_usage_log WHERE user_id = ?", [userId]);
-            db.run("DELETE FROM users WHERE id = ? AND role != 'admin'", [userId], function(err) {
+        db.run("DELETE FROM users WHERE id = ? AND role != 'admin'", [userId], function(err, result) {
                 if (err) return res.status(500).json({ error: err.message });
-                if (this.changes === 0) return res.status(400).json({ error: '删除失败（管理员不可删除）' });
+                if (result && result.changes === 0) return res.status(400).json({ error: '删除失败（管理员不可删除）' });
                 res.json({ success: true });
             });
         });
@@ -145,7 +150,7 @@ module.exports = (db, { authenticateToken, requireAdmin }) => {
         db.get("SELECT * FROM ai_config WHERE id = 1", [], (err, row) => {
             if (err) return res.status(500).json({ error: err.message });
             if (!row) {
-                db.run("INSERT OR IGNORE INTO ai_config (id, provider, model_name, default_quota, updated_at) VALUES (1, 'gemini', 'gemini-2.0-flash', 50, ?)",
+                db.run("INSERT INTO ai_config (id, provider, model_name, default_quota, updated_at) VALUES (1, 'gemini', 'gemini-2.0-flash', 50, ?) ON CONFLICT (id) DO NOTHING",
                     [new Date().toISOString()], function() {
                         db.get("SELECT * FROM ai_config WHERE id = 1", [], (e, r) => {
                             res.json(r || { provider: 'gemini', api_key: '', model_name: 'gemini-2.0-flash', base_url: '', default_quota: 50 });
@@ -159,8 +164,9 @@ module.exports = (db, { authenticateToken, requireAdmin }) => {
 
     router.put('/ai-config', authenticateToken, requireAdmin, (req, res) => {
         const { provider, api_key, model_name, base_url, default_quota } = req.body;
-        db.run(`INSERT OR REPLACE INTO ai_config (id, provider, api_key, model_name, base_url, default_quota, updated_at)
-                VALUES (1, ?, ?, ?, ?, ?, ?)`,
+        db.run(`INSERT INTO ai_config (id, provider, api_key, model_name, base_url, default_quota, updated_at)
+                VALUES (1, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (id) DO UPDATE SET provider = EXCLUDED.provider, api_key = EXCLUDED.api_key, model_name = EXCLUDED.model_name, base_url = EXCLUDED.base_url, default_quota = EXCLUDED.default_quota, updated_at = EXCLUDED.updated_at`,
             [provider || 'gemini', api_key || '', model_name || 'gemini-2.0-flash', base_url || '', default_quota || 50, new Date().toISOString()],
             function(err) {
                 if (err) return res.status(500).json({ error: err.message });

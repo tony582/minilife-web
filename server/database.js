@@ -1,249 +1,325 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const { Pool } = require('pg');
 
-const dbPath = path.resolve(__dirname, 'minilife.sqlite');
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error('Error opening database', err.message);
-    } else {
-        console.log('Connected to the SQLite database.');
+// ═══════════════════════════════════════════════════════════
+// PostgreSQL Database Layer with SQLite-compatible API
+// ═══════════════════════════════════════════════════════════
+// Provides db.get(), db.all(), db.run() callbacks just like
+// sqlite3 so route files need zero structural changes.
+// The wrapper auto-converts `?` placeholders → `$1, $2, $3`.
+//
+// COLUMN NAME STRATEGY:
+// SQLite is case-insensitive: `userId` and `userid` are same.
+// PostgreSQL lowercases unquoted identifiers: `userId` → `userid`.
+// So we define all PG columns in lowercase. Existing route SQL
+// uses `userId` unquoted, PG treats it as `userid` → match.
+//
+// RESULT MAPPING:
+// PG always returns lowercase keys. Route code accesses `row.userId`.
+// We add a result mapper to restore camelCase keys so JS code works.
+// ═══════════════════════════════════════════════════════════
 
-        // Enable WAL mode for concurrent read/write support
-        // and set busy_timeout so writes wait instead of failing with SQLITE_BUSY
-        db.run("PRAGMA journal_mode = WAL");
-        db.run("PRAGMA busy_timeout = 5000");
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://minilife:minilife@localhost:5432/minilife';
 
-        // Initialize Tables
-        db.serialize(() => {
-            // Because we are moving to multi-tenant, we wipe the old single-tenant tables.
-            // DO NOT WIPE PRODUCTION DATA
-            // db.run(`DROP TABLE IF EXISTS kids`);
-            // db.run(`DROP TABLE IF EXISTS tasks`);
-            // db.run(`DROP TABLE IF EXISTS inventory`);
-            // db.run(`DROP TABLE IF EXISTS orders`);
-            // db.run(`DROP TABLE IF EXISTS transactions`);
-            // db.run(`DROP TABLE IF EXISTS users`);
-            // db.run(`DROP TABLE IF EXISTS activation_codes`);
-
-            // Users Table
-            db.run(`CREATE TABLE IF NOT EXISTS users (
-                id TEXT PRIMARY KEY,
-                email TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL,
-                role TEXT DEFAULT 'user',
-                trial_start TEXT,
-                sub_end_date TEXT,
-                created_at TEXT
-            )`);
-
-            // Activation Codes Table
-            db.run(`CREATE TABLE IF NOT EXISTS activation_codes (
-                code TEXT PRIMARY KEY,
-                duration_days INTEGER NOT NULL,
-                status TEXT DEFAULT 'active',
-                used_by TEXT,
-                used_at TEXT
-            )`);
-
-            // Create a default Admin user (password: admin123)
-            // bcrypt hash for "admin123" ($2b$10$uekgwsW6PjiJsqlT7X807esIAvMyLIeDvfBtOZuey6F3iBG1fxGSi)
-            const insertAdmin = "INSERT INTO users (id, email, password_hash, role, created_at) VALUES (?,?,?,?,?)";
-            db.run(insertAdmin, ['admin_1', 'admin@minilife.com', '$2b$10$uekgwsW6PjiJsqlT7X807esIAvMyLIeDvfBtOZuey6F3iBG1fxGSi', 'admin', new Date().toISOString()], (err) => {
-                if (err) {
-                    // Ignored on restart if it already exists
-                }
-            });
-
-            // Kids Table (Multi-tenant)
-            db.run(`CREATE TABLE IF NOT EXISTS kids (
-                id TEXT PRIMARY KEY,
-                userId TEXT NOT NULL,
-                name TEXT NOT NULL,
-                avatar TEXT,
-                level INTEGER DEFAULT 1,
-                exp INTEGER DEFAULT 0,
-                balance_spend INTEGER DEFAULT 0,
-                balance_save INTEGER DEFAULT 0,
-                balance_give INTEGER DEFAULT 0,
-                vault_locked INTEGER DEFAULT 0,
-                vault_projected INTEGER DEFAULT 0
-            )`);
-
-            // Tasks Table (Multi-tenant)
-            db.run(`CREATE TABLE IF NOT EXISTS tasks (
-                id TEXT PRIMARY KEY,
-                userId TEXT NOT NULL,
-                kidId TEXT,
-                title TEXT NOT NULL,
-                type TEXT,
-                reward INTEGER,
-                status TEXT,
-                iconName TEXT,
-                iconEmoji TEXT,
-                category TEXT,
-                catColor TEXT,
-                frequency TEXT,
-                timeStr TEXT,
-                standards TEXT,
-                dates TEXT,
-                history TEXT,
-                startDate TEXT,
-                pointRule TEXT,
-                habitType TEXT,
-                attachments TEXT,
-                requireApproval INTEGER,
-                repeatConfig TEXT,
-                "order" INTEGER DEFAULT 0,
-                periodMaxPerDay INTEGER,
-                periodMaxType TEXT
-            )`);
-            
-            // Add safe migrations for existing instances
-            db.run(`ALTER TABLE tasks ADD COLUMN periodMaxPerDay INTEGER`, (err) => {});
-            db.run(`ALTER TABLE tasks ADD COLUMN periodMaxType TEXT`, (err) => {});
-            db.run(`ALTER TABLE tasks ADD COLUMN linkedClassId TEXT`, (err) => {});
-
-
-            // Inventory Table (Multi-tenant)
-            db.run(`CREATE TABLE IF NOT EXISTS inventory (
-                id TEXT PRIMARY KEY,
-                userId TEXT NOT NULL,
-                name TEXT NOT NULL,
-                price INTEGER,
-                desc TEXT,
-                iconEmoji TEXT,
-                image TEXT,
-                type TEXT,
-                walletTarget TEXT DEFAULT 'spend',
-                charityTarget TEXT,
-                maxExchanges INTEGER,
-                periodMaxType TEXT
-            )`);
-
-            // Orders Table (Multi-tenant)
-            db.run(`CREATE TABLE IF NOT EXISTS orders (
-                id TEXT PRIMARY KEY,
-                userId TEXT NOT NULL,
-                kidId TEXT,
-                itemName TEXT,
-                itemImage TEXT,
-                price INTEGER,
-                status TEXT,
-                date TEXT,
-                rating INTEGER,
-                comment TEXT,
-                redeemCode TEXT
-            )`);
-
-            // Safe migrations for newly added columns
-            db.run(`ALTER TABLE inventory ADD COLUMN image TEXT`, (err) => {});
-            db.run(`ALTER TABLE inventory ADD COLUMN walletTarget TEXT DEFAULT 'spend'`, (err) => {});
-            db.run(`ALTER TABLE inventory ADD COLUMN charityTarget TEXT`, (err) => {});
-            db.run(`ALTER TABLE inventory ADD COLUMN maxExchanges INTEGER`, (err) => {});
-            db.run(`ALTER TABLE inventory ADD COLUMN periodMaxType TEXT`, (err) => {});
-            db.run(`ALTER TABLE orders ADD COLUMN itemImage TEXT`, (err) => {});
-            db.run(`ALTER TABLE orders ADD COLUMN redeemCode TEXT`, (err) => {});
-
-            // Transactions Table (Multi-tenant)
-            db.run(`CREATE TABLE IF NOT EXISTS transactions (
-                id TEXT PRIMARY KEY,
-                userId TEXT NOT NULL,
-                kidId TEXT,
-                type TEXT,
-                amount INTEGER,
-                title TEXT,
-                date TEXT,
-                category TEXT
-            )`);
-
-            // Interest Classes Table (Multi-tenant)
-            db.run(`CREATE TABLE IF NOT EXISTS classes (
-                id TEXT PRIMARY KEY,
-                userId TEXT NOT NULL,
-                kidId TEXT NOT NULL,
-                name TEXT NOT NULL,
-                iconEmoji TEXT,
-                teacher TEXT,
-                location TEXT,
-                totalSessions INTEGER DEFAULT 0,
-                usedSessions INTEGER DEFAULT 0,
-                sessionsPerClass INTEGER DEFAULT 1,
-                scheduleDays TEXT,
-                timeStr TEXT,
-                startDate TEXT,
-                reward INTEGER DEFAULT 0,
-                checkinMode TEXT DEFAULT 'parent',
-                linkedTaskId TEXT,
-                notes TEXT,
-                status TEXT DEFAULT 'active',
-                checkinHistory TEXT DEFAULT '[]',
-                createdAt TEXT
-            )`);
-            
-            // Safe migrations for classes
-            db.run(`ALTER TABLE classes ADD COLUMN checkinMode TEXT DEFAULT 'parent'`, (err) => {});
-            db.run(`ALTER TABLE classes ADD COLUMN linkedTaskId TEXT`, (err) => {});
-            db.run(`ALTER TABLE classes ADD COLUMN classMode TEXT DEFAULT 'package'`, (err) => {});
-            db.run(`ALTER TABLE classes ADD COLUMN pricePerSession REAL DEFAULT 0`, (err) => {});
-            db.run(`ALTER TABLE classes ADD COLUMN settlementType TEXT DEFAULT 'manual'`, (err) => {});
-
-            // AI Config Table (singleton — admin maintains 1 row)
-            db.run(`CREATE TABLE IF NOT EXISTS ai_config (
-                id INTEGER PRIMARY KEY DEFAULT 1,
-                provider TEXT DEFAULT 'gemini',
-                api_key TEXT DEFAULT '',
-                model_name TEXT DEFAULT 'gemini-2.0-flash',
-                base_url TEXT DEFAULT '',
-                default_quota INTEGER DEFAULT 50,
-                updated_at TEXT
-            )`);
-
-            // AI Usage Log Table
-            db.run(`CREATE TABLE IF NOT EXISTS ai_usage_log (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id TEXT NOT NULL,
-                action TEXT DEFAULT 'parse-homework',
-                tokens_used INTEGER DEFAULT 0,
-                created_at TEXT NOT NULL
-            )`);
-
-            // User Settings Table (per-user JSON blob)
-            db.run(`CREATE TABLE IF NOT EXISTS user_settings (
-                userId TEXT PRIMARY KEY,
-                data TEXT DEFAULT '{}'
-            )`);
-
-            // Per-user AI quota (NULL = use global default)
-            db.run(`ALTER TABLE users ADD COLUMN ai_quota INTEGER DEFAULT NULL`, (err) => {});
-
-            // User status for ban/enable
-            db.run(`ALTER TABLE users ADD COLUMN status TEXT DEFAULT 'active'`, (err) => {});
-
-            // Login Log for DAU tracking
-            db.run(`CREATE TABLE IF NOT EXISTS login_log (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id TEXT NOT NULL,
-                login_at TEXT NOT NULL,
-                ip_address TEXT
-            )`);
-
-            // System Announcements
-            db.run(`CREATE TABLE IF NOT EXISTS announcements (
-                id TEXT PRIMARY KEY,
-                title TEXT NOT NULL,
-                content TEXT,
-                type TEXT DEFAULT 'info',
-                active INTEGER DEFAULT 1,
-                created_at TEXT,
-                expires_at TEXT
-            )`);
-
-            // Activation codes enhancements
-            db.run(`ALTER TABLE activation_codes ADD COLUMN batch_id TEXT`, (err) => {});
-            db.run(`ALTER TABLE activation_codes ADD COLUMN created_at TEXT`, (err) => {});
-            db.run(`ALTER TABLE activation_codes ADD COLUMN note TEXT`, (err) => {});
-        });
-    }
+const pool = new Pool({
+    connectionString: DATABASE_URL,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
 });
+
+// ─── Column name mapping: lowercase PG → camelCase JS ───
+const COLUMN_MAP = {
+    userid: 'userId', kidid: 'kidId', iconname: 'iconName',
+    iconemoji: 'iconEmoji', catcolor: 'catColor', timestr: 'timeStr',
+    startdate: 'startDate', pointrule: 'pointRule', habittype: 'habitType',
+    requireapproval: 'requireApproval', repeatconfig: 'repeatConfig',
+    periodmaxperday: 'periodMaxPerDay', periodmaxtype: 'periodMaxType',
+    linkedclassid: 'linkedClassId', wallettarget: 'walletTarget',
+    charitytarget: 'charityTarget', maxexchanges: 'maxExchanges',
+    itemname: 'itemName', itemimage: 'itemImage', redeemcode: 'redeemCode',
+    totalsessions: 'totalSessions', usedsessions: 'usedSessions',
+    sessionsperclass: 'sessionsPerClass', scheduledays: 'scheduleDays',
+    checkinmode: 'checkinMode', linkedtaskid: 'linkedTaskId',
+    checkinhistory: 'checkinHistory', createdat: 'createdAt',
+    classmode: 'classMode', pricepersession: 'pricePerSession',
+    settlementtype: 'settlementType', password_hash: 'password_hash',
+    sub_end_date: 'sub_end_date', trial_start: 'trial_start',
+    created_at: 'created_at', ai_quota: 'ai_quota',
+    user_id: 'user_id', login_at: 'login_at', ip_address: 'ip_address',
+    api_key: 'api_key', model_name: 'model_name', base_url: 'base_url',
+    default_quota: 'default_quota', updated_at: 'updated_at',
+    tokens_used: 'tokens_used', duration_days: 'duration_days',
+    used_by: 'used_by', used_at: 'used_at', batch_id: 'batch_id',
+    expires_at: 'expires_at',
+};
+
+function mapRow(row) {
+    if (!row) return row;
+    const mapped = {};
+    for (const [key, value] of Object.entries(row)) {
+        mapped[COLUMN_MAP[key] || key] = value;
+    }
+    return mapped;
+}
+
+function mapRows(rows) {
+    return rows.map(mapRow);
+}
+
+// ─── Helper: Convert SQLite `?` placeholders to PG `$1, $2, $3` ───
+function convertPlaceholders(sql) {
+    let idx = 0;
+    return sql.replace(/\?/g, () => `$${++idx}`);
+}
+
+// ─── SQLite-compatible API wrapper ───
+const db = {
+    // db.get(sql, params, cb) → returns single row or undefined
+    get(sql, params, cb) {
+        if (typeof params === 'function') { cb = params; params = []; }
+        const pgSql = convertPlaceholders(sql);
+        pool.query(pgSql, params || [])
+            .then(result => cb(null, mapRow(result.rows[0]) || undefined))
+            .catch(err => cb(err));
+    },
+
+    // db.all(sql, params, cb) → returns array of rows
+    all(sql, params, cb) {
+        if (typeof params === 'function') { cb = params; params = []; }
+        const pgSql = convertPlaceholders(sql);
+        pool.query(pgSql, params || [])
+            .then(result => cb(null, mapRows(result.rows)))
+            .catch(err => cb(err));
+    },
+
+    // db.run(sql, params, cb) → runs INSERT/UPDATE/DELETE
+    run(sql, params, cb) {
+        if (typeof params === 'function') { cb = params; params = []; }
+        const pgSql = convertPlaceholders(sql);
+        pool.query(pgSql, params || [])
+            .then(result => {
+                if (cb) cb(null, { changes: result.rowCount });
+            })
+            .catch(err => {
+                if (cb) cb(err);
+            });
+    },
+
+    // No-op for compat
+    serialize(fn) { if (fn) fn(); },
+
+    // Expose pool for direct queries (admin-stats)
+    pool,
+};
+
+// ─── Initialize Schema ───
+async function initializeDatabase() {
+    const client = await pool.connect();
+    try {
+        console.log('Connected to PostgreSQL database.');
+
+        // Users Table
+        await client.query(`CREATE TABLE IF NOT EXISTS users (
+            id TEXT PRIMARY KEY,
+            email TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            role TEXT DEFAULT 'user',
+            trial_start TEXT,
+            sub_end_date TEXT,
+            created_at TEXT,
+            ai_quota INTEGER DEFAULT NULL,
+            status TEXT DEFAULT 'active'
+        )`);
+
+        // Activation Codes Table
+        await client.query(`CREATE TABLE IF NOT EXISTS activation_codes (
+            code TEXT PRIMARY KEY,
+            duration_days INTEGER NOT NULL,
+            status TEXT DEFAULT 'active',
+            used_by TEXT,
+            used_at TEXT,
+            batch_id TEXT,
+            created_at TEXT,
+            note TEXT
+        )`);
+
+        // Kids Table (all lowercase columns — PG auto-lowercases unquoted SQL)
+        await client.query(`CREATE TABLE IF NOT EXISTS kids (
+            id TEXT PRIMARY KEY,
+            userid TEXT NOT NULL,
+            name TEXT NOT NULL,
+            avatar TEXT,
+            level INTEGER DEFAULT 1,
+            exp INTEGER DEFAULT 0,
+            balance_spend INTEGER DEFAULT 0,
+            balance_save INTEGER DEFAULT 0,
+            balance_give INTEGER DEFAULT 0,
+            vault_locked INTEGER DEFAULT 0,
+            vault_projected INTEGER DEFAULT 0
+        )`);
+
+        // Tasks Table
+        await client.query(`CREATE TABLE IF NOT EXISTS tasks (
+            id TEXT PRIMARY KEY,
+            userid TEXT NOT NULL,
+            kidid TEXT,
+            title TEXT NOT NULL,
+            type TEXT,
+            reward INTEGER,
+            status TEXT,
+            iconname TEXT,
+            iconemoji TEXT,
+            category TEXT,
+            catcolor TEXT,
+            frequency TEXT,
+            timestr TEXT,
+            standards TEXT,
+            dates TEXT,
+            history TEXT,
+            startdate TEXT,
+            pointrule TEXT,
+            habittype TEXT,
+            attachments TEXT,
+            requireapproval INTEGER,
+            repeatconfig TEXT,
+            "order" INTEGER DEFAULT 0,
+            periodmaxperday INTEGER,
+            periodmaxtype TEXT,
+            linkedclassid TEXT
+        )`);
+
+        // Inventory Table
+        await client.query(`CREATE TABLE IF NOT EXISTS inventory (
+            id TEXT PRIMARY KEY,
+            userid TEXT NOT NULL,
+            name TEXT NOT NULL,
+            price INTEGER,
+            "desc" TEXT,
+            iconemoji TEXT,
+            image TEXT,
+            type TEXT,
+            wallettarget TEXT DEFAULT 'spend',
+            charitytarget TEXT,
+            maxexchanges INTEGER,
+            periodmaxtype TEXT
+        )`);
+
+        // Orders Table
+        await client.query(`CREATE TABLE IF NOT EXISTS orders (
+            id TEXT PRIMARY KEY,
+            userid TEXT NOT NULL,
+            kidid TEXT,
+            itemname TEXT,
+            itemimage TEXT,
+            price INTEGER,
+            status TEXT,
+            date TEXT,
+            rating INTEGER,
+            comment TEXT,
+            redeemcode TEXT
+        )`);
+
+        // Transactions Table
+        await client.query(`CREATE TABLE IF NOT EXISTS transactions (
+            id TEXT PRIMARY KEY,
+            userid TEXT NOT NULL,
+            kidid TEXT,
+            type TEXT,
+            amount INTEGER,
+            title TEXT,
+            date TEXT,
+            category TEXT
+        )`);
+
+        // Interest Classes Table
+        await client.query(`CREATE TABLE IF NOT EXISTS classes (
+            id TEXT PRIMARY KEY,
+            userid TEXT NOT NULL,
+            kidid TEXT NOT NULL,
+            name TEXT NOT NULL,
+            iconemoji TEXT,
+            teacher TEXT,
+            location TEXT,
+            totalsessions INTEGER DEFAULT 0,
+            usedsessions INTEGER DEFAULT 0,
+            sessionsperclass INTEGER DEFAULT 1,
+            scheduledays TEXT,
+            timestr TEXT,
+            startdate TEXT,
+            reward INTEGER DEFAULT 0,
+            checkinmode TEXT DEFAULT 'parent',
+            linkedtaskid TEXT,
+            notes TEXT,
+            status TEXT DEFAULT 'active',
+            checkinhistory TEXT DEFAULT '[]',
+            createdat TEXT,
+            classmode TEXT DEFAULT 'package',
+            pricepersession REAL DEFAULT 0,
+            settlementtype TEXT DEFAULT 'manual'
+        )`);
+
+        // AI Config Table
+        await client.query(`CREATE TABLE IF NOT EXISTS ai_config (
+            id INTEGER PRIMARY KEY DEFAULT 1,
+            provider TEXT DEFAULT 'gemini',
+            api_key TEXT DEFAULT '',
+            model_name TEXT DEFAULT 'gemini-2.0-flash',
+            base_url TEXT DEFAULT '',
+            default_quota INTEGER DEFAULT 50,
+            updated_at TEXT
+        )`);
+
+        // AI Usage Log Table
+        await client.query(`CREATE TABLE IF NOT EXISTS ai_usage_log (
+            id SERIAL PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            action TEXT DEFAULT 'parse-homework',
+            tokens_used INTEGER DEFAULT 0,
+            created_at TEXT NOT NULL
+        )`);
+
+        // User Settings Table
+        await client.query(`CREATE TABLE IF NOT EXISTS user_settings (
+            userid TEXT PRIMARY KEY,
+            data TEXT DEFAULT '{}'
+        )`);
+
+        // Login Log
+        await client.query(`CREATE TABLE IF NOT EXISTS login_log (
+            id SERIAL PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            login_at TEXT NOT NULL,
+            ip_address TEXT
+        )`);
+
+        // System Announcements
+        await client.query(`CREATE TABLE IF NOT EXISTS announcements (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            content TEXT,
+            type TEXT DEFAULT 'info',
+            active INTEGER DEFAULT 1,
+            created_at TEXT,
+            expires_at TEXT
+        )`);
+
+        // Create default Admin user if not exists
+        await client.query(
+            `INSERT INTO users (id, email, password_hash, role, created_at)
+             VALUES ($1, $2, $3, $4, $5)
+             ON CONFLICT (id) DO NOTHING`,
+            ['admin_1', 'admin@minilife.com', '$2b$10$uekgwsW6PjiJsqlT7X807esIAvMyLIeDvfBtOZuey6F3iBG1fxGSi', 'admin', new Date().toISOString()]
+        );
+
+        console.log('PostgreSQL schema initialized successfully.');
+    } catch (err) {
+        console.error('Database initialization error:', err.message);
+    } finally {
+        client.release();
+    }
+}
+
+// Run initialization
+initializeDatabase();
 
 module.exports = db;

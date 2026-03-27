@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const os = require('os');
-const fs = require('fs');
-const path = require('path');
 
 const serverStartTime = Date.now();
 
@@ -47,8 +45,8 @@ module.exports = (db, { authenticateToken, requireAdmin }) => {
                 q(`SELECT COUNT(*) as c FROM users WHERE role != 'admin' AND created_at >= '${weekAgo}'`),
                 q("SELECT COUNT(*) as c FROM classes"),
                 q("SELECT COUNT(*) as c FROM activation_codes WHERE status = 'used'"),
-                q("SELECT ROUND(AVG(cnt), 1) as c FROM (SELECT COUNT(*) as cnt FROM tasks GROUP BY userId)"),
-                q(`SELECT u.email, COUNT(*) as cnt FROM login_log l JOIN users u ON l.user_id = u.id WHERE l.login_at >= '${monthStart}' GROUP BY l.user_id ORDER BY cnt DESC LIMIT 1`),
+                q("SELECT ROUND(AVG(cnt)::numeric, 1) as c FROM (SELECT COUNT(*) as cnt FROM tasks GROUP BY userid) sub"),
+                q(`SELECT u.email, COUNT(*) as cnt FROM login_log l JOIN users u ON l.user_id = u.id WHERE l.login_at >= '${monthStart}' GROUP BY l.user_id, u.email ORDER BY cnt DESC LIMIT 1`),
             ]);
 
             // Subscription conversion rate
@@ -88,9 +86,9 @@ module.exports = (db, { authenticateToken, requireAdmin }) => {
             const startStr = startDate.toISOString();
 
             const [registrations, dau, aiDaily] = await Promise.all([
-                qAll(`SELECT DATE(created_at) as date, COUNT(*) as count FROM users WHERE role != 'admin' AND created_at >= ? GROUP BY DATE(created_at) ORDER BY date`, [startStr]),
-                qAll(`SELECT DATE(login_at) as date, COUNT(DISTINCT user_id) as count FROM login_log WHERE login_at >= ? GROUP BY DATE(login_at) ORDER BY date`, [startStr]),
-                qAll(`SELECT DATE(created_at) as date, COUNT(*) as count FROM ai_usage_log WHERE created_at >= ? GROUP BY DATE(created_at) ORDER BY date`, [startStr]),
+                qAll(`SELECT CAST(created_at AS DATE)::text as date, COUNT(*) as count FROM users WHERE role != 'admin' AND created_at >= ? GROUP BY CAST(created_at AS DATE) ORDER BY date`, [startStr]),
+                qAll(`SELECT CAST(login_at AS DATE)::text as date, COUNT(DISTINCT user_id) as count FROM login_log WHERE login_at >= ? GROUP BY CAST(login_at AS DATE) ORDER BY date`, [startStr]),
+                qAll(`SELECT CAST(created_at AS DATE)::text as date, COUNT(*) as count FROM ai_usage_log WHERE created_at >= ? GROUP BY CAST(created_at AS DATE) ORDER BY date`, [startStr]),
             ]);
 
             res.json({ registrations, dau, aiDaily });
@@ -160,9 +158,15 @@ module.exports = (db, { authenticateToken, requireAdmin }) => {
         try {
             const mem = process.memoryUsage();
             const uptimeMs = Date.now() - serverStartTime;
-            const dbFilePath = path.resolve(__dirname, '..', 'minilife.sqlite');
+
+            // Get PG database size
             let dbSizeBytes = 0;
-            try { dbSizeBytes = fs.statSync(dbFilePath).size; } catch {}
+            try {
+                const sizeRow = await new Promise((resolve, reject) => {
+                    db.get("SELECT pg_database_size(current_database()) as size", [], (err, row) => err ? reject(err) : resolve(row));
+                });
+                dbSizeBytes = sizeRow?.size || 0;
+            } catch {}
 
             // Table row counts
             const tables = ['users', 'kids', 'tasks', 'transactions', 'orders', 'activation_codes', 'login_log', 'ai_usage_log', 'classes', 'inventory'];
