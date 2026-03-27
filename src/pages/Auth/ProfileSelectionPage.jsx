@@ -22,15 +22,20 @@ export const ProfileSelectionPage = () => {
         <div className="min-h-[100dvh] flex flex-col items-center justify-evenly px-6 py-10"
             style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
 
-            {/* Logo */}
-            <div className="flex items-center gap-2 mb-6 md:mb-8">
-                <img src="/minilife_logo.png" className="w-8 h-8 md:w-10 md:h-10 rounded-xl md:rounded-2xl shadow-lg" alt="MiniLife" />
-                <span className="font-black text-base md:text-xl tracking-wider text-white/50">MiniLife</span>
+            {/* Logo + Slogan */}
+            <div className="flex flex-col items-center">
+                <div className="flex items-center gap-3">
+                    <img src="/minilife_logo.png" className="w-14 h-14 md:w-16 md:h-16 rounded-2xl shadow-lg" alt="MiniLife" />
+                    <span className="font-black text-2xl md:text-3xl tracking-wider text-white/50">MiniLife</span>
+                </div>
+                <p className="text-white/25 text-xs md:text-sm font-medium mt-2 tracking-widest">让成长看得见</p>
             </div>
 
             {/* Title */}
-            <h1 className="text-white text-2xl md:text-4xl font-black mb-1 md:mb-2">谁在使用呢？</h1>
-            <p className="text-white/40 text-xs md:text-sm font-medium mb-8 md:mb-12">选择你的头像进入</p>
+            <div className="text-center">
+                <h1 className="text-white text-2xl md:text-4xl font-black mb-1">谁在使用呢？</h1>
+                <p className="text-white/40 text-sm md:text-base font-medium">选择你的头像进入</p>
+            </div>
 
             {/* Kid Avatars */}
             <div className="flex flex-wrap md:flex-nowrap justify-center gap-6 md:gap-14 max-w-5xl w-full px-2">
