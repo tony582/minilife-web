@@ -24,6 +24,10 @@ export const SubscriptionApp = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ code: settingsCode }),
             });
+            const ct = res.headers.get('content-type') || '';
+            if (!ct.includes('application/json')) {
+                return notify("服务器响应异常，请稍后重试", 'error');
+            }
             const data = await res.json();
             if (!res.ok) return notify(data.error || "兑换失败", 'error');
             notify("兑换成功！", 'success');
