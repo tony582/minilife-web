@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { apiFetch } from '../api/client';
+import { useUIContext } from '../stores/navigationStore';
 
 export const useAppData = (token, setToken, user, setUser, setAuthLoading, notify) => {
+    const { parentSettings, setParentSettings } = useUIContext();
     // Sync lock: refcount to prevent SSE-triggered refetches during multi-step operations
     // Each pauseSync() increments, each resumeSync() decrements.
     // SSE sync only fires when count reaches 0 (all operations done).
@@ -75,13 +77,14 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
                     return r.json();
                 };
 
-                const [kidsData, tasksData, invData, ordersData, transData, classesData] = await Promise.all([
+                const [kidsData, tasksData, invData, ordersData, transData, classesData, settingsData] = await Promise.all([
                     apiFetch('/api/kids').then(safeJson),
                     apiFetch('/api/tasks').then(safeJson),
                     apiFetch('/api/inventory').then(safeJson),
                     apiFetch('/api/orders').then(safeJson),
                     apiFetch('/api/transactions').then(safeJson),
-                    apiFetch('/api/classes').then(safeJson)
+                    apiFetch('/api/classes').then(safeJson),
+                    apiFetch('/api/settings').then(r => r.ok ? r.json() : {}).catch(() => ({}))
                 ]);
 
                 if (Array.isArray(kidsData)) {
@@ -92,6 +95,10 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
                 if (Array.isArray(ordersData)) setOrders(ordersData);
                 if (Array.isArray(transData)) setTransactions(transData);
                 if (Array.isArray(classesData)) setClasses(classesData);
+                // Merge loaded settings into parentSettings
+                if (settingsData && Object.keys(settingsData).length > 0) {
+                    setParentSettings(prev => ({ ...prev, ...settingsData }));
+                }
 
                 apiFetch('/api/me/codes').then(safeJson).then(setUsedCodes).catch(console.error);
             } catch (err) {
@@ -189,6 +196,25 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
             localStorage.setItem('minilife_activeKidId', firstKid);
         }
     }, [kids, activeKidId]);
+
+    // Auto-save parentSettings to database when they change (debounced)
+    const settingsInitRef = useRef(false);
+    useEffect(() => {
+        // Skip the initial render (don't save default settings)
+        if (!settingsInitRef.current) {
+            settingsInitRef.current = true;
+            return;
+        }
+        if (!token) return;
+        const timeout = setTimeout(() => {
+            apiFetch('/api/settings', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(parentSettings)
+            }).catch(e => console.error('Failed to save settings:', e));
+        }, 1000); // 1s debounce
+        return () => clearTimeout(timeout);
+    }, [parentSettings, token]);
 
     // === Kid Management Functions ===
     const changeActiveKid = (newKidId) => {

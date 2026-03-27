@@ -46,6 +46,7 @@ app.use('/api/inventory', require('./routes/inventory')(db, deps));
 app.use('/api/orders', require('./routes/orders')(db, deps));
 app.use('/api/classes', require('./routes/classes')(db, deps));
 app.use('/api/transactions', require('./routes/transactions')(db, deps));
+app.use('/api/settings', require('./routes/settings')(db, deps));
 
 // --- Serve Frontend in Production ---
 app.use(express.static(path.join(__dirname, '../dist')));

@@ -207,6 +207,12 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 created_at TEXT NOT NULL
             )`);
 
+            // User Settings Table (per-user JSON blob)
+            db.run(`CREATE TABLE IF NOT EXISTS user_settings (
+                userId TEXT PRIMARY KEY,
+                data TEXT DEFAULT '{}'
+            )`);
+
             // Per-user AI quota (NULL = use global default)
             db.run(`ALTER TABLE users ADD COLUMN ai_quota INTEGER DEFAULT NULL`, (err) => {});
         });
