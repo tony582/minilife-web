@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { apiFetch, API_BASE } from '../api/client';
 
 export const useAuth = (notify, changeAppState) => {
@@ -9,6 +9,94 @@ export const useAuth = (notify, changeAppState) => {
     const [authForm, setAuthForm] = useState({ email: '', password: '' });
     const [confirmPassword, setConfirmPassword] = useState('');
     const [activationCode, setActivationCode] = useState('');
+
+    // Forgot password states
+    const [resetStep, setResetStep] = useState(0); // 0=hidden, 1=email, 2=code, 3=newPassword
+    const [resetEmail, setResetEmail] = useState('');
+    const [resetCode, setResetCode] = useState('');
+    const [resetNewPassword, setResetNewPassword] = useState('');
+    const [resetConfirmPassword, setResetConfirmPassword] = useState('');
+    const [resetLoading, setResetLoading] = useState(false);
+    const [cooldown, setCooldown] = useState(0);
+    const cooldownRef = useRef(null);
+
+    // Cooldown timer
+    useEffect(() => {
+        if (cooldown > 0) {
+            cooldownRef.current = setTimeout(() => setCooldown(c => c - 1), 1000);
+            return () => clearTimeout(cooldownRef.current);
+        }
+    }, [cooldown]);
+
+    const startForgotPassword = useCallback(() => {
+        setResetStep(1);
+        setResetEmail('');
+        setResetCode('');
+        setResetNewPassword('');
+        setResetConfirmPassword('');
+    }, []);
+
+    const cancelForgotPassword = useCallback(() => {
+        setResetStep(0);
+    }, []);
+
+    // Step 1: Send verification code
+    const sendResetCodeHandler = useCallback(async () => {
+        if (!resetEmail) return notify('请输入邮箱', 'error');
+        setResetLoading(true);
+        try {
+            const res = await fetch(`${API_BASE}/api/forgot-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: resetEmail })
+            });
+            const data = await res.json();
+            if (!res.ok) return notify(data.error, 'error');
+            notify('验证码已发送到邮箱，请查收 📧', 'success');
+            setResetStep(2);
+            setCooldown(60);
+        } catch { notify('网络错误', 'error'); }
+        finally { setResetLoading(false); }
+    }, [resetEmail, notify]);
+
+    // Step 2: Verify code
+    const verifyResetCodeHandler = useCallback(async () => {
+        if (!resetCode) return notify('请输入验证码', 'error');
+        setResetLoading(true);
+        try {
+            const res = await fetch(`${API_BASE}/api/verify-reset-code`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: resetEmail, code: resetCode })
+            });
+            const data = await res.json();
+            if (!res.ok) return notify(data.error, 'error');
+            setResetStep(3);
+        } catch { notify('网络错误', 'error'); }
+        finally { setResetLoading(false); }
+    }, [resetEmail, resetCode, notify]);
+
+    // Step 3: Set new password
+    const resetPasswordHandler = useCallback(async () => {
+        if (!resetNewPassword) return notify('请输入新密码', 'error');
+        if (resetNewPassword.length < 6) return notify('密码至少6位', 'error');
+        if (resetNewPassword !== resetConfirmPassword) return notify('两次密码不一致', 'error');
+        setResetLoading(true);
+        try {
+            const res = await fetch(`${API_BASE}/api/reset-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: resetEmail, code: resetCode, newPassword: resetNewPassword })
+            });
+            const data = await res.json();
+            if (!res.ok) return notify(data.error, 'error');
+            notify('密码重置成功！请登录 🎉', 'success');
+            setResetStep(0);
+            setAuthMode('login');
+            setAuthForm({ email: resetEmail, password: '' });
+        } catch { notify('网络错误', 'error'); }
+        finally { setResetLoading(false); }
+    }, [resetEmail, resetCode, resetNewPassword, resetConfirmPassword, notify, setAuthMode, setAuthForm]);
 
     const handleAuth = async (e) => {
         e.preventDefault();
@@ -59,6 +147,16 @@ export const useAuth = (notify, changeAppState) => {
         authForm, setAuthForm,
         confirmPassword, setConfirmPassword,
         activationCode, setActivationCode,
-        handleAuth, handleLogout
+        handleAuth, handleLogout,
+        // Forgot password
+        resetStep, resetEmail, setResetEmail,
+        resetCode, setResetCode,
+        resetNewPassword, setResetNewPassword,
+        resetConfirmPassword, setResetConfirmPassword,
+        resetLoading, cooldown,
+        startForgotPassword, cancelForgotPassword,
+        sendResetCode: sendResetCodeHandler,
+        verifyResetCode: verifyResetCodeHandler,
+        resetPassword: resetPasswordHandler,
     };
 };

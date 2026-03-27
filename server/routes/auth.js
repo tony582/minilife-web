@@ -2,8 +2,107 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
+const { sendResetCode } = require('../emailService');
+
+// In-memory store for reset codes: { email: { code, expires, attempts } }
+const resetCodes = new Map();
 
 module.exports = (db, { JWT_SECRET, authenticateToken, notifyUser }) => {
+
+    // --- Forgot Password: Send verification code ---
+    router.post('/forgot-password', async (req, res) => {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ error: '请输入邮箱地址' });
+
+        // Check if user exists
+        db.get("SELECT id, email FROM users WHERE email = ?", [email], async (err, user) => {
+            if (err) return res.status(500).json({ error: err.message });
+            if (!user) {
+                // Don't reveal whether email exists — still return success
+                return res.json({ success: true, message: '如果该邮箱已注册，验证码已发送' });
+            }
+
+            // Rate limit: 60s cooldown per email
+            const existing = resetCodes.get(email);
+            if (existing && existing.sentAt && Date.now() - existing.sentAt < 60000) {
+                const wait = Math.ceil((60000 - (Date.now() - existing.sentAt)) / 1000);
+                return res.status(429).json({ error: `请${wait}秒后再试` });
+            }
+
+            // Generate 6-digit code
+            const code = String(Math.floor(100000 + Math.random() * 900000));
+            resetCodes.set(email, {
+                code,
+                expires: Date.now() + 5 * 60 * 1000, // 5 minutes
+                attempts: 0,
+                sentAt: Date.now(),
+            });
+
+            // Auto-cleanup after 10 minutes
+            setTimeout(() => resetCodes.delete(email), 10 * 60 * 1000);
+
+            try {
+                await sendResetCode(email, code);
+                console.log(`[Auth] Reset code sent to ${email}`);
+                res.json({ success: true, message: '验证码已发送到您的邮箱' });
+            } catch (err) {
+                console.error('[Auth] Email send error:', err);
+                resetCodes.delete(email);
+                res.status(500).json({ error: '邮件发送失败，请稍后再试' });
+            }
+        });
+    });
+
+    // --- Forgot Password: Verify code ---
+    router.post('/verify-reset-code', (req, res) => {
+        const { email, code } = req.body;
+        if (!email || !code) return res.status(400).json({ error: '请输入邮箱和验证码' });
+
+        const entry = resetCodes.get(email);
+        if (!entry) return res.status(400).json({ error: '请先获取验证码' });
+
+        if (Date.now() > entry.expires) {
+            resetCodes.delete(email);
+            return res.status(400).json({ error: '验证码已过期，请重新获取' });
+        }
+
+        entry.attempts++;
+        if (entry.attempts > 5) {
+            resetCodes.delete(email);
+            return res.status(400).json({ error: '尝试次数过多，请重新获取验证码' });
+        }
+
+        if (entry.code !== code.trim()) {
+            return res.status(400).json({ error: `验证码错误，还可尝试${5 - entry.attempts}次` });
+        }
+
+        // Mark as verified
+        entry.verified = true;
+        res.json({ success: true });
+    });
+
+    // --- Forgot Password: Reset password ---
+    router.post('/reset-password', async (req, res) => {
+        const { email, code, newPassword } = req.body;
+        if (!email || !code || !newPassword) return res.status(400).json({ error: '信息不完整' });
+
+        if (newPassword.length < 6) return res.status(400).json({ error: '密码至少6位' });
+
+        const entry = resetCodes.get(email);
+        if (!entry || !entry.verified || entry.code !== code) {
+            return res.status(400).json({ error: '请先完成验证码验证' });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        db.run("UPDATE users SET password_hash = ? WHERE email = ?",
+            [hashedPassword, email], function (err) {
+                if (err) return res.status(500).json({ error: err.message });
+                resetCodes.delete(email);
+                console.log(`[Auth] Password reset for ${email}`);
+                res.json({ success: true, message: '密码重置成功，请登录' });
+            });
+    });
+
 
     // --- Register ---
     router.post('/register', async (req, res) => {

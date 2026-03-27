@@ -12,6 +12,14 @@ export const AuthPage = () => {
         setConfirmPassword,
         handleAuth,
         notifications,
+        // Forgot password
+        resetStep, resetEmail, setResetEmail,
+        resetCode, setResetCode,
+        resetNewPassword, setResetNewPassword,
+        resetConfirmPassword, setResetConfirmPassword,
+        resetLoading, cooldown,
+        startForgotPassword, cancelForgotPassword,
+        sendResetCode, verifyResetCode, resetPassword,
     } = useAuthContext();
 
     const themeSettings = authMode === 'login'
@@ -28,6 +36,8 @@ export const AuthPage = () => {
             btnClass: 'bg-gradient-to-r from-orange-400 to-rose-500 hover:from-orange-300 hover:to-rose-400 shadow-orange-500/30'
         };
 
+    const inputClass = "w-full bg-white/60 border-2 border-white focus:border-indigo-300 focus:bg-white rounded-xl md:rounded-2xl p-3 md:p-4 outline-none font-bold text-slate-800 transition-all shadow-inner placeholder:text-slate-300";
+
     return (
         <div className="min-h-screen relative flex flex-col items-center justify-center p-4 overflow-hidden">
             {/* Lush Dribbble-style Background */}
@@ -38,6 +48,79 @@ export const AuthPage = () => {
             <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-300/30 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '2s' }}></div>
 
             <div className="w-full max-w-[420px] bg-white/70 backdrop-blur-3xl border border-white shadow-2xl rounded-[2.5rem] p-6 md:p-10 relative z-10 transition-all duration-500 ease-out">
+
+                {/* ═══ Forgot Password Overlay ═══ */}
+                {resetStep > 0 && (
+                    <div className="absolute inset-0 bg-white/95 backdrop-blur-xl rounded-[2.5rem] z-20 flex flex-col p-6 md:p-10 animate-slide-in">
+                        <button onClick={cancelForgotPassword} className="self-start text-slate-400 hover:text-slate-600 transition-colors mb-4">
+                            <Icons.ArrowLeft size={20} /> <span className="text-sm font-bold ml-1">返回登录</span>
+                        </button>
+
+                        <div className="text-center mb-6">
+                            <div className="text-4xl mb-2">{resetStep === 1 ? '📧' : resetStep === 2 ? '🔢' : '🔐'}</div>
+                            <h2 className="text-xl font-black text-slate-800">
+                                {resetStep === 1 ? '找回密码' : resetStep === 2 ? '输入验证码' : '设置新密码'}
+                            </h2>
+                            <p className="text-sm text-slate-500 mt-1">
+                                {resetStep === 1 ? '输入注册邮箱，我们会发送验证码' :
+                                 resetStep === 2 ? `验证码已发送至 ${resetEmail}` :
+                                 '请设置一个新的登录密码'}
+                            </p>
+                        </div>
+
+                        <div className="space-y-4 flex-1">
+                            {/* Step 1: Enter email */}
+                            {resetStep === 1 && (
+                                <>
+                                    <input type="email" value={resetEmail} onChange={e => setResetEmail(e.target.value)}
+                                        className={inputClass} placeholder="name@example.com" autoFocus
+                                        onKeyDown={e => e.key === 'Enter' && sendResetCode()} />
+                                    <button onClick={sendResetCode} disabled={resetLoading}
+                                        className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black py-3.5 rounded-xl shadow-lg transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100">
+                                        {resetLoading ? '发送中...' : '发送验证码'}
+                                    </button>
+                                </>
+                            )}
+
+                            {/* Step 2: Enter code */}
+                            {resetStep === 2 && (
+                                <>
+                                    <input type="text" inputMode="numeric" maxLength={6} value={resetCode}
+                                        onChange={e => setResetCode(e.target.value.replace(/\D/g, ''))}
+                                        className={`${inputClass} text-center text-2xl tracking-[0.5em]`}
+                                        placeholder="000000" autoFocus
+                                        onKeyDown={e => e.key === 'Enter' && verifyResetCode()} />
+                                    <button onClick={verifyResetCode} disabled={resetLoading}
+                                        className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black py-3.5 rounded-xl shadow-lg transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100">
+                                        {resetLoading ? '验证中...' : '验证'}
+                                    </button>
+                                    <button onClick={sendResetCode} disabled={cooldown > 0 || resetLoading}
+                                        className="w-full text-sm font-bold text-slate-400 hover:text-indigo-500 transition-colors disabled:opacity-40">
+                                        {cooldown > 0 ? `${cooldown}秒后可重新发送` : '重新发送验证码'}
+                                    </button>
+                                </>
+                            )}
+
+                            {/* Step 3: New password */}
+                            {resetStep === 3 && (
+                                <>
+                                    <input type="password" value={resetNewPassword}
+                                        onChange={e => setResetNewPassword(e.target.value)}
+                                        className={inputClass} placeholder="新密码（至少6位）" autoFocus
+                                        onKeyDown={e => e.key === 'Enter' && document.getElementById('confirm-pw')?.focus()} />
+                                    <input id="confirm-pw" type="password" value={resetConfirmPassword}
+                                        onChange={e => setResetConfirmPassword(e.target.value)}
+                                        className={inputClass} placeholder="确认新密码"
+                                        onKeyDown={e => e.key === 'Enter' && resetPassword()} />
+                                    <button onClick={resetPassword} disabled={resetLoading}
+                                        className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black py-3.5 rounded-xl shadow-lg transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100">
+                                        {resetLoading ? '重置中...' : '重置密码'}
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {/* Header with App Logo */}
                 <div className="text-center mb-5">
@@ -64,15 +147,23 @@ export const AuthPage = () => {
                     <div className="space-y-1">
                         <label className="pl-1 text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest">Email 账号</label>
                         <input required type="email" value={authForm.email} onChange={e => setAuthForm({ ...authForm, email: e.target.value })}
-                            className="w-full bg-white/60 border-2 border-white focus:border-indigo-300 focus:bg-white rounded-xl md:rounded-2xl p-3 md:p-4 outline-none font-bold text-slate-800 transition-all shadow-inner placeholder:text-slate-300"
-                            placeholder="name@example.com" />
+                            className={inputClass} placeholder="name@example.com" />
                     </div>
                     <div className="space-y-1">
                         <label className="pl-1 text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest">安全密码</label>
                         <input required type="password" value={authForm.password} onChange={e => setAuthForm({ ...authForm, password: e.target.value })}
-                            className="w-full bg-white/60 border-2 border-white focus:border-indigo-300 focus:bg-white rounded-xl md:rounded-2xl p-3 md:p-4 outline-none font-bold text-slate-800 transition-all shadow-inner placeholder:text-slate-300"
-                            placeholder="••••••••" />
+                            className={inputClass} placeholder="••••••••" />
                     </div>
+
+                    {/* Forgot password link - only show in login mode */}
+                    {authMode === 'login' && (
+                        <div className="text-right -mt-1">
+                            <button type="button" onClick={startForgotPassword}
+                                className="text-xs font-bold text-slate-400 hover:text-indigo-500 transition-colors">
+                                忘记密码？
+                            </button>
+                        </div>
+                    )}
 
                     {/* Conditional Confirm Password */}
                     {authMode === 'register' && (
