@@ -13,9 +13,28 @@ export const isTaskDueOnDate = (task, dateStr) => {
         const rc = task.repeatConfig;
 
         // 1. Boundary Checks
-        // Skip startDate check for period tasks — they use their period window instead
         const isPeriod = rc.type?.includes('_1') || rc.type?.includes('_n');
-        if (!isPeriod && task.startDate && dateStr < task.startDate) return false;
+        if (isPeriod && task.startDate) {
+            // For period tasks: use the period start date as boundary (not task.startDate)
+            // This allows showing on all days within the period, but not previous periods
+            let periodBoundary = task.startDate;
+            if (rc.type.includes('month')) {
+                // Boundary = 1st of the month containing startDate
+                periodBoundary = task.startDate.substring(0, 7) + '-01';
+            } else if (rc.type.includes('week')) {
+                // Boundary = Monday of the week containing startDate
+                const startDt = new Date(task.startDate);
+                const d = startDt.getDay() || 7;
+                startDt.setDate(startDt.getDate() - d + 1);
+                const y = startDt.getFullYear();
+                const m = String(startDt.getMonth() + 1).padStart(2, '0');
+                const dd = String(startDt.getDate()).padStart(2, '0');
+                periodBoundary = `${y}-${m}-${dd}`;
+            }
+            if (dateStr < periodBoundary) return false;
+        } else if (!isPeriod && task.startDate && dateStr < task.startDate) {
+            return false;
+        }
         if (rc.endDate && dateStr > rc.endDate) return false;
 
         // 2. Type-specific Resolution
