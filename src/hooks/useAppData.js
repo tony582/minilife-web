@@ -84,7 +84,12 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
                     apiFetch('/api/orders').then(safeJson),
                     apiFetch('/api/transactions').then(safeJson),
                     apiFetch('/api/classes').then(safeJson),
-                    apiFetch('/api/settings').then(r => r.ok ? r.json() : {}).catch(() => ({}))
+                    apiFetch('/api/settings').then(r => {
+                        if (!r.ok) return {};
+                        const ct = r.headers.get('content-type') || '';
+                        if (!ct.includes('application/json')) return {}; // SPA fallback returns HTML
+                        return r.json();
+                    }).catch(() => ({}))
                 ]);
 
                 if (Array.isArray(kidsData)) {
