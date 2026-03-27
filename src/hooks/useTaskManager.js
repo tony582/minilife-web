@@ -116,11 +116,24 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
   let periodStartDt, periodEndDt;
   if (rc.type.includes('week')) {
     const day = currentDt.getDay() || 7;
-    periodStartDt = new Date(currentDt);
-    periodStartDt.setDate(currentDt.getDate() - day + 1);
-    periodStartDt.setHours(0, 0, 0, 0);
+    const thisMonday = new Date(currentDt);
+    thisMonday.setDate(currentDt.getDate() - day + 1);
+    thisMonday.setHours(0, 0, 0, 0);
+    if (rc.type.includes('biweek')) {
+      // Same ISO week alignment as getPeriodProgress
+      const jan4 = new Date(thisMonday.getFullYear(), 0, 4);
+      const msPerDay = 24 * 60 * 60 * 1000;
+      const weekNum = Math.ceil(((thisMonday - jan4) / msPerDay + jan4.getDay() + 1) / 7);
+      if (weekNum % 2 === 0) {
+        periodStartDt = new Date(thisMonday);
+        periodStartDt.setDate(thisMonday.getDate() - 7);
+      } else {
+        periodStartDt = new Date(thisMonday);
+      }
+    } else {
+      periodStartDt = new Date(thisMonday);
+    }
     periodEndDt = new Date(periodStartDt);
-    // biweek = 本周一→下周日(14天), week = 本周一→本周日(7天)
     periodEndDt.setDate(periodStartDt.getDate() + (rc.type.includes('biweek') ? 13 : 6));
     periodEndDt.setHours(23, 59, 59, 999);
   } else if (rc.type.includes('month')) {
