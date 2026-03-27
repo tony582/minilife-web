@@ -78,6 +78,8 @@ export const AdminPage = () => {
     const [stats, setStats] = useState(null);
     const [growth, setGrowth] = useState(null);
     const [expiring, setExpiring] = useState([]);
+    const [activity, setActivity] = useState([]);
+    const [funnel, setFunnel] = useState(null);
     const [userSearch, setUserSearch] = useState('');
     const [userFilter, setUserFilter] = useState('all');
     const [selectedUser, setSelectedUser] = useState(null);
@@ -98,6 +100,8 @@ export const AdminPage = () => {
         apiFetch('/api/admin/stats/overview').then(r => safeJsonOr(r, null)).then(d => d && setStats(d));
         apiFetch('/api/admin/stats/growth?days=30').then(r => safeJsonOr(r, null)).then(d => d && setGrowth(d));
         apiFetch('/api/admin/stats/expiring').then(r => safeJsonOr(r, [])).then(d => d && setExpiring(d));
+        apiFetch('/api/admin/stats/recent-activity').then(r => safeJsonOr(r, [])).then(d => d && setActivity(d));
+        apiFetch('/api/admin/stats/funnel').then(r => safeJsonOr(r, null)).then(d => d && setFunnel(d));
     }, []);
     useEffect(() => { if (adminTab === 'dashboard') loadDashboard(); }, [adminTab, loadDashboard]);
 
@@ -222,6 +226,8 @@ export const AdminPage = () => {
                     {/* ═══ DASHBOARD ═══ */}
                     {adminTab === 'dashboard' && (
                         <div className="space-y-5 animate-fade-in">
+                            {/* ── Section: 核心指标 ── */}
+                            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">核心指标</div>
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                                 <KpiCard icon={Icons.Users} label="总用户" value={stats?.totalUsers} color="#6366F1" />
                                 <KpiCard icon={Icons.CheckCircle} label="活跃订阅" value={stats?.activeSubscriptions} color="#10B981" />
@@ -229,31 +235,153 @@ export const AdminPage = () => {
                                 <KpiCard icon={Icons.LogIn} label="今日登录" value={stats?.todayLogins} color="#8B5CF6" />
                                 <KpiCard icon={Icons.Sparkles} label="AI调用/月" value={stats?.aiCallsThisMonth} color="#F59E0B" />
                             </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                <KpiCard icon={Icons.Clock} label="已过期" value={stats?.expiredUsers} color="#EF4444" />
-                                <KpiCard icon={Icons.ShieldAlert} label="已禁用" value={stats?.bannedUsers} color="#EF4444" />
-                                <KpiCard icon={Icons.Tag} label="激活码总数" value={stats?.totalCodes} color="#6366F1" />
-                                <KpiCard icon={Icons.Key} label="未使用码" value={stats?.unusedCodes} color="#10B981" />
-                            </div>
+
+                            {/* ── Section: 订阅转化漏斗 + 关键洞察 ── */}
                             <div className="grid md:grid-cols-2 gap-4">
+                                {/* Funnel */}
                                 <div className="bg-white rounded-xl border border-slate-200/80 p-5">
-                                    <BarChart data={growth?.registrations} label="用户注册趋势 · 近30天" color="#6366F1" />
+                                    <div className="text-xs font-semibold text-slate-500 mb-4">订阅转化漏斗</div>
+                                    {funnel && (() => {
+                                        const max = Math.max(funnel.registered, 1);
+                                        const steps = [
+                                            { label: '注册用户', value: funnel.registered, color: '#6366F1' },
+                                            { label: '活跃订阅', value: funnel.active, color: '#10B981' },
+                                            { label: '已付费', value: funnel.paidUsers, color: '#8B5CF6' },
+                                            { label: '已过期', value: funnel.expired, color: '#EF4444' },
+                                        ];
+                                        return (
+                                            <div className="space-y-2.5">
+                                                {steps.map((s, i) => (
+                                                    <div key={i}>
+                                                        <div className="flex justify-between text-xs mb-1">
+                                                            <span className="font-semibold text-slate-600">{s.label}</span>
+                                                            <span className="font-bold" style={{ color: s.color }}>{s.value}</span>
+                                                        </div>
+                                                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                                            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.max((s.value / max) * 100, 2)}%`, backgroundColor: s.color }} />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                <div className="text-[11px] text-slate-400 mt-2">转化率: <span className="font-bold text-indigo-600">{stats?.conversionRate || 0}%</span> (注册→付费)</div>
+                                            </div>
+                                        );
+                                    })()}
+                                    {!funnel && <div className="text-sm text-slate-400 py-4 text-center">加载中...</div>}
                                 </div>
+
+                                {/* Key Insights */}
                                 <div className="bg-white rounded-xl border border-slate-200/80 p-5">
-                                    <BarChart data={growth?.dau} label="每日活跃用户 (DAU)" color="#10B981" />
+                                    <div className="text-xs font-semibold text-slate-500 mb-4">关键洞察</div>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-lg">
+                                            <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0"><Icons.TrendingUp size={15} className="text-indigo-600" /></div>
+                                            <div><div className="text-xs font-semibold text-slate-700">本周新增 {stats?.newThisWeek ?? '–'} 人</div><div className="text-[10px] text-slate-400">近7天活跃 {stats?.weekLogins ?? '–'} 人</div></div>
+                                        </div>
+                                        <div className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-lg">
+                                            <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0"><Icons.Award size={15} className="text-purple-600" /></div>
+                                            <div><div className="text-xs font-semibold text-slate-700">最活跃用户</div><div className="text-[10px] text-slate-400">{stats?.mostActiveUser || '–'} ({stats?.mostActiveLogins || 0}次登录)</div></div>
+                                        </div>
+                                        <div className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-lg">
+                                            <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0"><Icons.Target size={15} className="text-amber-600" /></div>
+                                            <div><div className="text-xs font-semibold text-slate-700">人均任务 {stats?.avgTasksPerUser ?? '–'}</div><div className="text-[10px] text-slate-400">已用激活码 {stats?.usedCodes ?? '–'} / {stats?.totalCodes ?? '–'}</div></div>
+                                        </div>
+                                        <div className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-lg">
+                                            <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0"><Icons.ShieldAlert size={15} className="text-red-500" /></div>
+                                            <div><div className="text-xs font-semibold text-slate-700">过期 {stats?.expiredUsers ?? '–'} · 禁用 {stats?.bannedUsers ?? '–'}</div><div className="text-[10px] text-slate-400">未使用激活码 {stats?.unusedCodes ?? '–'} 个</div></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            {expiring.length > 0 && (
-                                <div className="bg-white rounded-xl border border-amber-200 p-4">
-                                    <div className="flex items-center gap-1.5 text-sm font-semibold text-amber-700 mb-2"><Icons.AlertCircle size={14} /> 7天内到期 ({expiring.length}人)</div>
-                                    <div className="space-y-1.5">{expiring.map(u => (
-                                        <div key={u.id} className="flex justify-between items-center text-xs bg-amber-50 px-3 py-1.5 rounded-md">
-                                            <span className="font-semibold text-slate-700 truncate">{u.email}</span>
-                                            <span className="text-amber-600 font-semibold flex-shrink-0 ml-2">{new Date(u.sub_end_date).toLocaleDateString()}</span>
-                                        </div>
-                                    ))}</div>
+
+                            {/* ── Section: 平台数据 ── */}
+                            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">平台使用数据</div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                                <KpiCard icon={Icons.Users} label="孩子总数" value={stats?.totalKids} color="#6366F1" />
+                                <KpiCard icon={Icons.CheckSquare} label="任务总数" value={stats?.totalTasks} color="#10B981" />
+                                <KpiCard icon={Icons.ArrowRightLeft} label="交易总数" value={stats?.totalTransactions} color="#F59E0B" />
+                                <KpiCard icon={Icons.ShoppingBag} label="订单总数" value={stats?.totalOrders} color="#EF4444" />
+                                <KpiCard icon={Icons.GraduationCap} label="兴趣班" value={stats?.totalClasses} color="#8B5CF6" />
+                                <KpiCard icon={Icons.Tag} label="激活码库存" value={stats?.unusedCodes} color="#0EA5E9" />
+                            </div>
+
+                            {/* ── Section: 趋势图 ── */}
+                            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">趋势分析</div>
+                            <div className="grid md:grid-cols-3 gap-4">
+                                <div className="bg-white rounded-xl border border-slate-200/80 p-5">
+                                    <BarChart data={growth?.registrations} label="用户注册 · 近30天" color="#6366F1" />
                                 </div>
-                            )}
+                                <div className="bg-white rounded-xl border border-slate-200/80 p-5">
+                                    <BarChart data={growth?.dau} label="DAU · 每日活跃" color="#10B981" />
+                                </div>
+                                <div className="bg-white rounded-xl border border-slate-200/80 p-5">
+                                    <BarChart data={growth?.aiDaily} label="AI 调用量 · 近30天" color="#F59E0B" />
+                                </div>
+                            </div>
+
+                            {/* ── Section: 活动动态 + 到期预警 ── */}
+                            <div className="grid md:grid-cols-2 gap-4">
+                                {/* Recent Activity */}
+                                <div className="bg-white rounded-xl border border-slate-200/80 p-5">
+                                    <div className="text-xs font-semibold text-slate-500 mb-3">最近动态</div>
+                                    {activity.length === 0 && <div className="text-sm text-slate-400 py-4 text-center">暂无记录</div>}
+                                    <div className="space-y-1.5 max-h-56 overflow-y-auto">
+                                        {activity.map((a, i) => {
+                                            const icons = { login: Icons.LogIn, register: Icons.UserPlus, redeem: Icons.Key };
+                                            const colors = { login: '#6366F1', register: '#10B981', redeem: '#F59E0B' };
+                                            const labels = { login: '登录', register: '注册', redeem: '兑换激活码' };
+                                            const Icon = icons[a.type] || Icons.Activity;
+                                            const ago = (() => {
+                                                const diff = (Date.now() - new Date(a.time).getTime()) / 1000;
+                                                if (diff < 60) return '刚刚';
+                                                if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
+                                                if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`;
+                                                return `${Math.floor(diff / 86400)}天前`;
+                                            })();
+                                            return (
+                                                <div key={i} className="flex items-center gap-2.5 py-1.5">
+                                                    <div className="w-6 h-6 rounded flex items-center justify-center flex-shrink-0" style={{ backgroundColor: colors[a.type] + '14' }}>
+                                                        <Icon size={12} style={{ color: colors[a.type] }} />
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <span className="text-xs font-semibold text-slate-700 truncate block">{a.email}</span>
+                                                    </div>
+                                                    <span className="text-[10px] text-slate-400 flex-shrink-0">{labels[a.type]}</span>
+                                                    <span className="text-[10px] text-slate-400 flex-shrink-0 w-14 text-right">{ago}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Expiring + Code Status */}
+                                <div className="space-y-4">
+                                    {expiring.length > 0 && (
+                                        <div className="bg-white rounded-xl border border-amber-200 p-4">
+                                            <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 mb-2"><Icons.AlertCircle size={13} /> 7天内到期 ({expiring.length}人)</div>
+                                            <div className="space-y-1 max-h-32 overflow-y-auto">{expiring.map(u => (
+                                                <div key={u.id} className="flex justify-between items-center text-xs bg-amber-50 px-3 py-1.5 rounded-md">
+                                                    <span className="font-semibold text-slate-700 truncate">{u.email}</span>
+                                                    <span className="text-amber-600 font-semibold flex-shrink-0 ml-2">{new Date(u.sub_end_date).toLocaleDateString()}</span>
+                                                </div>
+                                            ))}</div>
+                                        </div>
+                                    )}
+                                    {expiring.length === 0 && (
+                                        <div className="bg-white rounded-xl border border-emerald-200 p-4">
+                                            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700"><Icons.CheckCircle size={13} /> 暂无即将到期用户</div>
+                                        </div>
+                                    )}
+                                    <div className="bg-white rounded-xl border border-slate-200/80 p-4">
+                                        <div className="text-xs font-semibold text-slate-500 mb-3">激活码概览</div>
+                                        <div className="grid grid-cols-3 gap-2 text-center">
+                                            <div className="bg-emerald-50 rounded-lg p-2.5"><div className="text-lg font-extrabold text-emerald-700">{stats?.unusedCodes ?? '–'}</div><div className="text-[10px] text-emerald-600 font-semibold">待发放</div></div>
+                                            <div className="bg-slate-100 rounded-lg p-2.5"><div className="text-lg font-extrabold text-slate-600">{stats?.usedCodes ?? '–'}</div><div className="text-[10px] text-slate-500 font-semibold">已核销</div></div>
+                                            <div className="bg-indigo-50 rounded-lg p-2.5"><div className="text-lg font-extrabold text-indigo-700">{stats?.totalCodes ?? '–'}</div><div className="text-[10px] text-indigo-600 font-semibold">总计</div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <ActionBtn onClick={loadDashboard} variant="default"><Icons.RefreshCw size={12} className="inline mr-1" />刷新数据</ActionBtn>
                         </div>
                     )}
