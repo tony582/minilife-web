@@ -372,7 +372,7 @@ export const AdminPage = () => {
                                             <td className="px-4 py-2 font-mono text-xs font-semibold text-indigo-700">{c.code}</td>
                                             <td className="px-4 py-2 text-xs font-semibold text-slate-600">+{c.duration_days}天</td>
                                             <td className="px-4 py-2">{c.status === 'active' ? <Badge variant="success">待发放</Badge> : c.status === 'revoked' ? <Badge variant="warning">已作废</Badge> : <Badge>已核销</Badge>}</td>
-                                            <td className="px-4 py-2 text-[10px] text-slate-400 font-mono">{c.used_by || '–'}</td>
+                                            <td className="px-4 py-2 text-xs text-slate-600" title={c.used_by || ''}>{c.used_by_email || c.used_by || '–'}</td>
                                             <td className="px-4 py-2 text-xs text-slate-500">{c.used_at ? new Date(c.used_at).toLocaleString() : c.created_at ? new Date(c.created_at).toLocaleDateString() : '–'}</td>
                                             <td className="px-4 py-2 text-right">{c.status === 'active' && <div className="flex gap-1 justify-end"><ActionBtn onClick={() => revokeCode(c.code)} variant="warning">作废</ActionBtn><ActionBtn onClick={() => deleteCode(c.code)} variant="danger">删除</ActionBtn></div>}{c.status === 'revoked' && <ActionBtn onClick={() => deleteCode(c.code)} variant="danger">删除</ActionBtn>}</td>
                                         </tr>))}
@@ -387,7 +387,7 @@ export const AdminPage = () => {
                                         </div>
                                         <div className="flex justify-between text-[11px] text-slate-500 mb-2">
                                             <span>+{c.duration_days}天</span>
-                                            <span>{c.used_by ? `用户: ${c.used_by.slice(0, 12)}` : c.created_at ? new Date(c.created_at).toLocaleDateString() : '–'}</span>
+                                            <span>{c.used_by_email || c.used_by ? `${c.used_by_email || c.used_by}` : c.created_at ? new Date(c.created_at).toLocaleDateString() : '–'}</span>
                                         </div>
                                         {(c.status === 'active' || c.status === 'revoked') && <div className="flex gap-1.5">
                                             {c.status === 'active' && <ActionBtn onClick={() => revokeCode(c.code)} variant="warning">作废</ActionBtn>}

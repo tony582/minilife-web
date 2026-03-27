@@ -23,7 +23,10 @@ module.exports = (db, { authenticateToken, requireAdmin }) => {
 
     // --- List activation codes ---
     router.get('/codes', authenticateToken, requireAdmin, (req, res) => {
-        db.all("SELECT * FROM activation_codes ORDER BY created_at DESC, used_at DESC", [], (err, rows) => {
+        db.all(`SELECT a.*, u.email as used_by_email 
+                FROM activation_codes a 
+                LEFT JOIN users u ON a.used_by = u.id 
+                ORDER BY a.created_at DESC, a.used_at DESC`, [], (err, rows) => {
             if (err) return res.status(500).json({ error: err.message });
             res.json(rows);
         });
