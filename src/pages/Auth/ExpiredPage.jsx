@@ -1,13 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuthContext } from '../../context/AuthContext.jsx';
 import { useToast } from '../../hooks/useToast';
-import { useUIContext } from '../../context/UIContext.jsx';
 import { Icons } from '../../utils/Icons';
 
 export const ExpiredPage = () => {
     const { handleLogout, checkSubscriptionStatus } = useAuthContext();
     const { notify, notifications } = useToast();
-    const { activationCode, setActivationCode } = useUIContext();
+    const [activationCode, setActivationCode] = useState('');
 
     // Re-implement handleRedeem lightly here since we removed it from AppContext
     const handleRedeem = async (e) => {
