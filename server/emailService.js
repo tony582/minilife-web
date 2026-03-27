@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const path = require('path');
 
 // ═══ Email Service for MiniLife ═══
 // SMTP: Tencent Enterprise Mail (腾讯企业邮箱)
@@ -20,6 +21,9 @@ transporter.verify().then(() => {
     console.warn('⚠️ Email service not available:', err.message);
 });
 
+// Logo path
+const logoPath = path.resolve(__dirname, '../public/minilife_logo_transparent.png');
+
 /**
  * Send a password reset verification code
  * @param {string} to - recipient email
@@ -31,8 +35,8 @@ async function sendResetCode(to, code) {
     <div style="max-width:480px;margin:0 auto;font-family:'Helvetica Neue',Arial,sans-serif;background:#f8f9fc;padding:40px 0;">
         <div style="background:#fff;border-radius:16px;padding:40px;margin:0 20px;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
             <div style="text-align:center;margin-bottom:24px;">
-                <h1 style="margin:0;font-size:24px;color:#1e293b;font-weight:900;">MiniLife</h1>
-                <p style="margin:8px 0 0;color:#94a3b8;font-size:14px;">密码重置验证码</p>
+                <h1 style="margin:0;font-size:22px;color:#1e293b;font-weight:900;">MiniLife</h1>
+                <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;">密码重置验证码</p>
             </div>
             <div style="text-align:center;margin:32px 0;">
                 <div style="display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:32px;font-weight:900;letter-spacing:8px;padding:16px 32px;border-radius:12px;">

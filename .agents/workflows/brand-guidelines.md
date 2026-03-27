@@ -6,7 +6,7 @@ description: MiniLife 品牌和设计规范
 
 ## 品牌名称
 - 正式名称：**MiniLife**（M 和 L 大写）
-- 不要写成：minilife / MINILIFE / Mini Life / mini-life
+- 不要写成：minilife / MINILIFE / Minilife / Mini Life
 
 ## 图标风格
 - **优先使用扁平线性图标**（Lucide/线条风格），与现有 Icons 组件保持一致
