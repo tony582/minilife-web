@@ -20,63 +20,69 @@ export const ProfileSelectionPage = () => {
     if (kids.length === 1) return null;
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-6 pb-28 relative"
+        <div className="min-h-screen flex flex-col items-center justify-between p-6 py-[env(safe-area-inset-top,24px)]"
             style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
 
-            {/* Logo + Title — in flow, not overlapping */}
-            <div className="flex flex-col items-center mb-14">
-                <div className="flex items-center gap-2.5 mb-6">
-                    <img src="/minilife_logo.png" className="w-10 h-10 rounded-2xl shadow-lg" alt="MiniLife Logo" />
-                    <span className="font-black text-xl tracking-wider text-white/50">MiniLife</span>
+            {/* Top spacer */}
+            <div />
+
+            {/* Center content */}
+            <div className="flex flex-col items-center">
+                {/* Logo + Title */}
+                <div className="flex flex-col items-center mb-8 md:mb-12">
+                    <div className="flex items-center gap-2.5 mb-4 md:mb-6">
+                        <img src="/minilife_logo.png" className="w-9 h-9 md:w-10 md:h-10 rounded-2xl shadow-lg" alt="MiniLife Logo" />
+                        <span className="font-black text-lg md:text-xl tracking-wider text-white/50">MiniLife</span>
+                    </div>
+                    <h1 className="text-white text-2xl md:text-4xl font-black mb-1">谁在使用呢？</h1>
+                    <p className="text-white/40 text-xs md:text-sm font-medium">选择你的头像进入</p>
                 </div>
-                <h1 className="text-white text-3xl md:text-4xl font-black mb-2">谁在使用呢？</h1>
-                <p className="text-white/40 text-sm font-medium">选择你的头像进入</p>
-            </div>
 
-            {/* Kid Avatars */}
-            <div className="flex flex-wrap md:flex-nowrap justify-center gap-10 md:gap-14 max-w-5xl w-full px-4">
-                {kids.map(k => (
-                    <div key={k.id}
-                        onClick={() => { changeActiveKid(k.id); changeAppState('kid_app'); setKidTab('study'); }}
-                        className="group cursor-pointer flex flex-col items-center"
-                    >
-                        <div className="relative">
-                            <div className="w-28 h-28 md:w-36 md:h-36 rounded-full flex items-center justify-center text-6xl shadow-2xl group-hover:scale-110 transition-all duration-300 overflow-hidden border-4 border-white/20 group-hover:border-white/60"
-                                style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-                                <AvatarDisplay avatar={k.avatar} />
+                {/* Kid Avatars */}
+                <div className="flex flex-wrap justify-center gap-6 md:gap-14 max-w-5xl w-full px-4">
+                    {kids.map(k => (
+                        <div key={k.id}
+                            onClick={() => { changeActiveKid(k.id); changeAppState('kid_app'); setKidTab('study'); }}
+                            className="group cursor-pointer flex flex-col items-center"
+                        >
+                            <div className="relative">
+                                <div className="w-24 h-24 md:w-36 md:h-36 rounded-full flex items-center justify-center text-5xl md:text-6xl shadow-2xl group-hover:scale-110 transition-all duration-300 overflow-hidden border-4 border-white/20 group-hover:border-white/60"
+                                    style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+                                    <AvatarDisplay avatar={k.avatar} />
+                                </div>
+                                {/* Glow effect on hover */}
+                                <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                    style={{ boxShadow: '0 0 40px rgba(102, 126, 234, 0.4)' }} />
                             </div>
-                            {/* Glow effect on hover */}
-                            <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                style={{ boxShadow: '0 0 40px rgba(102, 126, 234, 0.4)' }} />
+                            <span className="text-white/60 mt-3 md:mt-5 text-lg md:text-xl font-bold group-hover:text-white transition-colors duration-200">{k.name}</span>
                         </div>
-                        <span className="text-white/60 mt-5 text-xl font-bold group-hover:text-white transition-colors duration-200">{k.name}</span>
-                    </div>
-                ))}
+                    ))}
 
-                {/* Add Kid Button */}
-                {kids.length < 5 && (
-                    <div onClick={() => {
-                        changeActiveKid(null);
-                        setNewKidForm({ name: '', gender: 'boy', avatar: '👦', dob: '' });
-                        setShowAddKidModal(true);
-                    }} className="group cursor-pointer flex flex-col items-center">
-                        <div className="w-28 h-28 md:w-36 md:h-36 rounded-full border-3 border-dashed border-white/15 flex items-center justify-center shadow-xl group-hover:scale-110 group-hover:border-white/30 transition-all duration-300"
-                            style={{ background: 'rgba(255,255,255,0.03)' }}>
-                            <Icons.Plus size={44} strokeWidth={2} className="text-white/20 group-hover:text-white/50 transition-colors" />
+                    {/* Add Kid Button */}
+                    {kids.length < 5 && (
+                        <div onClick={() => {
+                            changeActiveKid(null);
+                            setNewKidForm({ name: '', gender: 'boy', avatar: '👦', dob: '' });
+                            setShowAddKidModal(true);
+                        }} className="group cursor-pointer flex flex-col items-center">
+                            <div className="w-24 h-24 md:w-36 md:h-36 rounded-full border-3 border-dashed border-white/15 flex items-center justify-center shadow-xl group-hover:scale-110 group-hover:border-white/30 transition-all duration-300"
+                                style={{ background: 'rgba(255,255,255,0.03)' }}>
+                                <Icons.Plus size={36} strokeWidth={2} className="text-white/20 group-hover:text-white/50 transition-colors" />
+                            </div>
+                            <span className="text-white/30 mt-3 md:mt-5 text-lg md:text-xl font-bold group-hover:text-white/50 transition-colors duration-200">添加</span>
                         </div>
-                        <span className="text-white/30 mt-5 text-xl font-bold group-hover:text-white/50 transition-colors duration-200">添加</span>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
 
-            {/* Parent Management — prominent button */}
+            {/* Parent Management — in flow, always visible */}
             <button onClick={() => parentSettings.pinEnabled ? changeAppState('parent_pin') : changeAppState('parent_app')}
-                className="absolute bottom-8 md:bottom-10 flex items-center gap-3 transition-all duration-200 active:scale-95 hover:scale-105 group"
+                className="mt-10 md:mt-14 flex items-center gap-3 transition-all duration-200 active:scale-95 hover:scale-105 group shrink-0"
                 style={{
                     background: 'rgba(255,255,255,0.15)',
                     backdropFilter: 'blur(16px)',
                     border: '1px solid rgba(255,255,255,0.25)',
-                    padding: '16px 36px',
+                    padding: '14px 32px',
                     borderRadius: '9999px',
                     boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
                 }}>
