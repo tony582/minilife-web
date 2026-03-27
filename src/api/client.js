@@ -21,3 +21,16 @@ export const apiFetch = async (url, options = {}) => {
         throw err;
     }
 };
+
+/** Safely parse JSON from a response — returns { error: '...' } if not JSON */
+export const safeJson = async (res) => {
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {
+        return { error: '服务器响应异常，请稍后重试' };
+    }
+    try {
+        return await res.json();
+    } catch {
+        return { error: '服务器响应异常' };
+    }
+};

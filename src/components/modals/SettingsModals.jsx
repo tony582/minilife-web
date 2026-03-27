@@ -1,6 +1,6 @@
 import React from 'react';
 import { Icons, AvatarDisplay } from '../../utils/Icons';
-import { apiFetch } from '../../api/client';
+import { apiFetch, safeJson } from '../../api/client';
 
 export const SettingsModals = ({ context }) => {
     const {
@@ -120,12 +120,12 @@ export const SettingsModals = ({ context }) => {
                                             if (!settingsCode) return;
                                             try {
                                                 const res = await apiFetch('/api/redeem-code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: settingsCode }) });
-                                                const data = await res.json();
-                                                if (!res.ok) return notify(data.error || "兑换失败", 'error');
+                                                const data = await safeJson(res);
+                                                if (!res.ok || data.error) return notify(data.error || "兑换失败", 'error');
                                                 notify("兑换成功！", 'success');
                                                 setUser(prev => ({ ...prev, sub_end_date: data.new_sub_end_date }));
                                                 setSettingsCode('');
-                                                apiFetch('/api/me/codes').then(r => r.json()).then(setUsedCodes).catch(console.error);
+                                                apiFetch('/api/me/codes').then(r => r.ok ? r.json() : []).then(setUsedCodes).catch(console.error);
                                             } catch (err) { notify("网络错误", "error"); }
                                         }} className="bg-rose-500 text-white px-6 rounded-xl font-bold shadow-md shadow-rose-200 hover:bg-rose-600 transition-colors shrink-0">兑换卡密</button>
                                     </div>
