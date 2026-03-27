@@ -973,6 +973,81 @@ export const AddPlanModal = ({ context }) => {
                             )}
 
                         </div>
+
+                        {/* === 任务概览卡片 === */}
+                        {planForm.title && planType === 'study' && (() => {
+                            const parts = [];
+                            // 1. Start date
+                            if (planForm.startDate) {
+                                const sd = new Date(planForm.startDate);
+                                parts.push(`从 ${sd.getMonth()+1}月${sd.getDate()}日 开始`);
+                            }
+                            // 2. Repeat schedule
+                            const rt = planForm.repeatType || '';
+                            const dayNames = { 1:'一', 2:'二', 3:'三', 4:'四', 5:'五', 6:'六', 7:'日' };
+                            if (rt === 'today') {
+                                parts.push('仅今天执行一次');
+                            } else if (rt === 'daily') {
+                                parts.push('每天执行');
+                            } else if (rt === 'weekly_custom' || rt === 'biweekly_custom') {
+                                const days = (planForm.weeklyDays || []).sort((a,b) => a - b);
+                                const dStr = days.map(d => '周' + dayNames[d]).join('、');
+                                parts.push(rt === 'biweekly_custom' ? `隔周的${dStr}执行` : `每周${dStr}执行`);
+                            } else if (rt === 'ebbinghaus') {
+                                parts.push('按艾宾浩斯记忆曲线安排');
+                            } else if (rt.includes('_1') || rt.includes('_n')) {
+                                const isEvery = rt.includes('every_');
+                                let periodName = '本周';
+                                if (rt.includes('month')) periodName = isEvery ? '每月' : '本月';
+                                else if (rt.includes('biweek')) periodName = isEvery ? '每双周' : '本双周';
+                                else if (rt.includes('every_week')) periodName = '每周';
+                                const target = planForm.periodTargetCount || 1;
+                                const maxDay = planForm.periodMaxPerDay || 1;
+                                parts.push(`${periodName}内完成 ${target} 次`);
+                                if (maxDay > 1) parts.push(`每天最多 ${maxDay} 次`);
+                                // Period allowed days
+                                const pdt = planForm.periodDaysType || 'any';
+                                if (pdt === 'workdays') parts.push('仅工作日可执行');
+                                else if (pdt === 'weekends') parts.push('仅周末可执行');
+                                else if (pdt === 'custom') {
+                                    const cd = (planForm.periodCustomDays || []).sort((a,b) => a - b);
+                                    parts.push(`限${cd.map(d => '周' + dayNames[d]).join('、')}执行`);
+                                }
+                            }
+                            // 3. Time
+                            if (planForm.timeSetting === 'range' && planForm.startTime && planForm.endTime) {
+                                parts.push(`${planForm.startTime} ~ ${planForm.endTime} 之间完成`);
+                            } else if (planForm.timeSetting === 'duration' && planForm.durationPreset) {
+                                parts.push(`需用时 ${planForm.durationPreset} 分钟`);
+                            }
+                            // 4. End date
+                            if (planForm.endDate && rt !== 'today') {
+                                const ed = new Date(planForm.endDate);
+                                parts.push(`截至 ${ed.getMonth()+1}月${ed.getDate()}日`);
+                            }
+                            // 5. Reward
+                            const reward = Number(planForm.reward) || 0;
+                            if (reward > 0) parts.push(`完成奖励 ${reward} 家庭币 🪙`);
+                            else if (reward < 0) parts.push(`未完成扣 ${Math.abs(reward)} 家庭币`);
+                            // 6. Approval
+                            if (planForm.requireApproval) parts.push('需家长审核');
+                            else parts.push('自动完成（无需审核）');
+
+                            if (parts.length === 0) return null;
+                            return (
+                                <div className="mx-5 mb-3 rounded-2xl p-4" style={{ background: 'linear-gradient(135deg, #FFF8F0 0%, #FFF3E8 100%)', border: '1.5px dashed #FFD4A8' }}>
+                                    <div className="flex items-center gap-1.5 mb-2">
+                                        <span style={{ fontSize: 14 }}>📋</span>
+                                        <span className="text-[11px] font-black" style={{ color: '#E67E22' }}>任务概览</span>
+                                    </div>
+                                    <p className="text-[13px] leading-relaxed" style={{ color: '#5A4A3A' }}>
+                                        <span className="font-bold">「{planForm.title}」</span>
+                                        {parts.join('，')}。
+                                    </p>
+                                </div>
+                            );
+                        })()}
+
                         {/* — Footer — */}
                         <div className="shrink-0 px-5 py-4 flex gap-3"
                             style={{ background: '#FFFFFF', borderTop: '1px solid #F0EBE1', paddingBottom: 'max(1rem, env(safe-area-inset-bottom) + 0.5rem)' }}>
