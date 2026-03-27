@@ -41,7 +41,16 @@ module.exports = (db, { JWT_SECRET, authenticateToken, notifyUser }) => {
             const validPassword = await bcrypt.compare(password, user.password_hash);
             if (!validPassword) return res.status(400).json({ error: "密码错误，请重新输入" });
 
+            // Check if user is banned
+            if (user.status === 'banned') return res.status(403).json({ error: "您的账号已被禁用，请联系管理员" });
+
             const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+
+            // Record login for DAU tracking
+            const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
+            db.run("INSERT INTO login_log (user_id, login_at, ip_address) VALUES (?, ?, ?)",
+                [user.id, new Date().toISOString(), ip]);
+
             res.json({ token, user: { id: user.id, email: user.email, role: user.role, sub_end_date: user.sub_end_date } });
         });
     });

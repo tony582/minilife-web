@@ -215,6 +215,33 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
             // Per-user AI quota (NULL = use global default)
             db.run(`ALTER TABLE users ADD COLUMN ai_quota INTEGER DEFAULT NULL`, (err) => {});
+
+            // User status for ban/enable
+            db.run(`ALTER TABLE users ADD COLUMN status TEXT DEFAULT 'active'`, (err) => {});
+
+            // Login Log for DAU tracking
+            db.run(`CREATE TABLE IF NOT EXISTS login_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL,
+                login_at TEXT NOT NULL,
+                ip_address TEXT
+            )`);
+
+            // System Announcements
+            db.run(`CREATE TABLE IF NOT EXISTS announcements (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                content TEXT,
+                type TEXT DEFAULT 'info',
+                active INTEGER DEFAULT 1,
+                created_at TEXT,
+                expires_at TEXT
+            )`);
+
+            // Activation codes enhancements
+            db.run(`ALTER TABLE activation_codes ADD COLUMN batch_id TEXT`, (err) => {});
+            db.run(`ALTER TABLE activation_codes ADD COLUMN created_at TEXT`, (err) => {});
+            db.run(`ALTER TABLE activation_codes ADD COLUMN note TEXT`, (err) => {});
         });
     }
 });

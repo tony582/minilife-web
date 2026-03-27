@@ -19,7 +19,7 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
     const [isLoading, setIsLoading] = useState(true);
     const [activeKidId, setActiveKidId] = useState(localStorage.getItem('minilife_activeKidId') || null);
 
-    const [adminTab, setAdminTab] = useState('users');
+    const [adminTab, setAdminTab] = useState('dashboard');
     const [adminUsers, setAdminUsers] = useState([]);
     const [adminCodes, setAdminCodes] = useState([]);
     const [adminAiConfig, setAdminAiConfig] = useState(null);

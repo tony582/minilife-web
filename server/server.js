@@ -3,12 +3,15 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const db = require('./database');
-const { clients, notifyUser, authenticateToken, requireAdmin, JWT_SECRET } = require('./middleware');
+const { clients, notifyUser, createAuthMiddleware, requireAdmin, JWT_SECRET } = require('./middleware');
 
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Create auth middleware with DB access (for ban checks)
+const authenticateToken = createAuthMiddleware(db);
 
 // Shared dependencies for route modules
 const deps = { JWT_SECRET, clients, notifyUser, authenticateToken, requireAdmin };
@@ -40,6 +43,7 @@ app.use('/api/ai', authenticateToken, aiRoutes);
 
 app.use('/api', require('./routes/auth')(db, deps));
 app.use('/api/admin', require('./routes/admin')(db, deps));
+app.use('/api/admin/stats', require('./routes/admin-stats')(db, deps));
 app.use('/api/kids', require('./routes/kids')(db, deps));
 app.use('/api/tasks', require('./routes/tasks')(db, deps));
 app.use('/api/inventory', require('./routes/inventory')(db, deps));
@@ -60,3 +64,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
 });
+
