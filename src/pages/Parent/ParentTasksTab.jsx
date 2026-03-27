@@ -201,7 +201,10 @@ export const ParentTasksTab = () => {
         '政治': '#EF4444', '道德与法治': '#3B82F6', '信息技术': '#06B6D4', '体育运动': '#F97316',
         '娱乐': '#EAB308', '兴趣班': '#EC4899', '其他': '#64748B', '计划': '#FF8C42',
     };
-    const getCatHex = (cat) => catHexMap[cat] || catHexMap['计划'];
+    const getCatHex = (cat, customColor) => {
+        const validColor = customColor && !customColor.includes('from-') && !customColor.includes('bg-') ? customColor : null;
+        return validColor || catHexMap[cat] || catHexMap['计划'];
+    };
 
     // Count incomplete one-time tasks on the currently selected date (only for past dates)
     const today = formatDate(new Date());
@@ -563,7 +566,7 @@ export const ParentTasksTab = () => {
                                         className="flex items-center gap-3 rounded-xl p-3 cursor-pointer hover:shadow-sm transition-all"
                                         style={{ background: '#fff' }}>
                                         <div className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center text-white"
-                                            style={{ background: getCatHex(t.category || '计划') }}>
+                                            style={{ background: getCatHex(t.category || '计划', t.catColor) }}>
                                             {renderIcon(t.iconName || getIconForCategory(t.category), 16)}
                                         </div>
                                         <div className="flex-1 min-w-0">
@@ -604,7 +607,7 @@ export const ParentTasksTab = () => {
                     const isCompleted = status === 'completed';
                     const isPending = status === 'pending_approval';
 
-                    const accentColor = getCatHex(t.category || '计划');
+                    const accentColor = getCatHex(t.category || '计划', t.catColor);
                     // Period progress for the active kid filter
                     const ppKidId = effectiveFilter === 'all' ? (kids.length === 1 ? kids[0].id : null) : effectiveFilter;
                     const pp = ppKidId ? getPeriodProgress(t, ppKidId, selectedDate) : null;
@@ -772,7 +775,7 @@ export const ParentTasksTab = () => {
                                     <div className="rounded-xl px-4 py-3.5 flex items-center gap-3 select-none transition-all"
                                         style={{ background: C.bgCard }}>
                                         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0"
-                                            style={{ background: getCatHex(t.category || '计划') }}>
+                                            style={{ background: getCatHex(t.category || '计划', t.catColor) }}>
                                             {renderIcon(t.iconName || getIconForCategory(t.category), 16)}
                                         </div>
                                         <div className="flex-1 min-w-0">
