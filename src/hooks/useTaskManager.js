@@ -3,7 +3,7 @@ import { useAuthContext } from '../context/AuthContext.jsx';
 import { useDataContext } from '../context/DataContext.jsx';
 import { useUIContext } from '../context/UIContext.jsx';
 import { getLevelTier, getLevelReq } from '../utils/levelUtils';
-import { getCategoryGradient, getIconForCategory } from '../utils/categoryUtils';
+import { getCatHexColor, getIconForCategory } from '../utils/categoryUtils';
 import { apiFetch } from '../api/client';
 import { isTaskDueOnDate, getPeriodProgress } from '../utils/taskUtils';
 
@@ -27,7 +27,7 @@ export const useTaskManager = (authC, dataC, uiC) => {
         setLastSavedEndTime, lastSavedEndTime, selectedDate, taskToSubmit,
         setShowPenaltyModal, setPenaltyTaskContext, setPenaltySelectedKidIds, setShowRewardModal, 
         setShowRejectModal, setRejectCode, setRejectingTaskInfo, setCelebrateKids, 
-        setShowPreviewModal, setPreviewTask
+        setShowPreviewModal, setPreviewTask, parentSettings
     } = context;
 
     // Loading guard to prevent double-tap submissions
@@ -1694,7 +1694,9 @@ const handleSavePlan = async () => {
   let timeStr = "--:--";
   if (planType === 'study') {
     // Study Plan Logistics
-    color = getCategoryGradient(planForm.category);
+    // Use custom category color if available, otherwise hex from built-in map
+    const customCat = (parentSettings?.customCategories || []).find(c => (typeof c === 'object' ? c.name : c) === planForm.category);
+    color = (customCat && typeof customCat === 'object' && customCat.color) || getCatHexColor(planForm.category);
     const freqMap = {
       'today': '仅当天',
       'daily': '每天',
@@ -1762,6 +1764,7 @@ const handleSavePlan = async () => {
       // V2 explicit config
       timeStr: timeStr,
       standards: planForm.desc || "",
+      iconName: planForm.iconName || getIconForCategory(planForm.category),
       iconEmoji: planForm.iconEmoji,
       requireApproval: planForm.requireApproval,
       attachments: planForm.attachments || [],
@@ -1804,6 +1807,7 @@ const handleSavePlan = async () => {
     reward: planType === 'habit' ? rewardNum : Math.abs(rewardNum),
     type: planType,
     status: 'todo',
+    iconName: planForm.iconName || getIconForCategory(planForm.category),
     iconEmoji: planForm.iconEmoji,
     standards: planForm.desc || "",
     category: planType === 'study' ? planForm.category : "行为",

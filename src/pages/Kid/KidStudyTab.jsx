@@ -404,7 +404,7 @@ export const KidStudyTab = () => {
                     </div>
                 ) : myTasks.filter(t => !searchKidTaskKeyword || t.title.toLowerCase().includes(searchKidTaskKeyword.toLowerCase())).map((t) => {
                     const status = getDailyStatus(t);
-                    const catColor = getCatColor(t.category, t.categoryColor);
+                    const catColor = getCatColor(t.category, t.catColor);
                     const isCompleted = status === 'completed';
                     const isPending = status === 'pending_approval';
                     const isFailed = status === 'failed';
@@ -585,7 +585,7 @@ export const KidStudyTab = () => {
                                 renderItem={(t) => (
                                     <div className="rounded-xl px-4 py-3.5 flex items-center gap-3 select-none transition-all"
                                         style={{ background: C.bgCard }}>
-                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0" style={{ background: getCatColor(t.category, t.categoryColor) }}>
+                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0" style={{ background: getCatColor(t.category, t.catColor) }}>
                                             {renderIcon(t.iconName || getIconForCategory(t.category), 16)}
                                         </div>
                                         <div className="flex-1 min-w-0">

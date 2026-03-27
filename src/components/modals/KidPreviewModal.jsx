@@ -125,7 +125,7 @@ export const KidPreviewModal = ({ context }) => {
                     style={{ background: '#FFFFFF', borderBottom: '1px solid #F0EBE1' }}>
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center shadow-sm"
-                            style={{ background: previewTask.categoryColor || getCatHexColor(previewTask.category || '计划任务'), color: previewTask.type === 'habit' ? undefined : '#fff' }}>
+                            style={{ background: previewTask.catColor || getCatHexColor(previewTask.category || '计划任务'), color: previewTask.type === 'habit' ? undefined : '#fff' }}>
                             {previewTask.type === 'habit'
                                 ? (previewTask.iconEmoji || '⭐')
                                 : renderIcon(previewTask.iconName || getIconForCategory(previewTask.category), 20)
