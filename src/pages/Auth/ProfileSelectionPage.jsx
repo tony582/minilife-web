@@ -20,7 +20,7 @@ export const ProfileSelectionPage = () => {
     if (kids.length === 1) return null;
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-between p-6 py-[env(safe-area-inset-top,24px)]"
+        <div className="min-h-screen flex flex-col items-center justify-between p-6 pt-12 pb-10"
             style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
 
             {/* Top spacer */}
