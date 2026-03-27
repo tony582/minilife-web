@@ -20,18 +20,16 @@ export const ProfileSelectionPage = () => {
     if (kids.length === 1) return null;
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-6 relative"
+        <div className="min-h-screen flex flex-col items-center justify-center p-6 pb-28 relative"
             style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
 
-            {/* Logo */}
-            <div className="absolute top-8 left-8 flex items-center gap-2.5">
-                <img src="/minilife_logo.png" className="w-10 h-10 rounded-2xl shadow-lg" alt="MiniLife Logo" />
-                <span className="font-black text-xl tracking-wider text-white/30">MiniLife</span>
-            </div>
-
-            {/* Title */}
-            <div className="text-center mb-14">
-                <h1 className="text-white text-3xl md:text-4xl font-black mb-2">👋 谁来啦？</h1>
+            {/* Logo + Title — in flow, not overlapping */}
+            <div className="flex flex-col items-center mb-14">
+                <div className="flex items-center gap-2.5 mb-6">
+                    <img src="/minilife_logo.png" className="w-10 h-10 rounded-2xl shadow-lg" alt="MiniLife Logo" />
+                    <span className="font-black text-xl tracking-wider text-white/50">MiniLife</span>
+                </div>
+                <h1 className="text-white text-3xl md:text-4xl font-black mb-2">谁在使用呢？</h1>
                 <p className="text-white/40 text-sm font-medium">选择你的头像进入</p>
             </div>
 
@@ -71,19 +69,20 @@ export const ProfileSelectionPage = () => {
                 )}
             </div>
 
-            {/* Parent Management — larger and more visible */}
+            {/* Parent Management — prominent button */}
             <button onClick={() => parentSettings.pinEnabled ? changeAppState('parent_pin') : changeAppState('parent_app')}
-                className="absolute bottom-8 md:bottom-10 flex items-center gap-3 transition-all duration-200 active:scale-95 group"
+                className="absolute bottom-8 md:bottom-10 flex items-center gap-3 transition-all duration-200 active:scale-95 hover:scale-105 group"
                 style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    padding: '14px 32px',
+                    background: 'rgba(255,255,255,0.15)',
+                    backdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(255,255,255,0.25)',
+                    padding: '16px 36px',
                     borderRadius: '9999px',
+                    boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
                 }}>
-                <Icons.Settings size={20} className="text-white/40 group-hover:text-white/70 transition-colors" />
-                <span className="text-white/50 font-bold text-base group-hover:text-white/80 transition-colors">家长管理</span>
-                <Icons.ChevronRight size={16} className="text-white/30 group-hover:text-white/60 transition-colors" />
+                <Icons.Settings size={20} className="text-white/70 group-hover:text-white transition-colors" />
+                <span className="text-white/80 font-bold text-base group-hover:text-white transition-colors">家长管理</span>
+                <Icons.ChevronRight size={16} className="text-white/50 group-hover:text-white/80 transition-colors" />
             </button>
         </div>
     );
