@@ -251,7 +251,7 @@ export const GlobalModals = () => {
         }
     };
 
-    const confirmPenalty = () => {
+    const confirmPenalty = async () => {
         if (!penaltyTaskContext || penaltySelectedKidIds.length === 0) return;
 
         const penalty = Math.abs(penaltyTaskContext.reward);
@@ -260,9 +260,9 @@ export const GlobalModals = () => {
         let newHist = JSON.parse(JSON.stringify(penaltyTaskContext.history || {}));
         const todayStr = formatDate(new Date());
 
-        penaltySelectedKidIds.forEach(targetKidId => {
+        for (const targetKidId of penaltySelectedKidIds) {
             const targetKid = kids.find(k => k.id === targetKidId);
-            if (!targetKid) return;
+            if (!targetKid) continue;
 
             // Enforce limit check for manual parental deductions
             const kidTodayData = penaltyTaskContext.kidId === 'all' ? (newHist[todayStr]?.[targetKidId] || {}) : (newHist[todayStr] || {});
@@ -272,20 +272,36 @@ export const GlobalModals = () => {
 
             if (attemptsToday >= maxAllowed) {
                 notify(`${targetKid.name} 的此项记录今日已达上限，无法继续扣除。`, "warning");
-                return; // Skip this child, they reached the limit
+                continue;
             }
 
             kidsUpdated = true;
 
-            // 1. Update balances
-            const newBals = { ...targetKid.balances, spend: Math.max(0, targetKid.balances.spend - penalty) };
-            const newExp = Math.max(0, targetKid.exp - Math.ceil(penalty * 1.5));
-            apiFetch(`/api/kids/${targetKid.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ balances: newBals, exp: newExp }) });
-            setKids(prevKids => prevKids.map(k => k.id === targetKid.id ? { ...k, balances: newBals, exp: newExp } : k));
+            // 1. Atomic balance update (server reads current balance, avoids stale reads)
+            const expDiff = -Math.ceil(penalty * 1.5);
+            try {
+                const rewardRes = await apiFetch(`/api/kids/${targetKid.id}/reward`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ coins: -penalty, exp: expDiff })
+                });
+                if (rewardRes.ok) {
+                    const ct = rewardRes.headers.get('content-type') || '';
+                    if (ct.includes('application/json')) {
+                        const data = await rewardRes.json();
+                        setKids(prevKids => prevKids.map(k => k.id === targetKid.id ? { ...k, balances: { ...k.balances, spend: data.spend }, exp: data.exp, level: data.level } : k));
+                    }
+                }
+            } catch (e) {
+                console.error('Penalty reward error:', e);
+                notify(`扣除 ${targetKid.name} 金币失败，请重试`, "error");
+                continue;
+            }
 
             // 2. Post transaction
             const refundTrans = { id: `trans_${Date.now()}_penalty_${targetKid.id}`, kidId: targetKid.id, type: 'expense', amount: penalty, title: `手动惩罚: ${penaltyTaskContext.title}`, date: new Date().toISOString(), category: 'habit' };
-            apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(refundTrans) });
+            try {
+                await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(refundTrans) });
+            } catch (e) { console.error('Transaction post error:', e); }
             setTransactions(prev => [refundTrans, ...prev]);
             notify(`已记录惩罚，扣除 ${targetKid.name} ${penalty} 家庭币！`, "error");
 
@@ -308,17 +324,19 @@ export const GlobalModals = () => {
                 }
                 newHist[todayStr].push(newRecord);
             }
-        });
+        }
 
         if (kidsUpdated) {
-            apiFetch(`/api/tasks/${penaltyTaskContext.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHist }) });
+            try {
+                await apiFetch(`/api/tasks/${penaltyTaskContext.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHist }) });
+            } catch (e) { console.error('History update error:', e); }
             setTasks(prev => prev.map(t => t.id === penaltyTaskContext.id ? { ...t, history: newHist } : t));
             setShowPenaltyModal(false);
             setPenaltyTaskContext(null);
         }
     };
 
-    const confirmReward = () => {
+    const confirmReward = async () => {
         if (!penaltyTaskContext || penaltySelectedKidIds.length === 0) return;
 
         const reward = Math.abs(penaltyTaskContext.reward);
@@ -327,9 +345,9 @@ export const GlobalModals = () => {
         let newHist = JSON.parse(JSON.stringify(penaltyTaskContext.history || {}));
         const todayStr = formatDate(new Date());
 
-        penaltySelectedKidIds.forEach(targetKidId => {
+        for (const targetKidId of penaltySelectedKidIds) {
             const targetKid = kids.find(k => k.id === targetKidId);
-            if (!targetKid) return;
+            if (!targetKid) continue;
 
             // Enforce limit check
             const kidTodayData = penaltyTaskContext.kidId === 'all' ? (newHist[todayStr]?.[targetKidId] || {}) : (newHist[todayStr] || {});
@@ -339,20 +357,36 @@ export const GlobalModals = () => {
 
             if (attemptsToday >= maxAllowed) {
                 notify(`${targetKid.name} 的此项记录今日已达上限，无法继续加分。`, "warning");
-                return;
+                continue;
             }
 
             kidsUpdated = true;
 
-            // 1. Update balances
-            const newBals = { ...targetKid.balances, spend: targetKid.balances.spend + reward };
-            const newExp = targetKid.exp + Math.ceil(reward * 1.5);
-            apiFetch(`/api/kids/${targetKid.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ balances: newBals, exp: newExp }) });
-            setKids(prevKids => prevKids.map(k => k.id === targetKid.id ? { ...k, balances: newBals, exp: newExp } : k));
+            // 1. Atomic balance update (server reads current balance)
+            const expDiff = Math.ceil(reward * 1.5);
+            try {
+                const rewardRes = await apiFetch(`/api/kids/${targetKid.id}/reward`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ coins: reward, exp: expDiff })
+                });
+                if (rewardRes.ok) {
+                    const ct = rewardRes.headers.get('content-type') || '';
+                    if (ct.includes('application/json')) {
+                        const data = await rewardRes.json();
+                        setKids(prevKids => prevKids.map(k => k.id === targetKid.id ? { ...k, balances: { ...k.balances, spend: data.spend }, exp: data.exp, level: data.level } : k));
+                    }
+                }
+            } catch (e) {
+                console.error('Reward error:', e);
+                notify(`给予 ${targetKid.name} 金币失败，请重试`, "error");
+                continue;
+            }
 
             // 2. Post transaction
             const rewardTrans = { id: `trans_${Date.now()}_reward_${targetKid.id}`, kidId: targetKid.id, type: 'income', amount: reward, title: `奖励加分: ${penaltyTaskContext.title}`, date: new Date().toISOString(), category: 'habit' };
-            apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rewardTrans) });
+            try {
+                await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rewardTrans) });
+            } catch (e) { console.error('Transaction post error:', e); }
             setTransactions(prev => [rewardTrans, ...prev]);
             notify(`已记录奖励，给予 ${targetKid.name} ${reward} 家庭币！`, "success");
 
@@ -371,14 +405,16 @@ export const GlobalModals = () => {
                 if (!newHist[todayStr]) newHist[todayStr] = [];
                 if (!Array.isArray(newHist[todayStr])) {
                     if (newHist[todayStr].status) newHist[todayStr] = [newHist[todayStr]];
-                    else newHist[todayStr] = [];
+                    else newHist[todayStr] = []
                 }
                 newHist[todayStr].push(newRecord);
             }
-        });
+        }
 
         if (kidsUpdated) {
-            apiFetch(`/api/tasks/${penaltyTaskContext.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHist }) });
+            try {
+                await apiFetch(`/api/tasks/${penaltyTaskContext.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ history: newHist }) });
+            } catch (e) { console.error('History update error:', e); }
             setTasks(prev => prev.map(t => t.id === penaltyTaskContext.id ? { ...t, history: newHist } : t));
             setShowRewardModal(false);
             setPenaltyTaskContext(null);
