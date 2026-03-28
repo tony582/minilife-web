@@ -42,7 +42,7 @@ export const KidWealthTab = () => {
     if (!activeKid) return null;
 
     const allTx = transactions
-        .filter(t => t.kidId === activeKidId && t.category !== 'habit');
+        .filter(t => t.kidId === activeKidId);
 
     // Unified balance
     const totalBalance = activeKid.balances?.spend || 0;
