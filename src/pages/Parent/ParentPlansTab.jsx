@@ -461,32 +461,32 @@ export const ParentPlansTab = () => {
                                                         {(t.standards || t.desc) && <p className="text-[11px] line-clamp-1 mt-0.5" style={{ color: C.textSoft }}>{t.standards || t.desc}</p>}
                                                     </div>
                                                 </div>
-                                                {/* Row 2: Coin + Progress + Action */}
-                                                <div className="flex items-center gap-2 pl-[52px]">
-                                                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-black"
-                                                        style={{ background: '#FFC10720', color: '#D4920A' }}>
-                                                        <span style={{ fontSize: 11 }}>⭐</span> {t.reward > 0 ? '+' : ''}{t.reward}
-                                                    </div>
-                                                    {maxAllowed > 1 && maxAllowed <= 5 && (
-                                                        <div className="flex items-center gap-1">
-                                                            {Array.from({ length: maxAllowed }).map((_, i) => (
-                                                                <div key={i} className="w-2 h-2 rounded-full transition-all" style={{ background: i < totalAttempts ? accent : `${accent}25` }} />
-                                                            ))}
-                                                            <span className="text-[10px] font-bold ml-0.5" style={{ color: totalAttempts >= totalMax ? accent : C.textMuted }}>{totalAttempts}/{totalMax}</span>
+                                                {/* Row 2: [Coin+Progress] ... [Action] */}
+                                                <div className="flex items-center justify-between pl-[52px]">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-black"
+                                                            style={{ background: '#FFC10720', color: '#D4920A' }}>
+                                                            <span style={{ fontSize: 11 }}>⭐</span> {t.reward > 0 ? '+' : ''}{t.reward}
                                                         </div>
-                                                    )}
-                                                    {maxAllowed > 5 && (
-                                                        <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                                            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: `${accent}15` }}>
-                                                                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${progressPct}%`, background: accent }} />
+                                                        {maxAllowed > 1 && maxAllowed <= 5 && (
+                                                            <div className="flex items-center gap-1">
+                                                                {Array.from({ length: maxAllowed }).map((_, i) => (
+                                                                    <div key={i} className="w-2 h-2 rounded-full transition-all" style={{ background: i < totalAttempts ? accent : `${accent}25` }} />
+                                                                ))}
                                                             </div>
-                                                            <span className="text-[10px] font-bold whitespace-nowrap shrink-0" style={{ color: totalAttempts >= totalMax ? accent : C.textMuted }}>{totalAttempts}/{totalMax}</span>
-                                                        </div>
-                                                    )}
-                                                    {maxAllowed <= 1 && totalAttempts > 0 && (
-                                                        <span className="text-[10px] font-bold flex items-center gap-0.5" style={{ color: accent }}><Icons.Check size={11} /> 已完成</span>
-                                                    )}
-                                                    <div className="flex-1" />
+                                                        )}
+                                                        {maxAllowed > 5 && (
+                                                            <div className="flex items-center gap-1.5 w-16">
+                                                                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: `${accent}15` }}>
+                                                                    <div className="h-full rounded-full transition-all duration-500" style={{ width: `${progressPct}%`, background: accent }} />
+                                                                </div>
+                                                                <span className="text-[10px] font-bold" style={{ color: totalAttempts >= totalMax ? accent : C.textMuted }}>{totalAttempts}/{totalMax}</span>
+                                                            </div>
+                                                        )}
+                                                        {maxAllowed <= 1 && totalAttempts > 0 && (
+                                                            <span className="text-[10px] font-bold flex items-center gap-0.5" style={{ color: accent }}><Icons.Check size={11} /> 已完成</span>
+                                                        )}
+                                                    </div>
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); if (!allMaxed) handlePointAction(t, t.reward < 0 ? 'penalty' : 'reward'); }}
                                                         className={`shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black transition-all ${allMaxed ? 'cursor-not-allowed opacity-50' : 'active:scale-95'}`}
