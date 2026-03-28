@@ -464,10 +464,18 @@ export const ParentPlansTab = () => {
                                                 {/* Row 2: Coin + Progress + Action */}
                                                 <div className="flex items-center gap-2 pl-[52px]">
                                                     <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-black"
-                                                        style={{ background: `${accent}12`, color: accent }}>
-                                                        <span style={{ fontSize: 11 }}>🪙</span> {t.reward > 0 ? '+' : ''}{t.reward}
+                                                        style={{ background: '#FFC10720', color: '#D4920A' }}>
+                                                        <span style={{ fontSize: 11 }}>⭐</span> {t.reward > 0 ? '+' : ''}{t.reward}
                                                     </div>
-                                                    {maxAllowed > 1 && (
+                                                    {maxAllowed > 1 && maxAllowed <= 5 && (
+                                                        <div className="flex items-center gap-1">
+                                                            {Array.from({ length: maxAllowed }).map((_, i) => (
+                                                                <div key={i} className="w-2 h-2 rounded-full transition-all" style={{ background: i < totalAttempts ? accent : `${accent}25` }} />
+                                                            ))}
+                                                            <span className="text-[10px] font-bold ml-0.5" style={{ color: totalAttempts >= totalMax ? accent : C.textMuted }}>{totalAttempts}/{totalMax}</span>
+                                                        </div>
+                                                    )}
+                                                    {maxAllowed > 5 && (
                                                         <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                                             <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: `${accent}15` }}>
                                                                 <div className="h-full rounded-full transition-all duration-500" style={{ width: `${progressPct}%`, background: accent }} />
