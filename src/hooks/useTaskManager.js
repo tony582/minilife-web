@@ -109,7 +109,7 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
     canSubmit: true
   };
   const rc = task.repeatConfig;
-  if (!rc.type.includes('_1') && !rc.type.includes('_n')) return {
+  if (!rc.type || (!rc.type.includes('_1') && !rc.type.includes('_n'))) return {
     canSubmit: true
   };
   const currentDt = new Date(selectedDStr);
