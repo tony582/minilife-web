@@ -326,7 +326,7 @@ export const ParentPlansTab = () => {
                         const defaultTimes = getDefaultTimeRange();
                         setEditingTask(null);
                         setPlanType('habit');
-                        setPlanForm({ targetKids: ['all'], category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5, 6, 7], periodTargetCount: 1, periodMaxPerDay: 1, periodMaxType: 'daily', timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
+                        setPlanForm({ targetKids: ['all'], category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5, 6, 7], periodTargetCount: 1, periodMaxPerDay: 1, periodMaxType: 'daily', timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: 'ph:Star', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
                         setShowAddPlanModal(true);
                     }} className="flex-1 py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                         style={{ background: C.teal, color: '#fff', boxShadow: `0 4px 14px ${C.teal}40` }}>
@@ -394,7 +394,8 @@ export const ParentPlansTab = () => {
                                     style={{ background: C.bgCard, boxShadow: C.cardShadow }}>
                                     <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl" style={{ background: accent }}></div>
                                     <div className="flex items-start gap-4 mb-4">
-                                        <div className={`w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br ${t.habitColor || 'from-emerald-400 to-teal-500'} flex items-center justify-center text-2xl`}>
+                                        <div className={`w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br ${t.habitColor || 'from-emerald-400 to-teal-500'} flex items-center justify-center text-2xl`}
+                                            style={{ color: t.reward < 0 ? undefined : '#fff' }}>
                                             {renderHabitIcon(t.iconEmoji, '🛡️', 22)}
                                         </div>
                                         <div className="flex-1 min-w-0">

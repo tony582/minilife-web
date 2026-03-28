@@ -39,7 +39,12 @@ export const AddPlanModal = ({ context }) => {
             ];
 
             const studyEmojis = ['📚', '✏️', '📝', '🧮', '🔬', '💻', '🧠', '🎧', '🎨', '🎵'];
-            const habitEmojis = ['⭐', '⏰', '🛏️', '🧹', '🏃', '🍎', '🥛', '🚫', '📱', '🎮'];
+            const habitEmojis = [
+                'ph:Star', 'ph:AlarmClock', 'ph:Moon', 'ph:Broom', 'ph:PersonSimpleRun', 'ph:ForkKnife',
+                'ph:BookOpen', 'ph:Heart', 'ph:Trophy', 'ph:Target', 'ph:Eye', 'ph:Sun',
+                'ph:Backpack', 'ph:TShirt', 'ph:Timer', 'ph:House', 'ph:HandWaving', 'ph:Smiley',
+                'ph:Medal', 'ph:Brain', 'ph:DeviceMobile', 'ph:GameController', 'ph:Prohibit', 'ph:Warning'
+            ];
 
             return (
                 planType === 'habit' ? (
@@ -112,8 +117,8 @@ export const AddPlanModal = ({ context }) => {
                                 <div className="flex flex-wrap gap-1.5 pb-2 mb-3">
                                     {habitEmojis.map(e => (
                                         <button key={e} onClick={() => setPlanForm({ ...planForm, iconEmoji: e })}
-                                            className={`text-xl p-2 rounded-xl transition-all ${planForm.iconEmoji === e ? 'bg-white shadow-md scale-110' : 'opacity-40 grayscale hover:opacity-100 hover:grayscale-0'}`}
-                                            style={planForm.iconEmoji === e ? { boxShadow: '0 0 0 2px #4ECDC4' } : {}}>{renderHabitIcon(e, e, 22)}</button>
+                                            className={`p-2 rounded-xl transition-all ${planForm.iconEmoji === e ? 'bg-white shadow-md scale-110' : 'hover:opacity-100 hover:scale-105'}`}
+                                            style={planForm.iconEmoji === e ? { boxShadow: '0 0 0 2px #4ECDC4', color: '#4ECDC4' } : { color: '#9CAABE' }}>{renderHabitIcon(e, e, 22)}</button>
                                     ))}
                                 </div>
 
