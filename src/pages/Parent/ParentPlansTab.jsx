@@ -361,15 +361,22 @@ export const ParentPlansTab = () => {
                         setPlanType('habit');
                         setPlanForm({ targetKids: ['all'], category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5, 6, 7], periodTargetCount: 1, periodMaxPerDay: 1, periodMaxType: 'daily', timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: 'ph:Star', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
                         setShowAddPlanModal(true);
-                    }} className="flex-1 py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-                        style={{ background: C.teal, color: '#fff', boxShadow: `0 4px 14px ${C.teal}40` }}>
-                        <Icons.Plus size={18} /> 新建习惯
+                    }} className="flex-1 py-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
+                        style={{ background: C.teal, color: '#fff', boxShadow: `0 3px 10px ${C.teal}35` }}>
+                        <Icons.Plus size={15} /> 新建习惯
                     </button>
                     <button onClick={() => setShowTemplateModal(true)}
-                        className="py-3.5 px-5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-                        style={{ background: C.bgCard, color: C.teal, boxShadow: C.cardShadow, border: `1.5px solid ${C.teal}30` }}>
-                        <Icons.Package size={18} /> 批量导入
+                        className="py-2.5 px-4 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
+                        style={{ background: C.bgCard, color: C.teal, boxShadow: C.cardShadow, border: `1.5px solid ${C.teal}25` }}>
+                        <Icons.Package size={15} /> 批量导入
                     </button>
+                    {habitTasks.length > 0 && (
+                        <button onClick={() => { setManageMode('reorder'); setBatchDeleteSet(new Set()); }}
+                            className="py-2.5 px-4 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
+                            style={{ background: C.bgCard, color: C.textSoft, boxShadow: C.cardShadow }}>
+                            <Icons.Settings size={15} /> 管理
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -395,14 +402,6 @@ export const ParentPlansTab = () => {
                             </button>
                         ))}
                     </div>
-                    {habitTasks.length > 0 && (
-                        <button onClick={() => { setManageMode('reorder'); setBatchDeleteSet(new Set()); }}
-                            className="shrink-0 flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-[11px] font-black transition-all active:scale-95"
-                            style={{ background: C.bgCard, color: C.textSoft }}>
-                            <Icons.Settings size={14} />
-                            管理
-                        </button>
-                    )}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                     {tasks.filter(t => t.type === 'habit' && (!searchPlanKeyword || t.title.toLowerCase().includes(searchPlanKeyword.toLowerCase()) || (t.desc && t.desc.toLowerCase().includes(searchPlanKeyword.toLowerCase())))).filter(t => {
