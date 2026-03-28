@@ -8,22 +8,23 @@
 │  AuthProvider → DataProvider → UIProvider → App      │
 │       │              │              │                │
 │   useAuth.js   useAppData.js   UIContext.jsx         │
-│                  (SSE sync)     (90+ useState)       │
+│                  (SSE sync)     (modalStore.js)      │
 │                      │                               │
 │              ┌───────┴────────┐                      │
 │         KidApp.jsx      ParentApp.jsx                │
 │              │                │                      │
 │         5 Tab Pages      5 Tab Pages                 │
 │                                                      │
-│  GlobalModals.jsx (3856 lines = 所有弹窗)             │
+│  GlobalModals.jsx (协调层 + 25个独立弹窗组件)          │
 │    └─ useTaskManager.js (打卡/审核/奖励)              │
 │    └─ useShopManager.js (购买/发货)                   │
 └────────────────────────────────────────────────────────┘
          │ REST API + SSE
-┌─ Server (Express + SQLite) ──────────────────────────┐
-│  server.js (799 lines = 全部路由)                     │
-│  aiRoutes.js (AI 任务解析，已独立)                     │
-│  database.js (DDL 初始化)                             │
+┌─ Server (Express + PostgreSQL) ───────────────────────┐
+│  server.js (入口 + 中间件)                             │
+│  database.js (PG连接池 + SQLite兼容API封装)            │
+│  routes/ (10个路由模块: auth, kids, tasks, etc.)       │
+│  aiRoutes.js (AI 任务解析)                             │
 └───────────────────────────────────────────────────────┘
 ```
 
@@ -51,10 +52,10 @@
 ```
 AuthContext   → token, user, authForm
 DataContext   → kids, tasks, inventory, orders, transactions, classes
-UIContext     → 90+ useState (弹窗开关、Tab、表单、定时器...)
+UIContext     → 部分通过 modalStore.js (Zustand) 管理弹窗状态
 ```
 
-**问题**: UIContext 任一 `setState` 调用会导致所有订阅组件重新渲染。
+**改进**: 部分弹窗状态已迁移到 Zustand store，减少不必要的重渲染。
 
 ## 页面导航
 

@@ -7,7 +7,7 @@
 | 层       | 技术                           |
 |----------|-------------------------------|
 | 前端     | React 19 + Vite 7 + TailwindCSS 4 |
-| 后端     | Node.js + Express + SQLite3    |
+| 后端     | Node.js + Express + PostgreSQL |
 | AI 集成  | Gemini / DeepSeek API          |
 | 部署     | 阿里云 ECS + Nginx + PM2       |
 
@@ -22,7 +22,9 @@ minilife/
 │   ├── context/
 │   │   ├── AuthContext.jsx   # 认证状态
 │   │   ├── DataContext.jsx   # 数据加载（kids/tasks/transactions）
-│   │   └── UIContext.jsx     # 所有 UI 状态（90+ useState）
+│   │   └── UIContext.jsx     # UI 状态
+│   ├── stores/
+│   │   └── modalStore.js    # Zustand 弹窗状态管理
 │   ├── hooks/
 │   │   ├── useAppData.js     # SSE 同步 + 数据初始化
 │   │   ├── useAuth.js        # 登录/注册
@@ -30,10 +32,11 @@ minilife/
 │   │   ├── useShopManager.js # 商城逻辑
 │   │   └── useTasks.js       # 任务调度算法
 │   ├── components/
-│   │   └── common/
-│   │       ├── GlobalModals.jsx  # 所有弹窗（正在拆分中）
-│   │       ├── AiPlanCreator.jsx # AI 任务生成器
-│   │       └── AppGrid.jsx       # 家长端应用网格
+│   │   ├── common/
+│   │   │   ├── GlobalModals.jsx  # 弹窗协调层（引用 25 个独立弹窗）
+│   │   │   ├── AiPlanCreator.jsx # AI 任务生成器
+│   │   │   └── AppGrid.jsx       # 家长端应用网格
+│   │   └── modals/           # 25 个独立弹窗组件
 │   ├── pages/
 │   │   ├── Kid/       # 学生端页面
 │   │   ├── Parent/    # 家长端页面
@@ -41,12 +44,13 @@ minilife/
 │   │   └── Auth/      # 登录/注册/PIN
 │   └── utils/         # 工具函数
 ├── server/
-│   ├── server.js      # 后端主文件（全部 API）
-│   ├── aiRoutes.js    # AI 相关路由（已独立）
-│   └── database.js    # SQLite DDL 初始化
-├── deploy.sh          # 服务器初始化脚本（在阿里云上运行）
-├── upload.sh          # 本地一键部署脚本（在 Mac 上运行）
-└── .env               # 环境变量（Gemini API Key）
+│   ├── server.js      # Express 入口 + 中间件
+│   ├── database.js    # PostgreSQL 连接池 + SQLite 兼容 API
+│   ├── routes/        # 10 个路由模块 (auth, kids, tasks, etc.)
+│   └── aiRoutes.js    # AI 相关路由
+├── deploy.sh          # 服务器初始化脚本
+├── upload.sh          # 本地一键部署脚本
+└── .env               # 环境变量（Gemini API Key + DB）
 ```
 
 ## 3. 开发命令
@@ -89,10 +93,10 @@ bash upload.sh 47.103.125.200
 
 ## 6. 数据库
 
-SQLite 文件位于 `server/minilife.sqlite`，已在 `.gitignore` 中排除。
-Schema 定义在 `server/database.js` 中，首次启动自动建表。
+PostgreSQL 部署在阿里云 ECS 本地，连接信息在 `.env` 中配置 (`DATABASE_URL`).
+`server/database.js` 提供了 SQLite 兼容的 API 封装 (`db.get`, `db.all`, `db.run`, `db.serialize`)，路由代码无需感知底层数据库差异。
 
-核心表：`users`, `kids`, `tasks`, `inventory`, `orders`, `transactions`, `classes`, `ai_config`, `ai_usage_log`, `activation_codes`
+核心表：`users`, `kids`, `tasks`, `inventory`, `orders`, `transactions`, `classes`, `ai_config`, `ai_usage_log`, `activation_codes`, `settings`
 
 ## 7. 常见陷阱
 
