@@ -376,7 +376,7 @@ export const KidHabitTab = () => {
                                     <div className="absolute left-0 top-0 right-0 h-1 rounded-t-xl" style={{ background: accentColor }}></div>
                                     {/* Icon + Title */}
                                     <div className="flex items-center gap-2.5 mb-2 mt-1">
-                                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br ${t.habitColor || 'from-emerald-400 to-teal-500'}`}
+                                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br ${t.catColor || t.habitColor || 'from-emerald-400 to-teal-500'}`}
                                             style={{ color: '#fff' }}>
                                             {renderHabitIcon(t.iconEmoji, null, 18) || renderIcon(t.iconName, 18)}
                                         </div>
@@ -446,7 +446,7 @@ export const KidHabitTab = () => {
                                     <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl" style={{ background: accentColor }}></div>
 
                                     {/* Icon */}
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg bg-gradient-to-br ${t.habitColor || 'from-emerald-400 to-teal-500'}`}
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg bg-gradient-to-br ${t.catColor || t.habitColor || 'from-emerald-400 to-teal-500'}`}
                                         style={{ color: '#fff' }}>
                                         {renderHabitIcon(t.iconEmoji, null, 20) || renderIcon(t.iconName, 20)}
                                     </div>
@@ -621,7 +621,7 @@ export const KidHabitTab = () => {
                                             className="flex items-center gap-3 p-3.5 rounded-xl transition-all"
                                             style={{ background: C.bgCard, border: `1px solid ${C.bgLight}` }}>
                                             {/* Icon */}
-                                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-base bg-gradient-to-br ${e.task.habitColor || 'from-emerald-400 to-teal-500'}`}
+                                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-base bg-gradient-to-br ${e.task.catColor || e.task.habitColor || 'from-emerald-400 to-teal-500'}`}
                                                 style={{ color: '#fff' }}>
                                                 {renderHabitIcon(e.task.iconEmoji, '✨', 16)}
                                             </div>

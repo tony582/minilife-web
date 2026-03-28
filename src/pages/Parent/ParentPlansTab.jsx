@@ -429,7 +429,7 @@ export const ParentPlansTab = () => {
                                     style={{ background: C.bgCard, boxShadow: C.cardShadow }}>
                                     <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl" style={{ background: accent }}></div>
                                     <div className="flex items-start gap-4 mb-4">
-                                        <div className={`w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br ${t.habitColor || 'from-emerald-400 to-teal-500'} flex items-center justify-center text-2xl`}
+                                        <div className={`w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br ${t.catColor || t.habitColor || 'from-emerald-400 to-teal-500'} flex items-center justify-center text-2xl`}
                                             style={{ color: '#fff' }}>
                                             {renderHabitIcon(t.iconEmoji, '🛡️', 22)}
                                         </div>
@@ -588,7 +588,7 @@ export const ParentPlansTab = () => {
                                         keyExtractor={(t) => t.id}
                                         renderItem={(t) => (
                                             <div className="rounded-xl px-4 py-3.5 flex items-center gap-3 select-none" style={{ background: C.bgCard }}>
-                                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br ${t.habitColor || 'from-emerald-400 to-teal-500'}`} style={{ color: '#fff' }}>
+                                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br ${t.catColor || t.habitColor || 'from-emerald-400 to-teal-500'}`} style={{ color: '#fff' }}>
                                                     {renderHabitIcon(t.iconEmoji, '🛡️', 18)}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
@@ -624,7 +624,7 @@ export const ParentPlansTab = () => {
                                                         style={{ background: isChecked ? C.coral : C.bgLight, color: '#fff' }}>
                                                         {isChecked && <Icons.Check size={12} />}
                                                     </div>
-                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br ${t.habitColor || 'from-emerald-400 to-teal-500'}`} style={{ color: '#fff' }}>
+                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br ${t.catColor || t.habitColor || 'from-emerald-400 to-teal-500'}`} style={{ color: '#fff' }}>
                                                         {renderHabitIcon(t.iconEmoji, '🛡️', 18)}
                                                     </div>
                                                     <div className="flex-1 min-w-0">
@@ -739,7 +739,7 @@ export const ParentPlansTab = () => {
                                     entries.map((e, idx) => (
                                         <div key={`${e.task.id}-${e.kid.id}-${e.recordIndex}-${idx}`}
                                             className="flex items-center gap-3 p-3.5 rounded-xl" style={{ background: C.bgCard, border: `1px solid ${C.bgLight}` }}>
-                                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-base ${!isGood ? '' : `bg-gradient-to-br ${e.task.habitColor || 'from-emerald-400 to-teal-500'}`}`}
+                                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-base ${!isGood ? '' : `bg-gradient-to-br ${e.task.catColor || e.task.habitColor || 'from-emerald-400 to-teal-500'}`}`}
                                                 style={!isGood ? { background: `${C.coral}15`, color: C.coral } : { color: '#fff' }}>
                                                 {renderHabitIcon(e.task.iconEmoji, '✨', 16)}
                                             </div>
