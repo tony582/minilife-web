@@ -153,7 +153,8 @@ export const ParentPlansTab = () => {
     };
     const goodDone = goodHabits.filter(getHabitDoneForParent).length;
     const badDone = badHabits.filter(getHabitDoneForParent).length;
-
+    const goodPct = goodHabits.length > 0 ? Math.round((goodDone / goodHabits.length) * 100) : 0;
+    const badPct = badHabits.length > 0 ? Math.round((badDone / badHabits.length) * 100) : 0;
     const todayHabitTx = transactions.filter(t => t.category === 'habit' && new Date(t.date).toDateString() === new Date(selectedDate).toDateString());
     const todayEarned = todayHabitTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
     const todayDeducted = todayHabitTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
@@ -304,59 +305,89 @@ export const ParentPlansTab = () => {
                 </div>
             </div>
 
-            {/* ═══ Compact Stats + Toolbar ═══ */}
-            <div className="px-4 pb-3">
-                {/* Row 1: Stat pills (clickable) + Action icons */}
-                <div className="flex items-center gap-2 mb-2.5">
-                    {/* Good habit pill */}
-                    <button onClick={() => setDetailModalType('good')}
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all active:scale-95"
-                        style={{ background: `${C.teal}12`, border: `1px solid ${C.teal}25` }}>
-                        <Icons.TrendingUp size={13} style={{ color: C.teal }} />
-                        <span className="text-xs font-black" style={{ color: C.teal }}>+{todayEarned}</span>
-                        <span className="text-[10px] font-bold" style={{ color: `${C.teal}99` }}>{goodDone}/{goodHabits.length}</span>
+            {/* ═══ Stat Cards + New Button ═══ */}
+            <div className="px-4 pb-4">
+                <div className="flex gap-3 mb-4">
+                    <button onClick={() => setDetailModalType('good')} className="flex-1 p-4 rounded-2xl text-left transition-all active:scale-[0.98] hover:shadow-lg cursor-pointer relative" style={{ background: C.bgCard, boxShadow: C.cardShadow }}>
+                        <div className="flex items-center gap-3">
+                            <div className="relative w-12 h-12 shrink-0">
+                                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
+                                    <circle cx="24" cy="24" r="20" fill="none" stroke={`${C.teal}20`} strokeWidth="4" />
+                                    <circle cx="24" cy="24" r="20" fill="none" stroke={C.teal} strokeWidth="4" strokeLinecap="round"
+                                        strokeDasharray={`${2 * Math.PI * 20}`} strokeDashoffset={`${2 * Math.PI * 20 * (1 - goodPct / 100)}`}
+                                        className="transition-all duration-700" />
+                                </svg>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <Icons.TrendingUp size={16} style={{ color: C.teal }} />
+                                </div>
+                            </div>
+                            <div className="min-w-0">
+                                <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>好习惯</div>
+                                <div className="text-xl font-black leading-tight" style={{ color: C.teal }}>+{todayEarned}</div>
+                                <div className="text-[10px] font-bold mt-0.5" style={{ color: C.textMuted }}>{goodDone}/{goodHabits.length} 完成</div>
+                            </div>
+                        </div>
+                        <div className="absolute top-2.5 right-2.5 md:hidden w-5 h-5 rounded-md flex items-center justify-center" style={{ background: `${C.teal}10` }}><Icons.ChevronRight size={12} style={{ color: C.teal, opacity: 0.5 }} /></div>
+                        <div className="hidden md:flex items-center gap-1 absolute bottom-3 right-4 text-[10px] font-bold" style={{ color: C.teal, opacity: 0.6 }}>查看明细 <Icons.ChevronRight size={11} /></div>
                     </button>
-                    {/* Bad habit pill */}
-                    <button onClick={() => setDetailModalType('bad')}
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all active:scale-95"
-                        style={{ background: `${C.coral}12`, border: `1px solid ${C.coral}25` }}>
-                        <Icons.TrendingDown size={13} style={{ color: C.coral }} />
-                        <span className="text-xs font-black" style={{ color: C.coral }}>-{todayDeducted}</span>
-                        <span className="text-[10px] font-bold" style={{ color: `${C.coral}99` }}>{badDone}/{badHabits.length}</span>
+                    <button onClick={() => setDetailModalType('bad')} className="flex-1 p-4 rounded-2xl text-left transition-all active:scale-[0.98] hover:shadow-lg cursor-pointer relative" style={{ background: C.bgCard, boxShadow: C.cardShadow }}>
+                        <div className="flex items-center gap-3">
+                            <div className="relative w-12 h-12 shrink-0">
+                                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
+                                    <circle cx="24" cy="24" r="20" fill="none" stroke={`${C.coral}20`} strokeWidth="4" />
+                                    <circle cx="24" cy="24" r="20" fill="none" stroke={C.coral} strokeWidth="4" strokeLinecap="round"
+                                        strokeDasharray={`${2 * Math.PI * 20}`} strokeDashoffset={`${2 * Math.PI * 20 * (1 - badPct / 100)}`}
+                                        className="transition-all duration-700" />
+                                </svg>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <Icons.TrendingDown size={16} style={{ color: C.coral }} />
+                                </div>
+                            </div>
+                            <div className="min-w-0">
+                                <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>坏习惯</div>
+                                <div className="text-xl font-black leading-tight" style={{ color: C.coral }}>-{todayDeducted}</div>
+                                <div className="text-[10px] font-bold mt-0.5" style={{ color: C.textMuted }}>{badDone}/{badHabits.length} 记录</div>
+                            </div>
+                        </div>
+                        <div className="absolute top-2.5 right-2.5 md:hidden w-5 h-5 rounded-md flex items-center justify-center" style={{ background: `${C.coral}10` }}><Icons.ChevronRight size={12} style={{ color: C.coral, opacity: 0.5 }} /></div>
+                        <div className="hidden md:flex items-center gap-1 absolute bottom-3 right-4 text-[10px] font-bold" style={{ color: C.coral, opacity: 0.6 }}>查看明细 <Icons.ChevronRight size={11} /></div>
                     </button>
-                    {/* Spacer */}
-                    <div className="flex-1" />
-                    {/* Action icons */}
+                </div>
+
+                <div className="flex gap-2">
                     <button onClick={() => {
                         const defaultTimes = getDefaultTimeRange();
                         setEditingTask(null);
                         setPlanType('habit');
                         setPlanForm({ targetKids: ['all'], category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5, 6, 7], periodTargetCount: 1, periodMaxPerDay: 1, periodMaxType: 'daily', timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: 'ph:Star', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
                         setShowAddPlanModal(true);
-                    }} className="w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-90"
-                        style={{ background: C.teal, color: '#fff', boxShadow: `0 3px 10px ${C.teal}40` }}
-                        title="新建习惯">
-                        <Icons.Plus size={18} />
+                    }} className="flex-1 py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                        style={{ background: C.teal, color: '#fff', boxShadow: `0 4px 14px ${C.teal}40` }}>
+                        <Icons.Plus size={18} /> 新建习惯
                     </button>
                     <button onClick={() => setShowTemplateModal(true)}
-                        className="w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-90"
-                        style={{ background: C.bgCard, color: C.teal, boxShadow: C.cardShadow }}
-                        title="批量导入">
-                        <Icons.Package size={16} />
+                        className="py-3.5 px-5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                        style={{ background: C.bgCard, color: C.teal, boxShadow: C.cardShadow, border: `1.5px solid ${C.teal}30` }}>
+                        <Icons.Package size={18} /> 批量导入
                     </button>
-                    {habitTasks.length > 0 && (
-                        <button onClick={() => { setManageMode('reorder'); setBatchDeleteSet(new Set()); }}
-                            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-90"
-                            style={{ background: C.bgCard, color: C.textSoft, boxShadow: C.cardShadow }}
-                            title="管理">
-                            <Icons.Settings size={16} />
-                        </button>
-                    )}
                 </div>
-                {/* Row 2: Filter tabs + Search */}
-                <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-0.5 p-1 rounded-xl shrink-0" style={{ background: C.bgCard }}>
-                        {[{ id: 'all', label: '全部' }, { id: 'income', label: '好' }, { id: 'expense', label: '坏' }].map(f => (
+            </div>
+
+            {/* ═══ Habit Rules ═══ */}
+            <div className="px-4 mb-6">
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="relative flex-1 min-w-0">
+                        <Icons.Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: C.textMuted }} />
+                        <input type="text" placeholder="搜索习惯..." value={searchPlanKeyword} onChange={e => setSearchPlanKeyword(e.target.value)}
+                            className="w-full text-sm font-bold rounded-xl pl-9 pr-8 py-2.5 focus:outline-none transition-all placeholder:font-normal border-none"
+                            style={{ background: C.bgCard, color: C.textPrimary, caretColor: C.teal }}
+                        />
+                        {searchPlanKeyword && (
+                            <button onClick={() => setSearchPlanKeyword('')} className="absolute inset-y-0 right-0 pr-3 flex items-center" style={{ color: C.textMuted }}><Icons.X size={14} /></button>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-1 p-1 rounded-xl shrink-0" style={{ background: C.bgCard }}>
+                        {[{ id: 'all', label: '全部' }, { id: 'income', label: '好习惯' }, { id: 'expense', label: '坏习惯' }].map(f => (
                             <button key={f.id} onClick={() => setHabitCardFilter(f.id)}
                                 className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all"
                                 style={{ background: habitCardFilter === f.id ? C.teal : 'transparent', color: habitCardFilter === f.id ? '#fff' : C.textMuted }}>
@@ -364,21 +395,15 @@ export const ParentPlansTab = () => {
                             </button>
                         ))}
                     </div>
-                    <div className="relative flex-1 min-w-0">
-                        <Icons.Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: C.textMuted }} />
-                        <input type="text" placeholder="搜索..." value={searchPlanKeyword} onChange={e => setSearchPlanKeyword(e.target.value)}
-                            className="w-full text-xs font-bold rounded-xl pl-8 pr-7 py-2 focus:outline-none transition-all placeholder:font-normal border-none"
-                            style={{ background: C.bgCard, color: C.textPrimary, caretColor: C.teal }}
-                        />
-                        {searchPlanKeyword && (
-                            <button onClick={() => setSearchPlanKeyword('')} className="absolute inset-y-0 right-0 pr-2.5 flex items-center" style={{ color: C.textMuted }}><Icons.X size={13} /></button>
-                        )}
-                    </div>
+                    {habitTasks.length > 0 && (
+                        <button onClick={() => { setManageMode('reorder'); setBatchDeleteSet(new Set()); }}
+                            className="shrink-0 flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-[11px] font-black transition-all active:scale-95"
+                            style={{ background: C.bgCard, color: C.textSoft }}>
+                            <Icons.Settings size={14} />
+                            管理
+                        </button>
+                    )}
                 </div>
-            </div>
-
-            {/* ═══ Habit Rules ═══ */}
-            <div className="px-4 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                     {tasks.filter(t => t.type === 'habit' && (!searchPlanKeyword || t.title.toLowerCase().includes(searchPlanKeyword.toLowerCase()) || (t.desc && t.desc.toLowerCase().includes(searchPlanKeyword.toLowerCase())))).filter(t => {
                         if (habitCardFilter === 'income') return t.reward >= 0;
