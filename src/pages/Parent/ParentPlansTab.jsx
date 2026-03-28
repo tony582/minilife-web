@@ -509,7 +509,7 @@ export const ParentPlansTab = () => {
                                                             boxShadow: allMaxed ? 'none' : `0 2px 8px ${accent}35`,
                                                             opacity: allMaxed ? 0.5 : 1,
                                                         }}>
-                                                        {isNeg ? <><Icons.Minus size={12} strokeWidth={2.5} /> 扣分</> : <><Icons.Plus size={12} strokeWidth={2.5} /> 加分</>}
+                                                        {isNeg ? <><Icons.Minus size={12} strokeWidth={2.5} /> 记录</> : <><Icons.Check size={12} strokeWidth={2.5} /> 打卡</>}
                                                     </button>
                                                 </div>
                                             </div>
