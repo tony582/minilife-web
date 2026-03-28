@@ -170,136 +170,108 @@ export const HabitTemplateModal = ({ isOpen, onClose }) => {
                 onClick={e => e.stopPropagation()}>
 
                 {/* Header */}
-                <div className="shrink-0 px-5 pt-5 pb-4" style={{ background: C.bgCard, borderBottom: `1px solid ${C.bgLight}` }}>
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-teal-400 to-emerald-500">
-                                <PhIcon name="Package" size={22} weight="duotone" style={{ color: '#fff' }} />
-                            </div>
-                            <div>
-                                <h2 className="font-black text-base" style={{ color: C.textPrimary }}>批量导入习惯</h2>
-                                <div className="text-[11px] font-bold" style={{ color: C.textMuted }}>勾选需要的习惯，点击底部按钮导入</div>
-                            </div>
-                        </div>
-                        <button onClick={onClose}
-                            className="w-9 h-9 rounded-full flex items-center justify-center"
-                            style={{ background: C.bgLight, color: C.textMuted }}>
-                            <Icons.X size={18} />
-                        </button>
-                    </div>
+                <div className="shrink-0 px-5 py-4 flex items-center justify-between" style={{ background: C.bgCard, borderBottom: `1px solid ${C.bgLight}` }}>
+                    <h2 className="font-black text-base" style={{ color: C.textPrimary }}>批量导入习惯</h2>
+                    <button onClick={onClose}
+                        className="w-9 h-9 rounded-full flex items-center justify-center"
+                        style={{ background: C.bgLight, color: C.textMuted }}>
+                        <Icons.X size={18} />
+                    </button>
                 </div>
 
-                {/* Body — single scrollable list with section headers */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-1.5">
+                {/* Body */}
+                <div className="flex-1 overflow-y-auto">
 
-                    {/* ── Good Habits Section ── */}
-                    <div className="flex items-center justify-between py-2 sticky top-0 z-10" style={{ background: C.bg }}>
-                        <div className="flex items-center gap-2">
-                            <span className="w-1.5 h-5 rounded-full" style={{ background: C.teal }}></span>
-                            <span className="text-xs font-black" style={{ color: C.teal }}>好习惯</span>
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${C.teal}15`, color: C.teal }}>
-                                {selectedGood.size}/{goodTemplates.length}
-                            </span>
+                    {/* ── Good Habits ── */}
+                    <button onClick={() => selectedGood.size === goodTemplates.length ? selectNoneGood() : selectAllGood()}
+                        className="w-full flex items-center gap-3 px-5 py-3 sticky top-0 z-10 text-left"
+                        style={{ background: C.bgCard, borderBottom: `1px solid ${C.bgLight}` }}>
+                        <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0"
+                            style={{ background: selectedGood.size > 0 ? C.teal : C.bgLight, color: '#fff' }}>
+                            {selectedGood.size > 0 && <Icons.Check size={12} />}
                         </div>
-                        <button onClick={() => selectedGood.size === goodTemplates.length ? selectNoneGood() : selectAllGood()}
-                            className="text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all"
-                            style={{ background: `${C.teal}12`, color: C.teal }}>
-                            {selectedGood.size === goodTemplates.length ? '取消全选' : '全选'}
-                        </button>
-                    </div>
-                    {goodTemplates.map((tpl, idx) => {
-                        const isSelected = selectedGood.has(idx);
-                        const exists = existingTitles.has(tpl.title);
-                        return (
-                            <button key={`good-${idx}`}
-                                onClick={exists ? undefined : () => toggleGood(idx)}
-                                disabled={exists}
-                                className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${exists ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'}`}
-                                style={{
-                                    background: isSelected && !exists ? C.bgCard : `${C.bgCard}80`,
-                                    border: `1.5px solid ${isSelected && !exists ? C.teal + '40' : C.bgLight}`,
-                                    boxShadow: isSelected && !exists ? C.cardShadow : 'none',
-                                }}>
-                                <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-all"
-                                    style={{ background: exists ? C.bgMuted : (isSelected ? C.teal : C.bgLight), color: '#fff' }}>
-                                    {(exists || isSelected) && <Icons.Check size={12} />}
-                                </div>
-                                <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br ${tpl.color}`}
-                                    style={{ color: '#fff' }}>
-                                    <PhIcon name={tpl.iconEmoji?.startsWith('ph:') ? tpl.iconEmoji.slice(3) : tpl.iconEmoji} size={18} weight="fill" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-bold text-sm truncate" style={{ color: C.textPrimary }}>{tpl.title}</span>
-                                        {exists && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-600 shrink-0">已存在</span>}
+                        <span className="text-sm font-black" style={{ color: C.teal }}>好习惯</span>
+                        <span className="text-[11px] font-bold" style={{ color: C.textMuted }}>{selectedGood.size}/{goodTemplates.length}</span>
+                    </button>
+                    <div className="px-4 py-2 space-y-1.5">
+                        {goodTemplates.map((tpl, idx) => {
+                            const isSelected = selectedGood.has(idx);
+                            const exists = existingTitles.has(tpl.title);
+                            return (
+                                <button key={`good-${idx}`}
+                                    onClick={exists ? undefined : () => toggleGood(idx)}
+                                    disabled={exists}
+                                    className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${exists ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                    style={{
+                                        background: isSelected && !exists ? C.bgCard : 'transparent',
+                                        border: isSelected && !exists ? `1.5px solid ${C.teal}30` : '1.5px solid transparent',
+                                    }}>
+                                    <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0"
+                                        style={{ background: exists ? C.bgMuted : (isSelected ? C.teal : C.bgLight), color: '#fff' }}>
+                                        {(exists || isSelected) && <Icons.Check size={12} />}
                                     </div>
-                                    <div className="text-[11px] mt-0.5 truncate" style={{ color: C.textSoft }}>{tpl.desc}</div>
-                                </div>
-                                <div className="shrink-0 text-[11px] font-black px-2 py-1 rounded-lg"
-                                    style={{ background: `${C.teal}12`, color: C.teal }}>
-                                    +{tpl.reward}
-                                </div>
-                            </button>
-                        );
-                    })}
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br ${tpl.color}`}
+                                        style={{ color: '#fff' }}>
+                                        <PhIcon name={tpl.iconEmoji?.startsWith('ph:') ? tpl.iconEmoji.slice(3) : tpl.iconEmoji} size={16} weight="fill" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <span className="font-bold text-sm truncate block" style={{ color: C.textPrimary }}>{tpl.title}</span>
+                                        {exists && <span className="text-[9px] font-bold text-amber-500">已存在</span>}
+                                    </div>
+                                    <span className="text-[11px] font-black shrink-0" style={{ color: C.teal }}>+{tpl.reward}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
 
-                    {/* ── Bad Habits Section ── */}
-                    <div className="flex items-center justify-between py-2 mt-3 sticky top-0 z-10" style={{ background: C.bg }}>
-                        <div className="flex items-center gap-2">
-                            <span className="w-1.5 h-5 rounded-full" style={{ background: C.coral }}></span>
-                            <span className="text-xs font-black" style={{ color: C.coral }}>坏习惯</span>
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${C.coral}15`, color: C.coral }}>
-                                {selectedBad.size}/{badTemplates.length}
-                            </span>
+                    {/* ── Bad Habits ── */}
+                    <button onClick={() => selectedBad.size === badTemplates.length ? selectNoneBad() : selectAllBad()}
+                        className="w-full flex items-center gap-3 px-5 py-3 sticky top-0 z-10 text-left"
+                        style={{ background: C.bgCard, borderBottom: `1px solid ${C.bgLight}`, borderTop: `1px solid ${C.bgLight}` }}>
+                        <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0"
+                            style={{ background: selectedBad.size > 0 ? C.coral : C.bgLight, color: '#fff' }}>
+                            {selectedBad.size > 0 && <Icons.Check size={12} />}
                         </div>
-                        <button onClick={() => selectedBad.size === badTemplates.length ? selectNoneBad() : selectAllBad()}
-                            className="text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all"
-                            style={{ background: `${C.coral}12`, color: C.coral }}>
-                            {selectedBad.size === badTemplates.length ? '取消全选' : '全选'}
-                        </button>
-                    </div>
-                    {badTemplates.map((tpl, idx) => {
-                        const isSelected = selectedBad.has(idx);
-                        const exists = existingTitles.has(tpl.title);
-                        return (
-                            <button key={`bad-${idx}`}
-                                onClick={exists ? undefined : () => toggleBad(idx)}
-                                disabled={exists}
-                                className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${exists ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'}`}
-                                style={{
-                                    background: isSelected && !exists ? C.bgCard : `${C.bgCard}80`,
-                                    border: `1.5px solid ${isSelected && !exists ? C.coral + '40' : C.bgLight}`,
-                                    boxShadow: isSelected && !exists ? C.cardShadow : 'none',
-                                }}>
-                                <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-all"
-                                    style={{ background: exists ? C.bgMuted : (isSelected ? C.coral : C.bgLight), color: '#fff' }}>
-                                    {(exists || isSelected) && <Icons.Check size={12} />}
-                                </div>
-                                <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br ${tpl.color}`}
-                                    style={{ color: '#fff' }}>
-                                    <PhIcon name={tpl.iconEmoji?.startsWith('ph:') ? tpl.iconEmoji.slice(3) : tpl.iconEmoji} size={18} weight="fill" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-bold text-sm truncate" style={{ color: C.textPrimary }}>{tpl.title}</span>
-                                        {exists && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-600 shrink-0">已存在</span>}
+                        <span className="text-sm font-black" style={{ color: C.coral }}>坏习惯</span>
+                        <span className="text-[11px] font-bold" style={{ color: C.textMuted }}>{selectedBad.size}/{badTemplates.length}</span>
+                    </button>
+                    <div className="px-4 py-2 space-y-1.5">
+                        {badTemplates.map((tpl, idx) => {
+                            const isSelected = selectedBad.has(idx);
+                            const exists = existingTitles.has(tpl.title);
+                            return (
+                                <button key={`bad-${idx}`}
+                                    onClick={exists ? undefined : () => toggleBad(idx)}
+                                    disabled={exists}
+                                    className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${exists ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                    style={{
+                                        background: isSelected && !exists ? C.bgCard : 'transparent',
+                                        border: isSelected && !exists ? `1.5px solid ${C.coral}30` : '1.5px solid transparent',
+                                    }}>
+                                    <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0"
+                                        style={{ background: exists ? C.bgMuted : (isSelected ? C.coral : C.bgLight), color: '#fff' }}>
+                                        {(exists || isSelected) && <Icons.Check size={12} />}
                                     </div>
-                                    <div className="text-[11px] mt-0.5 truncate" style={{ color: C.textSoft }}>{tpl.desc}</div>
-                                </div>
-                                <div className="shrink-0 text-[11px] font-black px-2 py-1 rounded-lg"
-                                    style={{ background: `${C.coral}12`, color: C.coral }}>
-                                    -{Math.abs(tpl.reward)}
-                                </div>
-                            </button>
-                        );
-                    })}
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br ${tpl.color}`}
+                                        style={{ color: '#fff' }}>
+                                        <PhIcon name={tpl.iconEmoji?.startsWith('ph:') ? tpl.iconEmoji.slice(3) : tpl.iconEmoji} size={16} weight="fill" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <span className="font-bold text-sm truncate block" style={{ color: C.textPrimary }}>{tpl.title}</span>
+                                        {exists && <span className="text-[9px] font-bold text-amber-500">已存在</span>}
+                                    </div>
+                                    <span className="text-[11px] font-black shrink-0" style={{ color: C.coral }}>-{Math.abs(tpl.reward)}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
 
                 {/* Footer */}
                 <div className="shrink-0 p-4" style={{ background: C.bgCard, borderTop: `1px solid ${C.bgLight}` }}>
                     <button onClick={handleImport}
                         disabled={totalSelected === 0 || importing}
-                        className="w-full py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
                         style={{
                             background: totalSelected > 0 ? C.teal : C.bgMuted,
                             color: '#fff',
@@ -310,13 +282,11 @@ export const HabitTemplateModal = ({ isOpen, onClose }) => {
                                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                 正在导入...
                             </>
-                        ) : totalSelected > 0 ? (
+                        ) : (
                             <>
                                 <PhIcon name="Download" size={18} weight="bold" />
-                                导入已选的 {totalSelected} 个习惯
+                                导入 {totalSelected} 个习惯
                             </>
-                        ) : (
-                            '请先勾选要导入的习惯'
                         )}
                     </button>
                 </div>
