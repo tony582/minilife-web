@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { HabitTemplateModal } from '../../components/modals/HabitTemplateModal';
+import { renderHabitIcon } from '../../utils/habitIcons';
 import { createPortal } from 'react-dom';
 import { useDataContext } from '../../context/DataContext.jsx';
 import { useAuthContext } from '../../context/AuthContext.jsx';
@@ -394,7 +395,7 @@ export const ParentPlansTab = () => {
                                     <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl" style={{ background: accent }}></div>
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className={`w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br ${t.habitColor || 'from-emerald-400 to-teal-500'} flex items-center justify-center text-2xl`}>
-                                            {t.iconEmoji || '🛡️'}
+                                            {renderHabitIcon(t.iconEmoji, '🛡️', 22)}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-0.5">
@@ -593,7 +594,7 @@ export const ParentPlansTab = () => {
                                             className="flex items-center gap-3 p-3.5 rounded-xl" style={{ background: C.bgCard, border: `1px solid ${C.bgLight}` }}>
                                             <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-base ${!isGood ? '' : `bg-gradient-to-br ${e.task.habitColor || 'from-emerald-400 to-teal-500'}`}`}
                                                 style={!isGood ? { background: `${C.coral}15`, color: C.coral } : { color: '#fff' }}>
-                                                {e.task.iconEmoji || '✨'}
+                                                {renderHabitIcon(e.task.iconEmoji, '✨', 16)}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="font-bold text-sm truncate" style={{ color: C.textPrimary }}>{e.task.title}</div>

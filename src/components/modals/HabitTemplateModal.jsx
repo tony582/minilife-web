@@ -95,7 +95,7 @@ export const HabitTemplateModal = ({ isOpen, onClose }) => {
                 reward: tpl.reward,
                 status: 'active',
                 iconName: '',
-                iconEmoji: '',
+                iconEmoji: tpl.iconEmoji,
                 category: '',
                 catColor: '',
                 frequency: '',
@@ -112,8 +112,6 @@ export const HabitTemplateModal = ({ isOpen, onClose }) => {
                 order: 999,
                 periodMaxPerDay: tpl.periodMaxPerDay,
                 periodMaxType: 'daily',
-                // Store Phosphor icon name for rendering
-                phIcon: tpl.icon,
             };
         };
 
@@ -266,7 +264,7 @@ export const HabitTemplateModal = ({ isOpen, onClose }) => {
                                 {/* Icon */}
                                 <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br ${tpl.color}`}
                                     style={{ color: '#fff' }}>
-                                    <PhIcon name={tpl.icon} size={18} weight="fill" />
+                                    <PhIcon name={tpl.iconEmoji?.startsWith('ph:') ? tpl.iconEmoji.slice(3) : tpl.iconEmoji} size={18} weight="fill" />
                                 </div>
 
                                 {/* Content */}

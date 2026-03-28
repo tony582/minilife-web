@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { renderHabitIcon } from '../../utils/habitIcons';
 import { createPortal } from 'react-dom';
 import { useDataContext } from '../../context/DataContext.jsx';
 import { useAuthContext } from '../../context/AuthContext.jsx';
@@ -359,7 +360,7 @@ export const KidHabitTab = () => {
                                     {/* Icon */}
                                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg ${isNegative ? '' : `bg-gradient-to-br ${t.habitColor || 'from-emerald-400 to-teal-500'}`}`}
                                         style={isNegative ? { background: `${C.coral}18`, color: C.coral } : { color: '#fff' }}>
-                                        {t.iconEmoji || renderIcon(t.iconName, 20)}
+                                        {renderHabitIcon(t.iconEmoji, null, 20) || renderIcon(t.iconName, 20)}
                                     </div>
 
                                     {/* Content */}
@@ -531,7 +532,7 @@ export const KidHabitTab = () => {
                                             {/* Icon */}
                                             <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-base ${!isGood ? '' : `bg-gradient-to-br ${e.task.habitColor || 'from-emerald-400 to-teal-500'}`}`}
                                                 style={!isGood ? { background: `${C.coral}15`, color: C.coral } : { color: '#fff' }}>
-                                                {e.task.iconEmoji || '✨'}
+                                                {renderHabitIcon(e.task.iconEmoji, '✨', 16)}
                                             </div>
                                             {/* Info */}
                                             <div className="flex-1 min-w-0">
