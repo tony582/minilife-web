@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { HabitTemplateModal } from '../../components/modals/HabitTemplateModal';
 import { renderHabitIcon } from '../../utils/habitIcons';
 import { createPortal } from 'react-dom';
@@ -10,6 +10,7 @@ import { getCategoryGradient, getIconForCategory } from '../../utils/categoryUti
 import { formatDate, getDisplayDateArray, getWeekNumber } from '../../utils/dateUtils';
 import { getWeeklyCompletionCount } from '../../hooks/useTasks';
 import { apiFetch } from '../../api/client';
+import { ReorderableList } from '../../components/common/ReorderableList';
 
 // You might need to import or define this if it is meant to be local, but it seems to be defined in App.jsx or context?
 // Ah wait, getDefaultTimeRange was defined inside App.jsx, I copied it to ParentTasksTab last time.
@@ -72,6 +73,38 @@ export const ParentPlansTab = () => {
     const [habitCardFilter, setHabitCardFilter] = useState('all');
     const [detailModalType, setDetailModalType] = useState(null);
     const [showTemplateModal, setShowTemplateModal] = useState(false);
+    const [manageMode, setManageMode] = useState(null); // 'reorder' | 'delete' | null
+    const [batchDeleteSet, setBatchDeleteSet] = useState(new Set());
+
+    // Habits sorted by order for reorder/manage
+    const habitTasks = useMemo(() => tasks.filter(t => t.type === 'habit').sort((a, b) => (a.order || 0) - (b.order || 0)), [tasks]);
+
+    const handleHabitReorder = (sourceIndex, targetIndex) => {
+        if (sourceIndex === targetIndex || targetIndex < 0 || targetIndex >= habitTasks.length) return;
+        const updated = [...habitTasks];
+        const [removed] = updated.splice(sourceIndex, 1);
+        updated.splice(targetIndex, 0, removed);
+        const orderMap = {};
+        updated.forEach((task, idx) => { orderMap[task.id] = idx; });
+        setTasks(prev => prev.map(t => orderMap[t.id] !== undefined ? { ...t, order: orderMap[t.id] } : t));
+        updated.forEach((task, idx) => {
+            apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order: idx }) }).catch(console.error);
+        });
+    };
+
+    const handleBatchDelete = async () => {
+        if (batchDeleteSet.size === 0) return;
+        const ids = [...batchDeleteSet];
+        for (const id of ids) {
+            try {
+                await apiFetch(`/api/tasks/${id}`, { method: 'DELETE' });
+            } catch (e) { console.error(e); }
+        }
+        setTasks(prev => prev.filter(t => !batchDeleteSet.has(t.id)));
+        authC.notify(`已删除 ${ids.length} 个习惯`, 'success');
+        setBatchDeleteSet(new Set());
+        setManageMode(null);
+    };
 
 
     // Sticky compact calendar
@@ -362,6 +395,14 @@ export const ParentPlansTab = () => {
                             </button>
                         ))}
                     </div>
+                    {habitTasks.length > 0 && (
+                        <button onClick={() => { setManageMode('reorder'); setBatchDeleteSet(new Set()); }}
+                            className="shrink-0 flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-[11px] font-black transition-all active:scale-95"
+                            style={{ background: C.bgCard, color: C.textSoft }}>
+                            <Icons.Settings size={14} />
+                            管理
+                        </button>
+                    )}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                     {tasks.filter(t => t.type === 'habit' && (!searchPlanKeyword || t.title.toLowerCase().includes(searchPlanKeyword.toLowerCase()) || (t.desc && t.desc.toLowerCase().includes(searchPlanKeyword.toLowerCase())))).filter(t => {
@@ -504,7 +545,115 @@ export const ParentPlansTab = () => {
             </div>
 
             {/* ═══ Detail Modal ═══ */}
-            <HabitTemplateModal isOpen={showTemplateModal} onClose={() => setShowTemplateModal(false)} />
+            {showTemplateModal && <HabitTemplateModal isOpen={showTemplateModal} onClose={() => setShowTemplateModal(false)} />}
+
+            {/* ═══ Manage Modal (Reorder / Batch Delete) ═══ */}
+            {manageMode && createPortal(
+                <div className="z-[200]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: C.bg }}>
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${C.bgLight}` }}>
+                        <button onClick={() => { setManageMode(null); setBatchDeleteSet(new Set()); }}
+                            className="p-2 rounded-full" style={{ color: C.textSoft }}>
+                            <Icons.X size={22} />
+                        </button>
+                        <div className="flex items-center gap-1 p-1 rounded-xl" style={{ background: C.bgLight }}>
+                            <button onClick={() => { setManageMode('reorder'); setBatchDeleteSet(new Set()); }}
+                                className="px-4 py-1.5 rounded-lg text-xs font-black transition-all"
+                                style={{ background: manageMode === 'reorder' ? C.bgCard : 'transparent', color: manageMode === 'reorder' ? C.teal : C.textMuted, boxShadow: manageMode === 'reorder' ? C.cardShadow : 'none' }}>
+                                排序
+                            </button>
+                            <button onClick={() => { setManageMode('delete'); setBatchDeleteSet(new Set()); }}
+                                className="px-4 py-1.5 rounded-lg text-xs font-black transition-all"
+                                style={{ background: manageMode === 'delete' ? C.bgCard : 'transparent', color: manageMode === 'delete' ? C.coral : C.textMuted, boxShadow: manageMode === 'delete' ? C.cardShadow : 'none' }}>
+                                删除
+                            </button>
+                        </div>
+                        <button onClick={() => { setManageMode(null); setBatchDeleteSet(new Set()); }}
+                            className="font-black px-4 py-2 rounded-full text-sm" style={{ color: C.teal }}>
+                            完成
+                        </button>
+                    </div>
+
+                    {/* Body */}
+                    <div style={{ position: 'absolute', top: 57, left: 0, right: 0, bottom: manageMode === 'delete' && batchDeleteSet.size > 0 ? 72 : 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '1rem', paddingBottom: '2rem' }}>
+                        <div className="max-w-2xl mx-auto">
+                            {manageMode === 'reorder' ? (
+                                <>
+                                    <div className="text-[13px] font-bold p-3 rounded-2xl mb-4 text-center" style={{ background: C.bgCard, color: C.textSoft, boxShadow: C.cardShadow }}>
+                                        💡 长按拖动调整习惯顺序
+                                    </div>
+                                    <ReorderableList
+                                        items={habitTasks}
+                                        onReorder={handleHabitReorder}
+                                        keyExtractor={(t) => t.id}
+                                        renderItem={(t) => (
+                                            <div className="rounded-xl px-4 py-3.5 flex items-center gap-3 select-none" style={{ background: C.bgCard }}>
+                                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br ${t.habitColor || 'from-emerald-400 to-teal-500'}`} style={{ color: '#fff' }}>
+                                                    {renderHabitIcon(t.iconEmoji, '🛡️', 18)}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="font-black text-sm truncate" style={{ color: C.textPrimary }}>{t.title}</div>
+                                                    <div className="text-[10px] font-bold" style={{ color: t.reward < 0 ? C.coral : C.teal }}>{t.reward > 0 ? '+' : ''}{t.reward} 家庭币</div>
+                                                </div>
+                                                <Icons.GripVertical size={18} style={{ color: C.textMuted }} />
+                                            </div>
+                                        )}
+                                    />
+                                </>
+                            ) : (
+                                <>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <span className="text-[13px] font-bold" style={{ color: C.textSoft }}>
+                                            已选 {batchDeleteSet.size} 个
+                                        </span>
+                                        <button onClick={() => batchDeleteSet.size === habitTasks.length ? setBatchDeleteSet(new Set()) : setBatchDeleteSet(new Set(habitTasks.map(t => t.id)))}
+                                            className="text-xs font-black px-3 py-1.5 rounded-lg"
+                                            style={{ background: C.bgCard, color: C.textSoft }}>
+                                            {batchDeleteSet.size === habitTasks.length ? '取消全选' : '全选'}
+                                        </button>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {habitTasks.map(t => {
+                                            const isChecked = batchDeleteSet.has(t.id);
+                                            return (
+                                                <button key={t.id}
+                                                    onClick={() => setBatchDeleteSet(prev => { const n = new Set(prev); n.has(t.id) ? n.delete(t.id) : n.add(t.id); return n; })}
+                                                    className="w-full rounded-xl px-4 py-3.5 flex items-center gap-3 text-left transition-all"
+                                                    style={{ background: C.bgCard, border: `1.5px solid ${isChecked ? C.coral + '40' : C.bgLight}` }}>
+                                                    <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0"
+                                                        style={{ background: isChecked ? C.coral : C.bgLight, color: '#fff' }}>
+                                                        {isChecked && <Icons.Check size={12} />}
+                                                    </div>
+                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br ${t.habitColor || 'from-emerald-400 to-teal-500'}`} style={{ color: '#fff' }}>
+                                                        {renderHabitIcon(t.iconEmoji, '🛡️', 18)}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="font-black text-sm truncate" style={{ color: C.textPrimary }}>{t.title}</div>
+                                                        <div className="text-[10px] font-bold" style={{ color: t.reward < 0 ? C.coral : C.teal }}>{t.reward > 0 ? '+' : ''}{t.reward} 家庭币</div>
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Batch delete footer */}
+                    {manageMode === 'delete' && batchDeleteSet.size > 0 && (
+                        <div className="absolute bottom-0 left-0 right-0 p-4" style={{ background: C.bgCard, borderTop: `1px solid ${C.bgLight}` }}>
+                            <button onClick={handleBatchDelete}
+                                className="w-full py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                                style={{ background: C.coral, color: '#fff', boxShadow: `0 4px 14px ${C.coral}40` }}>
+                                <Icons.Trash2 size={18} />
+                                删除 {batchDeleteSet.size} 个习惯
+                            </button>
+                        </div>
+                    )}
+                </div>,
+                document.body
+            )}
 
             {detailModalType && (() => {
                 const isGood = detailModalType === 'good';
