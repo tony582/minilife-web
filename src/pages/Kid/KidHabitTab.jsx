@@ -367,12 +367,11 @@ export const KidHabitTab = () => {
                             return layoutCols === '2' ? (
                                 /* ═══ 2-Column Premium Compact Card ═══ */
                                 <div key={t.id}
-                                    className="group rounded-2xl transition-all hover:scale-[1.01] relative overflow-hidden cursor-pointer"
+                                    className="group rounded-2xl transition-all hover:scale-[1.01] relative overflow-hidden"
                                     style={{
                                         background: isDone ? (isNegative ? `${C.coral}06` : `${C.teal}06`) : C.bgCard,
                                         boxShadow: `0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)`,
-                                    }}
-                                    onClick={() => { context.setPreviewTask(t); context.setShowPreviewModal(true); }}>
+                                    }}>
                                     <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full opacity-[0.06]"
                                         style={{ background: `radial-gradient(circle, ${accentColor}, transparent 70%)` }} />
                                     <div className="p-3 relative">
@@ -427,7 +426,7 @@ export const KidHabitTab = () => {
                                                     <Icons.CheckCircle size={9} /> {isNegative ? '上限' : '达标'}
                                                 </div>
                                             ) : (
-                                                <button onClick={(e) => { e.stopPropagation(); handleAttemptSubmit(t); }}
+                                                <button onClick={() => handleAttemptSubmit(t)}
                                                     className="rounded-lg py-1 px-2.5 text-[10px] font-bold text-white transition-all active:scale-95 flex items-center gap-1 shrink-0"
                                                     style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}dd)`, boxShadow: `0 2px 6px ${accentColor}30` }}>
                                                     {isNegative ? <><Icons.ShieldAlert size={10} /> 坦白</> : <><Icons.Check size={10} strokeWidth={2.5} /> 打卡</>}
@@ -439,12 +438,11 @@ export const KidHabitTab = () => {
                             ) : (
                                 /* ═══ 1-Column Premium Card ═══ */
                                 <div key={t.id}
-                                    className="group rounded-2xl transition-all hover:scale-[1.01] hover:shadow-xl relative overflow-hidden cursor-pointer"
+                                    className="group rounded-2xl transition-all hover:scale-[1.01] hover:shadow-xl relative overflow-hidden"
                                     style={{
                                         background: isDone ? (isNegative ? `${C.coral}06` : `${C.teal}06`) : C.bgCard,
                                         boxShadow: `0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)`,
-                                    }}
-                                    onClick={() => { context.setPreviewTask(t); context.setShowPreviewModal(true); }}>
+                                    }}>
                                     {/* Subtle accent glow */}
                                     <div className="absolute -right-8 -top-8 w-24 h-24 rounded-full opacity-[0.07] transition-opacity group-hover:opacity-[0.12]"
                                         style={{ background: `radial-gradient(circle, ${accentColor}, transparent 70%)` }} />
@@ -507,7 +505,7 @@ export const KidHabitTab = () => {
                                                 )}
                                             </div>
                                             {!isDone && (
-                                                <button onClick={(e) => { e.stopPropagation(); handleAttemptSubmit(t); }}
+                                                <button onClick={() => handleAttemptSubmit(t)}
                                                     className="shrink-0 flex items-center gap-1 px-3.5 py-1.5 rounded-lg text-[11px] font-bold tracking-wide text-white transition-all active:scale-95 hover:shadow-md"
                                                     style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}dd)`, boxShadow: `0 2px 8px ${accentColor}35` }}>
                                                     {isNegative ? <><Icons.ShieldAlert size={12} /> 坦白</> : <><Icons.Check size={12} strokeWidth={2.5} /> 打卡</>}
