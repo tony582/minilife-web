@@ -309,9 +309,9 @@ export const KidHabitTab = () => {
                             </button>
                         ))}
                     </div>
-                    {/* Layout toggle */}
+                    {/* Layout toggle — only on wider screens */}
                     <button onClick={toggleLayout}
-                        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all"
+                        className="w-10 h-10 rounded-xl hidden md:flex items-center justify-center shrink-0 transition-all"
                         style={{ background: C.bgCard, color: C.textSoft }}
                         title={layoutCols === '1' ? '切换为两列' : '切换为一列'}>
                         {layoutCols === '1' ? <Icons.Columns size={16} /> : <Icons.List size={16} />}
@@ -348,7 +348,7 @@ export const KidHabitTab = () => {
                         <div className="text-lg font-black" style={{ color: C.textPrimary }}>没有找到该习惯哦</div>
                     </div>
                 ) : (
-                    <div className={`grid gap-2.5 ${layoutCols === '2' ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                    <div className={`grid gap-2.5 grid-cols-1 ${layoutCols === '2' ? 'md:grid-cols-2' : ''}`}>
                         {filteredHabits.map(t => {
                             const isNegative = t.reward < 0;
                             const entry = t.kidId === 'all' ? t.history?.[selectedDate]?.[activeKidId] : t.history?.[selectedDate];
