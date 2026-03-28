@@ -37,8 +37,7 @@ export const useTaskManager = (authC, dataC, uiC) => {
         setKids(prevKids => prevKids.map(k => k.id === activeKidId ? { ...k, ...updates } : k));
     };
 
-    // 任务列表控制
-// 任务列表控制 (Student)
+    // 任务列表控制 (Student)
 // Helper function to get weekly completion count
 const getWeeklyCompletionCount = (task, kidId, currentDStr) => {
   const currentDt = new Date(currentDStr);
@@ -202,9 +201,12 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
 };
 
     const handleAttemptSubmit = async task => {
+  // Prevent duplicate submissions
+  if (isSubmittingRef.current) return;
   const limits = checkPeriodLimits(task, activeKidId, selectedDate);
   if (!limits.canSubmit) return notify(limits.reason, 'error');
   if (task.type === 'habit') {
+    isSubmittingRef.current = true;
     try {
       const hist = task.history || {};
       let newHistory = JSON.parse(JSON.stringify(hist));
@@ -252,8 +254,9 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
         }
       }
       if (task.reward !== 0) {
+        const txId = `trans_${Date.now()}_coin_${Math.random().toString(36).substr(2, 5)}`;
         setTransactions(prev => [{
-          id: `trans_${Date.now()}_coin`,
+          id: txId,
           kidId: activeKidId,
           type: task.reward > 0 ? 'income' : 'expense',
           amount: Math.abs(task.reward || 0),
@@ -297,7 +300,7 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            id: `trans_${Date.now()}_coin_${Math.random().toString(36).substr(2, 5)}`,
+            id: txId,
             kidId: activeKidId,
             type: task.reward > 0 ? 'income' : 'expense',
             amount: Math.abs(task.reward || 0),
@@ -309,14 +312,14 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
       }
     } catch (e) {
       notify("网络请求失败", "error");
+    } finally {
+      isSubmittingRef.current = false;
     }
   } else {
     setTaskToSubmit(task);
   }
 };
 // === 全局方法 ===
-
-    // === 全局方法 ===
 const getTaskStatusOnDate = (t, date, kidId) => {
     let historyObj = {};
     if (typeof t.history === 'string') {
