@@ -307,50 +307,50 @@ export const ParentPlansTab = () => {
 
             {/* ═══ Stat Cards + New Button ═══ */}
             <div className="px-4 pb-4">
-                <div className="flex gap-3 mb-4">
-                    <button onClick={() => setDetailModalType('good')} className="flex-1 p-4 rounded-2xl text-left transition-all active:scale-[0.98] hover:shadow-lg cursor-pointer relative" style={{ background: C.bgCard, boxShadow: C.cardShadow }}>
-                        <div className="flex items-center gap-3">
-                            <div className="relative w-12 h-12 shrink-0">
-                                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
-                                    <circle cx="24" cy="24" r="20" fill="none" stroke={`${C.teal}20`} strokeWidth="4" />
-                                    <circle cx="24" cy="24" r="20" fill="none" stroke={C.teal} strokeWidth="4" strokeLinecap="round"
-                                        strokeDasharray={`${2 * Math.PI * 20}`} strokeDashoffset={`${2 * Math.PI * 20 * (1 - goodPct / 100)}`}
+                <div className="flex gap-2.5 mb-3">
+                    <button onClick={() => setDetailModalType('good')} className="flex-1 px-3 py-2.5 rounded-xl text-left transition-all active:scale-[0.98] hover:shadow-lg cursor-pointer relative" style={{ background: C.bgCard, boxShadow: C.cardShadow }}>
+                        <div className="flex items-center gap-2.5">
+                            <div className="relative w-9 h-9 shrink-0">
+                                <svg className="w-9 h-9 -rotate-90" viewBox="0 0 36 36">
+                                    <circle cx="18" cy="18" r="15" fill="none" stroke={`${C.teal}20`} strokeWidth="3" />
+                                    <circle cx="18" cy="18" r="15" fill="none" stroke={C.teal} strokeWidth="3" strokeLinecap="round"
+                                        strokeDasharray={`${2 * Math.PI * 15}`} strokeDashoffset={`${2 * Math.PI * 15 * (1 - goodPct / 100)}`}
                                         className="transition-all duration-700" />
                                 </svg>
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <Icons.TrendingUp size={16} style={{ color: C.teal }} />
+                                    <Icons.TrendingUp size={13} style={{ color: C.teal }} />
                                 </div>
                             </div>
                             <div className="min-w-0">
                                 <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>好习惯</div>
-                                <div className="text-xl font-black leading-tight" style={{ color: C.teal }}>+{todayEarned}</div>
-                                <div className="text-[10px] font-bold mt-0.5" style={{ color: C.textMuted }}>{goodDone}/{goodHabits.length} 完成</div>
+                                <div className="text-base font-black leading-tight" style={{ color: C.teal }}>+{todayEarned}</div>
+                                <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>{goodDone}/{goodHabits.length} 完成</div>
                             </div>
                         </div>
-                        <div className="absolute top-2.5 right-2.5 md:hidden w-5 h-5 rounded-md flex items-center justify-center" style={{ background: `${C.teal}10` }}><Icons.ChevronRight size={12} style={{ color: C.teal, opacity: 0.5 }} /></div>
-                        <div className="hidden md:flex items-center gap-1 absolute bottom-3 right-4 text-[10px] font-bold" style={{ color: C.teal, opacity: 0.6 }}>查看明细 <Icons.ChevronRight size={11} /></div>
+                        <div className="absolute top-2 right-2 md:hidden w-4 h-4 rounded flex items-center justify-center" style={{ background: `${C.teal}10` }}><Icons.ChevronRight size={10} style={{ color: C.teal, opacity: 0.5 }} /></div>
+                        <div className="hidden md:flex items-center gap-1 absolute bottom-2 right-3 text-[10px] font-bold" style={{ color: C.teal, opacity: 0.6 }}>查看明细 <Icons.ChevronRight size={11} /></div>
                     </button>
-                    <button onClick={() => setDetailModalType('bad')} className="flex-1 p-4 rounded-2xl text-left transition-all active:scale-[0.98] hover:shadow-lg cursor-pointer relative" style={{ background: C.bgCard, boxShadow: C.cardShadow }}>
-                        <div className="flex items-center gap-3">
-                            <div className="relative w-12 h-12 shrink-0">
-                                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
-                                    <circle cx="24" cy="24" r="20" fill="none" stroke={`${C.coral}20`} strokeWidth="4" />
-                                    <circle cx="24" cy="24" r="20" fill="none" stroke={C.coral} strokeWidth="4" strokeLinecap="round"
-                                        strokeDasharray={`${2 * Math.PI * 20}`} strokeDashoffset={`${2 * Math.PI * 20 * (1 - badPct / 100)}`}
+                    <button onClick={() => setDetailModalType('bad')} className="flex-1 px-3 py-2.5 rounded-xl text-left transition-all active:scale-[0.98] hover:shadow-lg cursor-pointer relative" style={{ background: C.bgCard, boxShadow: C.cardShadow }}>
+                        <div className="flex items-center gap-2.5">
+                            <div className="relative w-9 h-9 shrink-0">
+                                <svg className="w-9 h-9 -rotate-90" viewBox="0 0 36 36">
+                                    <circle cx="18" cy="18" r="15" fill="none" stroke={`${C.coral}20`} strokeWidth="3" />
+                                    <circle cx="18" cy="18" r="15" fill="none" stroke={C.coral} strokeWidth="3" strokeLinecap="round"
+                                        strokeDasharray={`${2 * Math.PI * 15}`} strokeDashoffset={`${2 * Math.PI * 15 * (1 - badPct / 100)}`}
                                         className="transition-all duration-700" />
                                 </svg>
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <Icons.TrendingDown size={16} style={{ color: C.coral }} />
+                                    <Icons.TrendingDown size={13} style={{ color: C.coral }} />
                                 </div>
                             </div>
                             <div className="min-w-0">
                                 <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>坏习惯</div>
-                                <div className="text-xl font-black leading-tight" style={{ color: C.coral }}>-{todayDeducted}</div>
-                                <div className="text-[10px] font-bold mt-0.5" style={{ color: C.textMuted }}>{badDone}/{badHabits.length} 记录</div>
+                                <div className="text-base font-black leading-tight" style={{ color: C.coral }}>-{todayDeducted}</div>
+                                <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>{badDone}/{badHabits.length} 记录</div>
                             </div>
                         </div>
-                        <div className="absolute top-2.5 right-2.5 md:hidden w-5 h-5 rounded-md flex items-center justify-center" style={{ background: `${C.coral}10` }}><Icons.ChevronRight size={12} style={{ color: C.coral, opacity: 0.5 }} /></div>
-                        <div className="hidden md:flex items-center gap-1 absolute bottom-3 right-4 text-[10px] font-bold" style={{ color: C.coral, opacity: 0.6 }}>查看明细 <Icons.ChevronRight size={11} /></div>
+                        <div className="absolute top-2 right-2 md:hidden w-4 h-4 rounded flex items-center justify-center" style={{ background: `${C.coral}10` }}><Icons.ChevronRight size={10} style={{ color: C.coral, opacity: 0.5 }} /></div>
+                        <div className="hidden md:flex items-center gap-1 absolute bottom-2 right-3 text-[10px] font-bold" style={{ color: C.coral, opacity: 0.6 }}>查看明细 <Icons.ChevronRight size={11} /></div>
                     </button>
                 </div>
 
