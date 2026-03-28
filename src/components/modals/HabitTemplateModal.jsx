@@ -52,7 +52,7 @@ export const HabitTemplateModal = ({ isOpen, onClose }) => {
     const [selectedGood, setSelectedGood] = useState(() => new Set(GOOD_HABIT_TEMPLATES.map((_, i) => i)));
     const [selectedBad, setSelectedBad] = useState(() => new Set(BAD_HABIT_TEMPLATES.map((_, i) => i)));
     const [importing, setImporting] = useState(false);
-    const [activeTab, setActiveTab] = useState('good');
+    const [activeTab, setActiveTab] = useState('all');
 
     // Check which templates already exist (by title)
     const existingTitles = useMemo(() => new Set(tasks.filter(t => t.type === 'habit').map(t => t.title)), [tasks]);
@@ -189,28 +189,20 @@ export const HabitTemplateModal = ({ isOpen, onClose }) => {
                         </button>
                     </div>
 
-                    {/* Tabs */}
-                    <div className="flex gap-1 p-1 rounded-xl" style={{ background: C.bgLight }}>
-                        <button onClick={() => setActiveTab('good')}
-                            className="flex-1 py-2 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1.5"
-                            style={{
-                                background: activeTab === 'good' ? C.bgCard : 'transparent',
-                                color: activeTab === 'good' ? C.teal : C.textMuted,
-                                boxShadow: activeTab === 'good' ? C.cardShadow : 'none',
-                            }}>
-                            <Icons.TrendingUp size={14} />
-                            好习惯 ({selectedGood.size}/{goodTemplates.length})
-                        </button>
-                        <button onClick={() => setActiveTab('bad')}
-                            className="flex-1 py-2 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1.5"
-                            style={{
-                                background: activeTab === 'bad' ? C.bgCard : 'transparent',
-                                color: activeTab === 'bad' ? C.coral : C.textMuted,
-                                boxShadow: activeTab === 'bad' ? C.cardShadow : 'none',
-                            }}>
-                            <Icons.TrendingDown size={14} />
-                            坏习惯 ({selectedBad.size}/{badTemplates.length})
-                        </button>
+                    {/* Filter */}
+                    <div className="flex items-center gap-1 p-1 rounded-xl" style={{ background: C.bgLight }}>
+                        {[{ id: 'all', label: '全部', icon: null }, { id: 'good', label: '好习惯', icon: <Icons.TrendingUp size={12} /> }, { id: 'bad', label: '坏习惯', icon: <Icons.TrendingDown size={12} /> }].map(tab => (
+                            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                                className="flex-1 py-2 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1"
+                                style={{
+                                    background: activeTab === tab.id ? C.bgCard : 'transparent',
+                                    color: activeTab === tab.id ? (tab.id === 'bad' ? C.coral : C.teal) : C.textMuted,
+                                    boxShadow: activeTab === tab.id ? C.cardShadow : 'none',
+                                }}>
+                                {tab.icon}
+                                {tab.label}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
@@ -219,15 +211,15 @@ export const HabitTemplateModal = ({ isOpen, onClose }) => {
                     {/* Select all / none */}
                     <div className="flex items-center justify-between mb-1">
                         <span className="text-[11px] font-bold" style={{ color: C.textMuted }}>
-                            {activeTab === 'good' ? `已选 ${selectedGood.size} 个好习惯` : `已选 ${selectedBad.size} 个坏习惯`}
+                            已选 {totalSelected} 个习惯
                         </span>
                         <div className="flex gap-2">
-                            <button onClick={activeTab === 'good' ? selectAllGood : selectAllBad}
+                            <button onClick={() => { if (activeTab !== 'bad') selectAllGood(); if (activeTab !== 'good') selectAllBad(); }}
                                 className="text-[11px] font-bold px-2 py-1 rounded-lg transition-all"
                                 style={{ color: C.teal }}>
                                 全选
                             </button>
-                            <button onClick={activeTab === 'good' ? selectNoneGood : selectNoneBad}
+                            <button onClick={() => { if (activeTab !== 'bad') selectNoneGood(); if (activeTab !== 'good') selectNoneBad(); }}
                                 className="text-[11px] font-bold px-2 py-1 rounded-lg transition-all"
                                 style={{ color: C.textMuted }}>
                                 取消全选
@@ -236,54 +228,73 @@ export const HabitTemplateModal = ({ isOpen, onClose }) => {
                     </div>
 
                     {/* Template list */}
-                    {(activeTab === 'good' ? goodTemplates : badTemplates).map((tpl, idx) => {
-                        const isSelected = activeTab === 'good' ? selectedGood.has(idx) : selectedBad.has(idx);
-                        const toggle = activeTab === 'good' ? () => toggleGood(idx) : () => toggleBad(idx);
-                        const exists = existingTitles.has(tpl.title);
-                        const accent = tpl.reward >= 0 ? C.teal : C.coral;
-
-                        return (
-                            <button key={`${activeTab}-${idx}`}
-                                onClick={exists ? undefined : toggle}
-                                disabled={exists}
-                                className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${exists ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'}`}
-                                style={{
-                                    background: isSelected && !exists ? C.bgCard : `${C.bgCard}80`,
-                                    border: `1.5px solid ${isSelected && !exists ? accent + '40' : C.bgLight}`,
-                                    boxShadow: isSelected && !exists ? C.cardShadow : 'none',
-                                }}>
-                                {/* Checkbox */}
-                                <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-all"
-                                    style={{
-                                        background: exists ? C.bgMuted : (isSelected ? accent : C.bgLight),
-                                        color: '#fff',
-                                    }}>
-                                    {exists ? <Icons.Check size={12} /> : (isSelected ? <Icons.Check size={12} /> : null)}
+                    {(activeTab === 'all' ? [
+                        { type: 'good', templates: goodTemplates, selected: selectedGood, toggle: toggleGood },
+                        { type: 'bad', templates: badTemplates, selected: selectedBad, toggle: toggleBad },
+                    ] : activeTab === 'good' ? [
+                        { type: 'good', templates: goodTemplates, selected: selectedGood, toggle: toggleGood },
+                    ] : [
+                        { type: 'bad', templates: badTemplates, selected: selectedBad, toggle: toggleBad },
+                    ]).map(group => (
+                        <React.Fragment key={group.type}>
+                            {activeTab === 'all' && (
+                                <div className="flex items-center gap-2 pt-2 pb-1">
+                                    <span className="w-1 h-4 rounded-full" style={{ background: group.type === 'good' ? C.teal : C.coral }}></span>
+                                    <span className="text-[11px] font-black" style={{ color: group.type === 'good' ? C.teal : C.coral }}>
+                                        {group.type === 'good' ? '好习惯' : '坏习惯'} ({group.selected.size}/{group.templates.length})
+                                    </span>
                                 </div>
+                            )}
+                            {group.templates.map((tpl, idx) => {
+                                const isSelected = group.selected.has(idx);
+                                const toggle = () => group.toggle(idx);
+                                const exists = existingTitles.has(tpl.title);
+                                const accent = tpl.reward >= 0 ? C.teal : C.coral;
 
-                                {/* Icon */}
-                                <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br ${tpl.color}`}
-                                    style={{ color: '#fff' }}>
-                                    <PhIcon name={tpl.iconEmoji?.startsWith('ph:') ? tpl.iconEmoji.slice(3) : tpl.iconEmoji} size={18} weight="fill" />
-                                </div>
+                                return (
+                                    <button key={`${group.type}-${idx}`}
+                                        onClick={exists ? undefined : toggle}
+                                        disabled={exists}
+                                        className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${exists ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'}`}
+                                        style={{
+                                            background: isSelected && !exists ? C.bgCard : `${C.bgCard}80`,
+                                            border: `1.5px solid ${isSelected && !exists ? accent + '40' : C.bgLight}`,
+                                            boxShadow: isSelected && !exists ? C.cardShadow : 'none',
+                                        }}>
+                                        {/* Checkbox */}
+                                        <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-all"
+                                            style={{
+                                                background: exists ? C.bgMuted : (isSelected ? accent : C.bgLight),
+                                                color: '#fff',
+                                            }}>
+                                            {exists ? <Icons.Check size={12} /> : (isSelected ? <Icons.Check size={12} /> : null)}
+                                        </div>
 
-                                {/* Content */}
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-bold text-sm truncate" style={{ color: C.textPrimary }}>{tpl.title}</span>
-                                        {exists && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-600 shrink-0">已存在</span>}
-                                    </div>
-                                    <div className="text-[11px] mt-0.5 truncate" style={{ color: C.textSoft }}>{tpl.desc}</div>
-                                </div>
+                                        {/* Icon */}
+                                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br ${tpl.color}`}
+                                            style={{ color: '#fff' }}>
+                                            <PhIcon name={tpl.iconEmoji?.startsWith('ph:') ? tpl.iconEmoji.slice(3) : tpl.iconEmoji} size={18} weight="fill" />
+                                        </div>
 
-                                {/* Reward badge */}
-                                <div className="shrink-0 text-[11px] font-black px-2 py-1 rounded-lg"
-                                    style={{ background: `${accent}12`, color: accent }}>
-                                    {tpl.reward > 0 ? '+' : ''}{tpl.reward}
-                                </div>
-                            </button>
-                        );
-                    })}
+                                        {/* Content */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-bold text-sm truncate" style={{ color: C.textPrimary }}>{tpl.title}</span>
+                                                {exists && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-600 shrink-0">已存在</span>}
+                                            </div>
+                                            <div className="text-[11px] mt-0.5 truncate" style={{ color: C.textSoft }}>{tpl.desc}</div>
+                                        </div>
+
+                                        {/* Reward badge */}
+                                        <div className="shrink-0 text-[11px] font-black px-2 py-1 rounded-lg"
+                                            style={{ background: `${accent}12`, color: accent }}>
+                                            {tpl.reward > 0 ? '+' : ''}{tpl.reward}
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </React.Fragment>
+                    ))}
                 </div>
 
                 {/* Footer */}

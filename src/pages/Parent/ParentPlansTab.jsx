@@ -335,7 +335,7 @@ export const ParentPlansTab = () => {
                     <button onClick={() => setShowTemplateModal(true)}
                         className="py-3.5 px-5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                         style={{ background: C.bgCard, color: C.teal, boxShadow: C.cardShadow, border: `1.5px solid ${C.teal}30` }}>
-                        <Icons.Package size={18} /> 使用模板
+                        <Icons.Package size={18} /> 批量导入
                     </button>
                 </div>
             </div>
@@ -496,7 +496,7 @@ export const ParentPlansTab = () => {
                             <button onClick={() => setShowTemplateModal(true)}
                                 className="px-6 py-2.5 rounded-xl font-black text-sm transition-all active:scale-95 inline-flex items-center gap-2"
                                 style={{ background: C.teal, color: '#fff', boxShadow: `0 4px 14px ${C.teal}40` }}>
-                                <Icons.Package size={16} /> 使用模板导入
+                                <Icons.Package size={16} /> 批量导入
                             </button>
                         </div>
                     )}
