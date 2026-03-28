@@ -425,10 +425,12 @@ export const ParentPlansTab = () => {
                             const isNeg = t.reward < 0;
                             const accent = isNeg ? C.coral : C.teal;
                             return (
-                                <div key={t.id} className="px-4 py-3 rounded-xl transition-all hover:shadow-lg relative overflow-hidden cursor-pointer"
-                                    style={{ background: C.bgCard, boxShadow: C.cardShadow }}
+                                <div key={t.id} className="group rounded-2xl transition-all hover:scale-[1.01] hover:shadow-xl relative overflow-hidden cursor-pointer"
+                                    style={{ background: C.bgCard, boxShadow: `0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)` }}
                                     onClick={() => setHabitDetailTask(t)}>
-                                    <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl" style={{ background: accent }}></div>
+                                    {/* Subtle accent glow */}
+                                    <div className="absolute -right-8 -top-8 w-24 h-24 rounded-full opacity-[0.07] transition-opacity group-hover:opacity-[0.12]"
+                                        style={{ background: `radial-gradient(circle, ${accent}, transparent 70%)` }} />
                                     {(() => {
                                         const todayStr = formatDate(new Date());
                                         const kidHistory = t.history || {};
@@ -446,55 +448,71 @@ export const ParentPlansTab = () => {
                                         const totalMax = maxAllowed * targetKids.length;
                                         const progressPct = totalMax > 0 ? Math.min(100, (totalAttempts / totalMax) * 100) : 0;
                                         return (
-                                            <>
-                                                {/* Row 1: Icon + Title + Coin badge */}
-                                                <div className="flex items-center gap-3 mb-2">
-                                                    <div className={`w-10 h-10 shrink-0 rounded-lg bg-gradient-to-br ${t.catColor || t.habitColor || 'from-emerald-400 to-teal-500'} flex items-center justify-center`}
+                                            <div className="px-4 py-3.5 relative">
+                                                {/* Main row */}
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-11 h-11 shrink-0 rounded-xl bg-gradient-to-br ${t.catColor || t.habitColor || 'from-emerald-400 to-teal-500'} flex items-center justify-center shadow-sm`}
                                                         style={{ color: '#fff' }}>
-                                                        {renderHabitIcon(t.iconEmoji, '🛡️', 18)}
+                                                        {renderHabitIcon(t.iconEmoji, '🛡️', 20)}
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-2">
-                                                            <h4 className="font-black text-sm line-clamp-1" style={{ color: C.textPrimary }}>{t.title}</h4>
-                                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md whitespace-nowrap shrink-0" style={{ background: C.bgLight, color: C.textMuted }}>{kName}</span>
+                                                            <h4 className="font-extrabold text-[13px] tracking-tight line-clamp-1" style={{ color: C.textPrimary }}>{t.title}</h4>
+                                                            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0"
+                                                                style={{ background: `${accent}08`, color: accent, border: `1px solid ${accent}15` }}>{kName}</span>
                                                         </div>
-                                                        {(t.standards || t.desc) && <p className="text-[11px] line-clamp-1 mt-0.5" style={{ color: C.textSoft }}>{t.standards || t.desc}</p>}
+                                                        {(t.standards || t.desc) && <p className="text-[11px] line-clamp-1 mt-0.5 tracking-tight" style={{ color: C.textSoft }}>{t.standards || t.desc}</p>}
+                                                    </div>
+                                                    {/* Reward pill */}
+                                                    <div className="shrink-0 text-right">
+                                                        <div className="text-sm font-black tracking-tight" style={{ color: accent }}>{t.reward > 0 ? '+' : ''}{t.reward}</div>
+                                                        <div className="text-[9px] font-semibold -mt-0.5" style={{ color: `${accent}90` }}>⭐</div>
                                                     </div>
                                                 </div>
-                                                {/* Row 2: [Coin+Progress] ... [Action] */}
-                                                <div className="flex items-center justify-between pl-[52px]">
+                                                {/* Bottom row: Progress + Action */}
+                                                <div className="flex items-center justify-between mt-2.5 pl-[56px]">
                                                     <div className="flex items-center gap-2">
-                                                        <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-black"
-                                                            style={{ background: '#FFC10720', color: '#D4920A' }}>
-                                                            <span style={{ fontSize: 11 }}>⭐</span> {t.reward > 0 ? '+' : ''}{t.reward}
-                                                        </div>
                                                         {maxAllowed > 1 && maxAllowed <= 5 && (
-                                                            <div className="flex items-center gap-1">
+                                                            <div className="flex items-center gap-[5px]">
                                                                 {Array.from({ length: maxAllowed }).map((_, i) => (
-                                                                    <div key={i} className="w-2 h-2 rounded-full transition-all" style={{ background: i < totalAttempts ? accent : `${accent}25` }} />
+                                                                    <div key={i} className="w-[7px] h-[7px] rounded-full transition-all duration-300"
+                                                                        style={{
+                                                                            background: i < totalAttempts ? accent : `${accent}18`,
+                                                                            boxShadow: i < totalAttempts ? `0 0 6px ${accent}50` : 'none'
+                                                                        }} />
                                                                 ))}
+                                                                <span className="text-[10px] font-semibold ml-1 tabular-nums" style={{ color: C.textMuted }}>{totalAttempts}/{totalMax}</span>
                                                             </div>
                                                         )}
                                                         {maxAllowed > 5 && (
-                                                            <div className="flex items-center gap-1.5 w-16">
-                                                                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: `${accent}15` }}>
-                                                                    <div className="h-full rounded-full transition-all duration-500" style={{ width: `${progressPct}%`, background: accent }} />
+                                                            <div className="flex items-center gap-2 w-20">
+                                                                <div className="flex-1 h-[5px] rounded-full overflow-hidden" style={{ background: `${accent}12` }}>
+                                                                    <div className="h-full rounded-full transition-all duration-500"
+                                                                        style={{ width: `${progressPct}%`, background: `linear-gradient(90deg, ${accent}, ${accent}cc)`, boxShadow: `0 0 8px ${accent}40` }} />
                                                                 </div>
-                                                                <span className="text-[10px] font-bold" style={{ color: totalAttempts >= totalMax ? accent : C.textMuted }}>{totalAttempts}/{totalMax}</span>
+                                                                <span className="text-[10px] font-semibold tabular-nums" style={{ color: C.textMuted }}>{totalAttempts}/{totalMax}</span>
                                                             </div>
                                                         )}
                                                         {maxAllowed <= 1 && totalAttempts > 0 && (
-                                                            <span className="text-[10px] font-bold flex items-center gap-0.5" style={{ color: accent }}><Icons.Check size={11} /> 已完成</span>
+                                                            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                                                                style={{ background: `${accent}10`, color: accent }}>
+                                                                <Icons.Check size={10} strokeWidth={3} /> 已完成
+                                                            </div>
                                                         )}
                                                     </div>
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); if (!allMaxed) handlePointAction(t, t.reward < 0 ? 'penalty' : 'reward'); }}
-                                                        className={`shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black transition-all ${allMaxed ? 'cursor-not-allowed opacity-50' : 'active:scale-95'}`}
-                                                        style={{ background: allMaxed ? C.bgLight : accent, color: allMaxed ? C.textMuted : '#fff' }}>
-                                                        {isNeg ? <><Icons.Minus size={13} strokeWidth={3} /> 扣分</> : <><Icons.Plus size={13} strokeWidth={3} /> 加分</>}
+                                                        className={`shrink-0 flex items-center gap-1 px-3.5 py-1.5 rounded-lg text-[11px] font-bold tracking-wide transition-all ${allMaxed ? 'cursor-not-allowed' : 'active:scale-95 hover:shadow-md'}`}
+                                                        style={{
+                                                            background: allMaxed ? C.bgLight : `linear-gradient(135deg, ${accent}, ${accent}dd)`,
+                                                            color: allMaxed ? C.textMuted : '#fff',
+                                                            boxShadow: allMaxed ? 'none' : `0 2px 8px ${accent}35`,
+                                                            opacity: allMaxed ? 0.5 : 1,
+                                                        }}>
+                                                        {isNeg ? <><Icons.Minus size={12} strokeWidth={2.5} /> 扣分</> : <><Icons.Plus size={12} strokeWidth={2.5} /> 加分</>}
                                                     </button>
                                                 </div>
-                                            </>
+                                            </div>
                                         );
                                     })()}
                                 </div>
