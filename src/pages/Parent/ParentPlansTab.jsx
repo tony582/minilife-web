@@ -429,43 +429,66 @@ export const ParentPlansTab = () => {
                                     style={{ background: C.bgCard, boxShadow: C.cardShadow }}
                                     onClick={() => setHabitDetailTask(t)}>
                                     <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl" style={{ background: accent }}></div>
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-10 h-10 shrink-0 rounded-lg bg-gradient-to-br ${t.catColor || t.habitColor || 'from-emerald-400 to-teal-500'} flex items-center justify-center`}
-                                            style={{ color: '#fff' }}>
-                                            {renderHabitIcon(t.iconEmoji, '🛡️', 18)}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-0.5">
-                                                <h4 className="font-black text-sm line-clamp-1" style={{ color: C.textPrimary }}>{t.title}</h4>
-                                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md whitespace-nowrap shrink-0" style={{ background: C.bgLight, color: C.textMuted }}>{kName}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-[11px] font-black" style={{ color: accent }}>{t.reward > 0 ? '+' : ''}{t.reward} 家庭币</span>
-                                                {(t.standards || t.desc) && <span className="text-[10px] line-clamp-1" style={{ color: C.textSoft }}>· {t.standards || t.desc}</span>}
-                                            </div>
-                                        </div>
-                                        {(() => {
-                                            const todayStr = formatDate(new Date());
-                                            const kidHistory = t.history || {};
-                                            const todayHist = kidHistory[todayStr] || {};
-                                            const maxAllowed = t.periodMaxPerDay || t.maxPerDay || 1;
-                                            const targetKids = t.kidId === 'all' ? kids : kids.filter(k => k.id === t.kidId);
-                                            let allMaxed = true;
-                                            for (const k of targetKids) {
-                                                const kidTodayData = t.kidId === 'all' ? (todayHist[k.id] || {}) : todayHist;
-                                                const attemptsToday = Array.isArray(kidTodayData) ? kidTodayData.length : (kidTodayData.status ? 1 : 0);
-                                                if (attemptsToday < maxAllowed && !((t.reward < 0) && (k.balances?.spend < Math.abs(t.reward)))) allMaxed = false;
-                                            }
-                                            return (
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); if (!allMaxed) handlePointAction(t, t.reward < 0 ? 'penalty' : 'reward'); }}
-                                                    className={`shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black transition-all ${allMaxed ? 'cursor-not-allowed opacity-50' : 'active:scale-95'}`}
-                                                    style={{ background: allMaxed ? C.bgLight : accent, color: allMaxed ? C.textMuted : '#fff' }}>
-                                                    {isNeg ? <><Icons.Minus size={13} strokeWidth={3} /> 扣分</> : <><Icons.Plus size={13} strokeWidth={3} /> 加分</>}
-                                                </button>
-                                            );
-                                        })()}
-                                    </div>
+                                    {(() => {
+                                        const todayStr = formatDate(new Date());
+                                        const kidHistory = t.history || {};
+                                        const todayHist = kidHistory[todayStr] || {};
+                                        const maxAllowed = t.periodMaxPerDay || t.maxPerDay || 1;
+                                        const targetKids = t.kidId === 'all' ? kids : kids.filter(k => k.id === t.kidId);
+                                        let totalAttempts = 0;
+                                        let allMaxed = true;
+                                        for (const k of targetKids) {
+                                            const kidTodayData = t.kidId === 'all' ? (todayHist[k.id] || {}) : todayHist;
+                                            const att = Array.isArray(kidTodayData) ? kidTodayData.length : (kidTodayData.status ? 1 : 0);
+                                            totalAttempts += att;
+                                            if (att < maxAllowed && !((t.reward < 0) && (k.balances?.spend < Math.abs(t.reward)))) allMaxed = false;
+                                        }
+                                        const totalMax = maxAllowed * targetKids.length;
+                                        const progressPct = totalMax > 0 ? Math.min(100, (totalAttempts / totalMax) * 100) : 0;
+                                        return (
+                                            <>
+                                                {/* Row 1: Icon + Title + Coin badge */}
+                                                <div className="flex items-center gap-3 mb-2">
+                                                    <div className={`w-10 h-10 shrink-0 rounded-lg bg-gradient-to-br ${t.catColor || t.habitColor || 'from-emerald-400 to-teal-500'} flex items-center justify-center`}
+                                                        style={{ color: '#fff' }}>
+                                                        {renderHabitIcon(t.iconEmoji, '🛡️', 18)}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2">
+                                                            <h4 className="font-black text-sm line-clamp-1" style={{ color: C.textPrimary }}>{t.title}</h4>
+                                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md whitespace-nowrap shrink-0" style={{ background: C.bgLight, color: C.textMuted }}>{kName}</span>
+                                                        </div>
+                                                        {(t.standards || t.desc) && <p className="text-[11px] line-clamp-1 mt-0.5" style={{ color: C.textSoft }}>{t.standards || t.desc}</p>}
+                                                    </div>
+                                                </div>
+                                                {/* Row 2: Coin + Progress + Action */}
+                                                <div className="flex items-center gap-2 pl-[52px]">
+                                                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-black"
+                                                        style={{ background: `${accent}12`, color: accent }}>
+                                                        <span style={{ fontSize: 11 }}>🪙</span> {t.reward > 0 ? '+' : ''}{t.reward}
+                                                    </div>
+                                                    {maxAllowed > 1 && (
+                                                        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                                            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: `${accent}15` }}>
+                                                                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${progressPct}%`, background: accent }} />
+                                                            </div>
+                                                            <span className="text-[10px] font-bold whitespace-nowrap shrink-0" style={{ color: totalAttempts >= totalMax ? accent : C.textMuted }}>{totalAttempts}/{totalMax}</span>
+                                                        </div>
+                                                    )}
+                                                    {maxAllowed <= 1 && totalAttempts > 0 && (
+                                                        <span className="text-[10px] font-bold flex items-center gap-0.5" style={{ color: accent }}><Icons.Check size={11} /> 已完成</span>
+                                                    )}
+                                                    <div className="flex-1" />
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); if (!allMaxed) handlePointAction(t, t.reward < 0 ? 'penalty' : 'reward'); }}
+                                                        className={`shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black transition-all ${allMaxed ? 'cursor-not-allowed opacity-50' : 'active:scale-95'}`}
+                                                        style={{ background: allMaxed ? C.bgLight : accent, color: allMaxed ? C.textMuted : '#fff' }}>
+                                                        {isNeg ? <><Icons.Minus size={13} strokeWidth={3} /> 扣分</> : <><Icons.Plus size={13} strokeWidth={3} /> 加分</>}
+                                                    </button>
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                             );
                         })
