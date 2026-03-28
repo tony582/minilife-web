@@ -260,14 +260,6 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
           title: `记录成长: ${task.title}`,
           date: new Date().toISOString(),
           category: 'habit'
-        }, {
-          id: `trans_${Date.now()}_exp`,
-          kidId: activeKidId,
-          type: task.reward > 0 ? 'income' : 'expense',
-          amount: Math.ceil(Math.abs(task.reward || 0) * 1.5),
-          title: `记录成长: ${task.title}`,
-          date: new Date().toISOString(),
-          category: 'habit'
         }, ...prev]);
       }
       playSuccessSound();
@@ -309,21 +301,6 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
             kidId: activeKidId,
             type: task.reward > 0 ? 'income' : 'expense',
             amount: Math.abs(task.reward || 0),
-            title: `记录成长: ${task.title}`,
-            date: new Date().toISOString(),
-            category: 'habit'
-          })
-        }).catch(e => console.error(e));
-        apiFetch('/api/transactions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            id: `trans_${Date.now()}_exp_${Math.random().toString(36).substr(2, 5)}`,
-            kidId: activeKidId,
-            type: task.reward > 0 ? 'income' : 'expense',
-            amount: Math.ceil(Math.abs(task.reward || 0) * 1.5),
             title: `记录成长: ${task.title}`,
             date: new Date().toISOString(),
             category: 'habit'
