@@ -226,8 +226,8 @@ export const HabitTemplateModal = ({ isOpen, onClose }) => {
 
                     {/* ── Bad Habits ── */}
                     <button onClick={() => selectedBad.size === badTemplates.length ? selectNoneBad() : selectAllBad()}
-                        className="w-full flex items-center gap-3 px-5 py-3 sticky top-0 z-10 text-left"
-                        style={{ background: C.bgCard, borderBottom: `1px solid ${C.bgLight}`, borderTop: `1px solid ${C.bgLight}` }}>
+                        className="w-full flex items-center gap-3 px-5 py-3 sticky top-0 bottom-0 z-10 text-left"
+                        style={{ background: C.bgCard, borderBottom: `1px solid ${C.bgLight}`, borderTop: `1px solid ${C.bgLight}`, boxShadow: '0 -4px 12px rgba(27,46,75,0.08)' }}>
                         <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0"
                             style={{ background: selectedBad.size > 0 ? C.coral : C.bgLight, color: '#fff' }}>
                             {selectedBad.size > 0 && <Icons.Check size={12} />}
