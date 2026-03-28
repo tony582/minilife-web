@@ -75,6 +75,7 @@ export const ParentPlansTab = () => {
     const [showTemplateModal, setShowTemplateModal] = useState(false);
     const [manageMode, setManageMode] = useState(null); // 'reorder' | 'delete' | null
     const [batchDeleteSet, setBatchDeleteSet] = useState(new Set());
+    const [habitDetailTask, setHabitDetailTask] = useState(null);
 
     // Habits sorted by order for reorder/manage
     const habitTasks = useMemo(() => tasks.filter(t => t.type === 'habit').sort((a, b) => (a.order || 0) - (b.order || 0)), [tasks]);
@@ -424,10 +425,11 @@ export const ParentPlansTab = () => {
                             const isNeg = t.reward < 0;
                             const accent = isNeg ? C.coral : C.teal;
                             return (
-                                <div key={t.id} className="px-4 py-3 rounded-xl transition-all hover:shadow-lg relative overflow-hidden"
-                                    style={{ background: C.bgCard, boxShadow: C.cardShadow }}>
+                                <div key={t.id} className="px-4 py-3 rounded-xl transition-all hover:shadow-lg relative overflow-hidden cursor-pointer"
+                                    style={{ background: C.bgCard, boxShadow: C.cardShadow }}
+                                    onClick={() => setHabitDetailTask(t)}>
                                     <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl" style={{ background: accent }}></div>
-                                    <div className="flex items-center gap-3 mb-2.5">
+                                    <div className="flex items-center gap-3">
                                         <div className={`w-10 h-10 shrink-0 rounded-lg bg-gradient-to-br ${t.catColor || t.habitColor || 'from-emerald-400 to-teal-500'} flex items-center justify-center`}
                                             style={{ color: '#fff' }}>
                                             {renderHabitIcon(t.iconEmoji, '🛡️', 18)}
@@ -437,92 +439,32 @@ export const ParentPlansTab = () => {
                                                 <h4 className="font-black text-sm line-clamp-1" style={{ color: C.textPrimary }}>{t.title}</h4>
                                                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md whitespace-nowrap shrink-0" style={{ background: C.bgLight, color: C.textMuted }}>{kName}</span>
                                             </div>
-                                            {(t.standards || t.desc) && <p className="text-[11px] line-clamp-1" style={{ color: C.textSoft }}>{t.standards || t.desc}</p>}
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[11px] font-black" style={{ color: accent }}>{t.reward > 0 ? '+' : ''}{t.reward} 家庭币</span>
+                                                {(t.standards || t.desc) && <span className="text-[10px] line-clamp-1" style={{ color: C.textSoft }}>· {t.standards || t.desc}</span>}
+                                            </div>
                                         </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between border-t pt-2.5" style={{ borderColor: C.bgLight }}>
-                                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-black"
-                                            style={{ background: `${accent}12`, color: accent, border: `1px solid ${accent}20` }}>
-                                            {t.reward > 0 ? '+' : ''}{t.reward} 家庭币
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            {(() => {
-                                                const todayStr = formatDate(new Date());
-                                                const kidHistory = t.history || {};
-                                                const todayHist = kidHistory[todayStr] || {};
-                                                const maxAllowed = t.periodMaxPerDay || t.maxPerDay || 1;
-
-                                                // Check if ALL assigned kids are maxed out
-                                                const targetKids = t.kidId === 'all' ? kids : kids.filter(k => k.id === t.kidId);
-                                                let allMaxed = true;
-
-                                                for (const k of targetKids) {
-                                                    const kidTodayData = t.kidId === 'all' ? (todayHist[k.id] || {}) : todayHist;
-                                                    const attemptsToday = Array.isArray(kidTodayData) ? kidTodayData.length : (kidTodayData.status ? 1 : 0);
-
-                                                    const isBlockedByFreq = attemptsToday >= maxAllowed;
-                                                    const isBlockedByBalance = (t.reward < 0) && (k.balances?.spend < Math.abs(t.reward));
-
-                                                    // If there is ANY kid who is NOT blocked by frequency AND NOT blocked by balance
-                                                    // then we shouldn't gray out the button.
-                                                    if (!isBlockedByFreq && !isBlockedByBalance) {
-                                                        allMaxed = false;
-                                                    }
-                                                }
-
-                                                return (
-                                                    <button
-                                                        onClick={() => {
-                                                            if (allMaxed) return;
-                                                            handlePointAction(t, t.reward < 0 ? 'penalty' : 'reward');
-                                                        }}
-                                                        className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all ${allMaxed ? 'cursor-not-allowed' : 'active:scale-90'}`}
-                                                        style={{
-                                                            background: allMaxed ? C.bgLight : `${accent}12`,
-                                                            color: allMaxed ? C.textMuted : accent,
-                                                        }}
-                                                    >
-                                                        {t.reward < 0 ? <Icons.Minus size={14} strokeWidth={3} /> : <Icons.Plus size={14} strokeWidth={3} />}
-                                                    </button>
-                                                );
-                                            })()}
-                                            <button onClick={() => {
-                                                setEditingTask(t);
-                                                setPlanType('habit');
-                                                // ensure safe extraction for edit form
-                                                const ebbStr = t.repeatConfig?.ebbStrength || 'normal';
-                                                const ptgt = t.repeatConfig?.periodTargetCount || 1;
-                                                const pmaxp = t.repeatConfig?.periodMaxPerDay || 1;
-                                                const pdtype = t.repeatConfig?.periodDaysType || 'any';
-                                                const pcdays = t.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5];
-                                                const pmaxtype = t.repeatConfig?.periodMaxType || 'daily';
-
-                                                setPlanForm({
-                                                    title: t.title, desc: t.desc || t.standards || '',
-                                                    category: t.category, iconName: t.iconName,
-                                                    targetKids: t.kidId === 'all' ? ['all'] : [t.kidId],
-                                                    startDate: t.startDate || new Date().toISOString().split('T')[0], endDate: t.endDate || '',
-                                                    repeatType: t.repeatType || 'today',
-                                                    weeklyDays: t.weeklyDays || [1, 2, 3, 4, 5],
-                                                    ebbStrength: ebbStr, periodTargetCount: ptgt, periodMaxPerDay: pmaxp, periodDaysType: pdtype, periodCustomDays: pcdays, periodMaxType: pmaxtype,
-                                                    timeSetting: t.timeStr && String(t.timeStr) !== '--:--' ? (String(t.timeStr).includes('-') ? 'range' : 'duration') : 'none',
-                                                    startTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[0] : '',
-                                                    endTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[1] : '',
-                                                    durationPreset: t.timeStr && String(t.timeStr).includes('分钟') ? parseInt(String(t.timeStr)) : 25,
-                                                    pointRule: (t.pointRule && t.pointRule === 'custom') || (t.type === 'habit') ? 'custom' : 'default',
-                                                    reward: String(Math.abs(t.reward ?? 0)), 
-                                                    habitRewardType: (t.reward || 0) < 0 ? 'penalty' : 'reward',
-                                                    iconEmoji: t.iconEmoji || '📘', habitColor: t.catColor || t.habitColor || 'from-blue-400 to-blue-500', habitType: t.habitType || 'daily_once', attachments: t.attachments || [], requireApproval: t.requireApproval !== undefined ? t.requireApproval : true
-                                                });
-                                                setShowAddPlanModal(true);
-                                            }} className="flex items-center justify-center w-8 h-8 rounded-lg transition-all active:scale-90" style={{ background: C.bgLight, color: C.textSoft }}>
-                                                <Icons.Edit3 size={14} />
-                                            </button>
-                                            <button onClick={() => setDeleteConfirmTask(t)} className="flex items-center justify-center w-8 h-8 rounded-lg transition-all active:scale-90" style={{ background: `${C.coral}10`, color: C.coral }}>
-                                                <Icons.Trash2 size={14} />
-                                            </button>
-                                        </div>
+                                        {(() => {
+                                            const todayStr = formatDate(new Date());
+                                            const kidHistory = t.history || {};
+                                            const todayHist = kidHistory[todayStr] || {};
+                                            const maxAllowed = t.periodMaxPerDay || t.maxPerDay || 1;
+                                            const targetKids = t.kidId === 'all' ? kids : kids.filter(k => k.id === t.kidId);
+                                            let allMaxed = true;
+                                            for (const k of targetKids) {
+                                                const kidTodayData = t.kidId === 'all' ? (todayHist[k.id] || {}) : todayHist;
+                                                const attemptsToday = Array.isArray(kidTodayData) ? kidTodayData.length : (kidTodayData.status ? 1 : 0);
+                                                if (attemptsToday < maxAllowed && !((t.reward < 0) && (k.balances?.spend < Math.abs(t.reward)))) allMaxed = false;
+                                            }
+                                            return (
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); if (!allMaxed) handlePointAction(t, t.reward < 0 ? 'penalty' : 'reward'); }}
+                                                    className={`shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black transition-all ${allMaxed ? 'cursor-not-allowed opacity-50' : 'active:scale-95'}`}
+                                                    style={{ background: allMaxed ? C.bgLight : accent, color: allMaxed ? C.textMuted : '#fff' }}>
+                                                    {isNeg ? <><Icons.Minus size={13} strokeWidth={3} /> 扣分</> : <><Icons.Plus size={13} strokeWidth={3} /> 加分</>}
+                                                </button>
+                                            );
+                                        })()}
                                     </div>
                                 </div>
                             );
@@ -542,6 +484,103 @@ export const ParentPlansTab = () => {
                     )}
                 </div>
             </div>
+
+            {/* ═══ Habit Detail Popup ═══ */}
+            {habitDetailTask && createPortal(
+                <div className="z-[180]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+                    onClick={() => setHabitDetailTask(null)}>
+                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }} />
+                    <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 'min(360px, calc(100vw - 32px))' }}
+                        onClick={e => e.stopPropagation()}>
+                        <div className="rounded-2xl overflow-hidden" style={{ background: C.bgCard, boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+                            {/* Header */}
+                            <div className="p-5 text-center relative" style={{ background: `linear-gradient(135deg, ${habitDetailTask.reward < 0 ? '#FF6B6B' : '#4ECDC4'}, ${habitDetailTask.reward < 0 ? '#ee5a5a' : '#45b7af'})` }}>
+                                <button onClick={() => setHabitDetailTask(null)} className="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center" style={{ background: '#fff3' }}>
+                                    <Icons.X size={16} style={{ color: '#fff' }} />
+                                </button>
+                                <div className={`w-14 h-14 mx-auto rounded-xl bg-gradient-to-br ${habitDetailTask.catColor || habitDetailTask.habitColor || 'from-emerald-400 to-teal-500'} flex items-center justify-center mb-2.5 shadow-lg`}
+                                    style={{ color: '#fff' }}>
+                                    {renderHabitIcon(habitDetailTask.iconEmoji, '🛡️', 26)}
+                                </div>
+                                <h3 className="font-black text-lg text-white mb-1">{habitDetailTask.title}</h3>
+                                <div className="text-xs font-bold text-white/70">
+                                    {habitDetailTask.kidId === 'all' ? (kids.length === 1 ? kids[0].name : '全部孩子') : (kids.find(k => k.id === habitDetailTask.kidId)?.name || '未知')}
+                                </div>
+                            </div>
+                            {/* Content */}
+                            <div className="p-4 space-y-3">
+                                {(habitDetailTask.standards || habitDetailTask.desc) && (
+                                    <div className="text-xs leading-relaxed px-1" style={{ color: C.textSoft }}>
+                                        {habitDetailTask.standards || habitDetailTask.desc}
+                                    </div>
+                                )}
+                                <div className="flex items-center justify-between px-1">
+                                    <span className="text-[11px] font-bold" style={{ color: C.textMuted }}>积分变动</span>
+                                    <span className="text-sm font-black" style={{ color: habitDetailTask.reward < 0 ? C.coral : C.teal }}>
+                                        {habitDetailTask.reward > 0 ? '+' : ''}{habitDetailTask.reward} 家庭币
+                                    </span>
+                                </div>
+                                {habitDetailTask.repeatType && (
+                                    <div className="flex items-center justify-between px-1">
+                                        <span className="text-[11px] font-bold" style={{ color: C.textMuted }}>重复</span>
+                                        <span className="text-xs font-bold" style={{ color: C.textPrimary }}>
+                                            {{ today: '仅今天', daily: '每天', weekdays: '工作日', weekly: '每周指定', custom: '自定义' }[habitDetailTask.repeatType] || habitDetailTask.repeatType}
+                                        </span>
+                                    </div>
+                                )}
+                                {habitDetailTask.timeStr && habitDetailTask.timeStr !== '--:--' && (
+                                    <div className="flex items-center justify-between px-1">
+                                        <span className="text-[11px] font-bold" style={{ color: C.textMuted }}>时间</span>
+                                        <span className="text-xs font-bold" style={{ color: C.textPrimary }}>{habitDetailTask.timeStr}</span>
+                                    </div>
+                                )}
+                            </div>
+                            {/* Actions */}
+                            <div className="flex gap-2 p-4 pt-0">
+                                <button onClick={() => {
+                                    const t = habitDetailTask;
+                                    setHabitDetailTask(null);
+                                    setEditingTask(t);
+                                    setPlanType('habit');
+                                    const ebbStr = t.repeatConfig?.ebbStrength || 'normal';
+                                    const ptgt = t.repeatConfig?.periodTargetCount || 1;
+                                    const pmaxp = t.repeatConfig?.periodMaxPerDay || 1;
+                                    const pdtype = t.repeatConfig?.periodDaysType || 'any';
+                                    const pcdays = t.repeatConfig?.periodCustomDays || [1, 2, 3, 4, 5];
+                                    const pmaxtype = t.repeatConfig?.periodMaxType || 'daily';
+                                    setPlanForm({
+                                        title: t.title, desc: t.desc || t.standards || '',
+                                        category: t.category, iconName: t.iconName,
+                                        targetKids: t.kidId === 'all' ? ['all'] : [t.kidId],
+                                        startDate: t.startDate || new Date().toISOString().split('T')[0], endDate: t.endDate || '',
+                                        repeatType: t.repeatType || 'today',
+                                        weeklyDays: t.weeklyDays || [1, 2, 3, 4, 5],
+                                        ebbStrength: ebbStr, periodTargetCount: ptgt, periodMaxPerDay: pmaxp, periodDaysType: pdtype, periodCustomDays: pcdays, periodMaxType: pmaxtype,
+                                        timeSetting: t.timeStr && String(t.timeStr) !== '--:--' ? (String(t.timeStr).includes('-') ? 'range' : 'duration') : 'none',
+                                        startTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[0] : '',
+                                        endTime: t.timeStr && String(t.timeStr).includes('-') ? String(t.timeStr).split('-')[1] : '',
+                                        durationPreset: t.timeStr && String(t.timeStr).includes('分钟') ? parseInt(String(t.timeStr)) : 25,
+                                        pointRule: (t.pointRule && t.pointRule === 'custom') || (t.type === 'habit') ? 'custom' : 'default',
+                                        reward: String(Math.abs(t.reward ?? 0)),
+                                        habitRewardType: (t.reward || 0) < 0 ? 'penalty' : 'reward',
+                                        iconEmoji: t.iconEmoji || '📘', habitColor: t.catColor || t.habitColor || 'from-blue-400 to-blue-500', habitType: t.habitType || 'daily_once', attachments: t.attachments || [], requireApproval: t.requireApproval !== undefined ? t.requireApproval : true
+                                    });
+                                    setShowAddPlanModal(true);
+                                }} className="flex-1 py-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95"
+                                    style={{ background: C.bgLight, color: C.textPrimary }}>
+                                    <Icons.Edit3 size={14} /> 编辑
+                                </button>
+                                <button onClick={() => { setDeleteConfirmTask(habitDetailTask); setHabitDetailTask(null); }}
+                                    className="flex-1 py-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95"
+                                    style={{ background: `${C.coral}12`, color: C.coral }}>
+                                    <Icons.Trash2 size={14} /> 删除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
 
             {/* ═══ Detail Modal ═══ */}
             {showTemplateModal && <HabitTemplateModal isOpen={showTemplateModal} onClose={() => setShowTemplateModal(false)} />}
