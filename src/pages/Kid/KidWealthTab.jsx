@@ -20,8 +20,10 @@ const txMeta = (item) => {
         return { icon: 'Sparkles', color: C.teal, label: '利息' };
     if (item.category === 'charity' || item.category === 'give' || item.title?.includes('爱心') || item.title?.includes('公益') || item.title?.includes('捐'))
         return { icon: 'Heart', color: '#EC4899', label: '爱心' };
-    if (item.category === 'habit')
-        return { icon: 'CheckCircle', color: C.teal, label: '打卡' };
+    if (item.category === 'habit' && isIncome)
+        return { icon: 'CheckCircle', color: C.green, label: '打卡' };
+    if (item.category === 'habit' && !isIncome)
+        return { icon: 'ShieldAlert', color: C.coral, label: '扣分' };
     if (item.category === 'purchase' || item.category === 'shop')
         return { icon: 'ShoppingBag', color: C.coral, label: '兑换' };
     if (isIncome)
@@ -402,7 +404,7 @@ export const KidWealthTab = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="font-black text-sm shrink-0 ml-3" style={{ color: isIncome ? C.green : C.textPrimary }}>
+                                            <div className="font-black text-sm shrink-0 ml-3" style={{ color: isIncome ? C.green : C.coral }}>
                                                 {isIncome ? '+' : '-'}{item.amount?.toLocaleString()}
                                             </div>
                                         </div>
