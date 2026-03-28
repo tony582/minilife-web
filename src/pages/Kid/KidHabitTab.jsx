@@ -223,53 +223,53 @@ export const KidHabitTab = () => {
             {/* ═══ Hero: Two merged stat cards ═══ */}
             <div className="relative pb-4 px-4">
 
-                <div className="relative z-10 flex gap-3">
+                <div className="relative z-10 flex gap-2.5">
                     {/* Good habits card — clickable */}
-                    <button onClick={() => setDetailModalType('good')} className="flex-1 p-4 rounded-2xl text-left transition-all active:scale-[0.98] hover:shadow-lg cursor-pointer relative" style={{ background: C.bgCard, boxShadow: C.cardShadow }}>
-                        <div className="flex items-center gap-3">
-                            <div className="relative w-12 h-12 shrink-0">
-                                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
-                                    <circle cx="24" cy="24" r="20" fill="none" stroke={`${C.teal}20`} strokeWidth="4" />
-                                    <circle cx="24" cy="24" r="20" fill="none" stroke={C.teal} strokeWidth="4" strokeLinecap="round"
-                                        strokeDasharray={`${2 * Math.PI * 20}`} strokeDashoffset={`${2 * Math.PI * 20 * (1 - goodPct / 100)}`}
+                    <button onClick={() => setDetailModalType('good')} className="flex-1 px-3 py-2.5 rounded-xl text-left transition-all active:scale-[0.98] hover:shadow-lg cursor-pointer relative" style={{ background: C.bgCard, boxShadow: C.cardShadow }}>
+                        <div className="flex items-center gap-2.5">
+                            <div className="relative w-9 h-9 shrink-0">
+                                <svg className="w-9 h-9 -rotate-90" viewBox="0 0 36 36">
+                                    <circle cx="18" cy="18" r="15" fill="none" stroke={`${C.teal}20`} strokeWidth="3" />
+                                    <circle cx="18" cy="18" r="15" fill="none" stroke={C.teal} strokeWidth="3" strokeLinecap="round"
+                                        strokeDasharray={`${2 * Math.PI * 15}`} strokeDashoffset={`${2 * Math.PI * 15 * (1 - goodPct / 100)}`}
                                         className="transition-all duration-700" />
                                 </svg>
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <Icons.TrendingUp size={16} style={{ color: C.teal }} />
+                                    <Icons.TrendingUp size={13} style={{ color: C.teal }} />
                                 </div>
                             </div>
                             <div className="min-w-0">
                                 <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>好习惯</div>
-                                <div className="text-xl font-black leading-tight" style={{ color: C.teal }}>+{todayEarned}</div>
-                                <div className="text-[10px] font-bold mt-0.5" style={{ color: C.textMuted }}>{goodDone}/{goodHabits.length} 完成</div>
+                                <div className="text-base font-black leading-tight" style={{ color: C.teal }}>+{todayEarned}</div>
+                                <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>{goodDone}/{goodHabits.length} 完成</div>
                             </div>
                         </div>
-                        <div className="absolute top-2.5 right-2.5 md:hidden w-5 h-5 rounded-md flex items-center justify-center" style={{ background: `${C.teal}10` }}><Icons.ChevronRight size={12} style={{ color: C.teal, opacity: 0.5 }} /></div>
-                        <div className="hidden md:flex items-center gap-1 absolute bottom-3 right-4 text-[10px] font-bold" style={{ color: C.teal, opacity: 0.6 }}>查看明细 <Icons.ChevronRight size={11} /></div>
+                        <div className="absolute top-2 right-2 md:hidden w-4 h-4 rounded flex items-center justify-center" style={{ background: `${C.teal}10` }}><Icons.ChevronRight size={10} style={{ color: C.teal, opacity: 0.5 }} /></div>
+                        <div className="hidden md:flex items-center gap-1 absolute bottom-2 right-3 text-[10px] font-bold" style={{ color: C.teal, opacity: 0.6 }}>查看明细 <Icons.ChevronRight size={11} /></div>
                     </button>
 
                     {/* Bad habits card — clickable */}
-                    <button onClick={() => setDetailModalType('bad')} className="flex-1 p-4 rounded-2xl text-left transition-all active:scale-[0.98] hover:shadow-lg cursor-pointer relative" style={{ background: C.bgCard, boxShadow: C.cardShadow }}>
-                        <div className="flex items-center gap-3">
-                            <div className="relative w-12 h-12 shrink-0">
-                                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
-                                    <circle cx="24" cy="24" r="20" fill="none" stroke={`${C.coral}20`} strokeWidth="4" />
-                                    <circle cx="24" cy="24" r="20" fill="none" stroke={C.coral} strokeWidth="4" strokeLinecap="round"
-                                        strokeDasharray={`${2 * Math.PI * 20}`} strokeDashoffset={`${2 * Math.PI * 20 * (1 - badPct / 100)}`}
+                    <button onClick={() => setDetailModalType('bad')} className="flex-1 px-3 py-2.5 rounded-xl text-left transition-all active:scale-[0.98] hover:shadow-lg cursor-pointer relative" style={{ background: C.bgCard, boxShadow: C.cardShadow }}>
+                        <div className="flex items-center gap-2.5">
+                            <div className="relative w-9 h-9 shrink-0">
+                                <svg className="w-9 h-9 -rotate-90" viewBox="0 0 36 36">
+                                    <circle cx="18" cy="18" r="15" fill="none" stroke={`${C.coral}20`} strokeWidth="3" />
+                                    <circle cx="18" cy="18" r="15" fill="none" stroke={C.coral} strokeWidth="3" strokeLinecap="round"
+                                        strokeDasharray={`${2 * Math.PI * 15}`} strokeDashoffset={`${2 * Math.PI * 15 * (1 - badPct / 100)}`}
                                         className="transition-all duration-700" />
                                 </svg>
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <Icons.TrendingDown size={16} style={{ color: C.coral }} />
+                                    <Icons.TrendingDown size={13} style={{ color: C.coral }} />
                                 </div>
                             </div>
                             <div className="min-w-0">
                                 <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>坏习惯</div>
-                                <div className="text-xl font-black leading-tight" style={{ color: C.coral }}>-{todayDeducted}</div>
-                                <div className="text-[10px] font-bold mt-0.5" style={{ color: C.textMuted }}>{badDone}/{badHabits.length} 记录</div>
+                                <div className="text-base font-black leading-tight" style={{ color: C.coral }}>-{todayDeducted}</div>
+                                <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>{badDone}/{badHabits.length} 记录</div>
                             </div>
                         </div>
-                        <div className="absolute top-2.5 right-2.5 md:hidden w-5 h-5 rounded-md flex items-center justify-center" style={{ background: `${C.coral}10` }}><Icons.ChevronRight size={12} style={{ color: C.coral, opacity: 0.5 }} /></div>
-                        <div className="hidden md:flex items-center gap-1 absolute bottom-3 right-4 text-[10px] font-bold" style={{ color: C.coral, opacity: 0.6 }}>查看明细 <Icons.ChevronRight size={11} /></div>
+                        <div className="absolute top-2 right-2 md:hidden w-4 h-4 rounded flex items-center justify-center" style={{ background: `${C.coral}10` }}><Icons.ChevronRight size={10} style={{ color: C.coral, opacity: 0.5 }} /></div>
+                        <div className="hidden md:flex items-center gap-1 absolute bottom-2 right-3 text-[10px] font-bold" style={{ color: C.coral, opacity: 0.6 }}>查看明细 <Icons.ChevronRight size={11} /></div>
                     </button>
                 </div>
             </div>
@@ -365,155 +365,156 @@ export const KidHabitTab = () => {
                             const displayCount = isDailyOnce ? (count >= 1 ? 1 : 0) : currentLimitCount;
 
                             return layoutCols === '2' ? (
-                                /* ═══ 2-Column Compact Card ═══ */
+                                /* ═══ 2-Column Premium Compact Card ═══ */
                                 <div key={t.id}
-                                    className="rounded-xl p-3 transition-all hover:shadow-md relative overflow-hidden"
+                                    className="group rounded-2xl transition-all hover:scale-[1.01] relative overflow-hidden cursor-pointer"
                                     style={{
-                                        background: isDone ? (isNegative ? `${C.coral}08` : `${C.teal}08`) : C.bgCard,
-                                        border: `1px solid ${isDone ? (isNegative ? `${C.coral}25` : `${C.teal}25`) : C.bgLight}`,
-                                    }}>
-                                    {/* Top accent bar */}
-                                    <div className="absolute left-0 top-0 right-0 h-1 rounded-t-xl" style={{ background: accentColor }}></div>
-                                    {/* Icon + Title */}
-                                    <div className="flex items-center gap-2.5 mb-2 mt-1">
-                                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br ${t.catColor || t.habitColor || 'from-emerald-400 to-teal-500'}`}
-                                            style={{ color: '#fff' }}>
-                                            {renderHabitIcon(t.iconEmoji, null, 18) || renderIcon(t.iconName, 18)}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="font-bold text-sm truncate" style={{
-                                                color: isDone ? (isNegative ? '#6B7280' : C.textSoft) : C.textPrimary,
-                                                textDecoration: isDone && !isNegative ? 'line-through' : 'none',
-                                            }}>{t.title}</h3>
-                                            <span className="text-[10px] font-bold px-1.5 py-px rounded"
-                                                style={{ background: `${accentColor}12`, color: accentColor }}>
-                                                {isNegative ? `扣${Math.abs(t.reward)}` : `+${t.reward}`}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    {/* Progress + Action */}
-                                    <div className="flex items-center justify-between gap-2">
-                                        <div className="flex-1 min-w-0">
-                                            {(() => {
-                                                const useProgressBar = displayMax > 7 || (t.habitType === 'multiple' && t.periodMaxType === 'weekly');
-                                                if (useProgressBar) {
-                                                    const label = t.periodMaxType === 'weekly' ? '周' : '日';
-                                                    return (
-                                                        <div className="flex items-center gap-1.5">
-                                                            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: C.bgLight }}>
-                                                                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (displayCount / displayMax) * 100)}%`, background: accentColor }}></div>
-                                                            </div>
-                                                            <span className="text-[9px] font-bold shrink-0" style={{ color: C.textMuted }}>{displayCount}/{displayMax}{label}</span>
-                                                        </div>
-                                                    );
-                                                } else if (displayMax > 1) {
-                                                    return (
-                                                        <div className="flex gap-0.5 items-center">
-                                                            {Array.from({ length: displayMax }).map((_, i) => (
-                                                                <div key={i} className="w-2 h-2 rounded-full transition-all" style={{
-                                                                    background: i < displayCount ? accentColor : C.bgLight,
-                                                                }} />
-                                                            ))}
-                                                        </div>
-                                                    );
-                                                }
-                                                return null;
-                                            })()}
-                                        </div>
-                                        {isDone ? (
-                                            <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
-                                                style={{ background: isNegative ? `${C.coral}15` : `${C.green}15` }}>
-                                                {isNegative ? <Icons.ShieldAlert size={14} style={{ color: C.coral }} /> : <Icons.CheckCircle size={14} style={{ color: C.green }} />}
+                                        background: isDone ? (isNegative ? `${C.coral}06` : `${C.teal}06`) : C.bgCard,
+                                        boxShadow: `0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)`,
+                                    }}
+                                    onClick={() => { context.setPreviewTask(t); context.setShowPreviewModal(true); }}>
+                                    <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full opacity-[0.06]"
+                                        style={{ background: `radial-gradient(circle, ${accentColor}, transparent 70%)` }} />
+                                    <div className="p-3 relative">
+                                        {/* Icon + Title + Reward */}
+                                        <div className="flex items-center gap-2.5 mb-2">
+                                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br ${t.catColor || t.habitColor || 'from-emerald-400 to-teal-500'} shadow-sm`}
+                                                style={{ color: '#fff', opacity: isDone && !isNegative ? 0.7 : 1 }}>
+                                                {renderHabitIcon(t.iconEmoji, null, 16) || renderIcon(t.iconName, 16)}
                                             </div>
-                                        ) : (
-                                            <button onClick={() => handleAttemptSubmit(t)}
-                                                className="rounded-full py-1 px-3 text-[11px] font-black text-white transition-all active:scale-95 flex items-center gap-1 shrink-0"
-                                                style={{ background: isNegative ? C.coral : C.teal }}>
-                                                {isNegative ? <><Icons.ShieldAlert size={10} /> 坦白</> : <><Icons.Zap size={10} /> 打卡</>}
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            ) : (
-                                /* ═══ 1-Column Standard Card ═══ */
-                                <div key={t.id}
-                                    className="flex items-center gap-3 rounded-xl p-3 transition-all hover:shadow-md relative overflow-hidden"
-                                    style={{
-                                        background: isDone ? (isNegative ? `${C.coral}08` : `${C.teal}08`) : C.bgCard,
-                                        border: `1px solid ${isDone ? (isNegative ? `${C.coral}25` : `${C.teal}25`) : C.bgLight}`,
-                                    }}>
-                                    {/* Left accent bar */}
-                                    <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl" style={{ background: accentColor }}></div>
-
-                                    {/* Icon */}
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg bg-gradient-to-br ${t.catColor || t.habitColor || 'from-emerald-400 to-teal-500'}`}
-                                        style={{ color: '#fff' }}>
-                                        {renderHabitIcon(t.iconEmoji, null, 20) || renderIcon(t.iconName, 20)}
-                                    </div>
-
-                                    {/* Content */}
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-0.5">
-                                            <h3 className="font-bold text-sm truncate" style={{
-                                                color: isDone ? (isNegative ? '#6B7280' : C.textSoft) : C.textPrimary,
-                                                textDecoration: isDone && !isNegative ? 'line-through' : 'none',
-                                            }}>{t.title}</h3>
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="font-extrabold text-[12px] tracking-tight truncate" style={{
+                                                    color: isDone ? (isNegative ? '#6B7280' : C.textSoft) : C.textPrimary,
+                                                    textDecoration: isDone && !isNegative ? 'line-through' : 'none',
+                                                }}>{t.title}</h3>
+                                            </div>
+                                            <div className="shrink-0 text-xs font-black" style={{ color: accentColor }}>{isNegative ? '' : '+'}{t.reward} ⭐</div>
                                         </div>
-                                        <div className="flex flex-wrap gap-1.5 items-center">
-                                            <span className="text-[10px] font-bold px-1.5 py-px rounded"
-                                                style={{ background: `${accentColor}12`, color: accentColor }}>
-                                                {isNegative ? `扣${Math.abs(t.reward)}` : `+${t.reward}`}
-                                            </span>
-                                            {/* Progress dots or bar */}
-                                            {(() => {
-                                                const useProgressBar = displayMax > 7 || (t.habitType === 'multiple' && t.periodMaxType === 'weekly');
-                                                if (useProgressBar) {
-                                                    const label = t.periodMaxType === 'weekly' ? '周' : '日';
-                                                    return (
-                                                        <div className="flex items-center gap-1.5">
-                                                            <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ background: C.bgLight }}>
-                                                                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (displayCount / displayMax) * 100)}%`, background: accentColor }}></div>
+                                        {/* Progress + Action */}
+                                        <div className="flex items-center justify-between gap-2">
+                                            <div className="flex-1 min-w-0">
+                                                {(() => {
+                                                    const useProgressBar = displayMax > 7 || (t.habitType === 'multiple' && t.periodMaxType === 'weekly');
+                                                    if (useProgressBar) {
+                                                        const label = t.periodMaxType === 'weekly' ? '周' : '日';
+                                                        return (
+                                                            <div className="flex items-center gap-1.5">
+                                                                <div className="flex-1 h-[4px] rounded-full overflow-hidden" style={{ background: `${accentColor}12` }}>
+                                                                    <div className="h-full rounded-full transition-all duration-500"
+                                                                        style={{ width: `${Math.min(100, (displayCount / displayMax) * 100)}%`, background: `linear-gradient(90deg, ${accentColor}, ${accentColor}cc)` }} />
+                                                                </div>
+                                                                <span className="text-[9px] font-semibold tabular-nums shrink-0" style={{ color: C.textMuted }}>{displayCount}/{displayMax}{label}</span>
                                                             </div>
-                                                            <span className="text-[9px] font-bold" style={{ color: C.textMuted }}>{displayCount}/{displayMax}{label}</span>
-                                                        </div>
-                                                    );
-                                                } else if (displayMax > 1) {
-                                                    return (
-                                                        <div className="flex gap-0.5 items-center">
-                                                            {Array.from({ length: displayMax }).map((_, i) => (
-                                                                <div key={i} className="w-2 h-2 rounded-full transition-all" style={{
-                                                                    background: i < displayCount ? accentColor : C.bgLight,
-                                                                    boxShadow: i < displayCount ? `0 0 6px ${accentColor}60` : 'none',
-                                                                }} />
-                                                            ))}
-                                                        </div>
-                                                    );
-                                                }
-                                                return null;
-                                            })()}
-                                            {isDone && (
-                                                <span className="text-[10px] font-bold flex items-center gap-0.5" style={{ color: isNegative ? C.coral : C.green }}>
-                                                    <Icons.CheckCircle size={10} /> {isNegative ? '已达上限' : '已达标'}
-                                                </span>
+                                                        );
+                                                    } else if (displayMax > 1) {
+                                                        return (
+                                                            <div className="flex gap-[4px] items-center">
+                                                                {Array.from({ length: displayMax }).map((_, i) => (
+                                                                    <div key={i} className="w-[6px] h-[6px] rounded-full transition-all" style={{
+                                                                        background: i < displayCount ? accentColor : `${accentColor}18`,
+                                                                        boxShadow: i < displayCount ? `0 0 5px ${accentColor}50` : 'none',
+                                                                    }} />
+                                                                ))}
+                                                            </div>
+                                                        );
+                                                    }
+                                                    return null;
+                                                })()}
+                                            </div>
+                                            {isDone ? (
+                                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold shrink-0"
+                                                    style={{ background: `${isNegative ? C.coral : C.green}10`, color: isNegative ? C.coral : C.green }}>
+                                                    <Icons.CheckCircle size={9} /> {isNegative ? '上限' : '达标'}
+                                                </div>
+                                            ) : (
+                                                <button onClick={(e) => { e.stopPropagation(); handleAttemptSubmit(t); }}
+                                                    className="rounded-lg py-1 px-2.5 text-[10px] font-bold text-white transition-all active:scale-95 flex items-center gap-1 shrink-0"
+                                                    style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}dd)`, boxShadow: `0 2px 6px ${accentColor}30` }}>
+                                                    {isNegative ? <><Icons.ShieldAlert size={10} /> 坦白</> : <><Icons.Check size={10} strokeWidth={2.5} /> 打卡</>}
+                                                </button>
                                             )}
                                         </div>
                                     </div>
-
-                                    {/* Action button */}
-                                    <div className="shrink-0">
-                                        {isDone ? (
-                                            <div className="w-9 h-9 rounded-full flex items-center justify-center"
-                                                style={{ background: isNegative ? `${C.coral}15` : `${C.green}15` }}>
-                                                {isNegative ? <Icons.ShieldAlert size={16} style={{ color: C.coral }} /> : <Icons.CheckCircle size={16} style={{ color: C.green }} />}
+                                </div>
+                            ) : (
+                                /* ═══ 1-Column Premium Card ═══ */
+                                <div key={t.id}
+                                    className="group rounded-2xl transition-all hover:scale-[1.01] hover:shadow-xl relative overflow-hidden cursor-pointer"
+                                    style={{
+                                        background: isDone ? (isNegative ? `${C.coral}06` : `${C.teal}06`) : C.bgCard,
+                                        boxShadow: `0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)`,
+                                    }}
+                                    onClick={() => { context.setPreviewTask(t); context.setShowPreviewModal(true); }}>
+                                    {/* Subtle accent glow */}
+                                    <div className="absolute -right-8 -top-8 w-24 h-24 rounded-full opacity-[0.07] transition-opacity group-hover:opacity-[0.12]"
+                                        style={{ background: `radial-gradient(circle, ${accentColor}, transparent 70%)` }} />
+                                    <div className="px-4 py-3.5 relative">
+                                        {/* Main row */}
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br ${t.catColor || t.habitColor || 'from-emerald-400 to-teal-500'} shadow-sm`}
+                                                style={{ color: '#fff', opacity: isDone && !isNegative ? 0.7 : 1 }}>
+                                                {renderHabitIcon(t.iconEmoji, null, 20) || renderIcon(t.iconName, 20)}
                                             </div>
-                                        ) : (
-                                            <button onClick={() => handleAttemptSubmit(t)}
-                                                className="rounded-full py-1.5 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
-                                                style={{ background: isNegative ? C.coral : C.teal, boxShadow: `0 4px 12px ${isNegative ? C.coral : C.teal}40` }}>
-                                                {isNegative ? <><Icons.ShieldAlert size={12} /> 坦白</> : <><Icons.Zap size={12} /> 打卡</>}
-                                                {count > 0 && <span className="text-[9px] opacity-80">({count})</span>}
-                                            </button>
-                                        )}
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="font-extrabold text-[13px] tracking-tight truncate" style={{
+                                                    color: isDone ? (isNegative ? '#6B7280' : C.textSoft) : C.textPrimary,
+                                                    textDecoration: isDone && !isNegative ? 'line-through' : 'none',
+                                                }}>{t.title}</h3>
+                                                {(t.standards || t.desc) && <p className="text-[11px] line-clamp-1 mt-0.5 tracking-tight" style={{ color: C.textSoft }}>{t.standards || t.desc}</p>}
+                                            </div>
+                                            {/* Reward */}
+                                            <div className="shrink-0 text-right">
+                                                <div className="text-sm font-black tracking-tight" style={{ color: accentColor }}>{isNegative ? '' : '+'}{t.reward}</div>
+                                                <div className="text-[9px] font-semibold -mt-0.5" style={{ color: `${accentColor}90` }}>⭐</div>
+                                            </div>
+                                        </div>
+                                        {/* Bottom row: Progress + Action */}
+                                        <div className="flex items-center justify-between mt-2.5 pl-[56px]">
+                                            <div className="flex items-center gap-2">
+                                                {(() => {
+                                                    const useProgressBar = displayMax > 7 || (t.habitType === 'multiple' && t.periodMaxType === 'weekly');
+                                                    if (useProgressBar) {
+                                                        const label = t.periodMaxType === 'weekly' ? '周' : '日';
+                                                        return (
+                                                            <div className="flex items-center gap-2 w-20">
+                                                                <div className="flex-1 h-[5px] rounded-full overflow-hidden" style={{ background: `${accentColor}12` }}>
+                                                                    <div className="h-full rounded-full transition-all duration-500"
+                                                                        style={{ width: `${Math.min(100, (displayCount / displayMax) * 100)}%`, background: `linear-gradient(90deg, ${accentColor}, ${accentColor}cc)`, boxShadow: `0 0 8px ${accentColor}40` }} />
+                                                                </div>
+                                                                <span className="text-[10px] font-semibold tabular-nums" style={{ color: C.textMuted }}>{displayCount}/{displayMax}{label}</span>
+                                                            </div>
+                                                        );
+                                                    } else if (displayMax > 1) {
+                                                        return (
+                                                            <div className="flex items-center gap-[5px]">
+                                                                {Array.from({ length: displayMax }).map((_, i) => (
+                                                                    <div key={i} className="w-[7px] h-[7px] rounded-full transition-all duration-300" style={{
+                                                                        background: i < displayCount ? accentColor : `${accentColor}18`,
+                                                                        boxShadow: i < displayCount ? `0 0 6px ${accentColor}50` : 'none',
+                                                                    }} />
+                                                                ))}
+                                                                <span className="text-[10px] font-semibold ml-1 tabular-nums" style={{ color: C.textMuted }}>{displayCount}/{displayMax}</span>
+                                                            </div>
+                                                        );
+                                                    }
+                                                    return null;
+                                                })()}
+                                                {isDone && (
+                                                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                                                        style={{ background: `${isNegative ? C.coral : C.green}10`, color: isNegative ? C.coral : C.green }}>
+                                                        <Icons.CheckCircle size={10} strokeWidth={3} /> {isNegative ? '已达上限' : '已达标'}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {!isDone && (
+                                                <button onClick={(e) => { e.stopPropagation(); handleAttemptSubmit(t); }}
+                                                    className="shrink-0 flex items-center gap-1 px-3.5 py-1.5 rounded-lg text-[11px] font-bold tracking-wide text-white transition-all active:scale-95 hover:shadow-md"
+                                                    style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}dd)`, boxShadow: `0 2px 8px ${accentColor}35` }}>
+                                                    {isNegative ? <><Icons.ShieldAlert size={12} /> 坦白</> : <><Icons.Check size={12} strokeWidth={2.5} /> 打卡</>}
+                                                    {count > 0 && <span className="text-[9px] opacity-80">({count})</span>}
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             );
