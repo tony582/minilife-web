@@ -24,30 +24,7 @@ function AppContent() {
   const { appState, kidTab, setKidTab, parentTab, setParentTab, showTransactionHistoryModal, showAddItemModal, showShopConfirmModal, showReviewModal, showAddPlanModal, showAddKidModal, showSettingsModal, showLevelModal, qrModalValue, showTimerModal } = useUIContext();
   const location = useLocation();
 
-  // --- 每日利息计算 (时光金库) ---
-  useEffect(() => {
-    if (!kids.length) return;
-    const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
-    let needsUpdate = false;
-    const promises = [];
-    const newKids = [...kids];
-    const newTransactions = [...transactions];
 
-    newKids.forEach((kid) => {
-      // Vault interest auto-calculation removed — vault concept deprecated
-    });
-
-    if (needsUpdate) {
-      setKids(newKids);
-      setTransactions(newTransactions);
-      Promise.all(promises).then(() => {
-        if (appState === 'kid_app') {
-          notify('✨ 时光金库产生了新的利息收益！', 'success');
-        }
-      }).catch(console.error);
-    }
-  }, [appState, kids.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // --- 移动端底部导航 ---
   const renderMobileNavigationBar = () => {

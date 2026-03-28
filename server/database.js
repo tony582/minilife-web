@@ -53,11 +53,27 @@ const COLUMN_MAP = {
     expires_at: 'expires_at',
 };
 
+// Columns that should always be numbers (PG bigint returns strings)
+const NUMERIC_COLUMNS = new Set([
+    'amount', 'balance_spend', 'balance_save', 'balance_give',
+    'vault_locked', 'vault_projected', 'level', 'exp',
+    'coins', 'gems', 'reward', 'price', 'quantity', 'maxperday',
+    'periodmaxperday', 'ai_quota', 'default_quota', 'tokens_used',
+    'duration_days', 'totalsessions', 'usedsessions', 'sessionsperclass',
+    'pricepersession',
+]);
+
 function mapRow(row) {
     if (!row) return row;
     const mapped = {};
     for (const [key, value] of Object.entries(row)) {
-        mapped[COLUMN_MAP[key] || key] = value;
+        const mappedKey = COLUMN_MAP[key] || key;
+        // Convert bigint strings to numbers
+        if (NUMERIC_COLUMNS.has(key) && value !== null && value !== undefined) {
+            mapped[mappedKey] = Number(value);
+        } else {
+            mapped[mappedKey] = value;
+        }
     }
     return mapped;
 }
