@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSwipeBack } from '../../hooks/useSwipeBack';
 import { Icons } from '../../utils/Icons';
+import { renderHabitIcon } from '../../utils/habitIcons';
 import { getPeriodProgress } from '../../utils/taskUtils';
 
 export const KidPreviewModal = ({ context }) => {
@@ -124,10 +125,13 @@ export const KidPreviewModal = ({ context }) => {
                 <div className="shrink-0 px-5 py-4 flex items-center justify-between"
                     style={{ background: '#FFFFFF', borderBottom: '1px solid #F0EBE1' }}>
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center shadow-sm"
-                            style={{ background: (previewTask.catColor && !previewTask.catColor.includes('from-') ? previewTask.catColor : null) || getCatHexColor(previewTask.category || '计划任务'), color: previewTask.type === 'habit' ? undefined : '#fff' }}>
+                        <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center shadow-sm ${previewTask.type === 'habit' && previewTask.habitColor ? `bg-gradient-to-br ${previewTask.habitColor}` : ''}`}
+                            style={{ 
+                                ...(previewTask.type !== 'habit' ? { background: (previewTask.catColor && !previewTask.catColor.includes('from-') ? previewTask.catColor : null) || getCatHexColor(previewTask.category || '计划任务') } : (!previewTask.habitColor ? { background: '#4ECDC418' } : {})),
+                                color: previewTask.type === 'habit' ? (previewTask.habitColor ? '#fff' : '#4ECDC4') : '#fff'
+                            }}>
                             {previewTask.type === 'habit'
-                                ? (previewTask.iconEmoji || '⭐')
+                                ? renderHabitIcon(previewTask.iconEmoji, '⭐', 20)
                                 : renderIcon(previewTask.iconName || getIconForCategory(previewTask.category), 20)
                             }
                         </div>

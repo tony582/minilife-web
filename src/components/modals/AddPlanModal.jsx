@@ -2,6 +2,7 @@ import React, { useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useSwipeBack } from '../../hooks/useSwipeBack';
 import { Icons } from '../../utils/Icons';
+import { renderHabitIcon } from '../../utils/habitIcons';
 import { CategoryManagerModal } from './CategoryManagerModal';
 
 export const AddPlanModal = ({ context }) => {
@@ -96,7 +97,7 @@ export const AddPlanModal = ({ context }) => {
                                     style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
                                     <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl translate-x-6 -translate-y-6"></div>
                                     <div className="text-3xl flex items-center justify-center bg-white/20 w-14 h-14 rounded-2xl backdrop-blur-sm shrink-0 relative z-10">
-                                        {planForm.iconEmoji}
+                                        {renderHabitIcon(planForm.iconEmoji, '📚', 28)}
                                     </div>
                                     <div className="flex-1 min-w-0 relative z-10">
                                         <div className="font-black text-base leading-tight truncate">{planForm.title || '习惯名称'}</div>
@@ -112,7 +113,7 @@ export const AddPlanModal = ({ context }) => {
                                     {habitEmojis.map(e => (
                                         <button key={e} onClick={() => setPlanForm({ ...planForm, iconEmoji: e })}
                                             className={`text-xl p-2 rounded-xl transition-all ${planForm.iconEmoji === e ? 'bg-white shadow-md scale-110' : 'opacity-40 grayscale hover:opacity-100 hover:grayscale-0'}`}
-                                            style={planForm.iconEmoji === e ? { boxShadow: '0 0 0 2px #4ECDC4' } : {}}>{e}</button>
+                                            style={planForm.iconEmoji === e ? { boxShadow: '0 0 0 2px #4ECDC4' } : {}}>{renderHabitIcon(e, e, 22)}</button>
                                     ))}
                                 </div>
 

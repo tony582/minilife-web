@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useDataContext } from '../../../context/DataContext.jsx';
 import { useUIContext } from '../../../context/UIContext.jsx';
 import { Icons, AvatarDisplay } from '../../../utils/Icons';
+import { renderHabitIcon } from '../../../utils/habitIcons';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
     PieChart, Pie, Cell, AreaChart, Area, LineChart, Line, Legend,
@@ -361,7 +362,7 @@ export const ParentDashboardApp = () => {
                             </div>
                             {habitStats.habits.map(h => (
                                 <div key={h.name} className="flex items-center px-3 py-2 rounded-xl" style={{ background: C.bgLight }}>
-                                    <span className="mr-2 text-base">{h.emoji}</span>
+                                    <span className="mr-2 text-base">{renderHabitIcon(h.emoji, '⏰', 16)}</span>
                                     <span className="flex-1 text-xs font-bold truncate" style={{ color: C.textPrimary }}>{h.name}</span>
                                     <span className="w-16 text-center text-xs font-black" style={{ color: C.teal }}>{h.checkins}</span>
                                     <span className="w-16 text-right text-xs font-black" style={{ color: C.orange }}>+{h.points}</span>
