@@ -585,7 +585,10 @@ export const ParentPlansTab = () => {
                             <div className="flex-1 overflow-y-auto p-4 space-y-2">
                                 {entries.length === 0 ? (
                                     <div className="text-center py-16">
-                                        <div className="text-4xl mb-3">{isGood ? '🌟' : '🛡️'}</div>
+                                        <div className="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center"
+                                            style={{ background: `${accent}15`, color: accent }}>
+                                            {isGood ? <Icons.TrendingUp size={28} /> : <Icons.ShieldAlert size={28} />}
+                                        </div>
                                         <div className="font-black text-base" style={{ color: C.textPrimary }}>{isGood ? '今天还没有打卡' : '今天没有坏习惯记录'}</div>
                                         <div className="text-xs font-bold mt-1" style={{ color: C.textMuted }}>{isGood ? '快去督促打卡吧！' : '继续保持！'}</div>
                                     </div>

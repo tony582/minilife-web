@@ -35,6 +35,16 @@ export const KidHabitTab = () => {
     const [showSearchOverlay, setShowSearchOverlay] = useState(false);
     const [detailModalType, setDetailModalType] = useState(null); // 'good' | 'bad' | null
 
+    // Layout toggle: 1-col or 2-col, persisted in localStorage
+    const [layoutCols, setLayoutCols] = useState(() => {
+        try { return localStorage.getItem('kid_habit_layout') || '1'; } catch { return '1'; }
+    });
+    const toggleLayout = () => {
+        const next = layoutCols === '1' ? '2' : '1';
+        setLayoutCols(next);
+        try { localStorage.setItem('kid_habit_layout', next); } catch {}
+    };
+
 
     // Sticky compact calendar
     const calendarSentinelRef = useRef(null);
@@ -299,6 +309,13 @@ export const KidHabitTab = () => {
                             </button>
                         ))}
                     </div>
+                    {/* Layout toggle */}
+                    <button onClick={toggleLayout}
+                        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all"
+                        style={{ background: C.bgCard, color: C.textSoft }}
+                        title={layoutCols === '1' ? '切换为两列' : '切换为一列'}>
+                        {layoutCols === '1' ? <Icons.Columns size={16} /> : <Icons.List size={16} />}
+                    </button>
                 </div>
             </div>
 
@@ -326,12 +343,12 @@ export const KidHabitTab = () => {
             {/* ═══ Habit Cards ═══ */}
             <div className="px-4 mb-6">
                 {filteredHabits.length === 0 ? (
-                    <div className="text-center py-16 rounded-2xl" style={{ background: C.bgCard }}>
-                        <div className="text-5xl mb-4">🌱</div>
+                    <div className={`text-center py-16 rounded-2xl ${layoutCols === '2' ? 'col-span-2' : ''}`} style={{ background: C.bgCard }}>
+                        <div className="w-12 h-12 mx-auto mb-4 rounded-xl flex items-center justify-center" style={{ background: `${C.teal}15`, color: C.teal }}><Icons.Leaf size={28} /></div>
                         <div className="text-lg font-black" style={{ color: C.textPrimary }}>没有找到该习惯哦</div>
                     </div>
                 ) : (
-                    <div className="flex flex-col gap-2.5">
+                    <div className={`grid gap-2.5 ${layoutCols === '2' ? 'grid-cols-2' : 'grid-cols-1'}`}>
                         {filteredHabits.map(t => {
                             const isNegative = t.reward < 0;
                             const entry = t.kidId === 'all' ? t.history?.[selectedDate]?.[activeKidId] : t.history?.[selectedDate];
@@ -347,7 +364,78 @@ export const KidHabitTab = () => {
                             const displayMax = isDailyOnce ? 1 : maxPerDay;
                             const displayCount = isDailyOnce ? (count >= 1 ? 1 : 0) : currentLimitCount;
 
-                            return (
+                            return layoutCols === '2' ? (
+                                /* ═══ 2-Column Compact Card ═══ */
+                                <div key={t.id}
+                                    className="rounded-xl p-3 transition-all hover:shadow-md relative overflow-hidden"
+                                    style={{
+                                        background: isDone ? (isNegative ? `${C.coral}08` : `${C.teal}08`) : C.bgCard,
+                                        border: `1px solid ${isDone ? (isNegative ? `${C.coral}25` : `${C.teal}25`) : C.bgLight}`,
+                                    }}>
+                                    {/* Top accent bar */}
+                                    <div className="absolute left-0 top-0 right-0 h-1 rounded-t-xl" style={{ background: accentColor }}></div>
+                                    {/* Icon + Title */}
+                                    <div className="flex items-center gap-2.5 mb-2 mt-1">
+                                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${isNegative ? '' : `bg-gradient-to-br ${t.habitColor || 'from-emerald-400 to-teal-500'}`}`}
+                                            style={isNegative ? { background: `${C.coral}18`, color: C.coral } : { color: '#fff' }}>
+                                            {renderHabitIcon(t.iconEmoji, null, 18) || renderIcon(t.iconName, 18)}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-bold text-sm truncate" style={{
+                                                color: isDone ? (isNegative ? '#6B7280' : C.textSoft) : C.textPrimary,
+                                                textDecoration: isDone && !isNegative ? 'line-through' : 'none',
+                                            }}>{t.title}</h3>
+                                            <span className="text-[10px] font-bold px-1.5 py-px rounded"
+                                                style={{ background: `${accentColor}12`, color: accentColor }}>
+                                                {isNegative ? `扣${Math.abs(t.reward)}` : `+${t.reward}`}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    {/* Progress + Action */}
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex-1 min-w-0">
+                                            {(() => {
+                                                const useProgressBar = displayMax > 7 || (t.habitType === 'multiple' && t.periodMaxType === 'weekly');
+                                                if (useProgressBar) {
+                                                    const label = t.periodMaxType === 'weekly' ? '周' : '日';
+                                                    return (
+                                                        <div className="flex items-center gap-1.5">
+                                                            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: C.bgLight }}>
+                                                                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (displayCount / displayMax) * 100)}%`, background: accentColor }}></div>
+                                                            </div>
+                                                            <span className="text-[9px] font-bold shrink-0" style={{ color: C.textMuted }}>{displayCount}/{displayMax}{label}</span>
+                                                        </div>
+                                                    );
+                                                } else if (displayMax > 1) {
+                                                    return (
+                                                        <div className="flex gap-0.5 items-center">
+                                                            {Array.from({ length: displayMax }).map((_, i) => (
+                                                                <div key={i} className="w-2 h-2 rounded-full transition-all" style={{
+                                                                    background: i < displayCount ? accentColor : C.bgLight,
+                                                                }} />
+                                                            ))}
+                                                        </div>
+                                                    );
+                                                }
+                                                return null;
+                                            })()}
+                                        </div>
+                                        {isDone ? (
+                                            <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+                                                style={{ background: isNegative ? `${C.coral}15` : `${C.green}15` }}>
+                                                {isNegative ? <Icons.ShieldAlert size={14} style={{ color: C.coral }} /> : <Icons.CheckCircle size={14} style={{ color: C.green }} />}
+                                            </div>
+                                        ) : (
+                                            <button onClick={() => handleAttemptSubmit(t)}
+                                                className="rounded-full py-1 px-3 text-[11px] font-black text-white transition-all active:scale-95 flex items-center gap-1 shrink-0"
+                                                style={{ background: isNegative ? C.coral : C.teal }}>
+                                                {isNegative ? <><Icons.ShieldAlert size={10} /> 坦白</> : <><Icons.Zap size={10} /> 打卡</>}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
+                                /* ═══ 1-Column Standard Card ═══ */
                                 <div key={t.id}
                                     className="flex items-center gap-3 rounded-xl p-3 transition-all hover:shadow-md relative overflow-hidden"
                                     style={{
@@ -516,7 +604,10 @@ export const KidHabitTab = () => {
                             <div className="flex-1 overflow-y-auto p-4 space-y-2">
                                 {entries.length === 0 ? (
                                     <div className="text-center py-16">
-                                        <div className="text-4xl mb-3">{isGood ? '🌟' : '🛡️'}</div>
+                                        <div className="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center"
+                                            style={{ background: `${accent}15`, color: accent }}>
+                                            {isGood ? <Icons.TrendingUp size={28} /> : <Icons.ShieldAlert size={28} />}
+                                        </div>
                                         <div className="font-black text-base" style={{ color: C.textPrimary }}>
                                             {isGood ? '今天还没有打卡哦' : '今天没有坏习惯记录'}
                                         </div>
