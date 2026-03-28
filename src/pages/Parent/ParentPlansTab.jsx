@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { HabitTemplateModal } from '../../components/modals/HabitTemplateModal';
 import { createPortal } from 'react-dom';
 import { useDataContext } from '../../context/DataContext.jsx';
 import { useAuthContext } from '../../context/AuthContext.jsx';
@@ -69,6 +70,7 @@ export const ParentPlansTab = () => {
     const [searchPlanKeyword, setSearchPlanKeyword] = useState('');
     const [habitCardFilter, setHabitCardFilter] = useState('all');
     const [detailModalType, setDetailModalType] = useState(null);
+    const [showTemplateModal, setShowTemplateModal] = useState(false);
 
 
     // Sticky compact calendar
@@ -318,16 +320,23 @@ export const ParentPlansTab = () => {
                     </button>
                 </div>
 
-                <button onClick={() => {
-                    const defaultTimes = getDefaultTimeRange();
-                    setEditingTask(null);
-                    setPlanType('habit');
-                    setPlanForm({ targetKids: ['all'], category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5, 6, 7], periodTargetCount: 1, periodMaxPerDay: 1, periodMaxType: 'daily', timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
-                    setShowAddPlanModal(true);
-                }} className="w-full py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-                    style={{ background: C.teal, color: '#fff', boxShadow: `0 4px 14px ${C.teal}40` }}>
-                    <Icons.Plus size={18} /> 新建习惯规则
-                </button>
+                <div className="flex gap-2">
+                    <button onClick={() => {
+                        const defaultTimes = getDefaultTimeRange();
+                        setEditingTask(null);
+                        setPlanType('habit');
+                        setPlanForm({ targetKids: ['all'], category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5, 6, 7], periodTargetCount: 1, periodMaxPerDay: 1, periodMaxType: 'daily', timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: '📚', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
+                        setShowAddPlanModal(true);
+                    }} className="flex-1 py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                        style={{ background: C.teal, color: '#fff', boxShadow: `0 4px 14px ${C.teal}40` }}>
+                        <Icons.Plus size={18} /> 新建习惯
+                    </button>
+                    <button onClick={() => setShowTemplateModal(true)}
+                        className="py-3.5 px-5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                        style={{ background: C.bgCard, color: C.teal, boxShadow: C.cardShadow, border: `1.5px solid ${C.teal}30` }}>
+                        <Icons.Package size={18} /> 使用模板
+                    </button>
+                </div>
             </div>
 
             {/* ═══ Habit Rules ═══ */}
@@ -487,13 +496,20 @@ export const ParentPlansTab = () => {
                         <div className="col-span-full text-center py-16 rounded-2xl" style={{ background: C.bgCard }}>
                             <div className="text-5xl mb-4">🌱</div>
                             <div className="font-black" style={{ color: C.textPrimary }}>暂无习惯规则</div>
-                            <div className="text-xs font-bold mt-1" style={{ color: C.textMuted }}>点击上方新建按钮添加吧</div>
+                            <div className="text-xs font-bold mt-1 mb-4" style={{ color: C.textMuted }}>点击下方一键导入推荐模板，快速开始！</div>
+                            <button onClick={() => setShowTemplateModal(true)}
+                                className="px-6 py-2.5 rounded-xl font-black text-sm transition-all active:scale-95 inline-flex items-center gap-2"
+                                style={{ background: C.teal, color: '#fff', boxShadow: `0 4px 14px ${C.teal}40` }}>
+                                <Icons.Package size={16} /> 使用模板导入
+                            </button>
                         </div>
                     )}
                 </div>
             </div>
 
             {/* ═══ Detail Modal ═══ */}
+            <HabitTemplateModal isOpen={showTemplateModal} onClose={() => setShowTemplateModal(false)} />
+
             {detailModalType && (() => {
                 const isGood = detailModalType === 'good';
                 const accent = isGood ? C.teal : C.coral;
