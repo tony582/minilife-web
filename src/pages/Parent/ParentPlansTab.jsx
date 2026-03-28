@@ -403,15 +403,15 @@ export const ParentPlansTab = () => {
                         ))}
                     </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     {tasks.filter(t => t.type === 'habit' && (!searchPlanKeyword || t.title.toLowerCase().includes(searchPlanKeyword.toLowerCase()) || (t.desc && t.desc.toLowerCase().includes(searchPlanKeyword.toLowerCase())))).filter(t => {
                         if (habitCardFilter === 'income') return t.reward >= 0;
                         if (habitCardFilter === 'expense') return t.reward < 0;
                         return true;
                     }).length === 0 ? (
-                        <div className="col-span-full text-center py-16 rounded-2xl" style={{ background: C.bgCard }}>
-                            <div className="text-5xl mb-4">🌱</div>
-                            <div className="font-black text-base" style={{ color: C.textPrimary }}>未找到相关习惯</div>
+                        <div className="col-span-full text-center py-12 rounded-xl" style={{ background: C.bgCard }}>
+                            <div className="text-4xl mb-3">🌱</div>
+                            <div className="font-black text-sm" style={{ color: C.textPrimary }}>未找到相关习惯</div>
                             <div className="text-xs font-bold mt-1" style={{ color: C.textMuted }}>尝试更换搜索词或新建一个习惯吧</div>
                         </div>
                     ) : (
@@ -424,29 +424,29 @@ export const ParentPlansTab = () => {
                             const isNeg = t.reward < 0;
                             const accent = isNeg ? C.coral : C.teal;
                             return (
-                                <div key={t.id} className="p-5 rounded-2xl transition-all hover:shadow-lg relative overflow-hidden"
+                                <div key={t.id} className="px-4 py-3 rounded-xl transition-all hover:shadow-lg relative overflow-hidden"
                                     style={{ background: C.bgCard, boxShadow: C.cardShadow }}>
-                                    <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl" style={{ background: accent }}></div>
-                                    <div className="flex items-start gap-4 mb-4">
-                                        <div className={`w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br ${t.catColor || t.habitColor || 'from-emerald-400 to-teal-500'} flex items-center justify-center text-2xl`}
+                                    <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl" style={{ background: accent }}></div>
+                                    <div className="flex items-center gap-3 mb-2.5">
+                                        <div className={`w-10 h-10 shrink-0 rounded-lg bg-gradient-to-br ${t.catColor || t.habitColor || 'from-emerald-400 to-teal-500'} flex items-center justify-center`}
                                             style={{ color: '#fff' }}>
-                                            {renderHabitIcon(t.iconEmoji, '🛡️', 22)}
+                                            {renderHabitIcon(t.iconEmoji, '🛡️', 18)}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-0.5">
-                                                <h4 className="font-black text-base line-clamp-1" style={{ color: C.textPrimary }}>{t.title}</h4>
-                                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md whitespace-nowrap w-fit" style={{ background: C.bgLight, color: C.textMuted }}>{kName}</span>
+                                            <div className="flex items-center gap-2 mb-0.5">
+                                                <h4 className="font-black text-sm line-clamp-1" style={{ color: C.textPrimary }}>{t.title}</h4>
+                                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md whitespace-nowrap shrink-0" style={{ background: C.bgLight, color: C.textMuted }}>{kName}</span>
                                             </div>
-                                            <p className="text-xs mt-1 line-clamp-2" style={{ color: C.textSoft }}>{t.standards || t.desc}</p>
+                                            {(t.standards || t.desc) && <p className="text-[11px] line-clamp-1" style={{ color: C.textSoft }}>{t.standards || t.desc}</p>}
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center justify-between border-t pt-3 mt-auto" style={{ borderColor: C.bgLight }}>
-                                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black"
+                                    <div className="flex items-center justify-between border-t pt-2.5" style={{ borderColor: C.bgLight }}>
+                                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-black"
                                             style={{ background: `${accent}12`, color: accent, border: `1px solid ${accent}20` }}>
                                             {t.reward > 0 ? '+' : ''}{t.reward} 家庭币
                                         </div>
-                                        <div className="flex items-center gap-1.5">
+                                        <div className="flex items-center gap-1">
                                             {(() => {
                                                 const todayStr = formatDate(new Date());
                                                 const kidHistory = t.history || {};
@@ -477,13 +477,13 @@ export const ParentPlansTab = () => {
                                                             if (allMaxed) return;
                                                             handlePointAction(t, t.reward < 0 ? 'penalty' : 'reward');
                                                         }}
-                                                        className={`flex items-center justify-center w-9 h-9 rounded-xl transition-all ${allMaxed ? 'cursor-not-allowed' : 'active:scale-90'}`}
+                                                        className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all ${allMaxed ? 'cursor-not-allowed' : 'active:scale-90'}`}
                                                         style={{
                                                             background: allMaxed ? C.bgLight : `${accent}12`,
                                                             color: allMaxed ? C.textMuted : accent,
                                                         }}
                                                     >
-                                                        {t.reward < 0 ? <Icons.Minus size={16} strokeWidth={3} /> : <Icons.Plus size={16} strokeWidth={3} />}
+                                                        {t.reward < 0 ? <Icons.Minus size={14} strokeWidth={3} /> : <Icons.Plus size={14} strokeWidth={3} />}
                                                     </button>
                                                 );
                                             })()}
@@ -516,11 +516,11 @@ export const ParentPlansTab = () => {
                                                     iconEmoji: t.iconEmoji || '📘', habitColor: t.catColor || t.habitColor || 'from-blue-400 to-blue-500', habitType: t.habitType || 'daily_once', attachments: t.attachments || [], requireApproval: t.requireApproval !== undefined ? t.requireApproval : true
                                                 });
                                                 setShowAddPlanModal(true);
-                                            }} className="flex items-center justify-center w-9 h-9 rounded-xl transition-all active:scale-90" style={{ background: C.bgLight, color: C.textSoft }}>
-                                                <Icons.Edit3 size={16} />
+                                            }} className="flex items-center justify-center w-8 h-8 rounded-lg transition-all active:scale-90" style={{ background: C.bgLight, color: C.textSoft }}>
+                                                <Icons.Edit3 size={14} />
                                             </button>
-                                            <button onClick={() => setDeleteConfirmTask(t)} className="flex items-center justify-center w-9 h-9 rounded-xl transition-all active:scale-90" style={{ background: `${C.coral}10`, color: C.coral }}>
-                                                <Icons.Trash2 size={16} />
+                                            <button onClick={() => setDeleteConfirmTask(t)} className="flex items-center justify-center w-8 h-8 rounded-lg transition-all active:scale-90" style={{ background: `${C.coral}10`, color: C.coral }}>
+                                                <Icons.Trash2 size={14} />
                                             </button>
                                         </div>
                                     </div>
