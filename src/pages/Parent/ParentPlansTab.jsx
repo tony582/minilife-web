@@ -430,7 +430,7 @@ export const ParentPlansTab = () => {
                                     <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl" style={{ background: accent }}></div>
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className={`w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br ${t.habitColor || 'from-emerald-400 to-teal-500'} flex items-center justify-center text-2xl`}
-                                            style={{ color: t.reward < 0 ? undefined : '#fff' }}>
+                                            style={{ color: '#fff' }}>
                                             {renderHabitIcon(t.iconEmoji, '🛡️', 22)}
                                         </div>
                                         <div className="flex-1 min-w-0">
