@@ -342,31 +342,25 @@ export const ParentPlansTab = () => {
 
             {/* ═══ Habit Rules ═══ */}
             <div className="px-4 mb-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
-                    <h3 className="font-black text-base flex items-center gap-2 shrink-0" style={{ color: C.textPrimary }}>
-                        <span className="w-1.5 h-5 rounded-full" style={{ background: C.teal }}></span>
-                        当前生效的习惯规则
-                    </h3>
-                    <div className="flex items-center gap-2">
-                        <div className="relative flex-1 sm:w-56">
-                            <Icons.Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: C.textMuted }} />
-                            <input type="text" placeholder="搜索习惯..." value={searchPlanKeyword} onChange={e => setSearchPlanKeyword(e.target.value)}
-                                className="w-full text-sm font-bold rounded-xl pl-9 pr-8 py-2.5 focus:outline-none transition-all placeholder:font-normal border-none"
-                                style={{ background: C.bgCard, color: C.textPrimary, caretColor: C.teal }}
-                            />
-                            {searchPlanKeyword && (
-                                <button onClick={() => setSearchPlanKeyword('')} className="absolute inset-y-0 right-0 pr-3 flex items-center" style={{ color: C.textMuted }}><Icons.X size={14} /></button>
-                            )}
-                        </div>
-                        <div className="flex items-center gap-1 p-1 rounded-xl shrink-0" style={{ background: C.bgCard }}>
-                            {[{ id: 'all', label: '全部' }, { id: 'income', label: '好习惯' }, { id: 'expense', label: '坏习惯' }].map(f => (
-                                <button key={f.id} onClick={() => setHabitCardFilter(f.id)}
-                                    className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all"
-                                    style={{ background: habitCardFilter === f.id ? C.teal : 'transparent', color: habitCardFilter === f.id ? '#fff' : C.textMuted }}>
-                                    {f.label}
-                                </button>
-                            ))}
-                        </div>
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="relative flex-1 min-w-0">
+                        <Icons.Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: C.textMuted }} />
+                        <input type="text" placeholder="搜索习惯..." value={searchPlanKeyword} onChange={e => setSearchPlanKeyword(e.target.value)}
+                            className="w-full text-sm font-bold rounded-xl pl-9 pr-8 py-2.5 focus:outline-none transition-all placeholder:font-normal border-none"
+                            style={{ background: C.bgCard, color: C.textPrimary, caretColor: C.teal }}
+                        />
+                        {searchPlanKeyword && (
+                            <button onClick={() => setSearchPlanKeyword('')} className="absolute inset-y-0 right-0 pr-3 flex items-center" style={{ color: C.textMuted }}><Icons.X size={14} /></button>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-1 p-1 rounded-xl shrink-0" style={{ background: C.bgCard }}>
+                        {[{ id: 'all', label: '全部' }, { id: 'income', label: '好习惯' }, { id: 'expense', label: '坏习惯' }].map(f => (
+                            <button key={f.id} onClick={() => setHabitCardFilter(f.id)}
+                                className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all"
+                                style={{ background: habitCardFilter === f.id ? C.teal : 'transparent', color: habitCardFilter === f.id ? '#fff' : C.textMuted }}>
+                                {f.label}
+                            </button>
+                        ))}
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
