@@ -305,6 +305,7 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
+            id: `trans_${Date.now()}_coin_${Math.random().toString(36).substr(2, 5)}`,
             kidId: activeKidId,
             type: task.reward > 0 ? 'income' : 'expense',
             amount: Math.abs(task.reward || 0),
@@ -319,6 +320,7 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
+            id: `trans_${Date.now()}_exp_${Math.random().toString(36).substr(2, 5)}`,
             kidId: activeKidId,
             type: task.reward > 0 ? 'income' : 'expense',
             amount: Math.ceil(Math.abs(task.reward || 0) * 1.5),
