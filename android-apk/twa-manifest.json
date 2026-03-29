@@ -1,0 +1,42 @@
+{
+  "packageId": "online.minilife.ml",
+  "host": "ml.minilife.online",
+  "name": "MiniLife - 家庭成长助手",
+  "launcherName": "MiniLife",
+  "display": "standalone",
+  "themeColor": "#FF8C42",
+  "themeColorDark": "#FF8C42",
+  "navigationColor": "#FBF7F0",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#FBF7F0",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#FBF7F0",
+  "enableNotifications": false,
+  "startUrl": "/",
+  "iconUrl": "https://ml.minilife.online/icon-512.png",
+  "maskableIconUrl": "https://ml.minilife.online/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./minilife.keystore",
+    "alias": "minilife"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 2,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "minSdkVersion": 21,
+  "orientation": "portrait",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "displayOverride": [],
+  "appVersion": "1.0.0"
+}
