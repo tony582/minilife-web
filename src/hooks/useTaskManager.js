@@ -256,8 +256,9 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
           } : k));
         }
       }
+      let txId = null;
       if (task.reward !== 0) {
-        const txId = `trans_${Date.now()}_coin_${Math.random().toString(36).substr(2, 5)}`;
+        txId = `trans_${Date.now()}_coin_${Math.random().toString(36).substr(2, 5)}`;
         setTransactions(prev => [{
           id: txId,
           kidId: activeKidId,
@@ -314,7 +315,8 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
         }).catch(e => console.error(e));
       }
     } catch (e) {
-      notify("网络请求失败", "error");
+      console.error("[handleAttemptSubmit] Error:", e);
+      notify(`执行失败: ${e.message || '未知错误'}`, "error");
     } finally {
       isSubmittingRef.current = false;
     }
@@ -636,7 +638,8 @@ const getTaskStatusOnDate = (t, date, kidId) => {
       notify(quickEncouragements[Math.floor(Math.random() * quickEncouragements.length)], 'success');
     }
   } catch (e) {
-    notify("网络请求失败", "error");
+    console.error("[confirmSubmitTask] Error:", e);
+    notify(`执行失败: ${e.message || '未知错误'}`, "error");
   }
 };
 
@@ -802,7 +805,10 @@ const handleQuickComplete = async () => {
           body: JSON.stringify({ history: newHistory })
         });
         notify('已重新提交审核，等待家长确认 🙌', 'success');
-      } catch (e) { notify('网络请求失败', 'error'); }
+      } catch (e) { 
+        console.error("[handleQuickComplete ref] Error:", e);
+        notify(`网络请求失败: ${e.message || '未知'}`, 'error'); 
+      }
       isSubmittingRef.current = false;
       resumeSync();
       return;

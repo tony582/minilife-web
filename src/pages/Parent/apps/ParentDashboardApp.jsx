@@ -303,7 +303,7 @@ export const ParentDashboardApp = () => {
                         学习任务分析
                     </h3>
                     <div className="h-48 mb-4">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                             <BarChart data={taskStats.dailyData} barSize={16}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={C.bgLight} vertical={false} />
                                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: C.textMuted, fontWeight: 700 }} axisLine={false} tickLine={false} />
@@ -340,7 +340,7 @@ export const ParentDashboardApp = () => {
                         习惯养成分析
                     </h3>
                     <div className="h-48 mb-4">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                             <LineChart data={habitStats.dailyData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={C.bgLight} vertical={false} />
                                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: C.textMuted, fontWeight: 700 }} axisLine={false} tickLine={false} />
@@ -384,7 +384,7 @@ export const ParentDashboardApp = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* Pie chart */}
                             <div className="h-52 flex items-center justify-center">
-                                <ResponsiveContainer width="100%" height="100%">
+                                <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                                     <PieChart>
                                         <Pie
                                             data={shopStats.items}
@@ -427,7 +427,7 @@ export const ParentDashboardApp = () => {
                         财务趋势
                     </h3>
                     <div className="h-52 mb-4">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                             <AreaChart data={financeStats.dailyData}>
                                 <defs>
                                     <linearGradient id="gradIncome" x1="0" y1="0" x2="0" y2="1">
