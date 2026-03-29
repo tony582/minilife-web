@@ -27,3 +27,4 @@ dist-ssr
 # SQLite WAL files (must not be deployed to production)
 *.sqlite-shm
 *.sqlite-wal
+android-apk/

@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "online.minilife.ml",
+    "sha256_cert_fingerprints": ["C6:AB:59:52:85:63:56:32:F0:64:92:3B:E3:E4:6B:94:F9:0F:82:10:66:B9:F0:AE:3A:07:A8:25:4B:DE:DD:08"]
+  }
+}]
