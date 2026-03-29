@@ -5,11 +5,14 @@ export const RewardModal = ({ context }) => {
     const {
         showRewardModal, setShowRewardModal,
         penaltyTaskContext,
-        penaltySelectedKidIds, setPenaltySelectedKidIds,
+        penaltySelectedKidIds: rawPenaltySelectedKidIds, setPenaltySelectedKidIds,
         kids,
         confirmReward,
         toggleKidSelectionPenalty
     } = context;
+
+    // Safety: ensure penaltySelectedKidIds is always an array
+    const penaltySelectedKidIds = Array.isArray(rawPenaltySelectedKidIds) ? rawPenaltySelectedKidIds : [];
 
     if (!showRewardModal || !penaltyTaskContext) return null;
 

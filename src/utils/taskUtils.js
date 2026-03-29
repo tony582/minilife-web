@@ -11,6 +11,8 @@ export const isTaskDueOnDate = (task, dateStr) => {
     // ================= V2: Advanced repeatConfig Algorithm =================
     if (task.repeatConfig) {
         const rc = task.repeatConfig;
+        // Safety: ensure rc.type is always a string to prevent .includes() crash
+        if (rc.type && typeof rc.type !== 'string') rc.type = String(rc.type);
 
         // 1. Boundary Checks
         const isPeriod = rc.type?.includes('_1') || rc.type?.includes('_n');
@@ -141,7 +143,9 @@ export const isTaskDueOnDate = (task, dateStr) => {
 export const getPeriodProgress = (task, kidId, dateStr) => {
     if (!task?.repeatConfig) return null;
     const rc = task.repeatConfig;
-    if (!rc.type.includes('_1') && !rc.type.includes('_n')) return null;
+    // Safety: ensure rc.type is always a string
+    if (rc.type && typeof rc.type !== 'string') rc.type = String(rc.type);
+    if (!rc.type || (!rc.type.includes('_1') && !rc.type.includes('_n'))) return null;
 
     const currentDt = new Date(dateStr);
     let periodStartDt, periodEndDt, periodLabel;

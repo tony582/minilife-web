@@ -429,9 +429,12 @@ export const GlobalModals = () => {
             notify(`${kUser.name} 的可用金币不足 ${requiredCoins} 枚，无法扣除`, "warning");
             return;
         }
-        setPenaltySelectedKidIds(prev =>
-            prev.includes(kidId) ? prev.filter(id => id !== kidId) : [...prev, kidId]
-        );
+        // Zustand set() does NOT support updater functions — read current value directly
+        const current = Array.isArray(penaltySelectedKidIds) ? penaltySelectedKidIds : [];
+        const next = current.includes(kidId)
+            ? current.filter(id => id !== kidId)
+            : [...current, kidId];
+        setPenaltySelectedKidIds(next);
     };
 
     // Handle countdown timer for Emotional Modal
@@ -439,7 +442,9 @@ export const GlobalModals = () => {
         let timer;
         if (showEmotionalReminderModal && emotionalCooldownSeconds > 0) {
             timer = setInterval(() => {
-                setEmotionalCooldownSeconds(prev => prev - 1);
+                // Zustand set() does NOT support updater functions
+                const current = typeof emotionalCooldownSeconds === 'number' ? emotionalCooldownSeconds : 0;
+                setEmotionalCooldownSeconds(current - 1);
             }, 1000);
         }
         return () => clearInterval(timer);

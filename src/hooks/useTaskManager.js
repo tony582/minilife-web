@@ -13,9 +13,11 @@ import { isTaskDueOnDate, getPeriodProgress } from '../utils/taskUtils';
 let globalAudioCtx = null;
 
 export const useTaskManager = (authC, dataC, uiC) => {
-    const modalStore = useModalStore();
-    const formStore = useFormStore();
-    const timerStore = useTimerStore();
+    // PERF: Use getState() instead of hooks to avoid subscribing entire stores.
+    // These values are only read inside event handlers, not during render.
+    const modalStore = useModalStore.getState();
+    const formStore = useFormStore.getState();
+    const timerStore = useTimerStore.getState();
     const context = { ...authC, ...dataC, ...uiC, ...modalStore, ...formStore, ...timerStore };
     const { 
         activeKidId, kids, setKids, tasks, setTasks, transactions, setTransactions, notify, 
