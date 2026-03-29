@@ -14,7 +14,13 @@ module.exports = (db, { authenticateToken, notifyUser }) => {
                 level: r.level,
                 exp: r.exp,
                 balances: { spend: r.balance_spend, save: r.balance_save, give: r.balance_give },
-                vault: { lockedAmount: r.vault_locked, projectedReturn: r.vault_projected }
+                vault: { lockedAmount: r.vault_locked, projectedReturn: r.vault_projected },
+                spirit_type: r.spirit_type || 'sprout',
+                spirit_accessories: r.spirit_accessories ? JSON.parse(r.spirit_accessories) : [],
+                streak_days: r.streak_days || 0,
+                last_streak_date: r.last_streak_date || '',
+                highest_level: r.highest_level || r.level || 1,
+                badges: r.badges ? JSON.parse(r.badges) : [],
             }));
             res.json(kids);
         });
@@ -33,7 +39,9 @@ module.exports = (db, { authenticateToken, notifyUser }) => {
 
     // --- Update kid ---
     router.put('/:id', authenticateToken, (req, res) => {
-        const { name, avatar, level, exp, balances, vault } = req.body;
+        const { name, avatar, level, exp, balances, vault,
+                spirit_type, spirit_accessories, streak_days, last_streak_date,
+                highest_level, badges } = req.body;
         let query = "UPDATE kids SET ";
         let params = [];
         if (name !== undefined) { query += "name = ?, "; params.push(name); }
@@ -49,6 +57,12 @@ module.exports = (db, { authenticateToken, notifyUser }) => {
             if (vault.lockedAmount !== undefined) { query += "vault_locked = ?, "; params.push(vault.lockedAmount); }
             if (vault.projectedReturn !== undefined) { query += "vault_projected = ?, "; params.push(vault.projectedReturn); }
         }
+        if (spirit_type !== undefined) { query += "spirit_type = ?, "; params.push(spirit_type); }
+        if (spirit_accessories !== undefined) { query += "spirit_accessories = ?, "; params.push(JSON.stringify(spirit_accessories)); }
+        if (streak_days !== undefined) { query += "streak_days = ?, "; params.push(streak_days); }
+        if (last_streak_date !== undefined) { query += "last_streak_date = ?, "; params.push(last_streak_date); }
+        if (highest_level !== undefined) { query += "highest_level = ?, "; params.push(highest_level); }
+        if (badges !== undefined) { query += "badges = ?, "; params.push(JSON.stringify(badges)); }
 
         query = query.slice(0, -2) + " WHERE id = ? AND userId = ?";
         params.push(req.params.id, req.user.id);
@@ -73,15 +87,16 @@ module.exports = (db, { authenticateToken, notifyUser }) => {
             let newExp = Math.max(0, kid.exp + (exp || 0));
             let newLevel = kid.level;
             
-            const getLevelReq = (lvl) => 100 + (lvl - 1) * 50;
+            // New formula: 80 + (level - 1) * 20
+            const getLevelReq = (lvl) => 80 + (Math.max(1, lvl) - 1) * 20;
             while (newExp >= getLevelReq(newLevel)) {
                 newExp -= getLevelReq(newLevel);
                 newLevel++;
             }
             
             db.run(
-                "UPDATE kids SET balance_spend = ?, exp = ?, level = ? WHERE id = ? AND userId = ?",
-                [newSpend, newExp, newLevel, req.params.id, req.user.id],
+                "UPDATE kids SET balance_spend = ?, exp = ?, level = ?, highest_level = GREATEST(COALESCE(highest_level, 1), ?) WHERE id = ? AND userId = ?",
+                [newSpend, newExp, newLevel, newLevel, req.params.id, req.user.id],
                 function (err) {
                     if (err) return res.status(500).json({ error: err.message });
                     notifyUser(req.user.id);

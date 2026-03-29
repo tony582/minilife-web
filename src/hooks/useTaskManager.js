@@ -1014,6 +1014,8 @@ const handleQuickComplete = async () => {
     const handleExpChange = async (kidId, expChange) => {
   const kid = kids.find(k => k.id === kidId);
   if (!kid) return;
+  const { getSpiritForm } = await import('../utils/spiritUtils');
+  const oldForm = getSpiritForm(kid.level);
   let newExp = kid.exp + expChange;
   let newLevel = kid.level;
   while (newExp >= getLevelReq(newLevel)) {
@@ -1027,24 +1029,39 @@ const handleQuickComplete = async () => {
     notify(`注意！${kid.name} 降到了 Lv.${newLevel}。`, "error");
   }
   if (newExp < 0 && newLevel === 1) newExp = 0;
+
+  // Detect spirit evolution
+  const newForm = getSpiritForm(newLevel);
+  const evolved = newForm.id !== oldForm.id && newLevel > kid.level;
+
   try {
+    const updateBody = { level: newLevel, exp: newExp };
+    // Track highest level ever reached
+    if (newLevel > (kid.highest_level || kid.level)) {
+      updateBody.highest_level = newLevel;
+    }
     await apiFetch(`/api/kids/${kidId}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        level: newLevel,
-        exp: newExp
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updateBody)
     });
     setKids(prevKids => prevKids.map(k => k.id === kidId ? {
-      ...k,
-      exp: newExp,
-      level: newLevel
+      ...k, exp: newExp, level: newLevel,
+      highest_level: Math.max(newLevel, k.highest_level || k.level)
     } : k));
+
+    // Trigger spirit evolution celebration!
+    if (evolved) {
+      setCelebrationData({
+        type: 'spirit_evolution',
+        kidName: kid.name,
+        oldForm,
+        newForm,
+        newLevel,
+      });
+    }
   } catch (e) {
-    notify("网络请求失败", "error");
+    notify(`经验更新失败: ${e.message}`, "error");
   }
 };
 

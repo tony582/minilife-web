@@ -51,6 +51,11 @@ const COLUMN_MAP = {
     tokens_used: 'tokens_used', duration_days: 'duration_days',
     used_by: 'used_by', used_at: 'used_at', batch_id: 'batch_id',
     expires_at: 'expires_at',
+    spirit_type: 'spirit_type', spirit_accessories: 'spirit_accessories',
+    streak_days: 'streak_days', last_streak_date: 'last_streak_date',
+    highest_level: 'highest_level', badges: 'badges',
+    interest_amount: 'interest_amount', interest_rate: 'interest_rate',
+    interest_bonus: 'interest_bonus', calculated_at: 'calculated_at',
 };
 
 // Columns that should always be numbers (PG bigint returns strings)
@@ -60,7 +65,8 @@ const NUMERIC_COLUMNS = new Set([
     'coins', 'gems', 'reward', 'price', 'quantity', 'maxperday',
     'periodmaxperday', 'ai_quota', 'default_quota', 'tokens_used',
     'duration_days', 'totalsessions', 'usedsessions', 'sessionsperclass',
-    'pricepersession',
+    'pricepersession', 'streak_days', 'highest_level',
+    'interest_amount', 'interest_rate', 'interest_bonus',
 ]);
 
 function mapRow(row) {
@@ -326,6 +332,26 @@ async function initializeDatabase() {
              ON CONFLICT (id) DO NOTHING`,
             ['admin_1', 'admin@minilife.com', '$2b$10$uekgwsW6PjiJsqlT7X807esIAvMyLIeDvfBtOZuey6F3iBG1fxGSi', 'admin', new Date().toISOString()]
         );
+
+        // ── Spirit System: safe migration for existing DBs ──
+        await client.query(`ALTER TABLE kids ADD COLUMN IF NOT EXISTS spirit_type TEXT DEFAULT 'sprout'`);
+        await client.query(`ALTER TABLE kids ADD COLUMN IF NOT EXISTS spirit_accessories TEXT DEFAULT '[]'`);
+        await client.query(`ALTER TABLE kids ADD COLUMN IF NOT EXISTS streak_days INTEGER DEFAULT 0`);
+        await client.query(`ALTER TABLE kids ADD COLUMN IF NOT EXISTS last_streak_date TEXT DEFAULT ''`);
+        await client.query(`ALTER TABLE kids ADD COLUMN IF NOT EXISTS highest_level INTEGER DEFAULT 1`);
+        await client.query(`ALTER TABLE kids ADD COLUMN IF NOT EXISTS badges TEXT DEFAULT '[]'`);
+
+        // Interest History Table
+        await client.query(`CREATE TABLE IF NOT EXISTS interest_history (
+            id TEXT PRIMARY KEY,
+            userid TEXT NOT NULL,
+            kidid TEXT NOT NULL,
+            interest_amount INTEGER DEFAULT 0,
+            interest_rate REAL DEFAULT 0,
+            interest_bonus REAL DEFAULT 0,
+            balance_snapshot INTEGER DEFAULT 0,
+            calculated_at TEXT NOT NULL
+        )`);
 
         console.log('PostgreSQL schema initialized successfully.');
     } catch (err) {

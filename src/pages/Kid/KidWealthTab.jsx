@@ -4,6 +4,7 @@ import { useUIContext } from '../../context/UIContext.jsx';
 import { Icons } from '../../utils/Icons';
 import { isTaskDueOnDate } from '../../utils/taskUtils';
 import { formatDate } from '../../utils/dateUtils';
+import { getSpiritForm, getSpiritPrivileges } from '../../utils/spiritUtils';
 
 // Shared warm Headspace theme (same as KidHabitTab / KidStudyTab)
 const C = {
@@ -48,6 +49,13 @@ export const KidWealthTab = () => {
 
     // Unified balance
     const totalBalance = activeKid.balances?.spend || 0;
+
+    // Spirit & interest calculations
+    const spiritForm = getSpiritForm(activeKid.level);
+    const privileges = getSpiritPrivileges(activeKid.level);
+    const baseInterestRate = 2; // default, TODO: read from parent settings
+    const totalInterestRate = baseInterestRate + privileges.interestBonus;
+    const estimatedInterest = Math.floor(totalBalance * totalInterestRate / 100);
 
 
     // Today's tasks summary — how many can still earn coins
@@ -204,6 +212,68 @@ export const KidWealthTab = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* ═══ Spirit Energy Station (Interest Preview) ═══ */}
+                <div className="mx-4 mb-4 rounded-2xl p-5 relative overflow-hidden"
+                    style={{
+                        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+                        border: '1px solid rgba(78,205,196,0.15)',
+                        boxShadow: `0 4px 24px ${spiritForm.glow}`,
+                    }}>
+                    {/* Decorative glow */}
+                    <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-20"
+                        style={{ background: `radial-gradient(circle, ${spiritForm.color}, transparent)` }}></div>
+                    <div className="absolute -left-4 -bottom-4 w-20 h-20 rounded-full opacity-10"
+                        style={{ background: `radial-gradient(circle, ${C.teal}, transparent)` }}></div>
+
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="text-3xl"
+                                style={{ animation: 'spiritFloat 3s ease-in-out infinite' }}>
+                                {spiritForm.emoji}
+                            </div>
+                            <div>
+                                <div className="font-black text-sm text-white">精灵能量站</div>
+                                <div className="text-[10px] font-bold text-white/40">
+                                    {spiritForm.name} · 精灵帮你用能量站赚利息
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2">
+                            <div className="rounded-xl p-2.5 text-center" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                                <div className="text-[9px] font-bold text-white/40 mb-1">基础利率</div>
+                                <div className="text-sm font-black" style={{ color: C.teal }}>{baseInterestRate}%/周</div>
+                            </div>
+                            <div className="rounded-xl p-2.5 text-center" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                                <div className="text-[9px] font-bold text-white/40 mb-1">精灵加成</div>
+                                <div className="text-sm font-black" style={{ color: privileges.interestBonus > 0 ? spiritForm.color : 'rgba(255,255,255,0.3)' }}>
+                                    {privileges.interestBonus > 0 ? `+${privileges.interestBonus}%` : '未解锁'}
+                                </div>
+                            </div>
+                            <div className="rounded-xl p-2.5 text-center" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                                <div className="text-[9px] font-bold text-white/40 mb-1">预计利息</div>
+                                <div className="text-sm font-black" style={{ color: C.yellow }}>
+                                    +{estimatedInterest}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-2.5 flex items-center gap-2 px-1">
+                            <Icons.Clock size={10} style={{ color: 'rgba(255,255,255,0.3)' }} />
+                            <span className="text-[9px] font-bold text-white/30">
+                                每周日自动结算 · 实际利率 {totalInterestRate}%/周
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <style>{`
+                    @keyframes spiritFloat {
+                        0%, 100% { transform: translateY(0px); }
+                        50% { transform: translateY(-6px); }
+                    }
+                `}</style>
 
                 {/* ═══ Today's Earning Breakdown — reference-inspired ═══ */}
                 <div className="mx-4 mb-4 rounded-2xl p-5 relative overflow-hidden"

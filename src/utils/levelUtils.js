@@ -1,10 +1,20 @@
-export const getLevelTier = (level) => {
-    if (level < 10) return { title: '新手村学徒', emoji: '🌱', bg: 'from-green-400 to-emerald-500', color: 'text-emerald-500' };
-    if (level < 20) return { title: '探索达人', emoji: '🧭', bg: 'from-blue-400 to-cyan-500', color: 'text-blue-500' };
-    if (level < 30) return { title: '进阶骑士', emoji: '⚔️', bg: 'from-indigo-400 to-purple-500', color: 'text-indigo-500' };
-    if (level < 40) return { title: '白银守卫', emoji: '🛡️', bg: 'from-slate-300 to-slate-500', color: 'text-slate-600' };
-    if (level < 50) return { title: '黄金领主', emoji: '👑', bg: 'from-yellow-400 to-amber-500', color: 'text-amber-500' };
-    return { title: '传说星耀', emoji: '🌟', bg: 'from-rose-400 to-fuchsia-600', color: 'text-rose-500' };
-};
+import { getSpiritForm, isSpiritMaxStar } from './spiritUtils';
 
-export const getLevelReq = (level) => level * 100;
+// ── 新等级公式 (平滑递增) ──
+// EXP_needed(level) = 80 + (level - 1) × 20
+// Lv.1=80, Lv.5=160, Lv.10=260, Lv.15=360, Lv.20=460, Lv.30=660
+export const getLevelReq = (level) => 80 + (Math.max(1, level) - 1) * 20;
+
+// ── 段位信息 (兼容旧代码接口) ──
+// 从精灵形态推导段位，保持 getLevelTier 接口不变
+export const getLevelTier = (level) => {
+    const form = getSpiritForm(level);
+    const maxStar = isSpiritMaxStar(level);
+    return {
+        title: maxStar ? '满星精灵' : form.name,
+        emoji: maxStar ? '🌟' : form.emoji,
+        bg: maxStar ? 'from-yellow-300 via-rose-400 to-fuchsia-500' : form.bg,
+        color: `text-[${form.color}]`,
+        form, // 附带完整形态对象
+    };
+};

@@ -5,6 +5,7 @@ import { useToast } from '../../hooks/useToast';
 import { apiFetch } from '../../api/client';
 import { Icons, AvatarDisplay } from '../../utils/Icons';
 import { getLevelTier, getLevelReq } from '../../utils/levelUtils';
+import { getSpiritForm } from '../../utils/spiritUtils';
 import { KidStudyTab } from './KidStudyTab';
 import { KidHabitTab } from './KidHabitTab';
 import { KidWealthTab } from './KidWealthTab';
@@ -165,7 +166,7 @@ export const KidApp = () => {
                                     </div>
                                     <div className="text-left">
                                         <div className="text-xs font-bold text-slate-700 leading-tight">{activeKid.name}</div>
-                                        <div className="text-[9px] font-bold text-slate-400 leading-tight">LV.{activeKid.level} · {activeKid.exp}/{nextLevelExp}</div>
+                                        <div className="text-[9px] font-bold text-slate-400 leading-tight">{getSpiritForm(activeKid.level).emoji} LV.{activeKid.level} · {activeKid.exp}/{nextLevelExp}</div>
                                     </div>
                                     <Icons.ChevronDown size={12} className="text-slate-300" />
                                 </button>

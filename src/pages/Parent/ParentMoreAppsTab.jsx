@@ -12,6 +12,7 @@ import { SubscriptionApp } from './apps/SubscriptionApp';
 import { SecurityApp } from './apps/SecurityApp';
 import { InterestClassApp } from './apps/InterestClassApp';
 import { TaskPrintApp } from './apps/TaskPrintApp';
+import { InterestSettingsApp } from './apps/InterestSettingsApp';
 
 export const ParentMoreAppsTab = () => {
     const { handleLogout } = useAuthContext();
@@ -28,6 +29,7 @@ export const ParentMoreAppsTab = () => {
         security: <SecurityApp />,
         interest_classes: <InterestClassApp />,
         task_print: <TaskPrintApp />,
+        interest_settings: <InterestSettingsApp />,
     };
 
     // --- 应用注册表 ---
@@ -86,6 +88,15 @@ export const ParentMoreAppsTab = () => {
             color: 'text-amber-600',
             bgColor: 'bg-amber-50',
             onClick: () => setCurrentApp('task_print'),
+        },
+        {
+            id: 'interest_settings',
+            icon: <Icons.TrendingUp size={22} />,
+            label: '精灵能量站',
+            desc: '利息设置与发放',
+            color: 'text-teal-600',
+            bgColor: 'bg-teal-50',
+            onClick: () => setCurrentApp('interest_settings'),
         },
         {
             id: 'logout',
