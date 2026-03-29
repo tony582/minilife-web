@@ -2,6 +2,9 @@ import { useRef } from 'react';
 import { useAuthContext } from '../context/AuthContext.jsx';
 import { useDataContext } from '../context/DataContext.jsx';
 import { useUIContext } from '../context/UIContext.jsx';
+import { useModalStore } from '../stores/modalStore';
+import { useFormStore } from '../stores/formStore';
+import { useTimerStore } from '../stores/timerStore';
 import { getLevelTier, getLevelReq } from '../utils/levelUtils';
 import { getCatHexColor, getIconForCategory } from '../utils/categoryUtils';
 import { apiFetch } from '../api/client';
@@ -10,10 +13,10 @@ import { isTaskDueOnDate, getPeriodProgress } from '../utils/taskUtils';
 let globalAudioCtx = null;
 
 export const useTaskManager = (authC, dataC, uiC) => {
-    
-    
-    
-    const context = { ...authC, ...dataC, ...uiC };
+    const modalStore = useModalStore();
+    const formStore = useFormStore();
+    const timerStore = useTimerStore();
+    const context = { ...authC, ...dataC, ...uiC, ...modalStore, ...formStore, ...timerStore };
     const { 
         activeKidId, kids, setKids, tasks, setTasks, transactions, setTransactions, notify, 
         pauseSync, resumeSync,

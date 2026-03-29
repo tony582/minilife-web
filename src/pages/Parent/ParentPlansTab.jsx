@@ -463,10 +463,10 @@ export const ParentPlansTab = () => {
                                                         </div>
                                                         {(t.standards || t.desc) && <p className="text-[11px] line-clamp-1 mt-0.5 tracking-tight" style={{ color: C.textSoft }}>{t.standards || t.desc}</p>}
                                                     </div>
-                                                    {/* Reward pill */}
-                                                    <div className="shrink-0 text-right">
-                                                        <div className="text-sm font-black tracking-tight" style={{ color: accent }}>{t.reward > 0 ? '+' : ''}{t.reward}</div>
-                                                        <div className="text-[9px] font-semibold -mt-0.5" style={{ color: `${accent}90` }}>⭐</div>
+                                                    {/* Reward value */}
+                                                    <div className="shrink-0 flex items-center gap-1">
+                                                        <span className="text-sm font-black tracking-tight" style={{ color: accent }}>{t.reward > 0 ? '+' : ''}{t.reward}</span>
+                                                        <Icons.Star fill="#FFD93D" className="text-[#FFD93D]" size={14} />
                                                     </div>
                                                 </div>
                                                 {/* Bottom row: Progress + Action */}
@@ -569,9 +569,37 @@ export const ParentPlansTab = () => {
                                         {habitDetailTask.reward > 0 ? '+' : ''}{habitDetailTask.reward} 家庭币
                                     </span>
                                 </div>
+                                <div className="flex items-center justify-between px-1">
+                                    <span className="text-[11px] font-bold" style={{ color: C.textMuted }}>打卡规则</span>
+                                    <span className="text-xs font-bold" style={{ color: C.textPrimary }}>
+                                        {habitDetailTask.habitType === 'multiple' 
+                                            ? `多次打卡 (单日上限 ${habitDetailTask.repeatConfig?.periodMaxPerDay || habitDetailTask.periodMaxPerDay || habitDetailTask.maxPerDay || 1} 次)`
+                                            : '每日一次'}
+                                    </span>
+                                </div>
+                                {habitDetailTask.category && (
+                                    <div className="flex items-center justify-between px-1">
+                                        <span className="text-[11px] font-bold" style={{ color: C.textMuted }}>所属分类</span>
+                                        <span className="text-xs font-bold" style={{ color: C.textPrimary }}>{habitDetailTask.category}</span>
+                                    </div>
+                                )}
+                                {habitDetailTask.startDate && (
+                                    <div className="flex items-center justify-between px-1">
+                                        <span className="text-[11px] font-bold" style={{ color: C.textMuted }}>起止日期</span>
+                                        <span className="text-xs font-bold" style={{ color: C.textPrimary }}>
+                                            {habitDetailTask.startDate} {habitDetailTask.endDate ? `至 ${habitDetailTask.endDate}` : '开始'}
+                                        </span>
+                                    </div>
+                                )}
+                                <div className="flex items-center justify-between px-1">
+                                    <span className="text-[11px] font-bold" style={{ color: C.textMuted }}>家长确认</span>
+                                    <span className="text-xs font-bold" style={{ color: C.textPrimary }}>
+                                        {habitDetailTask.requireApproval !== false ? '需要确认' : '自动通过'}
+                                    </span>
+                                </div>
                                 {habitDetailTask.repeatType && (
                                     <div className="flex items-center justify-between px-1">
-                                        <span className="text-[11px] font-bold" style={{ color: C.textMuted }}>重复</span>
+                                        <span className="text-[11px] font-bold" style={{ color: C.textMuted }}>重复周期</span>
                                         <span className="text-xs font-bold" style={{ color: C.textPrimary }}>
                                             {{ today: '仅今天', daily: '每天', weekdays: '工作日', weekly: '每周指定', custom: '自定义' }[habitDetailTask.repeatType] || habitDetailTask.repeatType}
                                         </span>
@@ -579,10 +607,31 @@ export const ParentPlansTab = () => {
                                 )}
                                 {habitDetailTask.timeStr && habitDetailTask.timeStr !== '--:--' && (
                                     <div className="flex items-center justify-between px-1">
-                                        <span className="text-[11px] font-bold" style={{ color: C.textMuted }}>时间</span>
+                                        <span className="text-[11px] font-bold" style={{ color: C.textMuted }}>提醒时间</span>
                                         <span className="text-xs font-bold" style={{ color: C.textPrimary }}>{habitDetailTask.timeStr}</span>
                                     </div>
                                 )}
+                                <div className="mt-2 pt-2" style={{ borderTop: `1px solid ${C.bgLight}` }}>
+                                    {(() => {
+                                        const todayStr = formatDate(new Date(selectedDate));
+                                        const kidHistory = habitDetailTask.history || {};
+                                        const todayHist = kidHistory[todayStr] || {};
+                                        const targetKids = habitDetailTask.kidId === 'all' ? kids : kids.filter(k => k.id === habitDetailTask.kidId);
+                                        
+                                        return targetKids.map(k => {
+                                            const kidTodayData = habitDetailTask.kidId === 'all' ? (todayHist[k.id] || {}) : todayHist;
+                                            const att = Array.isArray(kidTodayData) ? kidTodayData.length : (kidTodayData.status ? 1 : 0);
+                                            return (
+                                                <div key={k.id} className="flex items-center justify-between px-1 py-1">
+                                                    <span className="text-[11px] font-bold" style={{ color: C.textMuted }}>{k.name} {selectedDate === formatDate(new Date()) ? '今日' : '当日'}记录</span>
+                                                    <span className="text-xs font-black" style={{ color: att > 0 ? (habitDetailTask.reward < 0 ? C.coral : C.teal) : C.textPrimary }}>
+                                                        {att} 次
+                                                    </span>
+                                                </div>
+                                            );
+                                        });
+                                    })()}
+                                </div>
                             </div>
                             {/* Actions */}
                             <div className="flex gap-2 p-4 pt-0">

@@ -369,8 +369,9 @@ export const KidHabitTab = () => {
                                 <div key={t.id}
                                     className="group rounded-2xl transition-all hover:scale-[1.01] relative overflow-hidden"
                                     style={{
-                                        background: isDone ? (isNegative ? `${C.coral}06` : `${C.teal}06`) : C.bgCard,
-                                        boxShadow: `0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)`,
+                                        background: isDone ? (isNegative ? '#FFF5F5' : '#F4FBFA') : C.bgCard,
+                                        border: isDone ? `1.5px solid ${isNegative ? C.coral : C.teal}30` : '1.5px solid transparent',
+                                        boxShadow: `0 2px 8px rgba(0,0,0,0.04)`,
                                     }}>
                                     <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full opacity-[0.06]"
                                         style={{ background: `radial-gradient(circle, ${accentColor}, transparent 70%)` }} />
@@ -387,7 +388,10 @@ export const KidHabitTab = () => {
                                                     textDecoration: isDone && !isNegative ? 'line-through' : 'none',
                                                 }}>{t.title}</h3>
                                             </div>
-                                            <div className="shrink-0 text-xs font-black" style={{ color: accentColor }}>{isNegative ? '' : '+'}{t.reward} ⭐</div>
+                                            <div className="shrink-0 flex items-center gap-0.5">
+                                                <span className="text-xs font-black" style={{ color: accentColor }}>{isNegative ? '' : '+'}{t.reward}</span>
+                                                <Icons.Star fill="#FFD93D" className="text-[#FFD93D]" size={12} />
+                                            </div>
                                         </div>
                                         {/* Progress + Action */}
                                         <div className="flex items-center justify-between gap-2">
@@ -440,8 +444,9 @@ export const KidHabitTab = () => {
                                 <div key={t.id}
                                     className="group rounded-2xl transition-all hover:scale-[1.01] hover:shadow-xl relative overflow-hidden"
                                     style={{
-                                        background: isDone ? (isNegative ? `${C.coral}06` : `${C.teal}06`) : C.bgCard,
-                                        boxShadow: `0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)`,
+                                        background: isDone ? (isNegative ? '#FFF5F5' : '#F4FBFA') : C.bgCard,
+                                        border: isDone ? `1.5px solid ${isNegative ? C.coral : C.teal}30` : '1.5px solid transparent',
+                                        boxShadow: `0 2px 8px rgba(0,0,0,0.04)`,
                                     }}>
                                     {/* Subtle accent glow */}
                                     <div className="absolute -right-8 -top-8 w-24 h-24 rounded-full opacity-[0.07] transition-opacity group-hover:opacity-[0.12]"
@@ -461,9 +466,9 @@ export const KidHabitTab = () => {
                                                 {(t.standards || t.desc) && <p className="text-[11px] line-clamp-1 mt-0.5 tracking-tight" style={{ color: C.textSoft }}>{t.standards || t.desc}</p>}
                                             </div>
                                             {/* Reward */}
-                                            <div className="shrink-0 text-right">
-                                                <div className="text-sm font-black tracking-tight" style={{ color: accentColor }}>{isNegative ? '' : '+'}{t.reward}</div>
-                                                <div className="text-[9px] font-semibold -mt-0.5" style={{ color: `${accentColor}90` }}>⭐</div>
+                                            <div className="shrink-0 flex items-center gap-1">
+                                                <span className="text-sm font-black tracking-tight" style={{ color: accentColor }}>{isNegative ? '' : '+'}{t.reward}</span>
+                                                <Icons.Star fill="#FFD93D" className="text-[#FFD93D]" size={14} />
                                             </div>
                                         </div>
                                         {/* Bottom row: Progress + Action */}
