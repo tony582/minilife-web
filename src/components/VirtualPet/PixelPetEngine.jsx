@@ -3,107 +3,26 @@ import React, {
   useEffect,
   useRef,
   useCallback,
+  useMemo,
   forwardRef,
   useImperativeHandle,
 } from "react";
+import getCatStageData from '../../data/petSpecies';
 
 // =========================================================
-// 🎨 硬核手工像素帧数据 (Matrix)
+// 🎨 Item Palette & Frames (universal, not species-specific)
 // =========================================================
-const PALETTE = {
-  "#": "#1e293b", // Outline
-  w: "#ffffff", // Body/Bone
-  p: "#f472b6", // Pink cheeks
-  s: "#cbd5e1", // Shadow
-  r: "#ef4444", // Red (Meat/Heart)
-  b: "#3b82f6", // Blue (Ball pattern)
-  y: "#fde047", // Yellow (Alert)
-  o: "#93c5fd", // Light blue (Bubble)
-  z: "#3b82f6", // Dark blue (Zzz)
+const ITEM_PALETTE = {
+  "#": "#1e293b",
+  w: "#ffffff",
+  p: "#f472b6",
+  s: "#cbd5e1",
+  r: "#ef4444",
+  b: "#3b82f6",
+  y: "#fde047",
+  o: "#93c5fd",
+  z: "#3b82f6",
   ".": "transparent",
-};
-
-const SPRITE_FRAMES = {
-  idle: [
-    "................",
-    ".......#....#...",
-    "......#w#..#w#..",
-    ".....#wpw##wpw#.",
-    ".....#wwwwwwww#.",
-    "..##.#ww#ww#ww#.",
-    ".#ww##wwwwwwww#.",
-    ".#wwwwwwwppwww#.",
-    "..##wwwssswwww#.",
-    "...#wwwwwwwww#..",
-    "...##ww###ww#...",
-    ".....##...##....",
-    "................",
-    "................",
-  ],
-  walk1: [
-    "................",
-    ".......#....#...",
-    "......#w#..#w#..",
-    ".....#wpw##wpw#.",
-    ".....#wwwwwwww#.",
-    ".....#ww#ww#ww#.",
-    "..##.#wwwwwwww#.",
-    ".#ww##wwwppwww#.",
-    ".#wwwwwssswwww#.",
-    "..##wwwwwwwww#..",
-    "...##ww###ww#...",
-    ".....#....##....",
-    "................",
-    "................",
-  ],
-  walk2: [
-    "................",
-    "..##...#....#...",
-    ".#ww#.#w#..#w#..",
-    ".#ww##wpw##wpw#.",
-    "..##.#wwwwwwww#.",
-    ".....#ww#ww#ww#.",
-    ".....#wwwwwwww#.",
-    ".....#wwwppwww#.",
-    ".....#wssswwww#.",
-    ".....#wwwwwwwww#",
-    ".....##ww###w#..",
-    "......##...#....",
-    "................",
-    "................",
-  ],
-  eat: [
-    "................",
-    ".......#....#...",
-    "......#w#..#w#..",
-    ".....#wpw##wpw#.",
-    "..##.#wwwwwwww#.",
-    ".#ww##ww#ww#ww#.",
-    ".#wwwwwwwwwwww#.",
-    "..##wwww#ppwww#.", // Mouth open
-    "...#wwwssswwww#.",
-    "...#wwwwwwwww#..",
-    "...##w#####w#...",
-    ".....#.....#....",
-    "................",
-    "................",
-  ],
-  sleep: [
-    "................",
-    "................",
-    "................",
-    ".......#....#...",
-    "......#w#..#w#..",
-    ".....#wpw##wpw#.",
-    "..##.#wwwwwwww#.",
-    ".#ww##wwwwwwww#.",
-    ".#wwwwww#ww#ww#.", // closed eyes higher up
-    "..##wwwwwppwww#.",
-    "...#wwwwwwwww#..",
-    "...##ww###ww#...",
-    ".....##...##....",
-    "................",
-  ],
 };
 
 // 物品 (8x8 或者 12x12 根据实际设计，编译器统一按数组渲染)
@@ -215,14 +134,14 @@ const ITEM_FRAMES = {
 // =========================================================
 const PIXEL_SIZE = 7;
 
-const compileShadows = (frameArray) => {
+const compileShadows = (frameArray, palette) => {
   let shadows = [];
   for (let y = 0; y < frameArray.length; y++) {
     for (let x = 0; x < frameArray[y].length; x++) {
       const char = frameArray[y][x];
-      if (PALETTE[char] && PALETTE[char] !== "transparent") {
+      if (palette[char] && palette[char] !== "transparent") {
         shadows.push(
-          `${x * PIXEL_SIZE}px ${y * PIXEL_SIZE}px 0 0.5px ${PALETTE[char]}`,
+          `${x * PIXEL_SIZE}px ${y * PIXEL_SIZE}px 0 0.5px ${palette[char]}`,
         );
       }
     }
@@ -230,22 +149,18 @@ const compileShadows = (frameArray) => {
   return shadows.join(", ");
 };
 
-const precompiledShadows = {
-  idle: compileShadows(SPRITE_FRAMES.idle),
-  walk1: compileShadows(SPRITE_FRAMES.walk1),
-  walk2: compileShadows(SPRITE_FRAMES.walk2),
-  eat: compileShadows(SPRITE_FRAMES.eat),
-  sleep: compileShadows(SPRITE_FRAMES.sleep),
-  meat: compileShadows(ITEM_FRAMES.meat),
-  ball: compileShadows(ITEM_FRAMES.ball),
-  soap: compileShadows(ITEM_FRAMES.soap),
-  bubble: compileShadows(ITEM_FRAMES.bubble),
-  zzz: compileShadows(ITEM_FRAMES.zzz),
-  heart: compileShadows(ITEM_FRAMES.heart),
-  note: compileShadows(ITEM_FRAMES.note),
-  alert: compileShadows(ITEM_FRAMES.alert),
-  pill: compileShadows(ITEM_FRAMES.pill),
-  bathTub: compileShadows(ITEM_FRAMES.bathTub),
+// Pre-compile item shadows (these never change)
+const itemShadows = {
+  meat: compileShadows(ITEM_FRAMES.meat, ITEM_PALETTE),
+  ball: compileShadows(ITEM_FRAMES.ball, ITEM_PALETTE),
+  soap: compileShadows(ITEM_FRAMES.soap, ITEM_PALETTE),
+  bubble: compileShadows(ITEM_FRAMES.bubble, ITEM_PALETTE),
+  zzz: compileShadows(ITEM_FRAMES.zzz, ITEM_PALETTE),
+  heart: compileShadows(ITEM_FRAMES.heart, ITEM_PALETTE),
+  note: compileShadows(ITEM_FRAMES.note, ITEM_PALETTE),
+  alert: compileShadows(ITEM_FRAMES.alert, ITEM_PALETTE),
+  pill: compileShadows(ITEM_FRAMES.pill, ITEM_PALETTE),
+  bathTub: compileShadows(ITEM_FRAMES.bathTub, ITEM_PALETTE),
 };
 
 // =========================================================
@@ -263,6 +178,7 @@ const PixelPetEngine = forwardRef(
       isDirty = false,
       satiety = 50,
       activityMult = 1.0,
+      bondLevel = 1,
     },
     ref,
   ) => {
@@ -288,6 +204,18 @@ const PixelPetEngine = forwardRef(
     });
 
     const [, setTick] = useState(0);
+
+    // Dynamic cat shadows based on bond level → growth stage
+    const stageData = useMemo(() => getCatStageData(bondLevel), [bondLevel]);
+    const catShadows = useMemo(() => {
+      const result = {};
+      for (const [key, frame] of Object.entries(stageData.frames)) {
+        result[key] = compileShadows(frame, stageData.palette);
+      }
+      return result;
+    }, [stageData]);
+    const catGridCols = stageData.gridCols;
+    const catGridRows = stageData.gridRows;
 
     // 当外部容器尺寸变化时更新物理边界
     useEffect(() => {
@@ -652,7 +580,7 @@ const PixelPetEngine = forwardRef(
         setTick((t) => t + 1);
         requestRef.current = requestAnimationFrame(updateGame);
       },
-      [width, height, onStateChange, satiety, activityMult],
+      [width, height, onStateChange, satiety, activityMult, catShadows],
     );
 
     useEffect(() => {
@@ -773,7 +701,7 @@ const PixelPetEngine = forwardRef(
                 style={{
                   width: `${PIXEL_SIZE}px`,
                   height: `${PIXEL_SIZE}px`,
-                  boxShadow: precompiledShadows[item.type],
+                  boxShadow: itemShadows[item.type],
                   transform: `translate(-${4 * PIXEL_SIZE}px, -${4 * PIXEL_SIZE}px)`,
                 }}
               />
@@ -802,8 +730,8 @@ const PixelPetEngine = forwardRef(
             style={{
               width: `${PIXEL_SIZE}px`,
               height: `${PIXEL_SIZE}px`,
-              boxShadow: precompiledShadows[state.cat.frameKey],
-              transform: `translate(-${8 * PIXEL_SIZE}px, -${14 * PIXEL_SIZE}px)`,
+              boxShadow: catShadows[state.cat.frameKey] || catShadows.idle,
+              transform: `translate(-${Math.floor(catGridCols / 2) * PIXEL_SIZE}px, -${catGridRows * PIXEL_SIZE}px)`,
             }}
           />
         </div>
@@ -824,7 +752,7 @@ const PixelPetEngine = forwardRef(
               style={{
                 width: `${PIXEL_SIZE}px`,
                 height: `${PIXEL_SIZE}px`,
-                boxShadow: precompiledShadows[p.type],
+                boxShadow: itemShadows[p.type],
                 transform: `translate(-${4 * PIXEL_SIZE}px, -${4 * PIXEL_SIZE}px)`,
               }}
             />
