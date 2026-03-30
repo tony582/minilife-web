@@ -7,6 +7,8 @@ import { getSpiritForm, getSpiritPrivileges, getSpiritMessage, SPIRIT_FORMS, get
 import { useNavigationStore } from '../../stores/navigationStore';
 import { HelpTip, HELP } from '../../components/HelpTip.jsx';
 import { ACHIEVEMENTS, BADGE_CATEGORY_IMAGES } from '../../utils/achievements';
+import PixelPetEngine from '../../components/VirtualPet/PixelPetEngine';
+import VirtualPetDashboard from '../../components/VirtualPet/VirtualPetDashboard';
 
 // Shared warm Headspace palette
 const C = {
@@ -56,6 +58,10 @@ export const KidProfileTab = () => {
     const [showSpiritMsg, setShowSpiritMsg] = useState(false);
     const [showExpHistory, setShowExpHistory] = useState(false);
     const [showAlmanac, setShowAlmanac] = useState(false);
+    const [showDailyPointsModal, setShowDailyPointsModal] = useState(false);
+    
+    // Virtual Pet Dashboard State
+    const [showPetDashboard, setShowPetDashboard] = useState(false);
     const [showNamingModal, setShowNamingModal] = useState(false);
     const [spiritNameInput, setSpiritNameInput] = useState('');
 
@@ -104,9 +110,16 @@ export const KidProfileTab = () => {
         <div className="animate-fade-in pb-10 pt-2 max-w-4xl mx-auto">
             <style>{spiritFloatCSS}</style>
 
+            {showPetDashboard && (
+                <VirtualPetDashboard 
+                    activeKid={activeKid} 
+                    onClose={() => setShowPetDashboard(false)} 
+                />
+            )}
+
             {/* ═══════════════════════════════════════════
-                1. HERO — Spirit + Profile Card
-            ═══════════════════════════════════════════ */}
+                 1. HERO — Profile & Tamagotchi System
+             ═══════════════════════════════════════════ */}
             <div className="rounded-3xl overflow-hidden relative mb-5" style={{
                 background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
                 boxShadow: '0 12px 40px rgba(15,52,96,0.3)',
@@ -128,121 +141,107 @@ export const KidProfileTab = () => {
                     ))}
                 </div>
 
-                <div className="relative z-10 p-6 md:p-8">
-                    {/* Term Badge */}
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold"
-                            style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
-                            <span>{term.emoji}</span>
-                            {term.name}
-                        </div>
-                        <button onClick={() => setShowAvatarPickerModal(true)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold transition-all hover:scale-105"
-                            style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
-                            <Icons.Camera size={10} /> 换头像
-                        </button>
-                    </div>
-
-                    {/* Spirit + Avatar Row */}
-                    <div className="flex items-center gap-5 md:gap-8">
-                        {/* Spirit Display (Left) */}
-                        <button onClick={handleSpiritTap} className="relative flex-shrink-0 group/spirit">
-                            <div className="w-24 h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center text-5xl md:text-6xl relative"
+                <div className="relative z-10 p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 md:gap-10">
+                    
+                    {/* Left: Transparent Pixel Pet Engine */}
+                    <button 
+                        onClick={() => setShowPetDashboard(true)}
+                        className="flex-shrink-0 w-[140px] h-[140px] md:w-[160px] md:h-[160px] relative hover:scale-105 transition-transform cursor-pointer group"
+                    >
+                        <div className="absolute inset-0 bg-white/5 rounded-full blur-xl group-hover:bg-white/10 transition-colors pointer-events-none"></div>
+                        <PixelPetEngine 
+                            width={160} 
+                            height={160} 
+                            scale={0.8}
+                        />
+                        {/* Spirit message bubble over Pet */}
+                        {showSpiritMsg && (
+                            <div className="absolute top-[0px] left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 rounded-xl text-[10px] font-bold z-50 pointer-events-none"
                                 style={{
-                                    '--glow-color': form.glow,
-                                    animation: 'spiritFloat 3s ease-in-out infinite, spiritGlow 2s ease-in-out infinite',
-                                    background: `radial-gradient(circle, ${form.glow} 0%, transparent 65%)`,
+                                    background: 'rgba(255,255,255,0.95)',
+                                    color: C.textPrimary,
+                                    boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+                                    animation: 'messageFloat 3s ease-in-out forwards',
                                 }}>
-                                {form.emoji}
-                                {/* Max star sparkle effect */}
-                                {maxStar && (
-                                    <>
-                                        {[0, 1, 2, 3].map(i => (
-                                            <div key={i} className="absolute text-xs"
-                                                style={{
-                                                    animation: `sparkle 2s ease-in-out infinite ${i * 0.5}s`,
-                                                    top: `${[0, 20, 80, 60][i]}%`,
-                                                    left: `${[30, 90, 10, 85][i]}%`,
-                                                }}>✨</div>
-                                        ))}
-                                    </>
-                                )}
+                                {spiritMessage}
+                                <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-2 h-2 rotate-45" style={{ background: 'rgba(255,255,255,0.95)' }}></div>
                             </div>
-                            {/* Spirit message bubble */}
-                            {showSpiritMsg && (
-                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 rounded-xl text-[10px] font-bold"
-                                    style={{
-                                        background: 'rgba(255,255,255,0.95)',
-                                        color: C.textPrimary,
-                                        boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
-                                        animation: 'messageFloat 3s ease-in-out forwards',
-                                    }}>
-                                    {spiritMessage}
-                                    <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-2 h-2 rotate-45" style={{ background: 'rgba(255,255,255,0.95)' }}></div>
-                                </div>
-                            )}
-                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-black px-2 py-0.5 rounded-full whitespace-nowrap opacity-0 group-hover/spirit:opacity-100 transition-opacity"
-                                style={{ background: form.color, color: '#fff' }}>
-                                点我说话
-                            </div>
-                        </button>
+                        )}
+                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[9px] font-black px-2 py-0.5 rounded-full whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity bg-white/20 text-white backdrop-blur-sm shadow-sm pointer-events-none">
+                            点击互动
+                        </div>
+                    </button>
 
-                        {/* Info (Right) */}
-                        <div className="flex-1 min-w-0">
-                            {/* Avatar + Name Row */}
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl overflow-hidden border-2 border-white/20 flex-shrink-0">
-                                    <AvatarDisplay avatar={activeKid.avatar} />
-                                </div>
-                                <div className="min-w-0">
-                                    <h2 className="text-xl md:text-2xl font-black text-white truncate">{activeKid.name}</h2>
-                                    <button 
-                                        onClick={() => { setSpiritNameInput(activeKid.spirit_name || ''); setShowNamingModal(true); }}
-                                        className="text-[10px] font-bold flex items-center gap-1 hover:opacity-100 transition-opacity"
-                                        style={{ color: activeKid.spirit_name ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.35)' }}>
-                                        {activeKid.spirit_name 
-                                            ? <>🐾 精灵「{activeKid.spirit_name}」<Icons.Edit3 size={9} /></>
-                                            : <>✏️ 给精灵取个名字</>}
-                                    </button>
-                                </div>
+                    {/* Right: Info */}
+                    <div className="flex-1 w-full min-w-0 flex flex-col justify-center">
+                        <div className="flex items-center justify-between mb-5">
+                            <div className="inline-flex items-center gap-1 xl:gap-2 px-2.5 py-1 rounded-full text-[10px] font-bold"
+                                style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}>
+                                <span>{term.emoji}</span>
+                                {term.name}
                             </div>
-
-                            {/* Spirit Form Badge */}
-                            <div className="mb-2 flex items-center gap-2">
-                                <button onClick={() => setShowLevelRulesModal(true)}
-                                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black text-white/90 bg-gradient-to-r ${form.bg} border border-white/20 shadow-lg hover:scale-105 transition-transform`}>
-                                    {form.emoji} Lv.{activeKid.level} · {maxStar ? '🌟 满星精灵' : form.name}
-                                    <Icons.ChevronRight size={10} className="opacity-60" />
+                            <button onClick={() => setShowAvatarPickerModal(true)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold transition-all hover:scale-105"
+                                style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}>
+                                <Icons.Camera size={10} /> 换头像
+                            </button>
+                        </div>
+                        
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center text-3xl overflow-hidden border-2 border-white/20 flex-shrink-0 shadow-lg">
+                                <AvatarDisplay avatar={activeKid.avatar} />
+                            </div>
+                            <div className="min-w-0">
+                                <h2 className="text-2xl md:text-3xl font-black text-white truncate drop-shadow-sm">{activeKid.name}</h2>
+                                <button 
+                                    onClick={() => { setSpiritNameInput(activeKid.spirit_name || ''); setShowNamingModal(true); }}
+                                    className="text-[11px] font-bold flex items-center gap-1 hover:opacity-100 transition-opacity mt-1"
+                                    style={{ color: activeKid.spirit_name ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.5)' }}>
+                                    {activeKid.spirit_name 
+                                        ? <>🐾 精灵「{activeKid.spirit_name}」<Icons.Edit3 size={10} /></>
+                                        : <>✏️ 给外置猫咪取个名字</>}
                                 </button>
-                                <HelpTip {...HELP.spirit} size={13} />
-                                {(activeKid.spirit_generation || 1) > 1 && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold"
-                                        style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
-                                        🎓 第{activeKid.spirit_generation || 1}只精灵 · {(activeKid.graduated_spirits || []).length}只已毕业
-                                    </span>
-                                )}
                             </div>
+                        </div>
 
-                            {/* EXP bar */}
-                            <div className="max-w-sm">
-                                <div className="h-2 rounded-full overflow-hidden bg-white/10">
-                                    <div className="h-full rounded-full transition-all duration-1000 ease-out"
-                                        style={{
-                                            width: `${expPercent}%`,
-                                            background: `linear-gradient(90deg, ${form.color}, ${C.yellow})`,
-                                            boxShadow: `0 0 10px ${form.glow}`,
-                                        }}></div>
+                        <div className="mb-4 flex flex-wrap items-center gap-2">
+                            <button onClick={() => setShowLevelRulesModal(true)}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black text-white/90 bg-gradient-to-r ${form.bg} border border-white/20 shadow-lg hover:scale-105 transition-transform`}>
+                                {form.emoji} Lv.{activeKid.level} · {form.name}
+                                <Icons.ChevronRight size={10} className="opacity-60" />
+                            </button>
+                            {(activeKid.spirit_generation || 1) > 1 && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold"
+                                    style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.8)' }}>
+                                    🎓 第{activeKid.spirit_generation || 1}代主人
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="w-full mt-2">
+                            <div className="flex justify-between mb-2">
+                                <span className="text-[10px] font-black text-white/50 tracking-widest uppercase">Pet Experience</span>
+                                <span className="text-[10px] font-black text-white/90 bg-white/10 px-2 py-0.5 rounded-sm">{activeKid.exp} / {nextLevelExp}</span>
+                            </div>
+                            <div className="h-3 rounded-full overflow-hidden bg-black/30 shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)] relative">
+                                <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-1000 ease-out"
+                                    style={{
+                                        width: `${expPercent}%`,
+                                        background: `linear-gradient(90deg, #4ade80, #facc15)`,
+                                        boxShadow: `0 0 15px rgba(74, 222, 128, 0.4)`,
+                                    }}>
                                 </div>
-                                <div className="flex justify-between mt-1">
-                                    <span className="text-[9px] font-bold text-white/30">{activeKid.exp} / {nextLevelExp} ✨星尘</span>
-                                    {nextForm ? (
-                                        <span className="text-[9px] font-bold" style={{ color: `${form.color}80` }}>
-                                            {nextForm.emoji} 还差 {levelsToNextForm} 级进化
-                                        </span>
-                                    ) : (
-                                        <span className="text-[9px] font-bold text-yellow-400/50">⭐ 已满星</span>
-                                    )}
-                                </div>
+                                <div className="absolute top-0 right-0 left-0 h-1 bg-white/20 rounded-full"></div>
+                            </div>
+                            <div className="flex justify-between mt-2 pl-1">
+                                <span className="text-[9px] font-bold text-white/40">✨ 每日打卡获取成长值</span>
+                                {nextForm ? (
+                                    <span className="text-[9px] font-bold text-green-300/80">
+                                        还差 {levelsToNextForm} 级进化
+                                    </span>
+                                ) : (
+                                    <span className="text-[9px] font-bold text-yellow-400/50">⭐ 终极形态</span>
+                                )}
                             </div>
                         </div>
                     </div>
