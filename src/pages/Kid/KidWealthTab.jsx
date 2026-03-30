@@ -5,6 +5,7 @@ import { Icons } from '../../utils/Icons';
 import { isTaskDueOnDate } from '../../utils/taskUtils';
 import { formatDate } from '../../utils/dateUtils';
 import { getSpiritForm, getSpiritPrivileges } from '../../utils/spiritUtils';
+import { HelpTip, HELP } from '../../components/HelpTip.jsx';
 
 // Shared warm Headspace theme (same as KidHabitTab / KidStudyTab)
 const C = {
@@ -156,6 +157,7 @@ export const KidWealthTab = () => {
                                     <Icons.Wallet size={16} style={{ color: C.orange }} />
                                 </div>
                                 <span className="text-xs font-bold" style={{ color: C.textMuted }}>家庭币余额</span>
+                                <HelpTip {...HELP.wealth} size={13} />
                             </div>
 
                             {/* Main balance */}
@@ -233,7 +235,7 @@ export const KidWealthTab = () => {
                                 {spiritForm.emoji}
                             </div>
                             <div>
-                                <div className="font-black text-sm text-white">精灵能量站</div>
+                                <div className="font-black text-sm text-white flex items-center gap-1.5">精灵能量站 <HelpTip {...HELP.interest} size={12} /></div>
                                 <div className="text-[10px] font-bold text-white/40">
                                     {spiritForm.name} · 精灵帮你用能量站赚利息
                                 </div>

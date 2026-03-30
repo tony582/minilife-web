@@ -3,7 +3,10 @@ import { useDataContext } from '../../context/DataContext.jsx';
 import { useUIContext } from '../../context/UIContext.jsx';
 import { Icons, AvatarDisplay } from '../../utils/Icons';
 import { getLevelReq, getLevelTier } from '../../utils/levelUtils';
-import { getSpiritForm, getSpiritPrivileges, getSpiritMessage, SPIRIT_FORMS, getCurrentSeason, isSpiritMaxStar } from '../../utils/spiritUtils';
+import { getSpiritForm, getSpiritPrivileges, getSpiritMessage, SPIRIT_FORMS, getCurrentTerm, isSpiritMaxStar, CHEST_TYPES, getNextChest, getUnlockedChests } from '../../utils/spiritUtils';
+import { useNavigationStore } from '../../stores/navigationStore';
+import { HelpTip, HELP } from '../../components/HelpTip.jsx';
+import { ACHIEVEMENTS, BADGE_CATEGORY_IMAGES } from '../../utils/achievements';
 
 // Shared warm Headspace palette
 const C = {
@@ -14,37 +17,6 @@ const C = {
     cardShadow: '0 4px 24px rgba(27,46,75,0.06)',
 };
 
-// ── Achievement definitions ──
-const ACHIEVEMENTS = [
-    { id: 'first_task', emoji: '🔥', title: '初出茅庐', desc: '完成第一个任务', category: '学习', bg: 'from-amber-200 to-orange-400',
-        check: (kid, tx) => tx.filter(t => t.kidId === kid.id && t.type === 'income' && t.category === 'task').length > 0 },
-    { id: 'task_10', emoji: '📚', title: '勤奋学子', desc: '累计完成10个任务', category: '学习', bg: 'from-blue-200 to-indigo-400',
-        check: (kid, tx) => tx.filter(t => t.kidId === kid.id && t.type === 'income' && t.category === 'task').length >= 10 },
-    { id: 'task_50', emoji: '🎓', title: '学霸养成', desc: '累计完成50个任务', category: '学习', bg: 'from-cyan-200 to-blue-500',
-        check: (kid, tx) => tx.filter(t => t.kidId === kid.id && t.type === 'income' && t.category === 'task').length >= 50 },
-    { id: 'task_100', emoji: '🏅', title: '百战百胜', desc: '累计完成100个任务', category: '学习', bg: 'from-yellow-200 to-amber-500',
-        check: (kid, tx) => tx.filter(t => t.kidId === kid.id && t.type === 'income' && t.category === 'task').length >= 100 },
-    { id: 'habit_first', emoji: '⚡', title: '习惯新星', desc: '第一次习惯打卡', category: '习惯', bg: 'from-indigo-200 to-purple-400',
-        check: (kid, tx) => tx.filter(t => t.kidId === kid.id && t.type === 'income' && t.category === 'habit').length > 0 },
-    { id: 'streak_7', emoji: '💪', title: '毅力之火', desc: '习惯打卡累计7次', category: '习惯', bg: 'from-violet-300 to-purple-500',
-        check: (kid, tx) => tx.filter(t => t.kidId === kid.id && t.type === 'income' && t.category === 'habit').length >= 7 },
-    { id: 'streak_30', emoji: '🌟', title: '钢铁意志', desc: '习惯打卡累计30次', category: '习惯', bg: 'from-fuchsia-200 to-pink-500',
-        check: (kid, tx) => tx.filter(t => t.kidId === kid.id && t.type === 'income' && t.category === 'habit').length >= 30 },
-    { id: 'streak_100', emoji: '🏆', title: '习惯大师', desc: '习惯打卡累计100次', category: '习惯', bg: 'from-amber-300 to-orange-500',
-        check: (kid, tx) => tx.filter(t => t.kidId === kid.id && t.type === 'income' && t.category === 'habit').length >= 100 },
-    { id: 'rich_100', emoji: '⭐', title: '小小理财', desc: '累计获得100积分', category: '财富', bg: 'from-emerald-200 to-teal-400',
-        check: (kid, tx) => tx.filter(t => t.kidId === kid.id && t.type === 'income').reduce((s, t) => s + (t.amount || 0), 0) >= 100 },
-    { id: 'rich_1000', emoji: '💎', title: '财富新星', desc: '累计获得1000积分', category: '财富', bg: 'from-teal-300 to-emerald-500',
-        check: (kid, tx) => tx.filter(t => t.kidId === kid.id && t.type === 'income').reduce((s, t) => s + (t.amount || 0), 0) >= 1000 },
-    { id: 'rich_10000', emoji: '👑', title: '积分大亨', desc: '累计获得10000积分', category: '财富', bg: 'from-yellow-300 to-amber-500',
-        check: (kid, tx) => tx.filter(t => t.kidId === kid.id && t.type === 'income').reduce((s, t) => s + (t.amount || 0), 0) >= 10000 },
-    { id: 'level5', emoji: '🌱', title: '成长之芽', desc: '等级达到5级', category: '等级', bg: 'from-lime-200 to-green-400',
-        check: (kid) => kid.level >= 5 },
-    { id: 'level10', emoji: '🌳', title: '参天大树', desc: '等级达到10级', category: '等级', bg: 'from-green-300 to-emerald-500',
-        check: (kid) => kid.level >= 10 },
-    { id: 'level50', emoji: '🚀', title: '火箭少年', desc: '等级达到50级', category: '等级', bg: 'from-sky-200 to-blue-500',
-        check: (kid) => kid.level >= 50 },
-];
 
 // ── Spirit floating animation keyframes ──
 const spiritFloatCSS = `
@@ -69,7 +41,8 @@ const spiritFloatCSS = `
 `;
 
 export const KidProfileTab = () => {
-    const { kids, activeKidId, tasks, transactions } = useDataContext();
+    const { kids, activeKidId, tasks, transactions, updateActiveKid } = useDataContext();
+    const { parentSettings } = useNavigationStore();
     const {
         setShowAvatarPickerModal,
         setShowTransactionHistoryModal,
@@ -81,6 +54,10 @@ export const KidProfileTab = () => {
     const [showLevelRulesModal, setShowLevelRulesModal] = useState(false);
     const [spiritMessage, setSpiritMessage] = useState('');
     const [showSpiritMsg, setShowSpiritMsg] = useState(false);
+    const [showExpHistory, setShowExpHistory] = useState(false);
+    const [showAlmanac, setShowAlmanac] = useState(false);
+    const [showNamingModal, setShowNamingModal] = useState(false);
+    const [spiritNameInput, setSpiritNameInput] = useState('');
 
     const activeKid = kids.find(k => k.id === activeKidId);
     if (!activeKid) return null;
@@ -90,7 +67,7 @@ export const KidProfileTab = () => {
     const form = getSpiritForm(activeKid.level);
     const privileges = getSpiritPrivileges(activeKid.level);
     const maxStar = isSpiritMaxStar(activeKid.level);
-    const season = getCurrentSeason();
+    const term = getCurrentTerm(parentSettings);
     const expPercent = Math.max(0, Math.min(100, (activeKid.exp / nextLevelExp) * 100));
 
     // Achievement status
@@ -98,11 +75,17 @@ export const KidProfileTab = () => {
         return ACHIEVEMENTS.map(a => ({ ...a, unlocked: a.check(activeKid, transactions) }));
     }, [activeKid, transactions]);
     const unlockedCount = achievementStatus.filter(a => a.unlocked).length;
-    const visibleBadges = showAllBadges ? achievementStatus : achievementStatus.slice(0, 6);
+    const visibleBadges = showAllBadges ? achievementStatus : achievementStatus.slice(0, 9);
 
-    // Spirit random message
+    // Spirit random message with context
     const handleSpiritTap = () => {
-        setSpiritMessage(getSpiritMessage(activeKid.level));
+        const today = new Date().toISOString().slice(0, 10);
+        const recentTaskCount = transactions.filter(t => t.kidId === activeKid.id && t.type === 'income' && t.category === 'task' && t.date?.startsWith(today)).length;
+        setSpiritMessage(getSpiritMessage(activeKid.level, {
+            spiritName: activeKid.spirit_name,
+            recentTaskCount,
+            streakDays: activeKid.streak_days || 0,
+        }));
         setShowSpiritMsg(true);
         setTimeout(() => setShowSpiritMsg(false), 3000);
     };
@@ -146,11 +129,12 @@ export const KidProfileTab = () => {
                 </div>
 
                 <div className="relative z-10 p-6 md:p-8">
-                    {/* Season Badge */}
+                    {/* Term Badge */}
                     <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black"
-                            style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}>
-                            {season.emoji} {season.name}
+                        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold"
+                            style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
+                            <span>{term.emoji}</span>
+                            {term.name}
                         </div>
                         <button onClick={() => setShowAvatarPickerModal(true)}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold transition-all hover:scale-105"
@@ -212,15 +196,32 @@ export const KidProfileTab = () => {
                                 </div>
                                 <div className="min-w-0">
                                     <h2 className="text-xl md:text-2xl font-black text-white truncate">{activeKid.name}</h2>
+                                    <button 
+                                        onClick={() => { setSpiritNameInput(activeKid.spirit_name || ''); setShowNamingModal(true); }}
+                                        className="text-[10px] font-bold flex items-center gap-1 hover:opacity-100 transition-opacity"
+                                        style={{ color: activeKid.spirit_name ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.35)' }}>
+                                        {activeKid.spirit_name 
+                                            ? <>🐾 精灵「{activeKid.spirit_name}」<Icons.Edit3 size={9} /></>
+                                            : <>✏️ 给精灵取个名字</>}
+                                    </button>
                                 </div>
                             </div>
 
                             {/* Spirit Form Badge */}
-                            <button onClick={() => setShowLevelRulesModal(true)}
-                                className={`mb-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black text-white/90 bg-gradient-to-r ${form.bg} border border-white/20 shadow-lg hover:scale-105 transition-transform`}>
-                                {form.emoji} Lv.{activeKid.level} · {maxStar ? '🌟 满星精灵' : form.name}
-                                <Icons.ChevronRight size={10} className="opacity-60" />
-                            </button>
+                            <div className="mb-2 flex items-center gap-2">
+                                <button onClick={() => setShowLevelRulesModal(true)}
+                                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black text-white/90 bg-gradient-to-r ${form.bg} border border-white/20 shadow-lg hover:scale-105 transition-transform`}>
+                                    {form.emoji} Lv.{activeKid.level} · {maxStar ? '🌟 满星精灵' : form.name}
+                                    <Icons.ChevronRight size={10} className="opacity-60" />
+                                </button>
+                                <HelpTip {...HELP.spirit} size={13} />
+                                {(activeKid.spirit_generation || 1) > 1 && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold"
+                                        style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
+                                        🎓 第{activeKid.spirit_generation || 1}只精灵 · {(activeKid.graduated_spirits || []).length}只已毕业
+                                    </span>
+                                )}
+                            </div>
 
                             {/* EXP bar */}
                             <div className="max-w-sm">
@@ -282,32 +283,190 @@ export const KidProfileTab = () => {
             </div>
 
             {/* ═══════════════════════════════════════════
-                3. Quick Actions
+                2.5 Treasure Chest Progress 🎁
             ═══════════════════════════════════════════ */}
-            <div className="grid grid-cols-2 gap-3 mb-5">
-                <button onClick={openTransactionHistory}
-                    className="rounded-2xl p-4 flex items-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            <div className="rounded-2xl p-4 mb-5" style={{ background: C.bgCard, boxShadow: C.cardShadow, border: `1px solid ${C.bgLight}` }}>
+                <h3 className="text-sm font-black mb-3 flex items-center gap-2 pl-1" style={{ color: C.textPrimary }}>
+                    <div className="w-1 h-4 rounded-full" style={{ background: C.yellow }}></div>
+                    🎁 宝箱进度
+                    <HelpTip {...HELP.chest} size={14} />
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-auto" style={{ background: `${C.yellow}15`, color: '#D97706' }}>
+                        已打卡 {activeKid.streak_days || 0} 天
+                    </span>
+                </h3>
+
+                {/* Progress bar with chest milestones */}
+                <div className="relative px-2">
+                    {/* Background track */}
+                    <div className="h-2 rounded-full" style={{ background: C.bgLight }}>
+                        <div className="h-full rounded-full transition-all duration-500" style={{
+                            width: `${Math.min(100, ((activeKid.streak_days || 0) / 30) * 100)}%`,
+                            background: 'linear-gradient(90deg, #FBBF24, #F59E0B, #D97706)',
+                        }}></div>
+                    </div>
+
+                    {/* Chest milestone nodes */}
+                    <div className="flex justify-between mt-2">
+                        {CHEST_TYPES.map(chest => {
+                            const unlocked = (activeKid.streak_days || 0) >= chest.streakDays;
+                            const isNext = !unlocked && (getNextChest(activeKid.streak_days || 0)?.id === chest.id);
+                            return (
+                                <div key={chest.id} className="flex flex-col items-center" style={{ width: '22%' }}>
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all ${unlocked ? 'scale-110' : isNext ? 'animate-pulse' : 'opacity-40 grayscale'}`}
+                                        style={{
+                                            background: unlocked ? `linear-gradient(135deg, ${chest.color}20, ${chest.color}10)` : C.bgLight,
+                                            border: unlocked ? `2px solid ${chest.color}40` : `1px solid ${C.bgMuted}`,
+                                            boxShadow: unlocked ? `0 4px 12px ${chest.glow}` : 'none',
+                                        }}>
+                                        {unlocked ? chest.emoji : <Icons.Lock size={14} style={{ color: C.textMuted }} />}
+                                    </div>
+                                    <div className="text-[9px] font-black mt-1" style={{ color: unlocked ? chest.color : C.textMuted }}>
+                                        {chest.name}
+                                    </div>
+                                    <div className="text-[8px] font-bold" style={{ color: C.textMuted }}>
+                                        {chest.streakDays}天
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Next chest info */}
+                {(() => {
+                    const next = getNextChest(activeKid.streak_days || 0);
+                    if (!next) return (
+                        <div className="mt-3 text-center text-[10px] font-bold rounded-xl py-2" style={{ background: `${C.yellow}10`, color: '#D97706' }}>
+                            🎉 所有宝箱已解锁！你是打卡之王！
+                        </div>
+                    );
+                    const remaining = next.streakDays - (activeKid.streak_days || 0);
+                    return (
+                        <div className="mt-3 text-center text-[10px] font-bold rounded-xl py-2" style={{ background: C.bg, color: C.textMuted }}>
+                            距离 {next.emoji} {next.name} 还需打卡 <span style={{ color: '#D97706', fontWeight: 900 }}>{remaining}</span> 天
+                        </div>
+                    );
+                })()}
+            </div>
+
+            {/* ═══════════════════════════════════════════
+                2.7 Term / Semester Progress 📚
+            ═══════════════════════════════════════════ */}
+            <div className="rounded-2xl overflow-hidden mb-5" style={{ boxShadow: C.cardShadow, border: `1px solid ${C.bgLight}` }}>
+                <div className="px-4 py-3 flex items-center gap-3"
+                    style={{ background: `linear-gradient(135deg, ${term.color}15, ${term.color}08)` }}>
+                    <div className="text-2xl">{term.emoji}</div>
+                    <div className="flex-1">
+                        <div className="text-sm font-black" style={{ color: C.textPrimary }}>{term.name}</div>
+                        <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>
+                            {term.startDate.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })} — {term.endDate.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <div className="text-sm font-black" style={{ color: term.color }}>还剩 {term.daysLeft} 天</div>
+                        <div className="text-[9px] font-bold" style={{ color: C.textMuted }}>共 {term.totalDays} 天</div>
+                    </div>
+                </div>
+                <div className="px-4 py-3" style={{ background: C.bgCard }}>
+                    <div className="h-2 rounded-full" style={{ background: C.bgLight }}>
+                        <div className="h-full rounded-full transition-all" style={{
+                            width: `${term.progress}%`,
+                            background: `linear-gradient(90deg, ${term.color}80, ${term.color})`,
+                        }}></div>
+                    </div>
+                    <div className="flex justify-between mt-1">
+                        <span className="text-[9px] font-bold" style={{ color: C.textMuted }}>已过 {Math.round(term.progress)}%</span>
+                        <span className="text-[9px] font-bold" style={{ color: term.color }}>{term.daysLeft > 0 ? `${term.daysLeft} 天后结束` : '已结束'}</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* ═══════════════════════════════════════════
+                3. Quick Actions (3 buttons)
+            ═══════════════════════════════════════════ */}
+            <div className="grid grid-cols-3 gap-2.5 mb-5">
+                <button onClick={() => setShowExpHistory(!showExpHistory)}
+                    className="rounded-2xl p-3 flex flex-col items-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    style={{ background: showExpHistory ? `${C.teal}10` : C.bgCard, boxShadow: C.cardShadow, border: `1px solid ${showExpHistory ? `${C.teal}30` : C.bgLight}` }}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${C.teal}15` }}>
+                        <Icons.Activity size={16} style={{ color: C.teal }} />
+                    </div>
+                    <div className="text-[10px] font-black" style={{ color: C.textPrimary }}>星尘明细</div>
+                </button>
+                <button onClick={() => setShowAlmanac(true)}
+                    className="rounded-2xl p-3 flex flex-col items-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98]"
                     style={{ background: C.bgCard, boxShadow: C.cardShadow, border: `1px solid ${C.bgLight}` }}>
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${C.teal}15` }}>
-                        <Icons.Star size={20} style={{ color: C.teal }} fill="currentColor" />
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${C.orange}15` }}>
+                        <Icons.BookOpen size={16} style={{ color: C.orange }} />
                     </div>
-                    <div className="text-left">
-                        <div className="text-sm font-black" style={{ color: C.textPrimary }}>积分明细</div>
-                        <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>收支记录</div>
-                    </div>
+                    <div className="text-[10px] font-black" style={{ color: C.textPrimary }}>精灵图鉴</div>
                 </button>
                 <button onClick={() => setShowLevelRulesModal(true)}
-                    className="rounded-2xl p-4 flex items-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    className="rounded-2xl p-3 flex flex-col items-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98]"
                     style={{ background: C.bgCard, boxShadow: C.cardShadow, border: `1px solid ${C.bgLight}` }}>
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${C.purple}15` }}>
-                        <Icons.Award size={20} style={{ color: C.purple }} />
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${C.purple}15` }}>
+                        <Icons.Award size={16} style={{ color: C.purple }} />
                     </div>
-                    <div className="text-left">
-                        <div className="text-sm font-black" style={{ color: C.textPrimary }}>进化之路</div>
-                        <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>精灵形态一览</div>
-                    </div>
+                    <div className="text-[10px] font-black" style={{ color: C.textPrimary }}>进化之路</div>
                 </button>
             </div>
+
+            {/* ═══ Stardust Experience History (inline) ═══ */}
+            {showExpHistory && (
+                <div className="mb-5 rounded-2xl overflow-hidden" style={{ background: C.bgCard, boxShadow: C.cardShadow, border: `1px solid ${C.bgLight}` }}>
+                    <div className="px-4 py-3 flex items-center gap-2" style={{ background: 'linear-gradient(135deg, #1a1a2e, #16213e)', borderBottom: '1px solid rgba(78,205,196,0.1)' }}>
+                        <span className="text-base">✨</span>
+                        <span className="text-xs font-black text-white">星尘获取明细</span>
+                        <span className="text-[9px] font-bold ml-auto px-2 py-0.5 rounded-full" style={{ background: 'rgba(78,205,196,0.15)', color: C.teal }}>
+                            总计 {activeKid.exp} 星尘
+                        </span>
+                    </div>
+                    <div className="px-4 py-3 space-y-2 max-h-[300px] overflow-y-auto">
+                        {/* EXP-related transactions */}
+                        {(() => {
+                            const expTx = transactions
+                                .filter(t => t.kidId === activeKidId && t.type === 'income' && (t.category === 'task' || t.category === 'habit'))
+                                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                                .slice(0, 20);
+                            if (expTx.length === 0) return (
+                                <div className="text-center py-6">
+                                    <div className="text-2xl mb-2">✨</div>
+                                    <div className="text-xs font-bold" style={{ color: C.textMuted }}>还没有获得星尘呢，完成任务就能积累！</div>
+                                </div>
+                            );
+                            return expTx.map((t, idx) => (
+                                <div key={t.id || idx} className="flex items-center gap-3 py-2 px-2 rounded-xl" style={{ background: idx % 2 === 0 ? C.bg : 'transparent' }}>
+                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{
+                                        background: t.category === 'habit' ? `${C.green}15` : `${C.teal}15`
+                                    }}>
+                                        {t.category === 'habit'
+                                            ? <Icons.ShieldCheck size={14} style={{ color: C.green }} />
+                                            : <Icons.BookOpen size={14} style={{ color: C.teal }} />
+                                        }
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="text-xs font-bold truncate" style={{ color: C.textPrimary }}>{t.title || (t.category === 'habit' ? '习惯打卡' : '学习任务')}</div>
+                                        <div className="text-[9px] font-bold" style={{ color: C.textMuted }}>
+                                            {t.category === 'habit' ? '🎯 习惯养成' : '📚 学习任务'} · {new Date(t.date).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}
+                                        </div>
+                                    </div>
+                                    <div className="text-xs font-black flex-shrink-0" style={{ color: C.teal }}>+{t.amount} ✨</div>
+                                </div>
+                            ));
+                        })()}
+                    </div>
+                    {/* Level progress summary */}
+                    <div className="px-4 py-3" style={{ background: C.bg, borderTop: `1px solid ${C.bgLight}` }}>
+                        <div className="flex items-center justify-between text-[10px] font-bold" style={{ color: C.textMuted }}>
+                            <span>Lv.{activeKid.level} → Lv.{activeKid.level + 1}</span>
+                            <span>还需 {nextLevelExp - activeKid.exp} ✨ 星尘</span>
+                        </div>
+                        <div className="h-1.5 rounded-full mt-1.5 overflow-hidden" style={{ background: C.bgLight }}>
+                            <div className="h-full rounded-full transition-all" style={{ width: `${expPercent}%`, background: `linear-gradient(90deg, ${C.teal}, ${C.green})` }}></div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* ═══════════════════════════════════════════
                 4. Achievement Badges
@@ -316,6 +475,7 @@ export const KidProfileTab = () => {
                 <h3 className="text-sm font-black mb-3 flex items-center gap-2 pl-1" style={{ color: C.textPrimary }}>
                     <div className="w-1 h-4 rounded-full" style={{ background: C.purple }}></div>
                     🏆 成就勋章
+                    <HelpTip {...HELP.achievement} size={14} />
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-auto" style={{ background: `${C.orange}15`, color: C.orange }}>
                         {unlockedCount} / {ACHIEVEMENTS.length}
                     </span>
@@ -353,7 +513,12 @@ export const KidProfileTab = () => {
                                 </span>
                             </div>
                             <p className="text-xs mt-0.5" style={{ color: C.textSoft }}>{selectedBadge.desc}</p>
-                            <p className="text-[10px] mt-1 font-bold" style={{ color: C.textMuted }}>分类：{selectedBadge.category}</p>
+                            <div className="flex items-center gap-1.5 mt-1">
+                                {BADGE_CATEGORY_IMAGES[selectedBadge.category] && (
+                                    <img src={BADGE_CATEGORY_IMAGES[selectedBadge.category]} alt="" className="w-4 h-4 object-contain" />
+                                )}
+                                <span className="text-[10px] font-bold" style={{ color: C.textMuted }}>分类：{selectedBadge.category}</span>
+                            </div>
                         </div>
                         <button onClick={() => setSelectedBadge(null)} className="flex-shrink-0 opacity-40 hover:opacity-80 transition-opacity">
                             <Icons.X size={16} style={{ color: C.textMuted }} />
@@ -374,72 +539,97 @@ export const KidProfileTab = () => {
                 SPIRIT EVOLUTION RULES MODAL
             ═══════════════════════════════════════════ */}
             {showLevelRulesModal && (
-                <div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center animate-fade-in" onClick={() => setShowLevelRulesModal(false)}>
-                    <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
-                    <div className="relative w-full h-full md:w-[540px] md:h-auto md:max-h-[85vh] md:rounded-3xl shadow-2xl flex flex-col overflow-hidden"
-                        style={{ background: C.bg }}
-                        onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 z-[9999] flex flex-col animate-fade-in" style={{ background: C.bg }}>
+                    {/* ── Full-screen Header ── */}
+                    <div className="shrink-0 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
+                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                            <div className="absolute top-[-30%] right-[-10%] w-80 h-80 rounded-full" style={{ background: `radial-gradient(circle, ${form.glow} 0%, transparent 70%)` }}></div>
+                            <div className="absolute bottom-[-30%] left-[-15%] w-60 h-60 rounded-full" style={{ background: 'radial-gradient(circle, rgba(78,205,196,0.1), transparent 70%)' }}></div>
+                            {/* Sparkles */}
+                            {[...Array(8)].map((_, i) => (
+                                <div key={i} className="absolute w-1 h-1 rounded-full animate-pulse"
+                                    style={{
+                                        background: ['#FFD93D', '#4ECDC4', '#FF8C42', '#8B5CF6', '#EC4899', '#10B981', '#60A5FA', '#F472B6'][i],
+                                        opacity: 0.5, top: `${10 + i * 10}%`, left: `${5 + i * 12}%`, animationDelay: `${i * 0.3}s`
+                                    }}></div>
+                            ))}
+                        </div>
 
-                        {/* Header */}
-                        <div className="shrink-0 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
-                            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                                <div className="absolute top-[-30%] right-[-10%] w-60 h-60 rounded-full" style={{ background: `radial-gradient(circle, ${form.glow} 0%, transparent 70%)` }}></div>
-                            </div>
-                            <div className="px-6 pt-6 pb-5 relative z-10">
-                                <div className="flex items-center justify-between mb-3">
-                                    <h2 className="text-xl font-black text-white flex items-center gap-2">
-                                        🐾 精灵进化之路
-                                    </h2>
-                                    <button onClick={() => setShowLevelRulesModal(false)}
-                                        className="w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-90"
-                                        style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}>
-                                        <Icons.X size={18} />
-                                    </button>
+                        <div className="relative z-10 px-5 pt-12 pb-8">
+                            {/* Close button */}
+                            <button onClick={() => setShowLevelRulesModal(false)}
+                                className="absolute top-4 left-4 w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90"
+                                style={{ background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)' }}>
+                                <Icons.ChevronLeft size={22} />
+                            </button>
+                            <div className="absolute top-5 left-1/2 -translate-x-1/2 text-sm font-black text-white/90 tracking-widest flex items-center gap-1.5">精灵进化之路 <HelpTip {...HELP.evolution} size={13} /></div>
+
+                            {/* Current spirit large display */}
+                            <div className="flex flex-col items-center mt-4">
+                                <div className="text-6xl mb-3" style={{
+                                    animation: 'spiritFloat 3s ease-in-out infinite',
+                                    filter: `drop-shadow(0 0 20px ${form.glow})`,
+                                    '--glow-color': form.glow,
+                                }}>{form.emoji}</div>
+                                <div className="text-lg font-black text-white mb-1">{activeKid.name} 的守护精灵</div>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-[10px] font-black text-white px-3 py-1 rounded-full" style={{ background: `${form.color}50` }}>
+                                        {form.emoji} Lv.{activeKid.level} · {maxStar ? '🌟 满星精灵' : form.name}
+                                    </span>
                                 </div>
-                                {/* Current spirit summary */}
-                                <div className="rounded-2xl px-4 py-3 flex items-center gap-3"
-                                    style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(8px)' }}>
-                                    <div className="text-3xl" style={{ animation: 'spiritFloat 3s ease-in-out infinite' }}>{form.emoji}</div>
-                                    <div className="flex-1">
-                                        <div className="text-xs font-black text-white">
-                                            Lv.{activeKid.level} · {maxStar ? '🌟 满星精灵' : form.name}
-                                        </div>
-                                        <div className="text-[10px] font-bold mt-0.5 text-white/50">
-                                            {form.desc}
-                                        </div>
+                                <div className="text-[11px] font-bold text-white/40 text-center px-8">{form.desc}</div>
+
+                                {/* Mini progress bar */}
+                                <div className="w-48 mt-3">
+                                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+                                        <div className="h-full rounded-full" style={{ width: `${expPercent}%`, background: `linear-gradient(90deg, ${form.color}, ${C.teal})` }}></div>
+                                    </div>
+                                    <div className="flex justify-between mt-1 text-[8px] font-bold text-white/30">
+                                        <span>{activeKid.exp} ✨</span>
+                                        <span>{nextLevelExp} ✨</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Evolution stages list */}
-                        <div className="flex-1 overflow-y-auto">
-                            <div className="px-5 py-5 space-y-3">
-                                {SPIRIT_FORMS.filter(f => f.id !== 'egg').map((f, i) => {
-                                    const isCurrent = f.id === form.id;
-                                    const isPast = activeKid.level > (f.maxLevel || 999);
-                                    const isFuture = activeKid.level < f.minLevel;
-                                    const priv = getSpiritPrivileges(f.minLevel);
+                    {/* ── Scrollable evolution timeline ── */}
+                    <div className="flex-1 overflow-y-auto -mt-4 relative z-10 pb-24">
+                        <div className="px-5 pt-6 space-y-3 max-w-lg mx-auto">
+                            {SPIRIT_FORMS.filter(f => f.id !== 'egg').map((f, i) => {
+                                const isCurrent = f.id === form.id;
+                                const isPast = activeKid.level > (f.maxLevel || 999);
+                                const isFuture = activeKid.level < f.minLevel;
+                                const priv = getSpiritPrivileges(f.minLevel);
 
-                                    return (
-                                        <div key={f.id} className={`rounded-2xl p-4 transition-all ${isCurrent ? 'ring-2 scale-[1.02]' : ''}`}
+                                return (
+                                    <div key={f.id} className="relative">
+                                        {/* Timeline connector */}
+                                        {i > 0 && (
+                                            <div className="absolute -top-3 left-6 w-0.5 h-3" style={{
+                                                background: isFuture ? C.bgMuted : `linear-gradient(${isPast ? C.green : form.color}, ${isPast ? C.green : form.color})`
+                                            }}></div>
+                                        )}
+
+                                        <div className={`rounded-2xl p-4 transition-all ${isCurrent ? 'ring-2 scale-[1.02]' : ''}`}
                                             style={{
                                                 background: isCurrent ? C.bgCard : isFuture ? `${C.bgLight}60` : C.bgCard,
                                                 border: isCurrent ? `2px solid ${f.color}40` : `1px solid ${C.bgLight}`,
-                                                boxShadow: isCurrent ? `0 8px 24px ${f.glow}` : 'none',
+                                                boxShadow: isCurrent ? `0 8px 24px ${f.glow}` : C.cardShadow,
                                                 ringColor: f.color,
-                                                opacity: isFuture ? 0.6 : 1,
+                                                opacity: isFuture ? 0.55 : 1,
                                             }}>
                                             <div className="flex items-center gap-3 mb-2">
-                                                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${f.bg} flex items-center justify-center text-2xl shadow-md ${isFuture ? 'grayscale' : ''}`}>
+                                                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${f.bg} flex items-center justify-center text-2xl shadow-md ${isFuture ? 'grayscale' : ''}`}
+                                                    style={isCurrent ? { animation: 'spiritFloat 3s ease-in-out infinite' } : {}}>
                                                     {f.emoji}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-2 flex-wrap">
                                                         <span className="text-sm font-black" style={{ color: isCurrent ? f.color : C.textPrimary }}>{f.name}</span>
                                                         {isCurrent && (
-                                                            <span className="text-[8px] font-black px-2 py-0.5 rounded-full text-white" style={{ background: f.color }}>
-                                                                ← 当前形态
+                                                            <span className="text-[8px] font-black px-2 py-0.5 rounded-full text-white animate-pulse" style={{ background: f.color }}>
+                                                                ← 当前
                                                             </span>
                                                         )}
                                                         {isPast && (
@@ -478,10 +668,13 @@ export const KidProfileTab = () => {
                                                 )}
                                             </div>
                                         </div>
-                                    );
-                                })}
+                                    </div>
+                                );
+                            })}
 
-                                {/* Max star special card */}
+                            {/* Max star card */}
+                            <div className="relative">
+                                <div className="absolute -top-3 left-6 w-0.5 h-3" style={{ background: maxStar ? '#F59E0B' : C.bgMuted }}></div>
                                 <div className="rounded-2xl p-4" style={{
                                     background: maxStar
                                         ? 'linear-gradient(135deg, #FEF3C7, #FDE68A, #FBBF24)'
@@ -505,13 +698,267 @@ export const KidProfileTab = () => {
                             </div>
 
                             {/* Tip */}
-                            <div className="px-6 pb-6 pt-0">
-                                <div className="rounded-xl p-3 text-center" style={{ background: `${C.orange}08` }}>
-                                    <p className="text-[10px] font-bold" style={{ color: C.textMuted }}>
-                                        💡 完成任务和习惯打卡可以获得星尘（经验值），喂养精灵让它进化！
-                                    </p>
+                            <div className="rounded-xl p-3 text-center" style={{ background: `${C.orange}08` }}>
+                                <p className="text-[10px] font-bold" style={{ color: C.textMuted }}>
+                                    💡 完成任务和习惯打卡可以获得星尘（经验值），喂养精灵让它进化！
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ═══════════════════════════════════════════
+                SPIRIT ALMANAC 精灵图鉴
+            ═══════════════════════════════════════════ */}
+            {showAlmanac && (
+                <div className="fixed inset-0 z-[9999] flex flex-col animate-fade-in" style={{ background: C.bg }}>
+                    {/* Header - starry sky */}
+                    <div className="shrink-0 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f0a1e 0%, #1a1040 40%, #0f3460 100%)' }}>
+                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                            {/* Stars */}
+                            {[...Array(20)].map((_, i) => (
+                                <div key={i} className="absolute rounded-full"
+                                    style={{
+                                        width: `${1 + Math.random() * 2}px`, height: `${1 + Math.random() * 2}px`,
+                                        background: '#fff', opacity: 0.3 + Math.random() * 0.4,
+                                        top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%`,
+                                        animation: `sparkle ${2 + Math.random() * 3}s ease-in-out infinite ${Math.random() * 2}s`,
+                                    }}></div>
+                            ))}
+                            {/* Nebula glow */}
+                            <div className="absolute top-[-40%] right-[-20%] w-80 h-80 rounded-full" style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.15), transparent 70%)' }}></div>
+                            <div className="absolute bottom-[-40%] left-[-20%] w-60 h-60 rounded-full" style={{ background: 'radial-gradient(circle, rgba(78,205,196,0.1), transparent 70%)' }}></div>
+                        </div>
+
+                        <div className="relative z-10 px-5 pt-12 pb-6">
+                            <button onClick={() => setShowAlmanac(false)}
+                                className="absolute top-4 left-4 w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90"
+                                style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)' }}>
+                                <Icons.ChevronLeft size={22} />
+                            </button>
+                            <div className="absolute top-5 left-1/2 -translate-x-1/2 text-sm font-black text-white/90 tracking-widest flex items-center gap-1.5">精灵图鉴 <HelpTip {...HELP.almanac} size={13} /></div>
+
+                            {/* Collection progress */}
+                            <div className="flex flex-col items-center mt-4">
+                                <div className="text-3xl mb-2">📖</div>
+                                <div className="text-base font-black text-white mb-1">精灵收集册</div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[10px] font-black px-3 py-1 rounded-full" style={{ background: 'rgba(78,205,196,0.2)', color: '#4ECDC4' }}>
+                                        {SPIRIT_FORMS.filter(f => f.id !== 'egg' && activeKid.level >= f.minLevel).length}/{SPIRIT_FORMS.filter(f => f.id !== 'egg').length} 精灵已收集
+                                    </span>
+                                    {maxStar && (
+                                        <span className="text-[10px] font-black px-3 py-1 rounded-full" style={{ background: 'rgba(245,158,11,0.2)', color: '#FBBF24' }}>
+                                            🌟 满星达成
+                                        </span>
+                                    )}
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Scrollable card grid */}
+                    <div className="flex-1 overflow-y-auto -mt-3 relative z-10 pb-24">
+                        <div className="px-4 pt-5 max-w-lg mx-auto">
+                            {/* Spirit Cards Grid */}
+                            <div className="grid grid-cols-2 gap-3 mb-6">
+                                {SPIRIT_FORMS.filter(f => f.id !== 'egg').map(f => {
+                                    const unlocked = activeKid.level >= f.minLevel;
+                                    const isCurrent = f.id === form.id;
+                                    const priv = getSpiritPrivileges(f.minLevel);
+                                    
+                                    return (
+                                        <div key={f.id} className={`rounded-2xl overflow-hidden transition-all ${isCurrent ? 'scale-[1.03] ring-2' : ''}`}
+                                            style={{
+                                                background: C.bgCard,
+                                                border: isCurrent ? `2px solid ${f.color}50` : `1px solid ${C.bgLight}`,
+                                                boxShadow: isCurrent ? `0 8px 24px ${f.glow}` : C.cardShadow,
+                                                ringColor: f.color,
+                                                opacity: unlocked ? 1 : 0.6,
+                                            }}>
+                                            {/* Card top - gradient bg */}
+                                            <div className={`relative h-24 bg-gradient-to-br ${f.bg} flex items-center justify-center`}
+                                                style={{ opacity: unlocked ? 1 : 0.3 }}>
+                                                {unlocked ? (
+                                                    <div className="text-5xl" style={isCurrent ? {
+                                                        animation: 'spiritFloat 3s ease-in-out infinite',
+                                                        filter: `drop-shadow(0 0 12px ${f.glow})`,
+                                                    } : {}}>
+                                                        {f.emoji}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-4xl opacity-30 grayscale">❓</div>
+                                                )}
+                                                {isCurrent && (
+                                                    <div className="absolute top-2 right-2 text-[8px] font-black px-2 py-0.5 rounded-full text-white animate-pulse" style={{ background: f.color }}>
+                                                        当前
+                                                    </div>
+                                                )}
+                                                {unlocked && !isCurrent && (
+                                                    <div className="absolute top-2 right-2 text-[8px] font-black px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.8)', color: C.green }}>
+                                                        ✓
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {/* Card bottom - info */}
+                                            <div className="p-3">
+                                                <div className="text-xs font-black mb-0.5" style={{ color: unlocked ? f.color : C.textMuted }}>
+                                                    {unlocked ? f.name : '???'}
+                                                </div>
+                                                <div className="text-[9px] font-bold mb-2" style={{ color: C.textMuted }}>
+                                                    {unlocked ? `Lv.${f.minLevel}~${f.maxLevel}` : `Lv.${f.minLevel} 解锁`}
+                                                </div>
+                                                {unlocked ? (
+                                                    <div className="flex gap-1 flex-wrap">
+                                                        {priv.interestBonus > 0 && (
+                                                            <span className="text-[8px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${C.teal}10`, color: C.teal }}>
+                                                                💰+{priv.interestBonus}%
+                                                            </span>
+                                                        )}
+                                                        {priv.dailyBonus > 0 && (
+                                                            <span className="text-[8px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${C.orange}10`, color: C.orange }}>
+                                                                🪙+{priv.dailyBonus}
+                                                            </span>
+                                                        )}
+                                                        {priv.shopDiscount > 0 && (
+                                                            <span className="text-[8px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${C.purple}10`, color: C.purple }}>
+                                                                🏷{100 - priv.shopDiscount}折
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-1">
+                                                        <Icons.Lock size={10} style={{ color: C.textMuted }} />
+                                                        <span className="text-[8px] font-bold" style={{ color: C.textMuted }}>未解锁</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Max Star Special Card */}
+                            <div className="rounded-2xl overflow-hidden mb-6" style={{
+                                background: maxStar
+                                    ? 'linear-gradient(135deg, #FEF3C7, #FDE68A)'
+                                    : C.bgCard,
+                                border: maxStar ? '2px solid #F59E0B40' : `1px solid ${C.bgMuted}`,
+                                opacity: maxStar ? 1 : 0.5,
+                                boxShadow: maxStar ? '0 8px 32px rgba(245,158,11,0.2)' : C.cardShadow,
+                            }}>
+                                <div className="p-4 flex items-center gap-4">
+                                    <div className="text-4xl">{maxStar ? '🌟' : '❓'}</div>
+                                    <div className="flex-1">
+                                        <div className="text-sm font-black" style={{ color: maxStar ? '#92400E' : C.textMuted }}>
+                                            {maxStar ? '满星精灵 · Lv.30' : '??? · Lv.30 解锁'}
+                                        </div>
+                                        <div className="text-[10px] font-bold" style={{ color: maxStar ? '#B45309' : C.textMuted }}>
+                                            {maxStar ? '传说中的至高境界，所有能力全面提升！' : '达到满级即可解锁'}
+                                        </div>
+                                        {maxStar && (
+                                            <div className="flex gap-1.5 mt-2 flex-wrap">
+                                                <span className="text-[8px] font-bold px-2 py-0.5 rounded-lg" style={{ background: '#92400E20', color: '#92400E' }}>💰+8%</span>
+                                                <span className="text-[8px] font-bold px-2 py-0.5 rounded-lg" style={{ background: '#92400E20', color: '#92400E' }}>🪙+5</span>
+                                                <span className="text-[8px] font-bold px-2 py-0.5 rounded-lg" style={{ background: '#92400E20', color: '#92400E' }}>🏷85折</span>
+                                                <span className="text-[8px] font-bold px-2 py-0.5 rounded-lg" style={{ background: '#92400E20', color: '#92400E' }}>✨闪光</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {!maxStar && <Icons.Lock size={16} style={{ color: C.textMuted }} />}
+                                </div>
+                            </div>
+
+                            {/* Chest Collection */}
+                            <div className="rounded-2xl p-4 mb-4" style={{ background: C.bgCard, boxShadow: C.cardShadow, border: `1px solid ${C.bgLight}` }}>
+                                <h3 className="text-xs font-black mb-3 flex items-center gap-2" style={{ color: C.textPrimary }}>
+                                    🎁 宝箱收集
+                                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: `${C.yellow}15`, color: '#D97706' }}>
+                                        {getUnlockedChests(activeKid.streak_days || 0).length}/{CHEST_TYPES.length}
+                                    </span>
+                                </h3>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {CHEST_TYPES.map(chest => {
+                                        const unlocked = (activeKid.streak_days || 0) >= chest.streakDays;
+                                        return (
+                                            <div key={chest.id} className="flex flex-col items-center p-2 rounded-xl transition-all"
+                                                style={{ background: unlocked ? `${chest.color}08` : C.bg, opacity: unlocked ? 1 : 0.4 }}>
+                                                <div className="w-10 h-10 mb-1 flex items-center justify-center">
+                                                    {unlocked ? (
+                                                        <img src={chest.image} alt={chest.name} className="w-10 h-10 object-contain drop-shadow-md"
+                                                            onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
+                                                    ) : null}
+                                                    <span style={{ display: unlocked ? 'none' : 'block' }} className="text-xl">🔒</span>
+                                                </div>
+                                                <div className="text-[8px] font-black" style={{ color: unlocked ? chest.color : C.textMuted }}>{chest.name}</div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Spirit Naming Modal ── */}
+            {showNamingModal && (
+                <div className="fixed inset-0 z-[10000] flex items-center justify-center p-6"
+                    style={{ background: 'rgba(27,46,75,0.3)', backdropFilter: 'blur(6px)' }}
+                    onClick={() => setShowNamingModal(false)}>
+                    <div className="relative max-w-xs w-full rounded-3xl overflow-hidden"
+                        style={{ background: C.bgCard, boxShadow: '0 25px 60px rgba(27,46,75,0.15)', animation: 'helpBounceIn 0.35s ease-out forwards' }}
+                        onClick={e => e.stopPropagation()}>
+                        <div className="px-6 pt-6 pb-3 text-center">
+                            <div className="text-4xl mb-2">{form.emoji}</div>
+                            <h3 className="text-base font-black" style={{ color: C.textPrimary }}>
+                                {activeKid.spirit_name ? '修改精灵名字' : '给精灵取个名字吧！'}
+                            </h3>
+                            <p className="text-xs mt-1" style={{ color: C.textMuted }}>
+                                取一个可爱的名字，让精灵更有归属感 💕
+                            </p>
+                        </div>
+                        <div className="px-6 pb-3">
+                            <input
+                                type="text"
+                                value={spiritNameInput}
+                                onChange={e => setSpiritNameInput(e.target.value.slice(0, 10))}
+                                placeholder="最多10个字..."
+                                maxLength={10}
+                                autoFocus
+                                className="w-full px-4 py-3 rounded-xl text-sm font-bold text-center outline-none transition-all"
+                                style={{
+                                    background: C.bg,
+                                    border: `2px solid ${C.teal}40`,
+                                    color: C.textPrimary,
+                                }}
+                                onFocus={e => e.target.style.borderColor = C.teal}
+                                onBlur={e => e.target.style.borderColor = `${C.teal}40`}
+                            />
+                            <div className="text-[10px] text-right mt-1" style={{ color: C.textMuted }}>
+                                {spiritNameInput.length}/10
+                            </div>
+                        </div>
+                        <div className="px-6 pb-5 flex gap-2">
+                            <button
+                                onClick={() => setShowNamingModal(false)}
+                                className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.98]"
+                                style={{ background: C.bgLight, color: C.textMuted }}>
+                                取消
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    const name = spiritNameInput.trim();
+                                    if (name) {
+                                        await updateActiveKid({ spirit_name: name });
+                                        setShowNamingModal(false);
+                                    }
+                                }}
+                                disabled={!spiritNameInput.trim()}
+                                className="flex-1 py-2.5 rounded-xl text-sm font-black text-white transition-all active:scale-[0.98] disabled:opacity-40"
+                                style={{ background: `linear-gradient(135deg, ${C.teal}, ${C.teal}DD)` }}>
+                                确定 ✨
+                            </button>
                         </div>
                     </div>
                 </div>

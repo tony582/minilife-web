@@ -109,6 +109,7 @@ export const Icons = {
     SkipForward: (p) => <IconWrapper {...p}><polygon points="5 4 15 12 5 20 5 4" /><line x1="19" x2="19" y1="5" y2="19" /></IconWrapper>,
     MessageSquare: (p) => <IconWrapper {...p}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></IconWrapper>,
     RotateCcw: (p) => <IconWrapper {...p}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></IconWrapper>,
+    HelpCircle: (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></IconWrapper>,
 };
 
 export const renderIcon = (name, size = 20, className = "") => {

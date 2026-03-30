@@ -13,6 +13,7 @@ import { SecurityApp } from './apps/SecurityApp';
 import { InterestClassApp } from './apps/InterestClassApp';
 import { TaskPrintApp } from './apps/TaskPrintApp';
 import { InterestSettingsApp } from './apps/InterestSettingsApp';
+import { TermSettingsApp } from './apps/TermSettingsApp';
 
 export const ParentMoreAppsTab = () => {
     const { handleLogout } = useAuthContext();
@@ -30,6 +31,7 @@ export const ParentMoreAppsTab = () => {
         interest_classes: <InterestClassApp />,
         task_print: <TaskPrintApp />,
         interest_settings: <InterestSettingsApp />,
+        term_settings: <TermSettingsApp />,
     };
 
     // --- 应用注册表 ---
@@ -97,6 +99,15 @@ export const ParentMoreAppsTab = () => {
             color: 'text-teal-600',
             bgColor: 'bg-teal-50',
             onClick: () => setCurrentApp('interest_settings'),
+        },
+        {
+            id: 'term_settings',
+            icon: <Icons.Calendar size={22} />,
+            label: '学期设置',
+            desc: '设置当前学期/假期时间',
+            color: 'text-pink-600',
+            bgColor: 'bg-pink-50',
+            onClick: () => setCurrentApp('term_settings'),
         },
         {
             id: 'logout',

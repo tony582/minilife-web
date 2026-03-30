@@ -1014,14 +1014,25 @@ const handleQuickComplete = async () => {
     const handleExpChange = async (kidId, expChange) => {
   const kid = kids.find(k => k.id === kidId);
   if (!kid) return;
-  const { getSpiritForm } = await import('../utils/spiritUtils');
+  const { getSpiritForm, getChestForStreak, calculateChestReward, MAX_SPIRIT_LEVEL, canSpiritGraduate, graduateSpirit } = await import('../utils/spiritUtils');
   const oldForm = getSpiritForm(kid.level);
   let newExp = kid.exp + expChange;
   let newLevel = kid.level;
-  while (newExp >= getLevelReq(newLevel)) {
+  let shouldGraduate = false;
+
+  while (newExp >= getLevelReq(newLevel) && newLevel < MAX_SPIRIT_LEVEL) {
     newExp -= getLevelReq(newLevel);
     newLevel++;
     notify(`太棒了！${kid.name} 升到了 Lv.${newLevel}！`, "success");
+  }
+  // Cap at MAX_SPIRIT_LEVEL
+  if (newLevel >= MAX_SPIRIT_LEVEL) {
+    newLevel = MAX_SPIRIT_LEVEL;
+    shouldGraduate = kid.level < MAX_SPIRIT_LEVEL; // Only graduate on first reaching 30
+    // Keep overflow exp for after graduation
+    if (shouldGraduate) {
+      newExp = 0; // Will be reset anyway
+    }
   }
   while (newExp < 0 && newLevel > 1) {
     newLevel--;
@@ -1034,12 +1045,57 @@ const handleQuickComplete = async () => {
   const newForm = getSpiritForm(newLevel);
   const evolved = newForm.id !== oldForm.id && newLevel > kid.level;
 
+  // Cumulative streak tracking (only on positive exp gain = task/habit completion)
+  let newStreakDays = kid.streak_days || 0;
+  let chestToOpen = null;
+  if (expChange > 0) {
+    const today = new Date().toISOString().split('T')[0];
+    const lastDate = kid.last_streak_date || '';
+    // Only count one streak increment per day
+    if (lastDate !== today) {
+      newStreakDays += 1;
+      // Check if we hit a chest threshold
+      chestToOpen = getChestForStreak(newStreakDays);
+    }
+  }
+
   try {
     const updateBody = { level: newLevel, exp: newExp };
     // Track highest level ever reached
     if (newLevel > (kid.highest_level || kid.level)) {
       updateBody.highest_level = newLevel;
     }
+    // Update streak if changed
+    if (expChange > 0) {
+      const today = new Date().toISOString().split('T')[0];
+      if ((kid.last_streak_date || '') !== today) {
+        updateBody.streak_days = newStreakDays;
+        updateBody.last_streak_date = today;
+      }
+    }
+
+    // Handle graduation: spirit reaches Lv.30 → graduates, new egg hatches
+    if (shouldGraduate) {
+      const { graduatedSpirit, kidUpdates } = graduateSpirit({ ...kid, level: newLevel });
+      Object.assign(updateBody, kidUpdates);
+      // Save graduation first
+      await apiFetch(`/api/kids/${kidId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateBody)
+      });
+      setKids(prevKids => prevKids.map(k => k.id === kidId ? { ...k, ...updateBody } : k));
+
+      // Show graduation celebration
+      setCelebrationData({
+        type: 'spirit_graduation',
+        kidName: kid.name,
+        graduatedSpirit,
+        generation: kid.spirit_generation || 1,
+      });
+      return; // Graduation takes priority over everything
+    }
+
     await apiFetch(`/api/kids/${kidId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -1047,10 +1103,12 @@ const handleQuickComplete = async () => {
     });
     setKids(prevKids => prevKids.map(k => k.id === kidId ? {
       ...k, exp: newExp, level: newLevel,
-      highest_level: Math.max(newLevel, k.highest_level || k.level)
+      highest_level: Math.max(newLevel, k.highest_level || k.level),
+      streak_days: updateBody.streak_days ?? k.streak_days,
+      last_streak_date: updateBody.last_streak_date ?? k.last_streak_date,
     } : k));
 
-    // Trigger spirit evolution celebration!
+    // Trigger spirit evolution celebration (priority over chest)
     if (evolved) {
       setCelebrationData({
         type: 'spirit_evolution',
@@ -1059,11 +1117,39 @@ const handleQuickComplete = async () => {
         newForm,
         newLevel,
       });
+    } else if (chestToOpen) {
+      // Trigger chest open celebration
+      const reward = calculateChestReward(chestToOpen);
+      setCelebrationData({
+        type: 'chest_open',
+        kidName: kid.name,
+        chest: chestToOpen,
+        reward,
+      });
+      // Apply chest reward as bonus EXP
+      if (reward.dust > 0) {
+        const bonusExp = newExp + reward.dust;
+        let bonusLevel = newLevel;
+        let finalExp = bonusExp;
+        while (finalExp >= getLevelReq(bonusLevel) && bonusLevel < MAX_SPIRIT_LEVEL) {
+          finalExp -= getLevelReq(bonusLevel);
+          bonusLevel++;
+        }
+        await apiFetch(`/api/kids/${kidId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ level: bonusLevel, exp: finalExp })
+        });
+        setKids(prevKids => prevKids.map(k => k.id === kidId ? {
+          ...k, exp: finalExp, level: bonusLevel,
+        } : k));
+      }
     }
   } catch (e) {
     notify(`经验更新失败: ${e.message}`, "error");
   }
 };
+
 
     const handleMarkHabitComplete = async (task, date) => {
   pauseSync(); // Prevent SSE refetch from overwriting in-flight balance updates
