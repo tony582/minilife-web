@@ -263,6 +263,7 @@ const PixelPetEngine = forwardRef(
       isDirty = false,
       satiety = 50,
       activityMult = 1.0,
+      growthStage = 1, // 1~5, from spiritUtils stages
     },
     ref,
   ) => {
@@ -780,33 +781,59 @@ const PixelPetEngine = forwardRef(
             </div>
           );
         })}
-        {/* PET (Clickable!) */}
-        <div
-          className="absolute z-20 origin-bottom cursor-pointer"
-          style={{
-            left: state.cat.x,
-            top: state.cat.y,
-            transform: `
-            translate(-50%, calc(-100% - ${state.cat.bounceY}px)) 
-            scaleX(${state.cat.facingLeft ? -1 : 1}) 
-          `,
-            willChange: "transform left top",
-            pointerEvents: "auto",
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (onPetClick) onPetClick({ x: state.cat.x, y: state.cat.y });
-          }}
-        >
-          <div
-            style={{
-              width: `${PIXEL_SIZE}px`,
-              height: `${PIXEL_SIZE}px`,
-              boxShadow: precompiledShadows[state.cat.frameKey],
-              transform: `translate(-${8 * PIXEL_SIZE}px, -${14 * PIXEL_SIZE}px)`,
-            }}
-          />
-        </div>
+        {/* PET (Clickable!) — scales with growthStage */}
+        {(() => {
+          // Growth visual config
+          const GROWTH = [
+            { scale: 0.80, glow: 'none',                                    aura: null },         // Stage 1: 小奶猫
+            { scale: 0.90, glow: 'none',                                    aura: null },         // Stage 2: 小猫
+            { scale: 1.00, glow: 'drop-shadow(0 0 4px rgba(6,182,212,0.4))', aura: '#06B6D4' },   // Stage 3: 亲密玩伴
+            { scale: 1.10, glow: 'drop-shadow(0 0 6px rgba(139,92,246,0.5))', aura: '#8B5CF6' },  // Stage 4: 最佳搭档
+            { scale: 1.20, glow: 'drop-shadow(0 0 10px rgba(236,72,153,0.6)) drop-shadow(0 0 20px rgba(236,72,153,0.3))', aura: '#EC4899' }, // Stage 5: 灵魂契合
+          ];
+          const g = GROWTH[Math.min(growthStage, 5) - 1] || GROWTH[0];
+          return (
+            <div
+              className="absolute z-20 origin-bottom cursor-pointer"
+              style={{
+                left: state.cat.x,
+                top: state.cat.y,
+                transform: `
+                translate(-50%, calc(-100% - ${state.cat.bounceY}px)) 
+                scaleX(${state.cat.facingLeft ? -g.scale : g.scale})
+                scaleY(${g.scale})
+              `,
+                filter: g.glow,
+                willChange: "transform left top filter",
+                pointerEvents: "auto",
+                transition: 'filter 1s ease',
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onPetClick) onPetClick({ x: state.cat.x, y: state.cat.y });
+              }}
+            >
+              {/* Aura ring (stage 3+) */}
+              {g.aura && (
+                <div className="absolute left-1/2 bottom-0 -translate-x-1/2 rounded-full animate-pulse pointer-events-none" 
+                  style={{ 
+                    width: `${60 + (growthStage - 3) * 15}px`, 
+                    height: `${20 + (growthStage - 3) * 5}px`, 
+                    background: `radial-gradient(ellipse, ${g.aura}30, transparent 70%)`,
+                    transform: 'translate(-50%, 50%)',
+                  }} />
+              )}
+              <div
+                style={{
+                  width: `${PIXEL_SIZE}px`,
+                  height: `${PIXEL_SIZE}px`,
+                  boxShadow: precompiledShadows[state.cat.frameKey],
+                  transform: `translate(-${8 * PIXEL_SIZE}px, -${14 * PIXEL_SIZE}px)`,
+                }}
+              />
+            </div>
+          );
+        })()}
 
         {/* PARTICLES */}
         {state.particles.map((p) => (
