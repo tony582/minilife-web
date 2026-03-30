@@ -863,7 +863,8 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
                                 </div>
                             ))}
                         </div>
-                        
+
+
                     </div>
                 </div>
 
