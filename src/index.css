@@ -12,3 +12,24 @@ body:has(div.fixed.inset-0) {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* ── Virtual Pet: Random Event Animations ── */
+@keyframes butterflyFloat {
+  0%   { left: -10%; top: 60%; transform: rotate(-10deg); }
+  25%  { left: 25%;  top: 30%; transform: rotate(15deg); }
+  50%  { left: 55%;  top: 50%; transform: rotate(-5deg); }
+  75%  { left: 75%;  top: 20%; transform: rotate(10deg); }
+  100% { left: 110%; top: 40%; transform: rotate(-15deg); opacity: 0; }
+}
+
+@keyframes rainDrop {
+  0%   { transform: translateY(-10px); opacity: 0.8; }
+  100% { transform: translateY(400px); opacity: 0; }
+}
+
+@keyframes fishBounce {
+  0%   { transform: translateY(30px) scale(0); opacity: 0; }
+  40%  { transform: translateY(-15px) scale(1.2); opacity: 1; }
+  70%  { transform: translateY(0) scale(1); }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}

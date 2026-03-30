@@ -240,6 +240,95 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
         }
     };
 
+    // ── RANDOM EVENTS SYSTEM ──
+    const [activeEvent, setActiveEvent] = useState(null); // { type, timer }
+    const eventTimerRef = useRef(null);
+
+    const RANDOM_EVENTS = useMemo(() => [
+        { 
+            type: 'butterfly', weight: 25, emoji: '🦋', 
+            speech: '蝴蝶！好想抓住它！', 
+            onTrigger: () => setStats(s => ({ ...s, mood: Math.min(100, s.mood + 8) })),
+        },
+        { 
+            type: 'rain', weight: 15, emoji: '🌧️', 
+            speech: '下雨了！毛都湿了...', 
+            onTrigger: () => setStats(s => ({ ...s, clean: Math.max(0, s.clean - 8) })),
+        },
+        { 
+            type: 'gift', weight: 15, emoji: '🎁', 
+            speech: '哇！发现了神秘礼物！', 
+            onTrigger: () => setStats(s => ({ ...s, mood: Math.min(100, s.mood + 12), satiety: Math.min(100, s.satiety + 5) })),
+        },
+        { 
+            type: 'fish', weight: 20, emoji: '🐟', 
+            speech: '在地板下面找到了鱼干！', 
+            onTrigger: () => setStats(s => ({ ...s, satiety: Math.min(100, s.satiety + 12) })),
+        },
+        { 
+            type: 'nightmare', weight: 10, emoji: '😱', needsSleep: true,
+            speech: '做了噩梦...好可怕！', 
+            onTrigger: () => { setStats(s => ({ ...s, mood: Math.max(0, s.mood - 10) })); setIsSleeping(false); },
+        },
+    ], []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    useEffect(() => {
+        const scheduleEvent = () => {
+            const delay = (180 + Math.random() * 180) * 1000; // 3~6 minutes
+            eventTimerRef.current = setTimeout(() => {
+                if (isTransitioning || speechBubble || activeEvent) { scheduleEvent(); return; }
+                
+                // Filter events by context
+                const pool = RANDOM_EVENTS.filter(e => {
+                    if (e.needsSleep && !isSleeping) return false;
+                    if (!e.needsSleep && isSleeping) return false;
+                    if (activeScene !== 'home') return false;
+                    return true;
+                });
+                if (pool.length === 0) { scheduleEvent(); return; }
+                
+                // Weighted random selection
+                const totalWeight = pool.reduce((s, e) => s + e.weight, 0);
+                let roll = Math.random() * totalWeight;
+                let selected = pool[0];
+                for (const ev of pool) {
+                    roll -= ev.weight;
+                    if (roll <= 0) { selected = ev; break; }
+                }
+                
+                // Execute event
+                setActiveEvent({ type: selected.type, emoji: selected.emoji });
+                triggerSpeech(selected.speech, '50%', 500, 3000);
+                selected.onTrigger();
+                if (petRef.current) petRef.current.triggerHeart();
+                
+                // Clear event after 5 seconds
+                setTimeout(() => setActiveEvent(null), 5000);
+                scheduleEvent();
+            }, delay);
+        };
+        scheduleEvent();
+        return () => clearTimeout(eventTimerRef.current);
+    }, [isSleeping, isTransitioning, activeScene, activeEvent, speechBubble, RANDOM_EVENTS]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // ── TASK COMPLETION LINKAGE ──
+    useEffect(() => {
+        const handler = (e) => {
+            const { reward } = e.detail || {};
+            if (petRef.current) petRef.current.triggerHeart();
+            setWantsBubble(null);
+            
+            if (reward > 0) {
+                triggerSpeech('主人好棒！继续加油！', '50%', 0, 2500);
+                setStats(s => ({ ...s, mood: Math.min(100, s.mood + 5), satiety: Math.min(100, s.satiety + 3) }));
+            } else if (reward < 0) {
+                triggerSpeech('没关系，下次注意哦~', '50%', 0, 2500);
+                setStats(s => ({ ...s, mood: Math.max(0, s.mood - 2) }));
+            }
+        };
+        window.addEventListener('minilife-task-complete', handler);
+        return () => window.removeEventListener('minilife-task-complete', handler);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleAction = (type) => {
         if (!petRef.current || isTransitioning) return;
@@ -635,6 +724,48 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
                                         onPetClick={handlePetClick}
                                     />
                                 </div>
+                            )}
+
+                            {/* --- RANDOM EVENT VISUAL EFFECTS --- */}
+                            {activeEvent && (
+                                <>
+                                    {activeEvent.type === 'butterfly' && (
+                                        <div className="absolute z-30 pointer-events-none" style={{ animation: 'butterflyFloat 4s ease-in-out forwards' }}>
+                                            <span className="text-2xl md:text-3xl" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>🦋</span>
+                                        </div>
+                                    )}
+                                    {activeEvent.type === 'rain' && (
+                                        <div className="absolute inset-0 z-30 pointer-events-none overflow-hidden">
+                                            {Array.from({length: 20}).map((_, i) => (
+                                                <div key={i} className="absolute w-px bg-blue-300/60" 
+                                                    style={{ 
+                                                        left: `${5 + Math.random() * 90}%`, 
+                                                        top: '-10%',
+                                                        height: `${10 + Math.random() * 15}px`,
+                                                        animation: `rainDrop ${0.5 + Math.random() * 0.3}s linear ${Math.random() * 0.5}s infinite`,
+                                                    }} />
+                                            ))}
+                                        </div>
+                                    )}
+                                    {activeEvent.type === 'gift' && (
+                                        <div className="absolute z-30 pointer-events-none animate-bounce" style={{ left: '55%', bottom: '28%' }}>
+                                            <span className="text-3xl md:text-4xl" style={{ filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.4))' }}>🎁</span>
+                                        </div>
+                                    )}
+                                    {activeEvent.type === 'fish' && (
+                                        <div className="absolute z-30 pointer-events-none" style={{ left: '40%', bottom: '30%', animation: 'fishBounce 1s ease-out' }}>
+                                            <span className="text-2xl" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>🐟</span>
+                                        </div>
+                                    )}
+                                    {activeEvent.type === 'nightmare' && (
+                                        <div className="absolute inset-0 z-30 pointer-events-none bg-purple-900/30 animate-pulse">
+                                            {Array.from({length: 5}).map((_, i) => (
+                                                <span key={i} className="absolute text-lg animate-ping" 
+                                                    style={{ left: `${20 + Math.random() * 60}%`, top: `${20 + Math.random() * 60}%`, animationDelay: `${i*0.2}s` }}>💀</span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
                             )}
 
                             {/* --- NEEDS BUBBLE (Pet proactively expresses wants) --- */}

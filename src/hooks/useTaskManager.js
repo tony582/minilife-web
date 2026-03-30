@@ -272,6 +272,8 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
         }, ...prev]);
       }
       playSuccessSound();
+      // Dispatch event for pet system linkage
+      window.dispatchEvent(new CustomEvent('minilife-task-complete', { detail: { task, reward: task.reward } }));
       if (task.reward > 0) {
         const messages = ["太棒了！你的坚持让家庭财富又增加啦！🌟", "自律的你，正在闪闪发光！✨", "一个小小的习惯，成就大大的未来！🚀", "付出总有回报，金币+1！💰", "保持良好的习惯，你是全家的骄傲！🏅"];
         setCelebrationData({
