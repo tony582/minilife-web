@@ -721,7 +721,6 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
                                         isDirty={stats.clean < 50}
                                         satiety={stats.satiety}
                                         activityMult={pTraits.activity.mult}
-                                        growthStage={currentStageDisplay}
                                         onPetClick={handlePetClick}
                                     />
                                 </div>
