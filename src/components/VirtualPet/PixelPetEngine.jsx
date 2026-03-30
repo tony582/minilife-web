@@ -213,7 +213,7 @@ const ITEM_FRAMES = {
 // =========================================================
 // 🧱 像素编译器
 // =========================================================
-const PIXEL_SIZE = 5;
+const PIXEL_SIZE = 7;
 
 const compileShadows = (frameArray) => {
   let shadows = [];
@@ -222,7 +222,7 @@ const compileShadows = (frameArray) => {
       const char = frameArray[y][x];
       if (PALETTE[char] && PALETTE[char] !== "transparent") {
         shadows.push(
-          `${x * PIXEL_SIZE}px ${y * PIXEL_SIZE}px 0 ${PALETTE[char]}`,
+          `${x * PIXEL_SIZE}px ${y * PIXEL_SIZE}px 0 0.5px ${PALETTE[char]}`,
         );
       }
     }
@@ -256,13 +256,13 @@ const PixelPetEngine = forwardRef(
     {
       width = 240,
       height = 180,
-      scale = 1,
       onStateChange,
       onPetClick,
       isSick = false,
       isSleeping = false,
       isDirty = false,
       satiety = 50,
+      activityMult = 1.0,
     },
     ref,
   ) => {
@@ -296,7 +296,8 @@ const PixelPetEngine = forwardRef(
       gameState.current.floorY = height * 0.75;
       // 强制把猫咪拽回地面
       gameState.current.cat.y = height * 0.75;
-      if (gameState.current.cat.x > width) gameState.current.cat.x = width - 40;
+      if (gameState.current.cat.x > width - 60) gameState.current.cat.x = width - 60;
+      if (gameState.current.cat.x < 60) gameState.current.cat.x = 60;
     }, [width, height]);
 
     const updateGame = useCallback(
@@ -393,10 +394,11 @@ const PixelPetEngine = forwardRef(
               } else {
                 // 🎲 Random behavior selection with personality!
                 const roll = Math.random();
-                if (roll < 0.35) {
-                  // 35% — Wander around
+                const wanderChance = 0.35 * activityMult; // Active pets wander more!
+                if (roll < wanderChance) {
+                  // Wander around
                   cat.state = "wander";
-                  cat.dx = (Math.random() > 0.5 ? 1 : -1) * (0.04 + Math.random() * 0.04);
+                  cat.dx = (Math.random() > 0.5 ? 1 : -1) * (0.04 + Math.random() * 0.04) * activityMult;
                   cat.timer = 1500 + Math.random() * 3000;
                 } else if (roll < 0.50) {
                   // 15% — Yawn (mouth open, stretch)
@@ -483,13 +485,13 @@ const PixelPetEngine = forwardRef(
               cat.facingLeft = cat.dx < 0;
 
               // Boundaries
-              if (cat.x < 30) {
-                cat.x = 30;
+              if (cat.x < 60) {
+                cat.x = 60;
                 cat.dx *= -1;
                 cat.facingLeft = false;
               }
-              if (cat.x > state.screenW - 30) {
-                cat.x = state.screenW - 30;
+              if (cat.x > state.screenW - 60) {
+                cat.x = state.screenW - 60;
                 cat.dx *= -1;
                 cat.facingLeft = true;
               }
@@ -650,7 +652,7 @@ const PixelPetEngine = forwardRef(
         setTick((t) => t + 1);
         requestRef.current = requestAnimationFrame(updateGame);
       },
-      [width, height, onStateChange, satiety],
+      [width, height, onStateChange, satiety, activityMult],
     );
 
     useEffect(() => {
@@ -749,8 +751,6 @@ const PixelPetEngine = forwardRef(
         style={{
           width: "100%",
           height: "100%",
-          transform: `scale(${scale})`,
-          transformOrigin: "center",
         }}
       >
         {/* 虚拟地平线引导（可选，主要用于调试） */}
