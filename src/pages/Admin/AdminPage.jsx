@@ -96,6 +96,9 @@ export const AdminPage = () => {
     const [editingQuotaUserId, setEditingQuotaUserId] = useState(null);
     const [editingQuotaValue, setEditingQuotaValue] = useState('');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [appSettings, setAppSettings] = useState({});
+    const [editingTrialDays, setEditingTrialDays] = useState('');
+    const [uploadingQr, setUploadingQr] = useState(null);
 
     const loadDashboard = useCallback(() => {
         apiFetch('/api/admin/stats/overview').then(r => safeJsonOr(r, null)).then(d => d && setStats(d));
@@ -106,6 +109,45 @@ export const AdminPage = () => {
         apiFetch('/api/admin/stats/system-health').then(r => safeJsonOr(r, null)).then(d => d && setHealth(d));
     }, []);
     useEffect(() => { if (adminTab === 'dashboard') loadDashboard(); }, [adminTab, loadDashboard]);
+
+    const loadSettings = useCallback(() => {
+        apiFetch('/api/admin/settings').then(r => safeJsonOr(r, {})).then(d => {
+            if (d) { setAppSettings(d); setEditingTrialDays(d.trial_days || '3'); }
+        });
+    }, []);
+    useEffect(() => { if (adminTab === 'settings') loadSettings(); }, [adminTab, loadSettings]);
+
+    const saveTrialDays = async () => {
+        const val = parseInt(editingTrialDays);
+        if (!val || val < 1) return notify('请输入有效天数', 'error');
+        try {
+            await apiFetch('/api/admin/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trial_days: String(val) }) });
+            setAppSettings(prev => ({ ...prev, trial_days: String(val) }));
+            notify('试用天数已更新', 'success');
+        } catch { notify('保存失败', 'error'); }
+    };
+
+    const handleQrUpload = async (type) => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            setUploadingQr(type);
+            try {
+                const formData = new FormData();
+                formData.append('qr', file);
+                const res = await apiFetch(`/api/admin/settings/upload-qr?type=${type}`, { method: 'POST', body: formData });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                setAppSettings(prev => ({ ...prev, [type]: data.path }));
+                notify('上传成功', 'success');
+            } catch (err) { notify(err.message || '上传失败', 'error'); }
+            setUploadingQr(null);
+        };
+        input.click();
+    };
 
     const refreshUsers = () => apiFetch('/api/admin/users').then(r => safeJsonOr(r, [])).then(d => d && setAdminUsers(d));
 
@@ -166,6 +208,7 @@ export const AdminPage = () => {
         { id: 'users', Icon: Icons.Users, label: `用户 (${adminUsers?.length || 0})` },
         { id: 'codes', Icon: Icons.Tag, label: `激活码 (${adminCodes?.length || 0})` },
         { id: 'ai', Icon: Icons.Sparkles, label: 'AI 管理' },
+        { id: 'settings', Icon: Icons.Settings, label: '设置' },
     ];
 
     return (
@@ -648,6 +691,73 @@ export const AdminPage = () => {
                                         </div>
                                         <ActionBtn onClick={() => { setEditingQuotaUserId(u.id); setEditingQuotaValue(u.ai_quota !== null ? String(u.ai_quota) : ''); }}>调整配额</ActionBtn>
                                     </div>))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ═══ SETTINGS ═══ */}
+                    {adminTab === 'settings' && (
+                        <div className="space-y-4 animate-fade-in">
+                            {/* Trial Days */}
+                            <div className="bg-white rounded-xl border border-slate-200/80 p-5">
+                                <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-800 mb-4"><Icons.Clock size={15} /> 试用期配置</div>
+                                <div className="flex items-center gap-3">
+                                    <div>
+                                        <div className="text-xs font-semibold text-slate-500 mb-1.5">新用户免费试用天数</div>
+                                        <div className="flex items-center gap-2">
+                                            <input type="number" min="1" max="365" value={editingTrialDays} onChange={e => setEditingTrialDays(e.target.value)} className="w-24 px-3 py-2 rounded-md border border-slate-200 text-sm font-bold focus:outline-none focus:border-indigo-400" />
+                                            <span className="text-sm text-slate-500 font-semibold">天</span>
+                                            <ActionBtn onClick={saveTrialDays} variant="primary">保存</ActionBtn>
+                                        </div>
+                                        <div className="text-[10px] text-slate-400 mt-1">修改后仅对新注册用户生效</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* QR Codes */}
+                            <div className="bg-white rounded-xl border border-slate-200/80 p-5">
+                                <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-800 mb-4"><Icons.Image size={15} /> 二维码管理</div>
+                                <p className="text-xs text-slate-500 mb-4">二维码将显示在到期页面和「我的订阅体验」中，引导用户续费。</p>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    {/* WeChat QR */}
+                                    <div className="border border-slate-200 rounded-xl p-4">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-1.5"><span>💬</span><span className="text-xs font-semibold text-slate-700">微信客服二维码</span></div>
+                                            <ActionBtn onClick={() => handleQrUpload('wechat_qr')} variant={appSettings.wechat_qr ? 'default' : 'primary'} className={uploadingQr === 'wechat_qr' ? 'opacity-50 pointer-events-none' : ''}>
+                                                {uploadingQr === 'wechat_qr' ? '上传中...' : appSettings.wechat_qr ? '更换' : '上传'}
+                                            </ActionBtn>
+                                        </div>
+                                        {appSettings.wechat_qr ? (
+                                            <div className="bg-slate-50 rounded-lg p-3 text-center">
+                                                <img src={appSettings.wechat_qr} alt="微信客服" className="w-36 h-36 object-contain mx-auto rounded" />
+                                            </div>
+                                        ) : (
+                                            <div className="bg-slate-50 rounded-lg p-6 text-center">
+                                                <Icons.Image size={32} className="text-slate-300 mx-auto mb-2" />
+                                                <div className="text-xs text-slate-400 font-semibold">暂未上传</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {/* Xiaohongshu QR */}
+                                    <div className="border border-slate-200 rounded-xl p-4">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-1.5"><span>📕</span><span className="text-xs font-semibold text-slate-700">小红书购买二维码</span></div>
+                                            <ActionBtn onClick={() => handleQrUpload('xiaohongshu_qr')} variant={appSettings.xiaohongshu_qr ? 'default' : 'primary'} className={uploadingQr === 'xiaohongshu_qr' ? 'opacity-50 pointer-events-none' : ''}>
+                                                {uploadingQr === 'xiaohongshu_qr' ? '上传中...' : appSettings.xiaohongshu_qr ? '更换' : '上传'}
+                                            </ActionBtn>
+                                        </div>
+                                        {appSettings.xiaohongshu_qr ? (
+                                            <div className="bg-slate-50 rounded-lg p-3 text-center">
+                                                <img src={appSettings.xiaohongshu_qr} alt="小红书购买" className="w-36 h-36 object-contain mx-auto rounded" />
+                                            </div>
+                                        ) : (
+                                            <div className="bg-slate-50 rounded-lg p-6 text-center">
+                                                <Icons.Image size={32} className="text-slate-300 mx-auto mb-2" />
+                                                <div className="text-xs text-slate-400 font-semibold">暂未上传</div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>

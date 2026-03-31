@@ -26,6 +26,8 @@ export const useShopManager = (authC, dataC, uiC) => {
  
 
 const confirmTransfer = async () => {
+  // Subscription guard
+  if (window.__minilife_isExpired?.()) { window.__minilife_showPaywall?.(); return; }
   const amount = parseInt(transferForm.amount);
   const activeKid = kids.find(k => k.id === activeKidId);
   if (!amount || amount <= 0 || amount > activeKid.balances.spend) {
@@ -76,6 +78,8 @@ const confirmTransfer = async () => {
 };
 
     const buyItem = async item => {
+  // Subscription guard
+  if (window.__minilife_isExpired?.()) { window.__minilife_showPaywall?.(); return false; }
   const activeKid = kids.find(k => k.id === activeKidId);
   const targetWallet = item.walletTarget === 'give' ? 'give' : 'spend';
   const walletName = targetWallet === 'give' ? '爱心基金' : '零花钱';
@@ -215,6 +219,8 @@ const confirmTransfer = async () => {
 };
 
     const handleSaveNewItem = async () => {
+  // Subscription guard
+  if (window.__minilife_isExpired?.()) { window.__minilife_showPaywall?.(); return; }
   if (!newItem.name || !newItem.price) return notify("请填写名称和需要星数", "error");
   if (newItem.id) {
     try {

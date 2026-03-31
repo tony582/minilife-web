@@ -34,6 +34,7 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
     };
 
     const handleParse = async () => {
+        if (window.__minilife_isExpired?.()) { window.__minilife_showPaywall?.(); return; }
         if (!textInput && !imageData) { notify('请输入作业内容或上传图片', 'error'); return; }
         setMode('loading');
         try {
@@ -56,6 +57,7 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
     };
 
     const handleRefine = async () => {
+        if (window.__minilife_isExpired?.()) { window.__minilife_showPaywall?.(); return; }
         if (!refineInput.trim()) return;
         setIsRefining(true);
         try {
@@ -79,6 +81,7 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
 
 
     const handleBatchCreate = async () => {
+        if (window.__minilife_isExpired?.()) { window.__minilife_showPaywall?.(); return; }
         try {
             const today = new Date().toISOString().split('T')[0];
             const targetKids = planForm.targetKids || ['all'];

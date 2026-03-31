@@ -53,6 +53,9 @@ app.use('/api/transactions', require('./routes/transactions')(db, deps));
 app.use('/api/settings', require('./routes/settings')(db, deps));
 app.use('/api/interest', require('./routes/interest')(db, deps));
 
+// --- Serve uploaded assets (QR codes etc.) ---
+app.use('/assets', express.static(path.join(__dirname, '../public/assets')));
+
 // --- Serve Frontend in Production ---
 app.use(express.static(path.join(__dirname, '../dist')));
 

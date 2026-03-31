@@ -204,6 +204,75 @@ module.exports = (db, { authenticateToken, requireAdmin }) => {
         });
     });
 
+    // ═══ App Settings ═══
+
+    router.get('/settings', authenticateToken, requireAdmin, (req, res) => {
+        db.all("SELECT key, value FROM app_settings", [], (err, rows) => {
+            if (err) return res.status(500).json({ error: err.message });
+            const settings = {};
+            (rows || []).forEach(r => { settings[r.key] = r.value; });
+            res.json(settings);
+        });
+    });
+
+    router.put('/settings', authenticateToken, requireAdmin, (req, res) => {
+        const updates = req.body;
+        const entries = Object.entries(updates);
+        if (!entries.length) return res.status(400).json({ error: 'No settings provided' });
+        let completed = 0;
+        let hasError = false;
+        entries.forEach(([key, value]) => {
+            db.run(
+                "INSERT INTO app_settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+                [key, String(value)],
+                (err) => {
+                    if (err && !hasError) { hasError = true; return res.status(500).json({ error: err.message }); }
+                    completed++;
+                    if (completed === entries.length && !hasError) res.json({ success: true });
+                }
+            );
+        });
+    });
+
+    // QR code upload
+    const multer = require('multer');
+    const path = require('path');
+    const fs = require('fs');
+    const qrDir = path.join(__dirname, '../../public/assets/qr');
+    if (!fs.existsSync(qrDir)) fs.mkdirSync(qrDir, { recursive: true });
+
+    const qrUpload = multer({
+        storage: multer.diskStorage({
+            destination: (req, file, cb) => cb(null, qrDir),
+            filename: (req, file, cb) => {
+                const ext = path.extname(file.originalname) || '.png';
+                cb(null, `${req.query.type || 'qr'}${ext}`);
+            },
+        }),
+        limits: { fileSize: 5 * 1024 * 1024 },
+        fileFilter: (req, file, cb) => {
+            if (file.mimetype.startsWith('image/')) cb(null, true);
+            else cb(new Error('Only images allowed'));
+        },
+    });
+
+    router.post('/settings/upload-qr', authenticateToken, requireAdmin, qrUpload.single('qr'), (req, res) => {
+        if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+        const type = req.query.type;
+        if (!['wechat_qr', 'xiaohongshu_qr'].includes(type)) {
+            return res.status(400).json({ error: 'Invalid QR type' });
+        }
+        const publicPath = `/assets/qr/${req.file.filename}`;
+        db.run(
+            "INSERT INTO app_settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+            [type, publicPath],
+            (err) => {
+                if (err) return res.status(500).json({ error: err.message });
+                res.json({ success: true, path: publicPath });
+            }
+        );
+    });
+
     return router;
 };
 

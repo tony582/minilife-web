@@ -118,7 +118,17 @@ module.exports = (db, { JWT_SECRET, authenticateToken, notifyUser }) => {
 
             const now = new Date();
             const trialStart = now.toISOString();
-            const subEndDate = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
+
+            // Read trial_days from app_settings (default 3)
+            let trialDays = 3;
+            try {
+                const settingRow = await new Promise((resolve, reject) => {
+                    db.get("SELECT value FROM app_settings WHERE key = 'trial_days'", [], (err, row) => err ? reject(err) : resolve(row));
+                });
+                if (settingRow?.value) trialDays = parseInt(settingRow.value) || 3;
+            } catch (e) { /* fallback to 3 */ }
+
+            const subEndDate = new Date(now.getTime() + trialDays * 24 * 60 * 60 * 1000).toISOString();
 
             const insert = "INSERT INTO users (id, email, password_hash, role, trial_start, sub_end_date, created_at) VALUES (?,?,?,?,?,?,?)";
             db.run(insert, [userId, email, hashedPassword, 'user', trialStart, subEndDate, trialStart], function (err) {
@@ -196,6 +206,16 @@ module.exports = (db, { JWT_SECRET, authenticateToken, notifyUser }) => {
         db.all("SELECT code, duration_days, used_at FROM activation_codes WHERE used_by = ? ORDER BY used_at DESC", [req.user.id], (err, rows) => {
             if (err) return res.status(500).json({ error: err.message });
             res.json(rows);
+        });
+    });
+
+    // --- Public settings (no auth required) ---
+    router.get('/settings/public', (req, res) => {
+        db.all("SELECT key, value FROM app_settings WHERE key IN ('wechat_qr', 'xiaohongshu_qr')", [], (err, rows) => {
+            if (err) return res.status(500).json({ error: err.message });
+            const settings = {};
+            (rows || []).forEach(r => { settings[r.key] = r.value; });
+            res.json(settings);
         });
     });
 

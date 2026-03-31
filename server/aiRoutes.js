@@ -115,13 +115,16 @@ const callAI = async (config, parts) => {
     if (!apiKey) return null; // Will trigger mock fallback
 
     if (config.provider === 'gemini' || !config.provider) {
-        // Google Gemini — with token limits
+        // Google Gemini — pass system prompt via systemInstruction to avoid ByteString encoding issues
         const genAI = new GoogleGenerativeAI(apiKey);
+        // Separate system prompt from content parts
+        const contentParts = parts.filter(p => p.text !== SYSTEM_PROMPT);
         const model = genAI.getGenerativeModel({
             model: config.model_name || 'gemini-2.0-flash',
+            systemInstruction: SYSTEM_PROMPT,
             generationConfig: { maxOutputTokens: 1024, temperature: 0.2 }
         });
-        const result = await model.generateContent(parts);
+        const result = await model.generateContent(contentParts);
         return result.response.text();
     }
 

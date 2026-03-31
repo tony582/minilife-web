@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Icons } from './utils/Icons';
@@ -13,16 +13,27 @@ import { ParentApp } from './pages/Parent/ParentApp';
 import { ParentPinPage } from './pages/Auth/ParentPinPage';
 import { ProfileSelectionPage } from './pages/Auth/ProfileSelectionPage';
 import { AuthPage } from './pages/Auth/AuthPage';
-import { ExpiredPage } from './pages/Auth/ExpiredPage';
 import { AdminPage } from './pages/Admin/AdminPage';
 import { GlobalModals } from './components/common/GlobalModals';
 import { SmartInstallBanner } from './components/common/SmartInstallBanner';
+import { PaywallModal } from './components/common/PaywallModal';
+import { ExpiredBanner } from './components/common/ExpiredBanner';
 
 function AppContent() {
   const { token, user, authLoading } = useAuthContext();
   const { kids, setKids, transactions, setTransactions, isLoading, notifications, notify, setNotifications } = useDataContext();
   const { appState, kidTab, setKidTab, parentTab, setParentTab, showTransactionHistoryModal, showAddItemModal, showShopConfirmModal, showReviewModal, showAddPlanModal, showAddKidModal, showSettingsModal, showLevelModal, qrModalValue, showTimerModal } = useUIContext();
   const location = useLocation();
+  const [paywallVisible, setPaywallVisible] = useState(false);
+
+  const isExpired = user && user.role !== 'admin' && new Date(user.sub_end_date) < new Date();
+
+  // Expose paywall globally so any component can trigger it
+  useEffect(() => {
+    window.__minilife_showPaywall = () => setPaywallVisible(true);
+    window.__minilife_isExpired = () => isExpired;
+    return () => { delete window.__minilife_showPaywall; delete window.__minilife_isExpired; };
+  }, [isExpired]);
 
 
 
@@ -112,11 +123,6 @@ function AppContent() {
     return <AuthPage />;
   }
 
-  // Subscription expired → show expired page
-  if (user && new Date(user.sub_end_date) < new Date() && user.role !== 'admin') {
-    return <ExpiredPage />;
-  }
-
   // Admin user → show admin page
   if (user?.role === 'admin') {
     return <AdminPage />;
@@ -124,6 +130,8 @@ function AppContent() {
 
   return (
     <div className="font-sans selection:bg-indigo-100">
+      {/* Expired banner */}
+      {isExpired && <ExpiredBanner onRenew={() => setPaywallVisible(true)} />}
       <Routes>
         <Route path="/" element={<ProfileSelectionPage />} />
         <Route path="/parent/pin" element={<ParentPinPage />} />
@@ -150,6 +158,7 @@ function AppContent() {
       </div>
 
       <GlobalModals />
+      <PaywallModal visible={paywallVisible} onClose={() => setPaywallVisible(false)} />
 
       {/* 全局动画样式 */}
       <style dangerouslySetInnerHTML={{

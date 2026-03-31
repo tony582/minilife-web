@@ -63,13 +63,8 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
                 const userData = await userRes.json();
                 setUser(userData);
 
-                const now = new Date();
-                const subEnd = new Date(userData.sub_end_date);
-                if (subEnd < now && userData.role !== 'admin') {
-                    setAuthLoading(false);
-                    setIsLoading(false);
-                    return;
-                }
+                // Note: We no longer block data loading for expired users.
+                // They can still view their data in read-only mode.
 
                 const safeJson = async (r) => {
                     if (!r.ok) {

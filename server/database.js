@@ -353,6 +353,25 @@ async function initializeDatabase() {
             calculated_at TEXT NOT NULL
         )`);
 
+        // App Settings Table (key-value config)
+        await client.query(`CREATE TABLE IF NOT EXISTS app_settings (
+            key TEXT PRIMARY KEY,
+            value TEXT DEFAULT ''
+        )`);
+
+        // Initialize default settings (only if not existing)
+        const defaultSettings = [
+            ['trial_days', '3'],
+            ['wechat_qr', ''],
+            ['xiaohongshu_qr', ''],
+        ];
+        for (const [key, value] of defaultSettings) {
+            await client.query(
+                `INSERT INTO app_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO NOTHING`,
+                [key, value]
+            );
+        }
+
         console.log('PostgreSQL schema initialized successfully.');
     } catch (err) {
         console.error('Database initialization error:', err.message);

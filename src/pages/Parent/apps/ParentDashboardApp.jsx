@@ -302,7 +302,7 @@ export const ParentDashboardApp = () => {
                         <div className="w-1 h-5 rounded-full" style={{ background: C.orange }}></div>
                         学习任务分析
                     </h3>
-                    <div className="h-48 mb-4">
+                    <div className="h-48 mb-4" style={{minHeight:'1px',minWidth:'1px'}}>
                         <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                             <BarChart data={taskStats.dailyData} barSize={16}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={C.bgLight} vertical={false} />
@@ -339,7 +339,7 @@ export const ParentDashboardApp = () => {
                         <div className="w-1 h-5 rounded-full" style={{ background: C.teal }}></div>
                         习惯养成分析
                     </h3>
-                    <div className="h-48 mb-4">
+                    <div className="h-48 mb-4" style={{minHeight:'1px',minWidth:'1px'}}>
                         <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                             <LineChart data={habitStats.dailyData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={C.bgLight} vertical={false} />
@@ -383,7 +383,7 @@ export const ParentDashboardApp = () => {
                     {shopStats.items.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* Pie chart */}
-                            <div className="h-52 flex items-center justify-center">
+                            <div className="h-52 flex items-center justify-center" style={{minHeight:'1px',minWidth:'1px'}}>
                                 <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                                     <PieChart>
                                         <Pie
@@ -426,7 +426,7 @@ export const ParentDashboardApp = () => {
                         <div className="w-1 h-5 rounded-full" style={{ background: C.green }}></div>
                         财务趋势
                     </h3>
-                    <div className="h-52 mb-4">
+                    <div className="h-52 mb-4" style={{minHeight:'1px',minWidth:'1px'}}>
                         <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                             <AreaChart data={financeStats.dailyData}>
                                 <defs>

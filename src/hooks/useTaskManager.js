@@ -206,6 +206,8 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
 };
 
     const handleAttemptSubmit = async task => {
+  // Subscription guard
+  if (window.__minilife_isExpired?.()) { window.__minilife_showPaywall?.(); return; }
   // Prevent duplicate submissions
   if (isSubmittingRef.current) return;
   const limits = checkPeriodLimits(task, activeKidId, selectedDate);
@@ -392,6 +394,8 @@ const getTaskStatusOnDate = (t, date, kidId) => {
 };
 
     const handleStartTask = id => {
+  // Subscription guard
+  if (window.__minilife_isExpired?.()) { window.__minilife_showPaywall?.(); return; }
   const task = tasks.find(t => t.id === id);
   if (!task) return;
   const limits = checkPeriodLimits(task, activeKidId, selectedDate);
@@ -565,6 +569,8 @@ const getTaskStatusOnDate = (t, date, kidId) => {
 
     const confirmSubmitTask = async () => {
   if (!taskToSubmit) return;
+  // Subscription guard
+  if (window.__minilife_isExpired?.()) { window.__minilife_showPaywall?.(); return; }
   playSuccessSound(); // Fire exactly on click to bypass iOS async suspensions
 
   // Period task: auto-approve individual completions; only final triggers review
@@ -648,6 +654,8 @@ const getTaskStatusOnDate = (t, date, kidId) => {
 };
 
     const openQuickComplete = task => {
+  // Subscription guard
+  if (window.__minilife_isExpired?.()) { window.__minilife_showPaywall?.(); return; }
   const limits = checkPeriodLimits(task, activeKidId, selectedDate);
   if (!limits.canSubmit) return notify(limits.reason, 'error');
   setQuickCompleteTask(task);
@@ -1764,6 +1772,8 @@ const handleQuickComplete = async () => {
 
     // Check on load when kids data is present
 const handleSavePlan = async () => {
+  // Subscription guard
+  if (window.__minilife_isExpired?.()) { window.__minilife_showPaywall?.(); return; }
   // P8: Field-level validation with specific error indicators
   const errors = {};
   if (!planForm.title || !planForm.title.trim()) {
