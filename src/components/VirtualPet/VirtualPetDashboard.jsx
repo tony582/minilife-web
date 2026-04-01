@@ -5,31 +5,30 @@ import PixelPetEngine from './PixelPetEngine';
 import { SPIRIT_FORMS } from '../../utils/spiritUtils';
 
 // ═══════════════════════════════════════════════
-// 🎭 PERSONALITY SYSTEM
+// 🌅 DAY/NIGHT CYCLE
 // ═══════════════════════════════════════════════
-const PERSONALITY_DEFS = {
-    appetite: [
-        { label: '小鸟胃', emoji: '🐦', mult: 0.7 },
-        { label: '正常', emoji: '😊', mult: 1.0 },
-        { label: '大胃王', emoji: '🍔', mult: 1.4 },
-    ],
-    activity: [
-        { label: '懒洋洋', emoji: '😴', mult: 0.6 },
-        { label: '正常', emoji: '🐾', mult: 1.0 },
-        { label: '超级好动', emoji: '⚡', mult: 1.5 },
-    ],
-    cleanliness: [
-        { label: '邋遢鬼', emoji: '💩', mult: 1.3 },
-        { label: '正常', emoji: '🧹', mult: 1.0 },
-        { label: '小洁癖', emoji: '✨', mult: 0.7 },
-    ],
+const SYSTEM_ICONS = {
+    sun: {
+        palette: { '#': '#f59e0b', 'o': '#fcd34d' },
+        grid: [
+            " # # ",
+            "#ooo#",
+            " ooo ",
+            "#ooo#",
+            " # # "
+        ]
+    },
+    moon: {
+        palette: { '#': '#475569', 'o': '#cbd5e1' },
+        grid: [
+            "  ## ",
+            " #o# ",
+            "  o# ",
+            " #o# ",
+            "  ## "
+        ]
+    }
 };
-
-const generatePersonality = () => ({
-    appetite: Math.floor(Math.random() * 3),
-    activity: Math.floor(Math.random() * 3),
-    cleanliness: Math.floor(Math.random() * 3),
-});
 
 // ═══════════════════════════════════════════════
 // 🌅 DAY/NIGHT CYCLE
@@ -98,6 +97,11 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
     const [isSick, setIsSick] = useState(false);
     const [isSleeping, setIsSleeping] = useState(false);
     
+    // ── DEBUG CONTROLS ──
+    const [debugTimePhase, setDebugTimePhase] = useState(null); // null = auto
+    const [debugSpecies, setDebugSpecies] = useState('cat');
+    const [debugBondLevel, setDebugBondLevel] = useState(null); // null = use real level
+    
     // ── SCENE STATE ──
     const [activeScene, setActiveScene] = useState('home');
     const [isTransitioning, setIsTransitioning] = useState(false);
@@ -113,19 +117,6 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
     const clickCountRef = useRef(0);
     const clickResetTimer = useRef(null);
 
-    // ── PERSONALITY (persistent) ──
-    const [personality] = useState(() => {
-        const saved = localStorage.getItem('minilife_pet_personality');
-        if (saved) return JSON.parse(saved);
-        const p = generatePersonality();
-        localStorage.setItem('minilife_pet_personality', JSON.stringify(p));
-        return p;
-    });
-    const pTraits = useMemo(() => ({
-        appetite: PERSONALITY_DEFS.appetite[personality.appetite],
-        activity: PERSONALITY_DEFS.activity[personality.activity],
-        cleanliness: PERSONALITY_DEFS.cleanliness[personality.cleanliness],
-    }), [personality]);
 
     // ── DAY/NIGHT CYCLE ──
     const [timePhase, setTimePhase] = useState(getTimePhase());
@@ -133,8 +124,8 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
         const interval = setInterval(() => setTimePhase(getTimePhase()), 60000); // Check every minute
         return () => clearInterval(interval);
     }, []);
-    const timeConfig = TIME_PHASES[timePhase];
-    const isNightTime = timePhase === 'night' || timePhase === 'lateNight';
+    const timeConfig = TIME_PHASES[debugTimePhase || timePhase];
+    const isNightTime = (debugTimePhase || timePhase) === 'night' || (debugTimePhase || timePhase) === 'lateNight';
 
     // Auto-sleep at late night
     useEffect(() => {
@@ -152,7 +143,7 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
         }, delay);
     };
 
-    // ── GAME LOOP (Personality-adjusted decay) ──
+    // ── GAME LOOP ──
     useEffect(() => {
         const interval = setInterval(() => {
             if (isSleeping) return;
@@ -160,18 +151,15 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
             setStats(s => {
                 const poopsPenalty = Math.max(0, poops.length - 1) * 0.3;
                 
-                // Personality-adjusted decay rates!
-                const appetiteMult = pTraits.appetite.mult;
-                const cleanMult = pTraits.cleanliness.mult;
                 // Night time = mood decays slower (cozy), day = normal
                 const timeMoodMult = isNightTime ? 0.6 : 1.0;
                 
-                let newSatiety = Math.max(0, s.satiety - (0.014 * appetiteMult)); 
-                let newClean = Math.max(0, s.clean - ((0.008 + poops.length * 0.005) * cleanMult)); 
+                let newSatiety = Math.max(0, s.satiety - 0.014); 
+                let newClean = Math.max(0, s.clean - (0.008 + poops.length * 0.005)); 
                 let newMood = Math.max(0, s.mood - ((0.01 + poopsPenalty * 0.01) * timeMoodMult));
                 
-                // Poop Spawner (personality-affected)
-                const poopChance = 0.008 * cleanMult;
+                // Poop Spawner
+                const poopChance = 0.008;
                 if (activeScene === 'home' && Math.random() < poopChance && s.satiety > 20 && poops.length < 5) {
                     setPoops(prev => [...prev, {
                         id: Date.now() + Math.random(),
@@ -188,7 +176,7 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
         }, 5000);
         
         return () => clearInterval(interval);
-    }, [isSleeping, poops.length, engineSize, activeScene, pTraits, isNightTime]);
+    }, [isSleeping, poops.length, engineSize, activeScene, isNightTime]);
 
     // ── NEEDS BUBBLE SYSTEM — Pet proactively expresses wants ──
     useEffect(() => {
@@ -353,7 +341,7 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
                 setIsFeeding(true);
                 setBowlHasFood(true);
                 // Drop meant perfectly at the bowl
-                pet.feed(engineSize.w * 0.18); 
+                pet.feed(engineSize.w * 0.35); 
 
                 // Dynamic speech and timing based on satiety!
                 let speechConfig = { text: "吧唧吧唧...太香了嘟！", delay: 900 };
@@ -361,13 +349,13 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
                 else if (stats.satiety <= 30) speechConfig = { text: "饿死本喵了！大口炫！", delay: 500 };
                 
                 triggerSpeech(speechConfig.text, '25%', speechConfig.delay, 3000); // Pops up right as the cat sprints into position
-                setTimeout(() => setIsFeeding(false), 2000); // Wait 2s before zooming out
+                setTimeout(() => setIsFeeding(false), 3000); // Wait 3s before zooming out
                 
-                // Wait 3s (time to walk + time to eat) before emptying the bowl and gaining satiety
+                // Wait 4s (time to walk + time to eat) before emptying the bowl and gaining satiety
                 setTimeout(() => {
                     setBowlHasFood(false);
                     setStats(s => ({ ...s, satiety: Math.min(100, s.satiety + 40) })); 
-                }, 3000);
+                }, 4000);
                 break;
 
             case 'clean':
@@ -577,73 +565,75 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
                     </button>
                 </div>
 
+                {/* ── DEBUG TOOLBAR ── */}
+                <div className="flex-shrink-0 border-b-2 border-dashed border-orange-300 bg-orange-50 px-4 py-2 flex flex-wrap items-center gap-2 text-[10px] font-mono">
+                    <span className="font-bold text-orange-600 mr-1">🛠 DEBUG</span>
+                    {/* Time Phase */}
+                    {['dawn','day','dusk','night','lateNight'].map(p => (
+                        <button key={p} onClick={() => setDebugTimePhase(prev => prev === p ? null : p)}
+                            className={`px-2 py-0.5 rounded border ${(debugTimePhase || timePhase) === p ? 'bg-orange-500 text-white border-orange-600' : 'bg-white border-gray-300 text-gray-600'}`}>
+                            {TIME_PHASES[p].label}
+                        </button>
+                    ))}
+                    <span className="mx-1 text-gray-300">|</span>
+                    {/* Species */}
+                    {[{id:'cat',label:'🐱 猫'}].map(s => (
+                        <button key={s.id} onClick={() => setDebugSpecies(s.id)}
+                            className={`px-2 py-0.5 rounded border ${debugSpecies === s.id ? 'bg-blue-500 text-white border-blue-600' : 'bg-white border-gray-300 text-gray-600'}`}>
+                            {s.label}
+                        </button>
+                    ))}
+                    <span className="mx-1 text-gray-300">|</span>
+                    {/* Growth Stage */}
+                    {[{lv:1,label:'奶宝宝'},{lv:8,label:'少年期'},{lv:15,label:'成年期'}].map(g => (
+                        <button key={g.lv} onClick={() => setDebugBondLevel(prev => prev === g.lv ? null : g.lv)}
+                            className={`px-2 py-0.5 rounded border ${debugBondLevel === g.lv ? 'bg-green-500 text-white border-green-600' : 'bg-white border-gray-300 text-gray-600'}`}>
+                            {g.label}
+                        </button>
+                    ))}
+                </div>
+
                 {/* ── SCROLLABLE INNER ── */}
                 <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col">
                     <div className="p-3 md:p-6 flex flex-col gap-5">
-                        
                         {/* ── MULTI-SCENE VIRTUAL ENVIRONMENT ── */}
-                        <div className={`w-full h-[280px] md:h-[380px] rounded-2xl border-4 border-gray-900 shadow-[8px_8px_0px_#111827] relative overflow-hidden flex-shrink-0 transition-all duration-700 bg-black`}
+                        <div className={`w-full aspect-square max-w-[420px] md:max-w-[480px] mx-auto rounded-2xl relative overflow-hidden flex-shrink-0 transition-all duration-700 flex items-end justify-center`}
                             ref={containerRef}
                         >
-                            {/* Inner Screen Shadow (CRT style) */}
-                            <div className="absolute inset-0 shadow-[inset_0_4px_30px_rgba(0,0,0,0.25)] pointer-events-none z-40"></div>
-                            
                             {/* STATUS OVERLAY */}
-                            <div className={`absolute top-4 left-4 z-40 flex items-center gap-2 font-mono text-[10px] md:text-sm font-black px-3 py-1.5 rounded border-2 border-gray-900 backdrop-blur-sm shadow-[2px_2px_0px_#111827] ${currentZone.bg}`}>
+                            <div className={`absolute top-4 left-4 z-40 flex items-center gap-2 font-mono text-xs md:text-sm font-black px-3 py-1.5 rounded-full border-2 border-slate-900 bg-white/80 backdrop-blur-sm shadow-[2px_2px_0px_#111827]`}>
                                 <div className="shrink-0 flex items-center justify-center pb-0.5">
-                                    <PixelIcon grid={MINI_ZONE_ICONS[currentZone.icon].grid} palette={MINI_ZONE_ICONS[currentZone.icon].palette} size={2} />
+                                    <PixelIcon grid={isNightTime ? SYSTEM_ICONS.moon.grid : SYSTEM_ICONS.sun.grid} palette={isNightTime ? SYSTEM_ICONS.moon.palette : SYSTEM_ICONS.sun.palette} size={2} />
                                 </div>
-                                <span className="leading-none">{currentZone.text}</span>
+                                <span className="leading-none text-slate-900">{timeConfig.label}</span>
                             </div>
 
                             {/* ====== SCENE RENDERING STAGE ====== */}
                             <div className={`absolute inset-0 transition-transform duration-[1500ms] ease-in-out ${isFeeding ? 'scale-[1.05] md:scale-[1.15]' : 'scale-100'} origin-[30%_bottom] z-0`}>
                                 <div className={`absolute inset-0 transition-opacity duration-700 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
                                     
-                                    {/* SCENE: HOME */}
+                                     {/* SCENE: HOME */}
                                     {activeScene === 'home' && (
-                                    <>
-                                        <div className={`absolute top-0 w-full h-[65%] border-b-8 border-gray-800 transition-all duration-[2000ms] ${isSleeping ? 'bg-gradient-to-b from-slate-950 to-slate-900' : timeConfig.sky}`}>
-                                            {/* Window — Dynamic sky & celestial body */}
-                                            <div className={`absolute left-[15%] top-[20%] w-[80px] h-[80px] md:w-[120px] md:h-[120px] border-4 border-gray-900 rounded-sm shadow-[4px_4px_0px_rgba(0,0,0,0.3)] flex overflow-hidden transition-colors duration-[2000ms] ${isSleeping ? 'bg-[#0f172a]' : timeConfig.windowBg}`}>
-                                                <div className="absolute top-1/2 w-full h-1 bg-gray-900"></div><div className="absolute left-1/2 h-full w-1 bg-gray-900"></div>
-                                                {/* Celestial body */}
-                                                {(isSleeping || isNightTime) ? (
-                                                    <>
-                                                        <div className="absolute top-[15%] right-[15%] w-5 h-5 md:w-6 md:h-6 bg-yellow-100 rounded-full shadow-[0_0_10px_#fef08a]"></div>
-                                                        {/* Stars */}
-                                                        <div className="absolute top-[25%] left-[20%] w-1 h-1 bg-white rounded-full animate-pulse"></div>
-                                                        <div className="absolute top-[60%] left-[35%] w-1 h-1 bg-white/80 rounded-full animate-pulse" style={{animationDelay:'0.5s'}}></div>
-                                                        <div className="absolute top-[40%] right-[35%] w-1 h-1 bg-white/60 rounded-full animate-pulse" style={{animationDelay:'1s'}}></div>
-                                                    </>
-                                                ) : timePhase === 'dawn' ? (
-                                                    <div className="absolute top-[50%] left-[30%] w-8 h-8 md:w-10 md:h-10 bg-orange-400 rounded-full shadow-[0_0_15px_#fb923c]"></div>
-                                                ) : timePhase === 'dusk' ? (
-                                                    <div className="absolute top-[60%] right-[25%] w-8 h-8 md:w-10 md:h-10 bg-red-400 rounded-full shadow-[0_0_12px_#f87171]"></div>
-                                                ) : (
-                                                    <div className="absolute top-[15%] left-[15%] w-7 h-7 md:w-8 md:h-8 bg-yellow-300 rounded-full"></div>
-                                                )}
-                                            </div>
-                                            {/* Clock picture frame */}
-                                            <div className={`absolute right-[20%] top-[30%] w-12 h-16 border-4 border-gray-900 shadow-[4px_4px_0px_#111827] flex items-center justify-center transition-colors duration-[2000ms] ${(isSleeping || isNightTime) ? 'bg-amber-900' : 'bg-amber-400'}`}><div className="w-6 h-6 bg-white rounded-full border-2 border-gray-900"></div></div>
+                                    <div className="absolute inset-0 transition-all duration-[2000ms]"
+                                         style={{ 
+                                             backgroundImage: 'url(/pets/room/Room1.png)', 
+                                             backgroundSize: 'contain', 
+                                             backgroundRepeat: 'no-repeat',
+                                             backgroundPosition: 'center',
+                                             imageRendering: 'pixelated',
+                                             filter: (isSleeping || isNightTime) ? 'brightness(0.6)' : 'none'
+                                         }}>
+                                         
+                                        {/* Dynamic sky outside the window could go here if we had transparent windows, but Room1 is solid. So we skip the day/night sky. */}
+                                         
+                                        {/* Floor Props Layer */} 
+                                        {/* BED PROP */}
+                                        <img src="/pets/props/CatBedPink.png" className="absolute bottom-[20%] right-[20%] w-[64px] h-[64px] pointer-events-none z-10" style={{imageRendering: 'pixelated'}} alt="Cat Bed" />
+                                        {/* BOWL PROP */}
+                                        <div className="absolute bottom-[24%] left-[35%] w-[48px] h-[48px] pointer-events-none z-10 -translate-x-1/2">
+                                            <img src={bowlHasFood ? "/pets/props/FoodBowl.png" : "/pets/props/FoodBowlEmpty.png"} className="w-full h-full" style={{imageRendering: 'pixelated'}} alt="Food Bowl" />
                                         </div>
-                                        <div className={`absolute bottom-0 w-full h-[35%] transition-colors duration-[2000ms] ${(isSleeping || isNightTime) ? 'bg-[#78350f]' : 'bg-[#d97706]'} flex justify-center items-start pt-2 md:pt-4`}>
-                                            {/* Floor Props */}
-                                            <div className="absolute top-[20%] left-[18%] opacity-90 transition-opacity duration-1000 z-10" style={{ transform: 'translate(-50%, -50%)', filter: (isSleeping||isNightTime)?'brightness(0.6)':'none' }}>
-                                                <PixelIcon 
-                                                    grid={bowlHasFood ? SCENE_PROPS.bowlFull.grid : SCENE_PROPS.bowlEmpty.grid} 
-                                                    palette={bowlHasFood ? SCENE_PROPS.bowlFull.palette : SCENE_PROPS.bowlEmpty.palette} 
-                                                    size={4} 
-                                                />
-                                            </div>
-
-                                            <div className="absolute top-[30%] left-[80%] opacity-90 transition-opacity duration-1000 z-10" style={{ transform: 'translate(-50%, -50%)', filter: (isSleeping||isNightTime)?'brightness(0.6)':'none' }}>
-                                                <PixelIcon grid={SCENE_PROPS.litterBox.grid} palette={SCENE_PROPS.litterBox.palette} size={4} />
-                                            </div>
-                                            {/* Carpet */}
-                                            <div className={`w-[60%] h-[70%] border-4 border-gray-900 rounded-2xl shadow-[inset_0_4px_0px_rgba(255,255,255,0.2)] transition-colors duration-[2000ms] relative ${(isSleeping || isNightTime) ? 'bg-[#831843]' : 'bg-[#be123c]'}`} style={{ backgroundImage: 'linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.05) 75%), linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.05) 75%)', backgroundSize: '16px 16px', backgroundPosition: '0 0, 8px 8px' }}></div>
-                                        </div>
-                                    </>
+                                    </div>
                                 )}
 
                                 {/* SCENE: BATHROOM */}
@@ -720,8 +710,8 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
                                         isSleeping={isSleeping}
                                         isDirty={stats.clean < 50}
                                         satiety={stats.satiety}
-                                        activityMult={pTraits.activity.mult}
-                                        bondLevel={currentLevel}
+                                        species={debugSpecies}
+                                        bondLevel={debugBondLevel !== null ? debugBondLevel : currentLevel}
                                         onPetClick={handlePetClick}
                                     />
                                 </div>
@@ -780,21 +770,7 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
                             )}
                         </div>
 
-                        {/* ── PERSONALITY & TIME STRIP ── */}
-                        <div className="w-full flex flex-wrap items-center justify-between gap-2 px-1">
-                            {/* Personality Traits */}
-                            <div className="flex flex-wrap gap-1.5">
-                                {[pTraits.appetite, pTraits.activity, pTraits.cleanliness].map((t, i) => (
-                                    <span key={i} className="inline-flex items-center gap-1 px-2 py-1 bg-white border-2 border-gray-900 rounded-lg text-[10px] md:text-xs font-bold text-gray-700 shadow-[2px_2px_0px_#111827]">
-                                        <span>{t.emoji}</span> {t.label}
-                                    </span>
-                                ))}
-                            </div>
-                            {/* Time of Day */}
-                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 border-2 border-gray-900 rounded-lg text-[10px] md:text-xs font-bold shadow-[2px_2px_0px_#111827] ${isNightTime ? 'bg-indigo-100 text-indigo-800' : timePhase === 'dawn' ? 'bg-orange-100 text-orange-800' : timePhase === 'dusk' ? 'bg-purple-100 text-purple-800' : 'bg-sky-100 text-sky-800'}`}>
-                                {isNightTime ? '🌙' : timePhase === 'dawn' ? '🌅' : timePhase === 'dusk' ? '🌇' : '☀️'} {timeConfig.label}
-                            </span>
-                        </div>
+
                         {/* ── HORIZONTAL BOND TRACK ── */}
                         <div className="w-full bg-white border-4 border-gray-900 p-4 md:p-5 rounded-2xl shadow-[6px_6px_0px_#111827] flex flex-col gap-4 mt-1">
                             <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 z-10 w-full">

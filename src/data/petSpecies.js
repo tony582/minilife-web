@@ -1,293 +1,69 @@
-// ═══════════════════════════════════════════════
-// 🐾 MiniLife — Pet Species Data
-// Data-driven species architecture for multi-species support
-// ═══════════════════════════════════════════════
+// =========================================================
+// 🚀 SPECIES CONFIGURATION
+// Define the sprite sheets for the different pets
+// =========================================================
 
-// Shared palette for all cat growth stages
-const CAT_PALETTE = {
-  "#": "#1e293b",
-  w: "#ffffff",
-  p: "#f472b6",
-  s: "#cbd5e1",
-  y: "#fbbf24",
-  ".": "transparent",
-};
+const SPRITE_DUMMY_FRAMES = { idle: [['#111111']] };
+const EMPTY_PALETTE = { '#111111': '#111111' };
 
-// ─────────────────────────────────────────
-// STAGE 1: KITTEN (奶猫) Lv.0~5
-// Grid: 12 cols × 10 rows — big head, tiny body
-// ─────────────────────────────────────────
-const KITTEN_FRAMES = {
-  idle: [
-    "............",
-    "....#...#...",
-    "...#w#.#w#..",
-    "...#wwwwww#.",
-    "...#w#ww#w#.",
-    ".#.#wwwwww#.",
-    ".#w#wwppww#.",
-    "..##wwswww#.",
-    "...##..##...",
-    "............",
-  ],
-  walk1: [
-    "............",
-    "....#...#...",
-    "...#w#.#w#..",
-    "...#wwwwww#.",
-    "...#w#ww#w#.",
-    ".#.#wwwwww#.",
-    ".#w#wwppww#.",
-    "..##wwswww#.",
-    "...#...##...",
-    "............",
-  ],
-  walk2: [
-    "............",
-    "....#...#...",
-    "...#w#.#w#..",
-    "...#wwwwww#.",
-    "...#w#ww#w#.",
-    ".#.#wwwwww#.",
-    ".#w#wwppww#.",
-    "..##wwswww#.",
-    "....#.##....",
-    "............",
-  ],
-  eat: [
-    "............",
-    "............",
-    "....#...#...",
-    "...#w#.#w#..",
-    "...#wwwwww#.",
-    ".#.#w#ww#w#.",
-    ".#w#wwppww#.",
-    "..##ww#www#.",
-    "...##..##...",
-    "............",
-  ],
-  sleep: [
-    "............",
-    "............",
-    "....#...#...",
-    "...#w#.#w#..",
-    "...#wwwwww#.",
-    ".#.#wwwwww#.",
-    ".#w#wwppww#.",
-    "..##wwswww#.",
-    "...##..##...",
-    "............",
-  ],
-};
-
-// ─────────────────────────────────────────
-// STAGE 2: YOUNG CAT (小猫) Lv.6~12
-// Grid: 16 cols × 14 rows — balanced proportions
-// ─────────────────────────────────────────
-const YOUNG_FRAMES = {
-  idle: [
-    "................",
-    ".......#....#...",
-    "......#w#..#w#..",
-    ".....#wpw##wpw#.",
-    ".....#wwwwwwww#.",
-    "..##.#ww#ww#ww#.",
-    ".#ww##wwwwwwww#.",
-    ".#wwwwwwwppwww#.",
-    "..##wwwssswwww#.",
-    "...#wwwwwwwww#..",
-    "...##ww###ww#...",
-    ".....##...##....",
-    "................",
-    "................",
-  ],
-  walk1: [
-    "................",
-    ".......#....#...",
-    "......#w#..#w#..",
-    ".....#wpw##wpw#.",
-    ".....#wwwwwwww#.",
-    ".....#ww#ww#ww#.",
-    "..##.#wwwwwwww#.",
-    ".#ww##wwwppwww#.",
-    ".#wwwwwssswwww#.",
-    "..##wwwwwwwww#..",
-    "...##ww###ww#...",
-    ".....#....##....",
-    "................",
-    "................",
-  ],
-  walk2: [
-    "................",
-    "..##...#....#...",
-    ".#ww#.#w#..#w#..",
-    ".#ww##wpw##wpw#.",
-    "..##.#wwwwwwww#.",
-    ".....#ww#ww#ww#.",
-    ".....#wwwwwwww#.",
-    ".....#wwwppwww#.",
-    ".....#wssswwww#.",
-    ".....#wwwwwwwww#",
-    ".....##ww###w#..",
-    "......##...#....",
-    "................",
-    "................",
-  ],
-  eat: [
-    "................",
-    ".......#....#...",
-    "......#w#..#w#..",
-    ".....#wpw##wpw#.",
-    "..##.#wwwwwwww#.",
-    ".#ww##ww#ww#ww#.",
-    ".#wwwwwwwwwwww#.",
-    "..##wwww#ppwww#.",
-    "...#wwwssswwww#.",
-    "...#wwwwwwwww#..",
-    "...##w#####w#...",
-    ".....#.....#....",
-    "................",
-    "................",
-  ],
-  sleep: [
-    "................",
-    "................",
-    "................",
-    ".......#....#...",
-    "......#w#..#w#..",
-    ".....#wpw##wpw#.",
-    "..##.#wwwwwwww#.",
-    ".#ww##wwwwwwww#.",
-    ".#wwwwww#ww#ww#.",
-    "..##wwwwwppwww#.",
-    "...#wwwwwwwww#..",
-    "...##ww###ww#...",
-    ".....##...##....",
-    "................",
-  ],
-};
-
-// ─────────────────────────────────────────
-// STAGE 3: ADULT CAT (成猫) Lv.13+
-// Grid: 16 cols × 14 rows
-// Differences: taller ears (row 0), BOLD gold collar, longer tail
-// ─────────────────────────────────────────
-const ADULT_FRAMES = {
-  idle: [
-    "......#.....#...",
-    ".....#w#...#w#..",
-    "....#wpw#.#wpw#.",
-    "....#wwwwwwwww#.",
-    "..##.#ww#ww#ww#.",
-    ".#ww##wwwwwwww#.",
-    ".#wwwwwwwppwww#.",
-    "..##wyyyyyywww#.",
-    "...#wwwwwwwww#..",
-    "...##ww###ww#...",
-    ".....##...##....",
-    "................",
-    "................",
-    "................",
-  ],
-  walk1: [
-    "......#.....#...",
-    ".....#w#...#w#..",
-    "....#wpw#.#wpw#.",
-    "....#wwwwwwwww#.",
-    ".....#ww#ww#ww#.",
-    "..##.#wwwwwwww#.",
-    ".#ww##wwwppwww#.",
-    ".#wwwyyyyyywww#.",
-    "..##wwwwwwwww#..",
-    "...##ww###ww#...",
-    ".....#....##....",
-    "................",
-    "................",
-    "................",
-  ],
-  walk2: [
-    "................",
-    "..###..#.....#..",
-    ".#ww#.#w#...#w#.",
-    ".#ww##wpw#.#wpw#",
-    "..##.#wwwwwwwww#",
-    ".....#ww#ww#ww#.",
-    ".....#wwwwwwww#.",
-    ".....#wwwppwww#.",
-    ".....#yyyywwww#.",
-    ".....#wwwwwwwww#",
-    ".....##ww###w#..",
-    "......##...#....",
-    "................",
-    "................",
-  ],
-  eat: [
-    "......#.....#...",
-    ".....#w#...#w#..",
-    "....#wpw#.#wpw#.",
-    "....#wwwwwwwww#.",
-    "..##.#ww#ww#ww#.",
-    ".#ww##wwwwwwww#.",
-    ".#wwwwwww#ppww#.",
-    "..##wyyyyyywww#.",
-    "...#wwwwwwwww#..",
-    "...##w#####w#...",
-    ".....#.....#....",
-    "................",
-    "................",
-    "................",
-  ],
-  sleep: [
-    "................",
-    "................",
-    "......#.....#...",
-    ".....#w#...#w#..",
-    "....#wpw#.#wpw#.",
-    "....#wwwwwwwww#.",
-    "..##.#wwwwwwww#.",
-    ".#ww##wwwwwwww#.",
-    ".#wwwwww#ww#ww#.",
-    "..##wyyyyyppww#.",
-    "...#wwwwwwwww#..",
-    "...##ww###ww#...",
-    ".....##...##....",
-    "................",
-  ],
-};
-
-// ═══════════════════════════════════════════════
-// Species Registry
-// ═══════════════════════════════════════════════
-const CAT_SPECIES = {
-  id: 'cat',
-  name: '小猫咪',
-  palette: CAT_PALETTE,
+const MOCHI_CAT = {
+  id: 'mochi',
+  name: 'Mochi(百变小猫)',
+  spriteMode: 'sprite',
+  palette: EMPTY_PALETTE,
+  spriteSheets: {
+    idle:  { src: '/pets/mochi/Idle.png', frames: 10, frameW: 32, frameH: 32 },
+    run:   { src: '/pets/mochi/Excited.png', frames: 12, frameW: 32, frameH: 32 },
+    sleep: { src: '/pets/mochi/Sleep.png', frames: 4, frameW: 32, frameH: 32 },
+    eat:   { src: '/pets/mochi/Eating.png', frames: 15, frameW: 32, frameH: 32 },
+    sick:  { src: '/pets/mochi/catsick1.png', frames: 5, frameW: 32, frameH: 32 },
+    dance: { src: '/pets/mochi/Dance.png', frames: 4, frameW: 32, frameH: 32 },
+    wait:  { src: '/pets/mochi/Waiting.png', frames: 4, frameW: 32, frameH: 32 },
+    cry:   { src: '/pets/mochi/Cry.png', frames: 4, frameW: 32, frameH: 32 },
+    bathe: { src: '/pets/mochi/Bathtab.png', frames: 14, frameW: 32, frameH: 512 },
+  },
   stages: [
-    { id: 'kitten', name: '奶猫',  levelRange: [0, 5],  frames: KITTEN_FRAMES },
-    { id: 'young',  name: '小猫',  levelRange: [6, 12], frames: YOUNG_FRAMES },
-    { id: 'adult',  name: '成猫',  levelRange: [13, 30], frames: ADULT_FRAMES },
+    { id: 'adult', name: 'Mochi', levelRange: [0, 999], frames: SPRITE_DUMMY_FRAMES },
   ],
 };
 
-/**
- * Get the correct sprite stage data for a cat at the given level.
- * Returns { palette, frames, stageName, gridCols, gridRows }
- */
-export const getCatStageData = (level) => {
-  const stage = CAT_SPECIES.stages.find(
-    s => level >= s.levelRange[0] && level <= s.levelRange[1]
-  ) || CAT_SPECIES.stages[CAT_SPECIES.stages.length - 1];
+const ORANGE_CAT = {
+  id: 'orange',
+  name: '小橘(经典款)',
+  spriteMode: 'sprite',
+  palette: EMPTY_PALETTE,
+  spriteSheets: {
+    idle:  { src: '/pets/orange/IdleCatt.png', frames: 7, frameW: 32, frameH: 32 },
+    run:   { src: '/pets/orange/RunCatt.png', frames: 7, frameW: 32, frameH: 32 },
+    sleep: { src: '/pets/orange/SleepCatt.png', frames: 3, frameW: 32, frameH: 32 },
+    eat:   { src: '/pets/orange/Liking.png', frames: 18, frameW: 32, frameH: 32 },
+    sick:  { src: '/pets/orange/HurtCattt.png', frames: 7, frameW: 32, frameH: 32 },
+    dance: { src: '/pets/orange/JumpCattt.png', frames: 13, frameW: 32, frameH: 32 },
+    wait:  { src: '/pets/orange/Sittingg.png', frames: 3, frameW: 32, frameH: 32 },
+    cry:   { src: '/pets/orange/DieCatt.png', frames: 15, frameW: 32, frameH: 32 },
+    bathe: { src: '/pets/orange/Sittingg.png', frames: 3, frameW: 32, frameH: 32 },
+  },
+  stages: [
+    { id: 'adult', name: '小橘', levelRange: [0, 999], frames: SPRITE_DUMMY_FRAMES },
+  ],
+};
 
+export const SPECIES_REGISTRY = {
+  orange: ORANGE_CAT,
+  mochi: MOCHI_CAT,
+  cat: ORANGE_CAT, // Defaulting cat to Orange to give "Normal Walk" out of the box
+};
+
+export const getStageData = (speciesId, level) => {
+  const species = SPECIES_REGISTRY[speciesId] || ORANGE_CAT;
+  const stage = species.stages[0];
   const sampleFrame = stage.frames.idle;
   return {
-    palette: CAT_SPECIES.palette,
-    frames: stage.frames,
-    stageName: stage.name,
-    stageId: stage.id,
-    gridCols: sampleFrame[0].length,
-    gridRows: sampleFrame.length,
+    palette: species.palette, frames: stage.frames,
+    stageName: stage.name, stageId: stage.id,
+    gridCols: sampleFrame[0].length, gridRows: sampleFrame.length,
   };
 };
 
-export { CAT_SPECIES };
+export const getCatStageData = (level) => getStageData('cat', level);
 export default getCatStageData;
