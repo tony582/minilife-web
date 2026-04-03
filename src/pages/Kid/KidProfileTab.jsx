@@ -80,7 +80,7 @@ function PetCard({ activeKid, onOpenRoom }) {
         <div className="flex items-center gap-1.5 flex-1">
             <span className="text-[11px]">{icon}</span>
             <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-slate-100">
-                <div className="h-full rounded-full transition-all" style={{ width: \`\${val}%\`, background: color }} />
+                <div className="h-full rounded-full transition-all" style={{ width: `${val}%`, background: color }} />
             </div>
         </div>
     );
@@ -221,7 +221,7 @@ function ExpHistoryModal({ activeKid, transactions, nextLevelExp, onClose }) {
                         <span className="text-[10px] font-black text-orange-500 bg-orange-100 px-2 py-0.5 rounded">总计 {activeKid.exp} ✨</span>
                     </div>
                     <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
-                        <div className="h-full rounded-full transition-all" style={{ width: \`\${expPercent}%\`, background: 'linear-gradient(90deg, #4ade80, #facc15)' }} />
+                        <div className="h-full rounded-full transition-all" style={{ width: `${expPercent}%`, background: 'linear-gradient(90deg, #4ade80, #facc15)' }} />
                     </div>
                     <div className="text-[10px] text-slate-400 font-bold mt-1.5">还需 {nextLevelExp - activeKid.exp} 星尘升级</div>
                 </div>
@@ -375,7 +375,7 @@ export const KidProfileTab = () => {
                         </div>
                         <div className="h-3 md:h-4 rounded-full overflow-hidden bg-black/30 relative">
                             <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-1000 ease-out"
-                                style={{ width: \`\${expPercent}%\`, background: 'linear-gradient(90deg, #4ade80, #facc15)', boxShadow: '0 0 12px rgba(74,222,128,0.4)' }} />
+                                style={{ width: `${expPercent}%`, background: 'linear-gradient(90deg, #4ade80, #facc15)', boxShadow: '0 0 12px rgba(74,222,128,0.4)' }} />
                             <div className="absolute top-0 inset-x-0 h-1 bg-white/20 rounded-full" />
                         </div>
                         <div className="flex justify-between mt-2">
@@ -410,9 +410,9 @@ export const KidProfileTab = () => {
                 </h3>
                 <div className="grid grid-cols-3 gap-3">
                     {[
-                        { label: '利息加成', value: privileges.interestBonus > 0 ? \`+\${privileges.interestBonus}%/周\` : '未解锁', icon: '💰', active: privileges.interestBonus > 0, color: C.teal },
-                        { label: '每日奖励', value: privileges.dailyBonus > 0 ? \`+\${privileges.dailyBonus}\` : '未解锁', icon: '🪙', active: privileges.dailyBonus > 0, color: C.orange },
-                        { label: '商城折扣', value: privileges.shopDiscount > 0 ? \`${100 - privileges.shopDiscount}折\` : '未解锁', icon: '🏷️', active: privileges.shopDiscount > 0, color: C.purple },
+                        { label: '利息加成', value: privileges.interestBonus > 0 ? `+${privileges.interestBonus}%/周` : '未解锁', icon: '💰', active: privileges.interestBonus > 0, color: C.teal },
+                        { label: '每日奖励', value: privileges.dailyBonus > 0 ? `+${privileges.dailyBonus}` : '未解锁', icon: '🪙', active: privileges.dailyBonus > 0, color: C.orange },
+                        { label: '商城折扣', value: privileges.shopDiscount > 0 ? `${100 - privileges.shopDiscount}折` : '未解锁', icon: '🏷️', active: privileges.shopDiscount > 0, color: C.purple },
                     ].map((p, i) => (
                         <div key={i} className="rounded-2xl p-4 text-center"
                             style={{
