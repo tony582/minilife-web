@@ -143,12 +143,15 @@ export default function PetCapsule({ kidId, completedTasksToday = 0 }) {
                     <div style={{
                         background: 'linear-gradient(160deg, #FF8C42, #FF4757)',
                         borderRadius: '14px 0 0 14px',
-                        padding: '14px 10px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: '12px 9px',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
                         boxShadow: '-4px 4px 24px rgba(255,71,87,0.4), inset 1px 1px 0 rgba(255,255,255,0.25)',
                     }}>
-                        {/* 像素风爪印 */}
-                        <span style={{ fontSize: 22, lineHeight: 1, filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.3))' }}>🐾</span>
+                        <span style={{ fontSize: 18, lineHeight: 1, filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.3))' }}>🐾</span>
+                        <span style={{
+                            fontSize: 10, fontWeight: 900, color: 'rgba(255,255,255,0.9)',
+                            writingMode: 'vertical-rl', letterSpacing: 2, lineHeight: 1,
+                        }}>隐藏</span>
                     </div>
                 </div>
             </>
@@ -282,6 +285,7 @@ export default function PetCapsule({ kidId, completedTasksToday = 0 }) {
                                 letterSpacing: 4,
                                 textShadow: '0 2px 10px rgba(0,0,0,0.5)',
                                 userSelect: 'none',
+                                marginTop: 10,
                             }}>隐藏</span>
                         </div>
                     )}
