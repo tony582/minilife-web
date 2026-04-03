@@ -1,59 +1,76 @@
 // ═══════════════════════════════════════════════════════════
-// PetCapsule — 全局浮动宠物胶囊
-// 始终悬浮在右下角，点击展开房间全屏弹窗
+// PetCapsule — 全局浮动小猫
+// 右下角漂浮的小猫盒子动画，任务完成后弹出鼓励气泡
 // ═══════════════════════════════════════════════════════════
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { usePetRooms } from '../../hooks/usePetRooms';
-import { useAntiAddiction } from '../../hooks/useAntiAddiction';
-import { useDataContext } from '../../context/DataContext';
-import PetRoomModal from './PetRoomModal';
+import React, { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
+import PetBoxTeaser from './PetBoxTeaser';
 
-const PET_EMOJI_BY_MOOD = (mood) => {
-    if (mood >= 80) return '😸';
-    if (mood >= 60) return '😺';
-    if (mood >= 40) return '😿';
-    return '😾';
-};
+// 鼓励语列表
+const ENCOURAGE_MESSAGES = [
+    '太棒了！继续加油～ 🌟',
+    '你真的很厉害！🎉',
+    '喵！又完成了一个！💪',
+    '为你骄傲！✨',
+    '今天超级给力！🚀',
+    '喵喵为你欢呼！🎊',
+    '你是最棒的小朋友！🌈',
+    '好厉害！继续努力！⭐',
+];
+
+const IDLE_MESSAGES = [
+    '喵~ 今天要努力哦！',
+    '一起加油！喵～',
+    '有我陪着你呢 🐱',
+    '记得按时完成任务～',
+];
+
+function randomPick(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
 
 export default function PetCapsule({ kidId, completedTasksToday = 0 }) {
-    const [isOpen, setIsOpen] = useState(false);
+    const [bubble, setBubble] = useState(null); // { text, type: 'encourage'|'idle' }
+    const [pos, setPos] = useState({ right: 20, bottom: 80 });
     const [isDragging, setIsDragging] = useState(false);
-    const [pos, setPos] = useState({ right: 16, bottom: 80 });
-    const capsuleRef = useRef(null);
+    const bubbleTimerRef = useRef(null);
+    const prevTasksRef = useRef(completedTasksToday);
     const dragStartRef = useRef(null);
 
-    // Get activeKid object for passing to VirtualPetDashboard
-    const { kids } = useDataContext();
-    const activeKid = kids.find(k => k.id === kidId) ?? null;
+    // ── Show bubble for N seconds then hide ─────────────────────────
+    const showBubble = useCallback((text, type = 'idle', duration = 4000) => {
+        clearTimeout(bubbleTimerRef.current);
+        setBubble({ text, type });
+        bubbleTimerRef.current = setTimeout(() => setBubble(null), duration);
+    }, []);
 
-    const { rooms, activeRoom, activeRoomIdx, setActiveRoomIdx, loading,
-            updateSkin, updateFurniture, updatePetVitals, unlockRoom } = usePetRooms(kidId);
-
-    const { remainingSeconds, limitSeconds, isLocked, remainingLabel, progressPct,
-            startSession, endSession, showWarning, dismissWarning } = useAntiAddiction(kidId, completedTasksToday);
-
-    // Short-circuit if no room data yet
-    const mood = activeRoom?.petMood ?? 100;
-    const hunger = activeRoom?.petHunger ?? 100;
-
-    // ── Open / Close room modal ──────────────────────────────────────
-    const openRoom = useCallback(() => {
-        if (isDragging) return;
-        if (isLocked) {
-            // Still open but show locked state inside modal
+    // ── Task completed → encouragement bubble ────────────────────────
+    useEffect(() => {
+        if (completedTasksToday > prevTasksRef.current) {
+            // Delay slightly so it appears after the task animation
+            const t = setTimeout(() => {
+                showBubble(randomPick(ENCOURAGE_MESSAGES), 'encourage', 5000);
+            }, 800);
+            return () => clearTimeout(t);
         }
-        setIsOpen(true);
-        startSession();
-    }, [isDragging, isLocked, startSession]);
+        prevTasksRef.current = completedTasksToday;
+    }, [completedTasksToday, showBubble]);
 
-    const closeRoom = useCallback(() => {
-        setIsOpen(false);
-        endSession();
-    }, [endSession]);
+    useEffect(() => {
+        prevTasksRef.current = completedTasksToday;
+    }, [completedTasksToday]);
+
+    useEffect(() => {
+        return () => clearTimeout(bubbleTimerRef.current);
+    }, []);
+
+    // ── Click → idle message ─────────────────────────────────────────
+    const handleClick = useCallback(() => {
+        if (isDragging) return;
+        showBubble(randomPick(IDLE_MESSAGES), 'idle', 3500);
+    }, [isDragging, showBubble]);
 
     // ── Drag to reposition ───────────────────────────────────────────
     const handlePointerDown = useCallback((e) => {
-        if (e.target.closest('[data-no-drag]')) return;
         dragStartRef.current = {
             startX: e.clientX, startY: e.clientY,
             startRight: pos.right, startBottom: pos.bottom,
@@ -62,140 +79,74 @@ export default function PetCapsule({ kidId, completedTasksToday = 0 }) {
         const onMove = (mv) => {
             const dx = mv.clientX - dragStartRef.current.startX;
             const dy = mv.clientY - dragStartRef.current.startY;
-            if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
                 dragStartRef.current.moved = true;
                 setIsDragging(true);
-                const newRight = Math.max(8, Math.min(window.innerWidth - 100, dragStartRef.current.startRight - dx));
-                const newBottom = Math.max(70, Math.min(window.innerHeight - 100, dragStartRef.current.startBottom - dy));
+                const newRight  = Math.max(8, Math.min(window.innerWidth  - 90, dragStartRef.current.startRight  - dx));
+                const newBottom = Math.max(60, Math.min(window.innerHeight - 90, dragStartRef.current.startBottom - dy));
                 setPos({ right: newRight, bottom: newBottom });
             }
         };
         const onUp = () => {
             window.removeEventListener('pointermove', onMove);
-            window.removeEventListener('pointerup', onUp);
+            window.removeEventListener('pointerup',   onUp);
             setTimeout(() => setIsDragging(false), 50);
         };
         window.addEventListener('pointermove', onMove);
-        window.addEventListener('pointerup', onUp);
+        window.addEventListener('pointerup',   onUp);
+        e.preventDefault();
     }, [pos]);
 
-    if (loading) return null;
-
     return (
-        <>
-            {/* ── Floating Capsule ─────────────────────────────────── */}
-            <div
-                ref={capsuleRef}
-                onPointerDown={handlePointerDown}
-                onClick={openRoom}
-                className="fixed z-[80] select-none touch-none"
-                style={{ right: pos.right, bottom: pos.bottom }}
-            >
-                <div className={`
-                    relative flex items-center gap-2 pl-2 pr-3 py-1.5
-                    rounded-full shadow-2xl cursor-pointer
-                    border border-white/30 backdrop-blur-md
-                    transition-all duration-300 active:scale-95
-                    ${isLocked
-                        ? 'bg-slate-500/80 opacity-70'
-                        : 'bg-white/90 hover:bg-white hover:shadow-orange-200/50'
-                    }
-                `}
-                style={{ boxShadow: isLocked ? undefined : '0 8px 32px rgba(255,140,66,0.25)' }}
+        <div
+            className="fixed z-[80] select-none touch-none"
+            style={{ right: pos.right, bottom: pos.bottom }}
+            onPointerDown={handlePointerDown}
+            onClick={handleClick}
+        >
+            {/* ── Speech Bubble ────────────────────────────────────── */}
+            {bubble && (
+                <div
+                    key={bubble.text}
+                    className="absolute bottom-full right-0 mb-2 pointer-events-none"
+                    style={{ animation: 'petBubbleIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards' }}
                 >
-                    {/* Pet emoji preview */}
-                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xl
-                        bg-gradient-to-br from-orange-100 to-amber-50 border border-orange-200/50
-                        ${isLocked ? 'grayscale' : 'animate-[bounce_3s_ease-in-out_infinite]'}
+                    <div className={`
+                        relative px-3 py-2 rounded-2xl rounded-br-sm shadow-xl
+                        text-xs font-bold leading-snug max-w-[140px] text-center whitespace-pre-wrap
+                        ${bubble.type === 'encourage'
+                            ? 'bg-gradient-to-br from-orange-400 to-amber-500 text-white'
+                            : 'bg-white text-slate-700 border border-slate-100'
+                        }
                     `}>
-                        {isLocked ? '😴' : PET_EMOJI_BY_MOOD(mood)}
+                        {bubble.text}
+                        {/* bubble tail */}
+                        <div className={`
+                            absolute -bottom-1.5 right-4 w-3 h-3 rotate-45 rounded-sm
+                            ${bubble.type === 'encourage' ? 'bg-amber-500' : 'bg-white border-r border-b border-slate-100'}
+                        `} />
                     </div>
-
-                    {/* Status info */}
-                    <div className="flex flex-col gap-0.5 min-w-[60px]">
-                        {/* Room name */}
-                        <span className="text-[10px] font-black text-slate-700 leading-none">
-                            {activeRoom?.roomName ?? '我的小窝'}
-                        </span>
-
-                        {/* Hunger bar */}
-                        <div className="flex items-center gap-1">
-                            <span className="text-[9px] text-slate-400">🍖</span>
-                            <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                <div className="h-full rounded-full transition-all duration-500"
-                                    style={{
-                                        width: `${hunger}%`,
-                                        background: hunger > 50 ? '#4ade80' : hunger > 25 ? '#fbbf24' : '#f87171'
-                                    }} />
-                            </div>
-                        </div>
-
-                        {/* Time remaining (show when limited) */}
-                        {isLocked ? (
-                            <span className="text-[9px] text-red-400 font-bold leading-none">已休息 🔒</span>
-                        ) : remainingSeconds < limitSeconds * 0.3 ? (
-                            <span className="text-[9px] text-orange-400 font-bold leading-none">剩 {remainingLabel}</span>
-                        ) : null}
-                    </div>
-
-                    {/* Notification dot: hunger low */}
-                    {hunger < 30 && !isLocked && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full
-                            flex items-center justify-center text-[8px] text-white font-black
-                            animate-pulse shadow-md"
-                        >!</div>
-                    )}
-
-                    {/* Time progress ring */}
-                    {!isLocked && (
-                        <div className="absolute inset-0 rounded-full pointer-events-none overflow-hidden opacity-20">
-                            <div className="absolute inset-0 rounded-full border-2 border-orange-300" />
-                        </div>
-                    )}
                 </div>
+            )}
 
-                {/* Tail indicator */}
-                <div className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2
-                    w-3 h-3 rotate-45 rounded-sm
-                    ${isLocked ? 'bg-slate-500/80' : 'bg-white/90'}`}
-                />
+            {/* ── Cat in Box ───────────────────────────────────────── */}
+            <div
+                className={`
+                    cursor-pointer transition-transform duration-200
+                    ${isDragging ? '' : 'hover:scale-110 active:scale-95'}
+                `}
+                title="点我打招呼"
+            >
+                <PetBoxTeaser size={72} />
             </div>
 
-            {/* ── Anti-Addiction Warning Banner ────────────────────── */}
-            {showWarning && !isLocked && (
-                <div className="fixed bottom-28 right-4 z-[85] max-w-[220px]
-                    bg-amber-400 text-amber-900 px-4 py-3 rounded-2xl shadow-xl
-                    text-xs font-bold animate-bounce-in"
-                >
-                    <p className="mb-2">已玩 5 分钟啦 🐱</p>
-                    <p className="text-[10px] opacity-80 mb-2">去完成一个任务再回来？</p>
-                    <button data-no-drag
-                        onClick={(e) => { e.stopPropagation(); dismissWarning(); }}
-                        className="w-full bg-amber-900/20 rounded-xl py-1 text-[10px] font-black hover:bg-amber-900/30 transition-colors"
-                    >知道啦～</button>
-                </div>
-            )}
-
-            {/* ── Room Modal ───────────────────────────────────────── */}
-            {isOpen && (
-                <PetRoomModal
-                    rooms={rooms}
-                    activeRoomIdx={activeRoomIdx}
-                    setActiveRoomIdx={setActiveRoomIdx}
-                    updateSkin={updateSkin}
-                    updateFurniture={updateFurniture}
-                    updatePetVitals={updatePetVitals}
-                    unlockRoom={unlockRoom}
-                    kidId={kidId}
-                    activeKid={activeKid}
-                    isLocked={isLocked}
-                    remainingLabel={remainingLabel}
-                    remainingSeconds={remainingSeconds}
-                    limitSeconds={limitSeconds}
-                    progressPct={progressPct}
-                    onClose={closeRoom}
-                />
-            )}
-        </>
+            {/* Global animation keyframes */}
+            <style>{`
+                @keyframes petBubbleIn {
+                    0%   { opacity: 0; transform: scale(0.7) translateY(8px); }
+                    100% { opacity: 1; transform: scale(1) translateY(0); }
+                }
+            `}</style>
+        </div>
     );
 }
