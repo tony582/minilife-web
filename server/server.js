@@ -52,6 +52,7 @@ app.use('/api/classes', require('./routes/classes')(db, deps));
 app.use('/api/transactions', require('./routes/transactions')(db, deps));
 app.use('/api/settings', require('./routes/settings')(db, deps));
 app.use('/api/interest', require('./routes/interest')(db, deps));
+app.use('/api/pet', require('./routes/pet')(db, deps));
 
 // --- Serve uploaded assets (QR codes etc.) ---
 app.use('/assets', express.static(path.join(__dirname, '../public/assets')));

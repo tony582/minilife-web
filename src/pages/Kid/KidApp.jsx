@@ -11,6 +11,7 @@ import { KidHabitTab } from './KidHabitTab';
 import { KidWealthTab } from './KidWealthTab';
 import { KidShopTab } from './KidShopTab';
 import { KidProfileTab } from './KidProfileTab';
+import PetCapsule from '../../components/VirtualPet/PetCapsule';
 
 export const KidApp = () => {
     const {
@@ -83,7 +84,15 @@ export const KidApp = () => {
     const myOrders = orders.filter(o => o.kidId === activeKidId);
     const nextLevelExp = getLevelReq(activeKid.level);
 
+    // Count today's completed tasks for anti-addiction bonus calculation
+    const today = new Date().toISOString().split('T')[0];
+    const completedTasksToday = myTasks.filter(t =>
+        t.status === 'completed' &&
+        (t.date === today || (t.dates && t.dates.includes(today)))
+    ).length;
+
     return (
+        <>
         <div className="min-h-screen font-sans pb-24 text-left animate-fade-in overflow-x-hidden" style={{ background: (kidTab === 'study' || kidTab === 'habit' || kidTab === 'wealth' || kidTab === 'profile') ? '#FBF7F0' : '#f4f7f9' }}>
             {/* Mobile navbar - unchanged */}
             <div className="md:hidden bg-white border-b border-slate-100 px-4 py-3 flex justify-between items-center sticky top-0 z-20 shadow-sm">
@@ -494,5 +503,13 @@ export const KidApp = () => {
                 </div>
             )}
         </div>
+
+        {/* ── Global Pet Capsule — floats over all tabs ── */}
+        <PetCapsule
+            key={activeKidId}
+            kidId={activeKidId}
+            completedTasksToday={completedTasksToday}
+        />
+        </>
     );
 };

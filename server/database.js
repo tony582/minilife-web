@@ -56,6 +56,14 @@ const COLUMN_MAP = {
     highest_level: 'highest_level', badges: 'badges',
     interest_amount: 'interest_amount', interest_rate: 'interest_rate',
     interest_bonus: 'interest_bonus', calculated_at: 'calculated_at',
+    // Pet rooms
+    room_name: 'roomName', skin_idx: 'skinIdx', furniture_json: 'furnitureJson',
+    coins_spent: 'coinsSpent', pet_id: 'petId', sort_order: 'sortOrder',
+    unlocked_at: 'unlockedAt', pet_hunger: 'petHunger', pet_mood: 'petMood',
+    pet_state: 'petState', pet_last_fed: 'petLastFed',
+    // Anti-addiction
+    date_str: 'dateStr', total_seconds: 'totalSeconds',
+    bonus_seconds: 'bonusSeconds', last_session_at: 'lastSessionAt',
 };
 
 // Columns that should always be numbers (PG bigint returns strings)
@@ -371,6 +379,36 @@ async function initializeDatabase() {
                 [key, value]
             );
         }
+
+        // ── Pet Rooms: per-kid customizable rooms ──────────────────────
+        await client.query(`CREATE TABLE IF NOT EXISTS pet_rooms (
+            id TEXT PRIMARY KEY,
+            userid TEXT NOT NULL,
+            kidid TEXT NOT NULL,
+            room_name TEXT DEFAULT '我的小窝',
+            sort_order INTEGER DEFAULT 0,
+            skin_idx INTEGER DEFAULT 0,
+            furniture_json TEXT DEFAULT '[]',
+            coins_spent INTEGER DEFAULT 0,
+            pet_id TEXT DEFAULT '',
+            pet_hunger INTEGER DEFAULT 100,
+            pet_mood INTEGER DEFAULT 100,
+            pet_state TEXT DEFAULT 'idle',
+            pet_last_fed TEXT DEFAULT '',
+            unlocked_at TEXT NOT NULL
+        )`);
+
+        // ── Pet Anti-Addiction: daily interaction tracking ──────────────
+        await client.query(`CREATE TABLE IF NOT EXISTS pet_anti_addiction (
+            id TEXT PRIMARY KEY,
+            userid TEXT NOT NULL,
+            kidid TEXT NOT NULL,
+            date_str TEXT NOT NULL,
+            total_seconds INTEGER DEFAULT 0,
+            bonus_seconds INTEGER DEFAULT 0,
+            last_session_at TEXT DEFAULT '',
+            UNIQUE(kidid, date_str)
+        )`);
 
         console.log('PostgreSQL schema initialized successfully.');
     } catch (err) {
