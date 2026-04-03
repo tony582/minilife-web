@@ -137,8 +137,15 @@ export default function PetCapsule({ kidId, completedTasksToday = 0 }) {
                 <style>{`@keyframes petEdgeIn { from{transform:translateX(100%)} to{transform:translateX(0)} }`}</style>
                 <div
                     className="fixed z-[80] cursor-pointer select-none"
-                    style={{ right: 0, bottom: pos.bottom, animation: 'petEdgeIn 0.4s cubic-bezier(0.34,1.56,0.64,1)' }}
-                    onClick={() => { setHidden(false); setShowManage(false); }}
+                    style={{
+                        right: 0, bottom: pos.bottom,
+                        animation: 'petEdgeIn 0.4s cubic-bezier(0.34,1.56,0.64,1)',
+                        opacity: effectiveOpacity,
+                        transition: 'opacity 1.2s ease',
+                    }}
+                    onClick={() => { setHidden(false); setShowManage(false); keepActive(); }}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
                 >
                     <div style={{
                         background: 'linear-gradient(160deg, #FF8C42, #FF4757)',
@@ -157,6 +164,7 @@ export default function PetCapsule({ kidId, completedTasksToday = 0 }) {
             </>
         );
     }
+
 
     // ── Main capsule ────────────────────────────────────────
     return (
