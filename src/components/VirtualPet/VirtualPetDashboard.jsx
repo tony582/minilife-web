@@ -105,8 +105,13 @@ export default function VirtualPetDashboard({
         return () => observer.disconnect();
     }, []);
 
-    // ── GAME STATE ──
-    const [stats, setStats] = useState({ satiety: 60, clean: 100, mood: 85 });
+    // ── GAME STATE — init from roomData if provided ──
+    const [stats, setStats] = useState(() => ({
+        satiety: roomData?.petHunger ?? 60,
+        clean:   100,
+        mood:    roomData?.petMood   ?? 85,
+    }));
+    const [petLastFed, setPetLastFed] = useState(roomData?.petLastFed ?? '');
     const [poops, setPoops] = useState([]);
     const [isSick, setIsSick] = useState(false);
     const [isSleeping, setIsSleeping] = useState(false);
@@ -386,6 +391,22 @@ export default function VirtualPetDashboard({
         return () => clearInterval(interval);
     }, [isSleeping, poops.length, engineSize, activeScene, isNightTime]);
 
+    // ── PERSIST PET VITALS to DB every 30s (when embedded) ──────────
+    const vitalsRef = useRef({ satiety: stats.satiety, mood: stats.mood });
+    vitalsRef.current = { satiety: stats.satiety, mood: stats.mood };
+    useEffect(() => {
+        if (!onPetVitalsChange) return;
+        const interval = setInterval(() => {
+            onPetVitalsChange({
+                petHunger: Math.round(vitalsRef.current.satiety),
+                petMood:   Math.round(vitalsRef.current.mood),
+                petState:  isSleeping ? 'sleeping' : 'idle',
+                petLastFed,
+            });
+        }, 30000);
+        return () => clearInterval(interval);
+    }, [onPetVitalsChange, isSleeping, petLastFed]);
+
     // ── NEEDS BUBBLE SYSTEM — Pet proactively expresses wants ──
     useEffect(() => {
         const interval = setInterval(() => {
@@ -581,7 +602,16 @@ export default function VirtualPetDashboard({
                 // Wait 4s (time to walk + time to eat) before emptying the bowl and gaining satiety
                 setTimeout(() => {
                     setBowlHasFood(false);
-                    setStats(s => ({ ...s, satiety: Math.min(100, s.satiety + 40) })); 
+                    const now = new Date().toISOString();
+                    setStats(s => ({ ...s, satiety: Math.min(100, s.satiety + 40) }));
+                    setPetLastFed(now);
+                    // Immediate persist on feed
+                    onPetVitalsChange?.({
+                        petHunger: Math.min(100, Math.round(vitalsRef.current.satiety + 40)),
+                        petMood:   Math.round(vitalsRef.current.mood),
+                        petState:  'idle',
+                        petLastFed: now,
+                    });
                 }, 4000);
                 break;
 

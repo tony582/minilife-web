@@ -5,9 +5,9 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { usePetRooms } from '../../hooks/usePetRooms';
 import { useAntiAddiction } from '../../hooks/useAntiAddiction';
+import { useDataContext } from '../../context/DataContext';
 import PetRoomModal from './PetRoomModal';
 
-// ─── Mini pixel cat sprite (simple CSS animation) ─────────
 const PET_EMOJI_BY_MOOD = (mood) => {
     if (mood >= 80) return '😸';
     if (mood >= 60) return '😺';
@@ -21,6 +21,10 @@ export default function PetCapsule({ kidId, completedTasksToday = 0 }) {
     const [pos, setPos] = useState({ right: 16, bottom: 80 });
     const capsuleRef = useRef(null);
     const dragStartRef = useRef(null);
+
+    // Get activeKid object for passing to VirtualPetDashboard
+    const { kids } = useDataContext();
+    const activeKid = kids.find(k => k.id === kidId) ?? null;
 
     const { rooms, activeRoom, activeRoomIdx, setActiveRoomIdx, loading,
             updateSkin, updateFurniture, updatePetVitals, unlockRoom } = usePetRooms(kidId);
@@ -183,6 +187,7 @@ export default function PetCapsule({ kidId, completedTasksToday = 0 }) {
                     updatePetVitals={updatePetVitals}
                     unlockRoom={unlockRoom}
                     kidId={kidId}
+                    activeKid={activeKid}
                     isLocked={isLocked}
                     remainingLabel={remainingLabel}
                     remainingSeconds={remainingSeconds}

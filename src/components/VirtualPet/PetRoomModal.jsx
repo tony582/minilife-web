@@ -16,7 +16,7 @@ const NEXT_ROOM_COSTS = [0, 500, 1500, 3000];
 export default function PetRoomModal({
     rooms, activeRoomIdx, setActiveRoomIdx,
     updateSkin, updateFurniture, updatePetVitals,
-    unlockRoom, kidId, onClose,
+    unlockRoom, kidId, activeKid, onClose,
     isLocked, remainingLabel, remainingSeconds, limitSeconds, progressPct,
 }) {
     const [unlocking, setUnlocking]             = useState(false);
@@ -222,6 +222,7 @@ export default function PetRoomModal({
                         {activeRoom && (
                             <VirtualPetDashboard
                                 key={activeRoom.id}
+                                activeKid={activeKid}
                                 roomData={activeRoom}
                                 onSkinChange={updateSkin}
                                 onFurnitureChange={updateFurniture}
