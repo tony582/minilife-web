@@ -34,6 +34,7 @@ import { AddItemModal } from '../modals/AddItemModal';
 import { AddKidModal } from '../modals/AddKidModal';
 import { KidPreviewModal } from '../modals/KidPreviewModal';
 import { AddPlanModal } from '../modals/AddPlanModal';
+import { AvatarPickerModal } from '../modals/AvatarPickerModal';
 
 
 export const GlobalModals = () => {
@@ -494,6 +495,7 @@ export const GlobalModals = () => {
             <TransactionHistoryModal context={context} />
             <ImagePreviewModal context={context} />
             <SettingsModals context={context} />
+            <AvatarPickerModal context={context} />
 
             {/* ═══ AI Task Creator ═══ */}
             <AiPlanCreator
