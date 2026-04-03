@@ -30,23 +30,6 @@ export function usePetRooms(kidId) {
         loadRooms();
     }, [loadRooms]);
 
-    // ── Auto-create default room if none exist ───────────────────────
-    useEffect(() => {
-        if (loading) return;
-        if (!kidId) return;
-        if (rooms.length > 0) return;
-        // Create the default room
-        apiFetch('/api/pet/rooms', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ kidId, roomName: '我的小窝' }),
-        }).then(result => {
-            if (result.room) {
-                setRooms([result.room]);
-            }
-        }).catch(e => console.error('[usePetRooms] auto-create room failed:', e));
-    }, [loading, kidId, rooms.length]);
-
     // ── Current active room ──────────────────────────────────────────
     const activeRoom = rooms[activeRoomIdx] ?? rooms[0] ?? null;
 

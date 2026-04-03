@@ -159,13 +159,24 @@ module.exports = (db, { authenticateToken }) => {
 
 function parseRoom(room) {
     if (!room) return null;
+    const rawFurniture = room.furniture_json ?? room.furnitureJson;
     return {
-        ...room,
-        furnitureJson: typeof room.furnitureJson === 'string'
-            ? JSON.parse(room.furnitureJson || '[]')
-            : (room.furnitureJson || []),
-        skinIdx: Number(room.skinIdx ?? 0),
-        petHunger: Number(room.petHunger ?? 100),
-        petMood: Number(room.petMood ?? 100),
+        id:           room.id,
+        userid:       room.userid,
+        kidid:        room.kidid,
+        roomName:     room.room_name  ?? room.roomName  ?? '我的小窝',
+        sortOrder:    Number(room.sort_order  ?? room.sortOrder  ?? 0),
+        skinIdx:      Number(room.skin_idx    ?? room.skinIdx    ?? 0),
+        furnitureJson: typeof rawFurniture === 'string'
+            ? JSON.parse(rawFurniture || '[]')
+            : (rawFurniture || []),
+        coinsSpent:   Number(room.coins_spent ?? room.coinsSpent ?? 0),
+        petId:        room.pet_id      ?? room.petId      ?? '',
+        petHunger:    Number(room.pet_hunger  ?? room.petHunger  ?? 100),
+        petMood:      Number(room.pet_mood    ?? room.petMood    ?? 100),
+        petState:     room.pet_state   ?? room.petState   ?? 'idle',
+        petLastFed:   room.pet_last_fed ?? room.petLastFed ?? '',
+        unlockedAt:   room.unlocked_at  ?? room.unlockedAt  ?? '',
     };
 }
+

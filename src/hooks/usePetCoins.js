@@ -35,12 +35,13 @@ export function usePetCoins(kidId) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    id:       `pet_${kidId}_${Date.now()}`,
                     kidId,
-                    type: 'expense',
-                    amount: -amount,
-                    title: description,
+                    type:     'expense',
+                    amount:   -amount,
+                    title:    description,
                     category: 'pet',
-                    date: new Date().toISOString().split('T')[0],
+                    date:     new Date().toISOString().split('T')[0],
                 }),
             }).catch(() => {});
             return { ok: true, newBalance };
