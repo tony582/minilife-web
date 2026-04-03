@@ -1,9 +1,11 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Icons } from '../../utils/Icons';
 import PixelPetEngine from './PixelPetEngine';
 import { SPIRIT_FORMS } from '../../utils/spiritUtils';
 import { DEFAULT_ROOM, FURNITURE_VARIANTS, ROOM_VARIANTS } from '../../data/roomConfig';
+import { usePetCoins } from '../../hooks/usePetCoins';
+import { PRICE_TABLE, SKIN_CHANGE_COST, ROOM_SKIN_COST } from '../../data/furnitureCatalog';
 
 // ═══════════════════════════════════════════════
 // 🌅 DAY/NIGHT CYCLE
@@ -74,7 +76,18 @@ const PixelIcon = ({ grid, palette, size = 3, className = "" }) => {
     );
 };
 
-export default function VirtualPetDashboard({ activeKid, onClose }) {
+export default function VirtualPetDashboard({
+    activeKid, onClose,
+    // ── Phase 2: Room persistence + decoration mode ──
+    roomData       = null,
+    onSkinChange   = null,
+    onFurnitureChange = null,
+    onPetVitalsChange = null,
+    embedded       = false,
+    showDecorate   = false,
+    kidId          = null,
+    newFurnitureToAdd = null,   // set by PetRoomModal when shop purchase confirmed
+}) {
     
     const petRef = useRef(null);
     const containerRef = useRef(null);
@@ -106,28 +119,71 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
     // ── SCENE STATE ──
     const [activeScene, setActiveScene] = useState('home');
     const [isTransitioning, setIsTransitioning] = useState(false);
-    const [roomConfig, setRoomConfig] = useState(DEFAULT_ROOM);
+    const [roomConfig, setRoomConfig] = useState(() => {
+        if (roomData?.furnitureJson?.length > 0)
+            return { ...DEFAULT_ROOM, furniture: roomData.furnitureJson };
+        return DEFAULT_ROOM;
+    });
+
+    // Called by usePetCoins (only available when kidId provided)
+    const { balance: coinBalance, spendCoins, refundCoins } = usePetCoins(kidId || '') ?? {};
+
+    // Decoration mode: selected furniture for action menu
+    const [selectedFurnitureAction, setSelectedFurnitureAction] = useState(null); // {item, rect}
+
+    // Clear action menu on decorate mode exit
+    useEffect(() => {
+        if (!showDecorate) setSelectedFurnitureAction(null);
+    }, [showDecorate]);
 
     // ── ROOM SKIN (background color cycling) ──
-    const [roomSkinIdx, setRoomSkinIdx] = useState(0);
+    const [roomSkinIdx, setRoomSkinIdx] = useState(() => roomData?.skinIdx ?? 0);
     const currentRoomSrc = ROOM_VARIANTS[roomSkinIdx] ?? ROOM_VARIANTS[0];
 
-    const handleRoomClick = (e) => {
+    const handleRoomClick = async (e) => {
         if (isEditMode) return;
-        // Only trigger if clicking on the bare room (not on furniture)
         if (e.target !== e.currentTarget) return;
-        setRoomSkinIdx(prev => (prev + 1) % ROOM_VARIANTS.length);
+        if (showDecorate) {
+            // Coin-gated change in decoration mode
+            await handleDecorateSkinChange();
+            return;
+        }
+        // Free preview in normal mode
+        const nextIdx = (roomSkinIdx + 1) % ROOM_VARIANTS.length;
+        setRoomSkinIdx(nextIdx);
+        onSkinChange?.(nextIdx);
     };
 
+    // Save room skin (called from decoration mode confirm)
+    const handleDecorateSkinChange = useCallback(async () => {
+        if (!spendCoins) return;
+        const result = await spendCoins(ROOM_SKIN_COST, '换房间配色');
+        if (result.ok) {
+            const nextIdx = (roomSkinIdx + 1) % ROOM_VARIANTS.length;
+            setRoomSkinIdx(nextIdx);
+            onSkinChange?.(nextIdx);
+        } else {
+            alert(`您的家庭币不足！需要 ${ROOM_SKIN_COST} 币，当前余额 ${coinBalance ?? 0} 币`);
+        }
+    }, [spendCoins, roomSkinIdx, onSkinChange, coinBalance]);
+
     // ── FURNITURE COLOR SKINS ──
-    // { furnitureId → currentSrc } — overrides the default src on click
     const [furnitureSkins, setFurnitureSkins] = useState({});
 
     const handleFurnitureClick = (e, item) => {
-        if (isEditMode) return; // drag mode handles pointer events
-        const variants = FURNITURE_VARIANTS[item.id];
-        if (!variants || variants.length <= 1) return;
+        if (isEditMode) return;
         e.stopPropagation();
+
+        // Decoration mode: show action menu
+        if (showDecorate) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            setSelectedFurnitureAction({ item, rect });
+            return;
+        }
+
+        // Normal mode: free color cycle
+        const variants = FURNITURE_VARIANTS[item.type || item.id];
+        if (!variants || variants.length <= 1) return;
         setFurnitureSkins(prev => {
             const currentSrc = prev[item.id] || item.src;
             const currentIdx = variants.indexOf(currentSrc);
@@ -135,6 +191,58 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
             return { ...prev, [item.id]: variants[nextIdx] };
         });
     };
+
+    // ── Decoration Mode: change furniture color (costs coins) ─────────
+    const handleDecorateFurnitureColor = useCallback(async (item) => {
+        if (!spendCoins) return;
+        const result = await spendCoins(SKIN_CHANGE_COST, '家具换色');
+        if (!result.ok) {
+            alert(`家庭币不足！需要 ${SKIN_CHANGE_COST} 币`);
+            return;
+        }
+        const variants = FURNITURE_VARIANTS[item.type || item.id];
+        if (!variants || variants.length <= 1) return;
+        setFurnitureSkins(prev => {
+            const currentSrc = prev[item.id] || item.src;
+            const currentIdx = variants.indexOf(currentSrc);
+            const nextSrc = variants[(currentIdx + 1) % variants.length];
+            const updated = { ...prev, [item.id]: nextSrc };
+            // Persist furniture with new src
+            const newFurniture = roomConfig.furniture.map(f =>
+                f.id === item.id ? { ...f, src: nextSrc } : f
+            );
+            setRoomConfig(c => ({ ...c, furniture: newFurniture }));
+            onFurnitureChange?.(newFurniture);
+            return updated;
+        });
+        setSelectedFurnitureAction(null);
+    }, [spendCoins, coinBalance, roomConfig.furniture, onFurnitureChange]);
+
+    // ── Decoration Mode: remove furniture (refund 50%) ────────────────
+    const handleDecorateFurnitureRemove = useCallback(async (item) => {
+        const price = PRICE_TABLE[item.type || item.id] ?? 0;
+        const refund = Math.floor(price * 0.5);
+        const newFurniture = roomConfig.furniture.filter(f => f.id !== item.id);
+        setRoomConfig(c => ({ ...c, furniture: newFurniture }));
+        onFurnitureChange?.(newFurniture);
+        if (refund > 0 && refundCoins) await refundCoins(refund, '移除装饰退款');
+        setSelectedFurnitureAction(null);
+    }, [roomConfig.furniture, onFurnitureChange, refundCoins]);
+
+    // Expose add furniture from shop (called by PetRoomModal after purchase)
+    const addFurnitureToRoom = useCallback((newItem) => {
+        setRoomConfig(prev => {
+            const newFurniture = [...prev.furniture, newItem];
+            onFurnitureChange?.(newFurniture);
+            return { ...prev, furniture: newFurniture };
+        });
+    }, [onFurnitureChange]);
+
+    // When PetRoomModal passes a newFurnitureToAdd, process it
+    useEffect(() => {
+        if (newFurnitureToAdd) addFurnitureToRoom(newFurnitureToAdd);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [newFurnitureToAdd]);
     
     // ── EDIT MODE (DRAG & DROP) ──
     const [isEditMode, setIsEditMode] = useState(false);
@@ -187,6 +295,13 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
         const handleWinUp = () => {
             setDraggingId(null);
             lastPosRef.current = null;
+            // Persist layout after drag in decoration mode
+            if (onFurnitureChange) {
+                setRoomConfig(c => {
+                    onFurnitureChange(c.furniture);
+                    return c;
+                });
+            }
         };
 
         window.addEventListener('pointermove', handleWinMove, { passive: false });
@@ -829,10 +944,8 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
                                      {/* SCENE: HOME - ASSEMBLED ROOM */}
                                     {activeScene === 'home' && (
                                     <div className="absolute inset-0 transition-all duration-[2000ms] flex items-center justify-center overflow-hidden"
-                                         style={{ 
-                                             filter: (isSleeping || isNightTime) ? 'brightness(0.6)' : 'none'
-                                         }}>
-                                         
+                                         style={{ filter: (isSleeping || isNightTime) ? 'brightness(0.6)' : 'none' }}>
+
                                         {/* Aspect-Locked Container for Pixel-Perfect Placement */}
                                         <div className="relative w-full h-full max-w-full max-h-full"
                                              ref={roomAspectRef}
@@ -841,17 +954,18 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
                                             {/* Layer 0: Room shell — click to cycle color theme */}
                                             <img src={currentRoomSrc}
                                                  className={`absolute inset-0 w-full h-full object-contain select-none transition-opacity duration-500 ${
-                                                     !isEditMode ? 'cursor-pointer' : 'cursor-default pointer-events-none'
+                                                     !isEditMode && !showDecorate ? 'cursor-pointer' : 'cursor-default pointer-events-none'
                                                  }`}
                                                  style={{ imageRendering: 'pixelated', zIndex: 0 }}
                                                  onClick={handleRoomClick}
                                                  title={`点击切换房间颜色 (${roomSkinIdx + 1}/${ROOM_VARIANTS.length})`}
                                                  alt="Room" />
-                                            
+
                                             {/* Layer 1+: Assembled furniture pieces */}
                                             {roomConfig.furniture.map(item => {
                                                 const skin = furnitureSkins[item.id];
-                                                const hasVariants = !!FURNITURE_VARIANTS[item.id];
+                                                const typeKey = item.type || item.id;
+                                                const hasVariants = !!FURNITURE_VARIANTS[typeKey];
                                                 const imgSrc = (item.id === 'bowl_food' && bowlHasFood)
                                                     ? item.srcFull
                                                     : (skin || item.src);
@@ -860,9 +974,11 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
                                                          className={`absolute ${
                                                              isEditMode
                                                                  ? 'cursor-move ring-offset-1 hover:ring-2 hover:ring-pink-400 touch-none select-none pointer-events-auto'
-                                                                 : hasVariants
-                                                                     ? 'pointer-events-auto cursor-pointer group'
-                                                                     : 'pointer-events-none'
+                                                                 : showDecorate
+                                                                     ? 'pointer-events-auto cursor-pointer'
+                                                                     : hasVariants
+                                                                         ? 'pointer-events-auto cursor-pointer group'
+                                                                         : 'pointer-events-none'
                                                          }`}
                                                          style={{
                                                              ...item.style,
@@ -870,19 +986,65 @@ export default function VirtualPetDashboard({ activeKid, onClose }) {
                                                          }}
                                                          onPointerDown={(e) => handlePointerDown(e, item.id)}
                                                          onClick={(e) => handleFurnitureClick(e, item)}>
+                                                        {showDecorate && (
+                                                            <div className="absolute inset-0 border-2 border-dashed border-orange-400/60 rounded-sm pointer-events-none z-10"
+                                                                style={{ margin: '-3px' }} />
+                                                        )}
                                                         <img src={imgSrc}
                                                              draggable={false}
                                                              className={`w-full h-auto object-contain pointer-events-none select-none transition-all duration-150 ${
-                                                                 hasVariants && !isEditMode ? 'group-hover:brightness-110 group-hover:scale-105' : ''
-                                                             }`}
+                                                                 hasVariants && !isEditMode && !showDecorate ? 'group-hover:brightness-110 group-hover:scale-105' : ''
+                                                             } ${showDecorate ? 'hover:brightness-110 hover:scale-105' : ''}`}
                                                              style={{ imageRendering: 'pixelated', transform: item.flipX ? 'scaleX(-1)' : 'none' }}
                                                              alt={item.id} />
                                                     </div>
                                                 );
                                             })}
+
+                                            {/* Decoration Mode Action Menu */}
+                                            {showDecorate && selectedFurnitureAction && (() => {
+                                                const { item } = selectedFurnitureAction;
+                                                const typeKey = item.type || item.id;
+                                                const variantCount = FURNITURE_VARIANTS[typeKey]?.length ?? 0;
+                                                const refundAmt = Math.floor((PRICE_TABLE[typeKey] ?? 0) * 0.5);
+                                                return (
+                                                    <div className="absolute inset-0 z-50 flex items-center justify-center"
+                                                        onClick={() => setSelectedFurnitureAction(null)}>
+                                                        <div className="bg-white rounded-2xl shadow-2xl p-3 w-44 border border-slate-100"
+                                                            onClick={e => e.stopPropagation()}>
+                                                            <div className="text-xs font-black text-slate-600 text-center mb-2 pb-2 border-b border-slate-100">
+                                                                {typeKey}
+                                                            </div>
+                                                            {variantCount > 1 && (
+                                                                <button
+                                                                    onClick={() => handleDecorateFurnitureColor(item)}
+                                                                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-orange-50 transition-colors mb-1"
+                                                                >
+                                                                    <span className="text-xs font-bold text-slate-700">🎨 换色</span>
+                                                                    <span className="text-[11px] font-black text-orange-500">🪙{SKIN_CHANGE_COST}</span>
+                                                                </button>
+                                                            )}
+                                                            <button
+                                                                onClick={() => handleDecorateFurnitureRemove(item)}
+                                                                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-red-50 transition-colors mb-1"
+                                                            >
+                                                                <span className="text-xs font-bold text-red-500">🗑 移除</span>
+                                                                {refundAmt > 0 && (
+                                                                    <span className="text-[11px] font-black text-green-500">+{refundAmt}返还</span>
+                                                                )}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => setSelectedFurnitureAction(null)}
+                                                                className="w-full text-center py-2 text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                                                            >取消</button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
                                     </div>
-                                )}
+                                    )}
+
 
                                 {/* SCENE: BATHROOM */}
                                 {activeScene === 'bathroom' && (
