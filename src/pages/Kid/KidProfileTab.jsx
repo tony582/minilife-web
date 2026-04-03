@@ -1,218 +1,177 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { useDataContext } from '../../context/DataContext.jsx';
-import { useUIContext } from '../../context/UIContext.jsx';
+import React, { useMemo, useState, useEffect } from 'react';
+import { useDataContext }    from '../../context/DataContext.jsx';
+import { useUIContext }      from '../../context/UIContext.jsx';
 import { Icons, AvatarDisplay } from '../../utils/Icons';
-import { getLevelReq } from '../../utils/levelUtils';
+import { getLevelReq }          from '../../utils/levelUtils';
 import { getSpiritForm, getSpiritPrivileges, getCurrentTerm } from '../../utils/spiritUtils';
-import { useNavigationStore } from '../../stores/navigationStore';
-import { ACHIEVEMENTS } from '../../utils/achievements';
-import PetBoxTeaser from '../../components/VirtualPet/PetBoxTeaser';
-import VirtualPetDashboard from '../../components/VirtualPet/VirtualPetDashboard';
-import { ExpHistoryModal } from './ExpHistoryModal';
-import { LevelPrivilegeModal } from '../../components/modals/LevelPrivilegeModal';
-import { usePetRooms } from '../../hooks/usePetRooms';
+import { useNavigationStore }    from '../../stores/navigationStore';
+import { ACHIEVEMENTS }          from '../../utils/achievements';
+import PetBoxTeaser              from '../../components/VirtualPet/PetBoxTeaser';
+import VirtualPetDashboard       from '../../components/VirtualPet/VirtualPetDashboard';
+import { ExpHistoryModal }       from './ExpHistoryModal';
+import { LevelPrivilegeModal }   from '../../components/modals/LevelPrivilegeModal';
+import { usePetRooms }           from '../../hooks/usePetRooms';
 
-/* ═══════════════════════════════════════════════════════════════
-   DESIGN TOKENS — ONE place, ONE language
-   Every section uses these. Nothing deviates.
-═══════════════════════════════════════════════════════════════ */
-const T = {
-    // Page
-    pageBg: '#F7F4F0',
+const CSS = `
+@keyframes drawerIn { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
+@keyframes petBob   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+.pet-bob { animation: petBob 2.8s ease-in-out infinite; }
+`;
 
-    // Cards — all identical treatment
-    cardBg:     '#FFFFFF',
-    cardRadius: '1.5rem',            // 24px
-    cardBorder: '1px solid #EDEBE7',
-    cardShadow: '0 2px 16px rgba(30,20,10,0.06)',
-
-    // Brand palette — orange-first, warm
-    orange:    '#FF8C42',
-    orangeLight: '#FFF3EB',
-    orangeMid:   '#FFE0C8',
-    amber:     '#F59E0B',
-    green:     '#22C55E',
-    teal:      '#14B8A6',
-    purple:    '#8B5CF6',
-    red:       '#EF4444',
-
-    // Text
-    text1: '#1C1410',   // headings
-    text2: '#6B5E52',   // secondary
-    text3: '#A8998C',   // disabled / labels
-
-    // Accent tinted (for locked/muted states)
-    muted: '#F0ECE8',
-};
-
-/* ═══════════════════════════════════════════════════════════════
-   SECTION HEADER — used for every section
-═══════════════════════════════════════════════════════════════ */
-function SectionHeader({ title, right }) {
+/* ──────────────────────────────────────────
+   Thin vitals bar
+────────────────────────────────────────── */
+function Vital({ label, value, color }) {
     return (
-        <div className="flex items-center justify-between mb-3 px-0.5">
-            <h3 className="font-black text-[15px] tracking-tight" style={{ color: T.text1 }}>{title}</h3>
-            {right}
+        <div style={{ flex: 1 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom: 4 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(0,0,0,0.35)', letterSpacing: '0.05em' }}>{label}</span>
+                <span style={{ fontSize: 10, fontWeight: 900, color }}>{value}%</span>
+            </div>
+            <div style={{ height: 5, borderRadius: 99, background: 'rgba(0,0,0,0.07)', overflow: 'hidden' }}>
+                <div style={{ width: `${value}%`, height: '100%', borderRadius: 99, background: color, transition: 'width .8s ease' }} />
+            </div>
         </div>
     );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   CARD — wrapper giving every card the same look
-═══════════════════════════════════════════════════════════════ */
-function Card({ children, className = '', onClick, style = {} }) {
-    return (
-        <div
-            onClick={onClick}
-            className={`overflow-hidden ${onClick ? 'cursor-pointer transition-transform hover:scale-[1.01] active:scale-[0.99]' : ''} ${className}`}
-            style={{
-                background:   T.cardBg,
-                borderRadius: T.cardRadius,
-                border:       T.cardBorder,
-                boxShadow:    T.cardShadow,
-                ...style,
-            }}
-        >
-            {children}
-        </div>
-    );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   PET CARD
-═══════════════════════════════════════════════════════════════ */
-function PetCard({ activeKid, onOpenRoom }) {
+/* ──────────────────────────────────────────
+   Pet section (embedded inside hero card)
+────────────────────────────────────────── */
+function PetSection({ activeKid, onOpenRoom }) {
     const { rooms, activeRoom, activeRoomIdx, setActiveRoomIdx, loading } = usePetRooms(activeKid?.id);
     const [timedOut, setTimedOut] = useState(false);
     useEffect(() => { const t = setTimeout(() => setTimedOut(true), 5000); return () => clearTimeout(t); }, []);
 
-    if (!loading && (rooms.length === 0 || !activeRoom) && timedOut) {
+    if (loading && !timedOut) {
         return (
-            <Card onClick={onOpenRoom} className="mb-4 p-5 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
-                    style={{ background: T.orangeLight }}>🐾</div>
-                <div className="flex-1 min-w-0">
-                    <div className="font-black text-sm" style={{ color: T.text1 }}>还没有小窝</div>
-                    <div className="text-xs font-bold mt-0.5" style={{ color: T.orange }}>点击布置你的第一个宠物房间 →</div>
-                </div>
-            </Card>
+            <div style={{ padding: '20px 24px', display: 'flex', justifyContent: 'center' }}>
+                <div style={{ width: 48, height: 48, borderRadius: 99, background: 'rgba(0,0,0,0.06)', animation: 'pulse 1.5s infinite' }} />
+            </div>
         );
     }
-    if (loading && !timedOut) {
-        return <div className="rounded-[1.5rem] h-32 animate-pulse mb-4" style={{ background: T.muted }} />;
+
+    if (!activeRoom) {
+        return (
+            <button onClick={onOpenRoom}
+                style={{ width: '100%', padding: '18px 24px', display: 'flex', alignItems: 'center', gap: 14, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+                <div style={{ width: 48, height: 48, borderRadius: 18, background: '#FFF3EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🐾</div>
+                <div>
+                    <div style={{ fontWeight: 900, fontSize: 14, color: '#1C1410' }}>布置你的小窝</div>
+                    <div style={{ fontWeight: 700, fontSize: 11, color: '#FF8C42', marginTop: 2 }}>你的宠物在等你 →</div>
+                </div>
+            </button>
+        );
     }
 
     const hunger = activeRoom?.petHunger ?? 100;
     const mood   = activeRoom?.petMood   ?? 100;
 
-    const StatusBar = ({ label, value, color }) => (
-        <div className="flex items-center gap-2.5">
-            <div className="text-[11px] font-bold w-8 shrink-0" style={{ color: T.text3 }}>{label}</div>
-            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: T.muted }}>
-                <div className="h-full rounded-full transition-all duration-700" style={{ width: `${value}%`, background: color }} />
-            </div>
-            <div className="text-[11px] font-black w-7 text-right" style={{ color }}>{value}%</div>
-        </div>
-    );
-
     return (
-        <Card className="mb-4">
-            {/* Preview strip */}
-            <div className="relative h-36 flex items-end overflow-hidden"
-                style={{ background: `linear-gradient(160deg, #FFF8F3 0%, ${T.orangeMid} 100%)` }}>
-                {/* Room tabs */}
-                {rooms.length > 1 && (
-                    <div className="absolute top-3 left-4 flex gap-1.5 z-10">
-                        {rooms.map((r, i) => (
-                            <button key={r.id}
-                                onClick={e => { e.stopPropagation(); setActiveRoomIdx(i); }}
-                                className="text-[9px] font-black px-2.5 py-1 rounded-full transition-all"
-                                style={{ background: i === activeRoomIdx ? T.orange : 'rgba(255,255,255,0.8)', color: i === activeRoomIdx ? '#fff' : T.text2 }}>
-                                {r.roomName || `小窝 ${i + 1}`}
-                            </button>
-                        ))}
-                    </div>
-                )}
-                {/* Pet */}
-                <div className="absolute inset-0 flex items-center justify-center" style={{ paddingBottom: 16 }}>
-                    <div style={{ width: 96, height: 96 }}>
-                        <PetBoxTeaser size={90} />
-                    </div>
+        <div style={{ padding: '4px 0 0' }}>
+            {/* Room select tabs if multiple */}
+            {rooms.length > 1 && (
+                <div style={{ display: 'flex', gap: 6, padding: '0 24px 10px' }}>
+                    {rooms.map((r, i) => (
+                        <button key={r.id}
+                            onClick={e => { e.stopPropagation(); setActiveRoomIdx(i); }}
+                            style={{ fontSize: 10, fontWeight: 900, padding: '3px 10px', borderRadius: 99, border: 'none', cursor: 'pointer', background: i === activeRoomIdx ? '#FF8C42' : 'rgba(0,0,0,0.07)', color: i === activeRoomIdx ? '#fff' : '#9CAABE', transition: 'all .2s' }}>
+                            {r.roomName || `小窝 ${i + 1}`}
+                        </button>
+                    ))}
                 </div>
-                {/* Enter CTA */}
-                <button onClick={onOpenRoom} className="absolute bottom-3 right-4 z-10 flex items-center gap-1 text-[11px] font-black px-3 py-1.5 rounded-full transition-all hover:opacity-80"
-                    style={{ background: 'rgba(255,255,255,0.85)', color: T.orange, backdropFilter: 'blur(6px)' }}>
-                    进入小窝 <Icons.ChevronRight size={12} />
+            )}
+
+            {/* Pet preview + vitals */}
+            <div style={{ display: 'flex', alignItems: 'center', padding: '0 24px 22px', gap: 20 }}>
+                {/* Pet animation */}
+                <button onClick={onOpenRoom}
+                    style={{ position: 'relative', flexShrink: 0, width: 80, height: 80, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                    className="pet-bob">
+                    <PetBoxTeaser size={80} />
+                    <div style={{ position: 'absolute', inset: 0, borderRadius: 99, background: 'rgba(0,0,0,0)', transition: 'background .2s' }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.06)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0)'} />
                 </button>
-                {/* Room name */}
-                <div className="relative z-10 px-4 pb-3 flex items-baseline gap-2">
-                    <span className="font-black text-sm" style={{ color: T.text1 }}>{activeRoom?.roomName || '我的小窝'}</span>
-                    {activeKid.spirit_name && <span className="text-[10px] font-bold" style={{ color: T.text2 }}>「{activeKid.spirit_name}」</span>}
+
+                {/* Info + vitals */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                        <div>
+                            <div style={{ fontWeight: 900, fontSize: 13, color: '#1C1410' }}>{activeRoom?.roomName || '我的小窝'}</div>
+                            {activeKid.spirit_name && <div style={{ fontSize: 10, fontWeight: 700, color: '#A8998C', marginTop: 1 }}>「{activeKid.spirit_name}」</div>}
+                        </div>
+                        <button onClick={onOpenRoom}
+                            style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, fontWeight: 900, color: '#FF8C42', background: '#FFF3EB', border: 'none', cursor: 'pointer', padding: '6px 12px', borderRadius: 99, transition: 'opacity .2s' }}
+                            onMouseEnter={e => e.currentTarget.style.opacity = '.75'}
+                            onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+                            进入 <Icons.ChevronRight size={11} />
+                        </button>
+                    </div>
+                    <div style={{ display: 'flex', gap: 16 }}>
+                        <Vital label="心情" value={mood}   color={mood   > 50 ? '#14B8A6' : '#EF4444'} />
+                        <Vital label="饱腹" value={hunger} color={hunger > 50 ? '#FF8C42' : '#EF4444'} />
+                    </div>
                 </div>
             </div>
-            {/* Vitals */}
-            <div className="px-5 py-4 space-y-2.5">
-                <StatusBar label="心情" value={mood}   color={mood   > 50 ? T.teal : T.red} />
-                <StatusBar label="饱腹" value={hunger} color={hunger > 50 ? T.orange : T.red} />
-            </div>
-        </Card>
+        </div>
     );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   BADGE DRAWER
-═══════════════════════════════════════════════════════════════ */
+/* ──────────────────────────────────────────
+   Badge drawer
+────────────────────────────────────────── */
 function BadgeDrawer({ badge, onClose }) {
     if (!badge) return null;
     return (
-        <div className="fixed inset-0 z-[500] flex flex-col justify-end" onClick={onClose}>
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-            <div className="relative bg-white rounded-t-[2rem] max-h-[80vh] flex flex-col"
-                style={{ animation: 'drawerIn .3s ease-out', paddingBottom: 'env(safe-area-inset-bottom,16px)' }}
+        <div style={{ position:'fixed', inset:0, zIndex:500, display:'flex', flexDirection:'column', justifyContent:'flex-end' }} onClick={onClose}>
+            <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.45)', backdropFilter:'blur(6px)' }} />
+            <div style={{ position:'relative', background:'#fff', borderRadius:'2rem 2rem 0 0', maxHeight:'80vh', display:'flex', flexDirection:'column', animation:'drawerIn .3s ease-out', paddingBottom:'env(safe-area-inset-bottom,20px)' }}
                 onClick={e => e.stopPropagation()}>
-                <div className="flex justify-center pt-3 pb-1 shrink-0">
-                    <div className="w-9 h-1 rounded-full bg-slate-200" />
+                <div style={{ display:'flex', justifyContent:'center', padding:'12px 0 6px' }}>
+                    <div style={{ width:36, height:4, borderRadius:99, background:'#E8E0D4' }} />
                 </div>
-                <div className="px-6 pb-8 overflow-y-auto">
-                    <div className="flex flex-col items-center pt-4 pb-6">
-                        <div className={`w-24 h-24 rounded-3xl bg-gradient-to-br ${badge.bg} flex items-center justify-center text-4xl shadow-lg ${!badge.unlocked ? 'grayscale opacity-40' : ''}`}>
-                            {badge.unlocked ? badge.emoji : <Icons.Lock size={28} className="text-white/60" />}
+                <div style={{ padding:'0 24px 28px', overflowY:'auto' }}>
+                    <div style={{ display:'flex', flexDirection:'column', alignItems:'center', padding:'16px 0 24px' }}>
+                        <div className={`bg-gradient-to-br ${badge.bg}`}
+                            style={{ width:88, height:88, borderRadius:28, display:'flex', alignItems:'center', justifyContent:'center', fontSize:36, boxShadow:'0 8px 24px rgba(0,0,0,0.12)', filter: badge.unlocked ? 'none' : 'grayscale(1)', opacity: badge.unlocked ? 1 : 0.5 }}>
+                            {badge.unlocked ? badge.emoji : <Icons.Lock size={28} style={{ color:'rgba(255,255,255,0.6)' }} />}
                         </div>
-                        <div className="text-xl font-black text-center mt-4" style={{ color: T.text1 }}>{badge.title}</div>
-                        <div className="text-xs font-bold mt-1.5 px-3 py-1 rounded-full"
-                            style={{ background: badge.unlocked ? '#DCFCE7' : T.muted, color: badge.unlocked ? '#16A34A' : T.text3 }}>
+                        <div style={{ fontWeight:900, fontSize:20, color:'#1C1410', marginTop:16, textAlign:'center' }}>{badge.title}</div>
+                        <div style={{ fontSize:11, fontWeight:700, padding:'4px 12px', borderRadius:99, marginTop:6, background: badge.unlocked ? '#DCFCE7' : '#F1F5F9', color: badge.unlocked ? '#16A34A' : '#94A3B8' }}>
                             {badge.unlocked ? '已解锁' : '尚未解锁'}
                         </div>
                     </div>
-                    <div className="rounded-2xl p-4 mb-5" style={{ background: T.muted, border: T.cardBorder }}>
-                        <div className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: T.text3 }}>获得条件</div>
-                        <div className="text-sm font-bold" style={{ color: T.text1 }}>{badge.desc}</div>
-                        <div className="text-xs font-bold mt-2.5" style={{ color: badge.unlocked ? T.green : T.orange }}>
-                            {badge.unlocked ? '🎉 已完成，非常棒！' : '💪 还差一点，加油！'}
+                    <div style={{ background:'#F7F4F0', borderRadius:20, padding:20, marginBottom:16 }}>
+                        <div style={{ fontSize:10, fontWeight:900, letterSpacing:'0.1em', textTransform:'uppercase', color:'#A8998C', marginBottom:8 }}>获得条件</div>
+                        <div style={{ fontSize:14, fontWeight:700, color:'#1C1410' }}>{badge.desc}</div>
+                        <div style={{ fontSize:12, fontWeight:700, marginTop:10, color: badge.unlocked ? '#16A34A' : '#FF8C42' }}>
+                            {badge.unlocked ? '🎉 已完成，非常棒！' : '💪 还差一点，加油冲！'}
                         </div>
                     </div>
-                    <button onClick={onClose} className="w-full py-3 rounded-xl font-black text-sm transition-colors hover:opacity-80"
-                        style={{ background: T.muted, color: T.text2 }}>关闭</button>
+                    <button onClick={onClose} style={{ width:'100%', padding:'14px', borderRadius:16, fontWeight:900, fontSize:14, background:'#F1F5F9', color:'#6B7280', border:'none', cursor:'pointer' }}>
+                        关闭
+                    </button>
                 </div>
             </div>
         </div>
     );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   MAIN — KidProfileTab
-═══════════════════════════════════════════════════════════════ */
+/* ──────────────────────────────────────────
+   MAIN
+────────────────────────────────────────── */
 export const KidProfileTab = () => {
     const { kids, activeKidId, transactions } = useDataContext();
-    const { parentSettings } = useNavigationStore();
-    const { setShowAvatarPickerModal } = useUIContext();
+    const { parentSettings }                  = useNavigationStore();
+    const { setShowAvatarPickerModal }         = useUIContext();
 
     const [badgeDrawer,             setBadgeDrawer]             = useState(null);
     const [showPetRoom,             setShowPetRoom]             = useState(false);
     const [showExpModal,            setShowExpModal]            = useState(false);
     const [showLevelPrivilegeModal, setShowLevelPrivilegeModal] = useState(false);
 
-    const activeKid    = kids.find(k => k.id === activeKidId);
+    const activeKid = kids.find(k => k.id === activeKidId);
     if (!activeKid) return null;
 
     const nextLevelExp = getLevelReq(activeKid.level);
@@ -227,179 +186,166 @@ export const KidProfileTab = () => {
     );
     const unlockedCount = achievementStatus.filter(a => a.unlocked).length;
 
-    const privItems = [
-        { label: '利息加成', value: privileges.interestBonus > 0 ? `+${privileges.interestBonus}%/周` : '未解锁', active: privileges.interestBonus > 0, color: T.teal, Icon: Icons.TrendingUp },
-        { label: '每日奖励', value: privileges.dailyBonus    > 0 ? `+${privileges.dailyBonus}`      : '未解锁', active: privileges.dailyBonus    > 0, color: T.amber,  Icon: Icons.Sparkles  },
-        { label: '商城折扣', value: privileges.shopDiscount  > 0 ? `${100 - privileges.shopDiscount}折` : '未解锁', active: privileges.shopDiscount  > 0, color: T.purple, Icon: Icons.Tag       },
-    ];
+    // Privilege micro-tags shown inline
+    const privTags = [
+        privileges.interestBonus  > 0 && { label: `利息 +${privileges.interestBonus}%`, color: '#14B8A6', bg: '#F0FDFA' },
+        privileges.dailyBonus     > 0 && { label: `每日 +${privileges.dailyBonus}`,     color: '#F59E0B', bg: '#FFFBEB' },
+        privileges.shopDiscount   > 0 && { label: `商城 ${100 - privileges.shopDiscount}折`, color: '#8B5CF6', bg: '#FAF5FF' },
+    ].filter(Boolean);
 
     return (
-        <div className="pb-28 md:pb-12 pt-3 max-w-2xl mx-auto" style={{ background: T.pageBg }}>
-            <style>{`
-                @keyframes drawerIn { from { transform:translateY(30px); opacity:0; } to { transform:translateY(0); opacity:1; } }
-                @keyframes xpShimmer {
-                    0%   { background-position: -200% center; }
-                    100% { background-position: 200% center; }
-                }
-            `}</style>
+        <div style={{ background: '#F2EEE9', minHeight: '100%', paddingBottom: 100 }}>
+            <style>{CSS}</style>
 
-            {showPetRoom    && <VirtualPetDashboard activeKid={activeKid} onClose={() => setShowPetRoom(false)} />}
-            <BadgeDrawer     badge={badgeDrawer} onClose={() => setBadgeDrawer(null)} />
-            {showExpModal   && <ExpHistoryModal   activeKid={activeKid} transactions={transactions} nextLevelExp={nextLevelExp} onClose={() => setShowExpModal(false)} />}
-            <LevelPrivilegeModal isOpen={showLevelPrivilegeModal} onClose={() => setShowLevelPrivilegeModal(false)} activeKid={activeKid} currentForm={form} />
+            {showPetRoom            && <VirtualPetDashboard activeKid={activeKid} onClose={() => setShowPetRoom(false)} />}
+            <BadgeDrawer             badge={badgeDrawer} onClose={() => setBadgeDrawer(null)} />
+            {showExpModal           && <ExpHistoryModal activeKid={activeKid} transactions={transactions} nextLevelExp={nextLevelExp} onClose={() => setShowExpModal(false)} />}
+            <LevelPrivilegeModal     isOpen={showLevelPrivilegeModal} onClose={() => setShowLevelPrivilegeModal(false)} activeKid={activeKid} currentForm={form} />
 
-            {/* ──────────────────────────────────────────
-                HERO CARD
-                White card. Level colour tints ONE accent band at top.
-                Avatar + name + XP side by side on tablet+, stacked on phone.
-            ────────────────────────────────────────── */}
-            <Card className="mb-4">
-                {/* Thin accent band */}
-                <div className="h-2 w-full" style={{ background: `linear-gradient(90deg, ${form.color}, ${form.color}88)` }} />
+            <div style={{ maxWidth: 640, margin: '0 auto', padding: '8px 16px 0' }}>
 
-                <div className="p-5 md:p-6 flex flex-col md:flex-row md:items-center md:gap-8">
-                    {/* Avatar */}
-                    <button
-                        onClick={() => setShowAvatarPickerModal(true)}
-                        className="group relative self-center flex-shrink-0 mb-5 md:mb-0 transition-transform hover:scale-[1.03] active:scale-[0.97]"
-                    >
-                        {/* Avatar ring in level colour */}
-                        <div className="w-24 h-24 md:w-28 md:h-28 rounded-full flex-shrink-0"
-                            style={{ padding: 3, background: `linear-gradient(135deg, ${form.color}, ${form.color}44)` }}>
-                            <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center text-5xl bg-white">
+                {/* ═══════════════════════════════════════════
+                    HERO + PET — ONE unified card
+                ═══════════════════════════════════════════ */}
+                <div style={{ background: '#fff', borderRadius: 32, overflow: 'hidden', boxShadow: '0 4px 24px rgba(28,20,16,0.09)', marginBottom: 20 }}>
+
+                    {/* ── Coloured header band ────────────────────── */}
+                    <div style={{ position: 'relative', background: `linear-gradient(135deg, ${form.color}E0 0%, ${form.color} 100%)`, padding: '28px 24px 56px' }}>
+                        {/* Decorative blob */}
+                        <div style={{ position:'absolute', top:-30, right:-20, width:140, height:140, borderRadius:'50%', background:'rgba(255,255,255,0.12)', pointerEvents:'none' }} />
+                        <div style={{ position:'absolute', bottom:-20, left:-10, width:100, height:100, borderRadius:'50%', background:'rgba(255,255,255,0.08)', pointerEvents:'none' }} />
+
+                        {/* Term pill */}
+                        <div style={{ position:'absolute', top:16, right:16, fontSize:10, fontWeight:700, color:'rgba(255,255,255,0.75)', background:'rgba(255,255,255,0.18)', backdropFilter:'blur(8px)', padding:'4px 10px', borderRadius:99 }}>
+                            {term.emoji} {term.name} · {term.daysLeft}天
+                        </div>
+                    </div>
+
+                    {/* ── Avatar floating at boundary ─────────────── */}
+                    <div style={{ position:'relative', marginTop: -44, display:'flex', alignItems:'flex-end', gap:16, padding:'0 24px' }}>
+                        {/* Avatar */}
+                        <button
+                            onClick={() => setShowAvatarPickerModal(true)}
+                            className="group"
+                            style={{ position:'relative', flexShrink:0, width:88, height:88, borderRadius:'50%', padding:3, background:'#fff', boxShadow:'0 4px 20px rgba(0,0,0,0.18)', cursor:'pointer', border:'none', transition:'transform .2s' }}
+                            onMouseEnter={e => e.currentTarget.style.transform='scale(1.04)'}
+                            onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}
+                        >
+                            <div style={{ width:'100%', height:'100%', borderRadius:'50%', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center', background:'#F7F4F0', fontSize:40 }}>
                                 <AvatarDisplay avatar={activeKid.avatar} />
                             </div>
-                        </div>
-                        {/* Hover */}
-                        <div className="absolute inset-[3px] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-[2px]">
-                            <Icons.Camera size={20} className="text-white" />
-                        </div>
-                    </button>
+                            {/* Camera hover */}
+                            <div className="group-hover:opacity-100" style={{ position:'absolute', inset:3, borderRadius:'50%', background:'rgba(0,0,0,0.45)', display:'flex', alignItems:'center', justifyContent:'center', opacity:0, transition:'opacity .2s' }}>
+                                <Icons.Camera size={20} style={{ color:'#fff' }} />
+                            </div>
+                        </button>
 
-                    {/* Info */}
-                    <div className="flex-1 min-w-0 text-center md:text-left">
-                        {/* Name + term */}
-                        <div className="flex items-center gap-2 justify-center md:justify-start mb-1.5 flex-wrap">
-                            <h2 className="text-2xl md:text-3xl font-black tracking-tight" style={{ color: T.text1 }}>
+                        {/* Name (sits beside avatar baseline) */}
+                        <div style={{ paddingBottom: 8, flex:1, minWidth:0 }}>
+                            <h2 style={{ margin:0, fontSize:24, fontWeight:900, color:'#1C1410', lineHeight:1.1, wordBreak:'break-word' }}>
                                 {activeKid.name}
                             </h2>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                                style={{ background: T.muted, color: T.text3 }}>
-                                {term.name}
-                            </span>
                         </div>
+                    </div>
 
-                        {/* Level */}
-                        <button
-                            onClick={() => setShowLevelPrivilegeModal(true)}
-                            className="inline-flex items-center gap-1.5 mb-4 px-3 py-1.5 rounded-full font-black text-xs text-white transition-all hover:opacity-85 active:scale-95"
-                            style={{ background: form.color, boxShadow: `0 4px 12px ${form.color}50` }}
-                        >
-                            Lv.{activeKid.level} · {form.name}
-                            <Icons.ChevronRight size={12} className="opacity-75" />
-                        </button>
+                    {/* ── Info section below boundary ─────────────── */}
+                    <div style={{ padding:'16px 24px 0' }}>
+                        {/* Level badge + privilege tags */}
+                        <div style={{ display:'flex', flexWrap:'wrap', alignItems:'center', gap:6, marginBottom:16 }}>
+                            <button
+                                onClick={() => setShowLevelPrivilegeModal(true)}
+                                style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 14px', borderRadius:99, border:'none', cursor:'pointer', background:form.color, color:'#fff', fontSize:12, fontWeight:900, boxShadow:`0 4px 12px ${form.color}60`, transition:'all .2s' }}
+                                onMouseEnter={e => e.currentTarget.style.opacity='.8'}
+                                onMouseLeave={e => e.currentTarget.style.opacity='1'}
+                            >
+                                Lv.{activeKid.level} · {form.name}
+                                <Icons.ChevronRight size={12} style={{ opacity:.7 }} />
+                            </button>
+
+                            {/* Inline privilege micro-tags */}
+                            {privTags.map((tag, i) => (
+                                <span key={i} style={{ fontSize:10, fontWeight:800, padding:'4px 10px', borderRadius:99, background:tag.bg, color:tag.color }}>
+                                    {tag.label}
+                                </span>
+                            ))}
+                            {privTags.length === 0 && (
+                                <span style={{ fontSize:10, fontWeight:700, color:'#A8998C' }}>升级后解锁特权</span>
+                            )}
+                        </div>
 
                         {/* XP bar */}
                         <button
-                            className="block w-full text-left group rounded-xl p-3 transition-colors hover:bg-slate-50"
                             onClick={() => setShowExpModal(true)}
+                            style={{ display:'block', width:'100%', background:'none', border:'none', cursor:'pointer', textAlign:'left', padding:'0 0 20px' }}
                         >
-                            <div className="flex justify-between items-baseline mb-2">
-                                <span className="text-[11px] font-black tracking-widest uppercase" style={{ color: T.text3 }}>学习星尘 ✨</span>
-                                <span className="text-[11px] font-bold" style={{ color: T.text2 }}>
-                                    {activeKid.exp} <span style={{ color: T.text3 }}>/ {nextLevelExp}</span>
+                            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:6 }}>
+                                <span style={{ fontSize:11, fontWeight:800, color:'#A8998C', letterSpacing:'0.08em', textTransform:'uppercase' }}>学习星尘 ✨</span>
+                                <span style={{ fontSize:12, fontWeight:900, color:'#6B5E52' }}>
+                                    {activeKid.exp} <span style={{ fontWeight:600, color:'#C4B8AE' }}>/ {nextLevelExp}</span>
                                 </span>
                             </div>
-                            <div className="h-2 rounded-full overflow-hidden" style={{ background: T.muted }}>
-                                <div
-                                    className="h-full rounded-full transition-all duration-1000"
-                                    style={{
-                                        width: `${expPercent}%`,
-                                        background: `linear-gradient(90deg, ${T.green}, ${T.amber})`,
-                                        boxShadow: `0 0 8px ${T.green}60`,
-                                    }}
-                                />
+                            <div style={{ height:8, borderRadius:99, background:'#F0EAE4', overflow:'hidden', position:'relative' }}>
+                                <div style={{ position:'absolute', inset:0, width:`${expPercent}%`, borderRadius:99, background:'linear-gradient(90deg, #4ade80, #a3e635)', boxShadow:'0 0 8px rgba(74,222,128,0.5)', transition:'width 1s ease' }} />
                             </div>
-                            <div className="text-[10px] font-bold mt-1.5 text-right transition-colors group-hover:opacity-100 opacity-50" style={{ color: T.text3 }}>
-                                还需 {nextLevelExp - activeKid.exp} 星尘升级 →
+                            <div style={{ fontSize:10, fontWeight:700, color:'#C4B8AE', marginTop:5, textAlign:'right' }}>
+                                还差 {nextLevelExp - activeKid.exp} 星尘 →
                             </div>
                         </button>
                     </div>
+
+                    {/* ── Divider ─────────────────────────────────── */}
+                    <div style={{ height:1, background:'#F2EEE9', margin:'0 24px' }} />
+
+                    {/* ── Pet section ─────────────────────────────── */}
+                    <div style={{ padding:'12px 0 0' }}>
+                        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 24px 10px' }}>
+                            <span style={{ fontSize:13, fontWeight:900, color:'#1C1410' }}>我的宠物</span>
+                        </div>
+                        <PetSection activeKid={activeKid} onOpenRoom={() => setShowPetRoom(true)} />
+                    </div>
                 </div>
-            </Card>
 
-            {/* ──────────────────────────────────────────
-                PET
-            ────────────────────────────────────────── */}
-            <SectionHeader
-                title="我的宠物"
-                right={
-                    <button onClick={() => setShowPetRoom(true)} className="text-xs font-black flex items-center gap-0.5 transition-opacity hover:opacity-60" style={{ color: T.orange }}>
-                        进入小窝 <Icons.ChevronRight size={13} />
-                    </button>
-                }
-            />
-            <PetCard activeKid={activeKid} onOpenRoom={() => setShowPetRoom(true)} />
-
-            {/* ──────────────────────────────────────────
-                PRIVILEGES
-            ────────────────────────────────────────── */}
-            <SectionHeader
-                title="MiniLife 特权"
-                right={
-                    <button onClick={() => setShowLevelPrivilegeModal(true)} className="text-xs font-black flex items-center gap-0.5 transition-opacity hover:opacity-60" style={{ color: form.color }}>
-                        全部等阶 <Icons.ChevronRight size={13} />
-                    </button>
-                }
-            />
-            <div className="grid grid-cols-3 gap-3 mb-6">
-                {privItems.map((p, i) => (
-                    <Card key={i} className="p-4 flex flex-col items-start gap-3"
-                        style={{ opacity: p.active ? 1 : 0.5 }}>
-                        {/* Icon in tinted circle */}
-                        <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-                            style={{ background: p.active ? `${p.color}18` : T.muted }}>
-                            <p.Icon size={16} style={{ color: p.active ? p.color : T.text3 }} strokeWidth={2.5} />
-                        </div>
-                        <div>
-                            <div className="text-[13px] md:text-sm font-black" style={{ color: p.active ? T.text1 : T.text3 }}>{p.value}</div>
-                            <div className="text-[10px] font-bold mt-0.5" style={{ color: T.text3 }}>{p.label}</div>
-                        </div>
-                    </Card>
-                ))}
-            </div>
-
-            {/* ──────────────────────────────────────────
-                ACHIEVEMENTS
-            ────────────────────────────────────────── */}
-            <SectionHeader
-                title="成就勋章"
-                right={
-                    <span className="text-[11px] font-black px-2.5 py-1 rounded-full" style={{ background: T.orangeLight, color: T.orange }}>
-                        {unlockedCount} / {ACHIEVEMENTS.length}
+                {/* ═══════════════════════════════════════════
+                    ACHIEVEMENTS
+                ═══════════════════════════════════════════ */}
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
+                    <h3 style={{ margin:0, fontSize:15, fontWeight:900, color:'#1C1410' }}>成就勋章</h3>
+                    <span style={{ fontSize:11, fontWeight:900, color:'#FF8C42', background:'#FFF3EB', padding:'4px 10px', borderRadius:99 }}>
+                        {unlockedCount}/{ACHIEVEMENTS.length}
                     </span>
-                }
-            />
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                {achievementStatus.map(a => (
-                    <button key={a.id}
-                        onClick={() => setBadgeDrawer(a)}
-                        className="rounded-[1.25rem] p-3 flex flex-col items-center text-center transition-all hover:scale-105 active:scale-95"
-                        style={{
-                            background:  a.unlocked ? T.cardBg : T.muted,
-                            border:      a.unlocked ? T.cardBorder : 'none',
-                            boxShadow:   a.unlocked ? T.cardShadow : 'none',
-                            filter:      a.unlocked ? 'none' : 'grayscale(1)',
-                            opacity:     a.unlocked ? 1 : 0.45,
-                        }}>
-                        <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${a.bg} flex items-center justify-center text-2xl mb-2`}>
-                            {a.unlocked ? a.emoji : <Icons.Lock size={14} className="text-white/50" />}
-                        </div>
-                        <div className="text-[10px] font-black leading-tight truncate w-full" style={{ color: a.unlocked ? T.text1 : T.text3 }}>
-                            {a.title}
-                        </div>
-                    </button>
-                ))}
+                </div>
+
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12 }}
+                    className="md:grid-cols-4 lg:grid-cols-5">
+                    {achievementStatus.map(a => (
+                        <button key={a.id}
+                            onClick={() => setBadgeDrawer(a)}
+                            style={{
+                                background: a.unlocked ? '#fff' : '#F0ECE8',
+                                border: a.unlocked ? '1px solid #EDEBE7' : 'none',
+                                borderRadius: 22,
+                                padding: '14px 10px 12px',
+                                display:'flex', flexDirection:'column', alignItems:'center',
+                                textAlign:'center', cursor:'pointer',
+                                boxShadow: a.unlocked ? '0 2px 14px rgba(28,20,16,0.07)' : 'none',
+                                filter: a.unlocked ? 'none' : 'grayscale(1)',
+                                opacity: a.unlocked ? 1 : 0.45,
+                                transition: 'transform .15s',
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.transform='scale(1.05)'}
+                            onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}
+                        >
+                            <div className={`bg-gradient-to-br ${a.bg}`}
+                                style={{ width:48, height:48, borderRadius:18, display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, marginBottom:8, boxShadow: a.unlocked ? '0 4px 12px rgba(0,0,0,0.12)' : 'none' }}>
+                                {a.unlocked ? a.emoji : <Icons.Lock size={14} style={{ color:'rgba(255,255,255,0.5)' }} />}
+                            </div>
+                            <div style={{ fontSize:10, fontWeight:900, color: a.unlocked ? '#1C1410' : '#A8998C', lineHeight:1.3, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', width:'100%' }}>
+                                {a.title}
+                            </div>
+                        </button>
+                    ))}
+                </div>
+
             </div>
         </div>
     );
