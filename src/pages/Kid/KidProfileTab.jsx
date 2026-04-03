@@ -242,75 +242,84 @@ export const KidProfileTab = () => {
                 background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
                 boxShadow: '0 12px 40px rgba(15,52,96,0.3)',
             }}>
+                {/* Decorative glows */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     <div className="absolute top-[-20%] right-[-10%] w-80 h-80 rounded-full"
                         style={{ background: `radial-gradient(circle, ${form.glow} 0%, transparent 70%)` }} />
-                    <div className="absolute bottom-[-30%] left-[-15%] w-80 h-80 rounded-full"
+                    <div className="absolute bottom-[-30%] left-[-15%] w-72 h-72 rounded-full"
                         style={{ background: 'radial-gradient(circle, rgba(78,205,196,0.12) 0%, transparent 70%)' }} />
                 </div>
 
                 <div className="relative z-10 p-5 md:p-8">
-                    {/* Term tag top right */}
-                    <div className="flex justify-end mb-4">
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold"
-                            style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}>
+                    {/* Term tag row */}
+                    <div className="flex justify-end mb-5">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold"
+                            style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.08)' }}>
                             {term.emoji} {term.name} · 还剩 {term.daysLeft} 天
                         </div>
                     </div>
 
-                    {/* Avatar + Name row */}
-                    <div className="flex items-center gap-5 md:gap-8 mb-6">
-                        {/* Clickable avatar ENLARGED */}
+                    {/* Main: side-by-side on PC, stacked on mobile */}
+                    <div className="flex flex-col md:flex-row md:items-center md:gap-10">
+
+                        {/* Avatar — centered on mobile, left on PC */}
                         <button
                             onClick={() => setShowAvatarPickerModal(true)}
-                            className="relative flex-shrink-0 group hover:scale-105 transition-transform"
-                            style={{ width: 96, height: 96 }} // Increased size natively
+                            className="group relative self-center md:self-auto flex-shrink-0 mb-5 md:mb-0 transition-transform hover:scale-[1.04] active:scale-95"
                         >
-                            <div className="w-full h-full md:w-32 md:h-32 rounded-full border-4 border-white/15 overflow-hidden flex items-center justify-center text-4xl md:text-6xl"
-                                style={{ background: 'rgba(255,255,255,0.1)' }}>
-                                <AvatarDisplay avatar={activeKid.avatar} />
+                            {/* Ring with gradient border */}
+                            <div className="w-28 h-28 md:w-32 md:h-32 rounded-full p-[3px]"
+                                style={{ background: `linear-gradient(135deg, ${form.color}, rgba(255,255,255,0.25))` }}>
+                                <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center text-5xl md:text-6xl"
+                                    style={{ background: 'rgba(20,30,64,0.7)' }}>
+                                    <AvatarDisplay avatar={activeKid.avatar} />
+                                </div>
                             </div>
-                            <div className="absolute inset-0 md:w-32 md:h-32 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                style={{ background: 'rgba(0,0,0,0.4)' }}>
+                            {/* Hover overlay */}
+                            <div className="absolute inset-[3px] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                style={{ background: 'rgba(0,0,0,0.45)' }}>
                                 <Icons.Camera size={24} className="text-white drop-shadow-md" />
+                            </div>
+                            {/* Small edit badge */}
+                            <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white/20 border-2 border-white/30 backdrop-blur-sm flex items-center justify-center group-hover:opacity-0 transition-opacity">
+                                <Icons.Edit3 size={12} className="text-white" />
                             </div>
                         </button>
 
-                        <div className="flex-1 min-w-0">
-                            {/* Level tap */}
-                            <button onClick={handleSpiritTap} className="relative mb-2 transition-transform hover:scale-105 active:scale-95">
-                                <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black bg-gradient-to-r ${form.bg} text-white/90 shadow-md`}>
-                                    Lv.{activeKid.level} · {form.name} <Icons.ChevronRight size={12} className="ml-0.5 opacity-70" />
-                                </div>
-                            </button>
-                            <h2 className="text-2xl md:text-4xl font-black text-white truncate drop-shadow-sm">
+                        {/* Name + Level + XP */}
+                        <div className="flex-1 min-w-0 text-center md:text-left">
+                            <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight drop-shadow-sm mb-2">
                                 {activeKid.name}
                             </h2>
+
+                            {/* Level capsule */}
+                            <button onClick={handleSpiritTap}
+                                className="inline-flex items-center gap-2 mb-5 transition-transform hover:scale-105 active:scale-95">
+                                <div className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black bg-gradient-to-r ${form.bg} text-white shadow-md`}>
+                                    Lv.{activeKid.level} · {form.name}
+                                    <Icons.ChevronRight size={13} className="opacity-70" />
+                                </div>
+                            </button>
+
+                            {/* XP Bar */}
+                            <button className="w-full md:w-auto md:min-w-[280px] text-left group" onClick={() => setShowExpModal(true)}>
+                                <div className="flex justify-between items-center mb-1.5">
+                                    <span className="text-[11px] font-black text-white/50 tracking-widest uppercase group-hover:text-white/70 transition-colors">学习星尘 ✨</span>
+                                    <span className="text-[11px] font-black text-white/90 bg-white/10 px-2 py-0.5 rounded-full border border-white/10">
+                                        {activeKid.exp} / {nextLevelExp}
+                                    </span>
+                                </div>
+                                <div className="h-2.5 md:h-3 rounded-full overflow-hidden bg-black/30 relative">
+                                    <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-1000 ease-out"
+                                        style={{ width: `${expPercent}%`, background: 'linear-gradient(90deg, #4ade80, #facc15)', boxShadow: '0 0 10px rgba(74,222,128,0.4)' }} />
+                                    <div className="absolute top-0 inset-x-0 h-[4px] bg-white/15 rounded-full" />
+                                </div>
+                                <div className="text-[9px] font-bold text-white/30 group-hover:text-white/50 mt-1.5 transition-colors text-right tracking-wide">
+                                    点击查看明细 →
+                                </div>
+                            </button>
                         </div>
                     </div>
-
-                    {/* XP bar — click to open modal */}
-                    <button
-                        className="w-full text-left group"
-                        onClick={() => setShowExpModal(true)}
-                    >
-                        <div className="flex justify-between mb-1.5">
-                            <span className="text-[10px] md:text-xs font-black text-white/50 tracking-widest transition-colors group-hover:text-white/70">学习星尘 ✨</span>
-                            <span className="text-[10px] md:text-xs font-black text-white/90 bg-white/15 px-2 py-0.5 rounded-sm">
-                                {activeKid.exp} / {nextLevelExp}
-                            </span>
-                        </div>
-                        <div className="h-3 md:h-4 rounded-full overflow-hidden bg-black/30 relative">
-                            <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-1000 ease-out"
-                                style={{ width: `${expPercent}%`, background: 'linear-gradient(90deg, #4ade80, #facc15)', boxShadow: '0 0 12px rgba(74,222,128,0.4)' }} />
-                            <div className="absolute top-0 inset-x-0 h-1 bg-white/20 rounded-full" />
-                        </div>
-                        <div className="flex justify-between mt-2">
-                            <span className="text-[9px] md:text-[10px] font-bold text-white/40 group-hover:text-white/60 transition-colors">
-                                ▼ 点击查看明细
-                            </span>
-                        </div>
-                    </button>
                 </div>
             </div>
 
