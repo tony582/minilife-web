@@ -63,8 +63,8 @@ export const LevelPrivilegeModal = ({ isOpen, onClose, activeKid, currentForm })
                             if (form.id === 'egg') FormIcon = Icons.Star;
                             if (form.id === 'sprout') FormIcon = Icons.Leaf;
                             if (form.id === 'young') FormIcon = Icons.BookOpen;
-                            if (form.id === 'mature') FormIcon = Icons.Award;
-                            if (form.id === 'ultimate') FormIcon = Icons.Crown;
+                            if (form.id === 'mature') FormIcon = Icons.GraduationCap;
+                            if (form.id === 'ultimate') FormIcon = Icons.Gem;
 
                             return (
                                 <div key={form.id} className={`p-5 rounded-[1.5rem] transition-all bg-white shadow-[0_4px_15px_rgb(0,0,0,0.02)] border relative overflow-hidden ${
@@ -95,7 +95,7 @@ export const LevelPrivilegeModal = ({ isOpen, onClose, activeKid, currentForm })
                                         )}
                                         {form.dailyBonus > 0 && (
                                             <div className="text-[11px] bg-orange-50 border border-orange-100 text-orange-600 px-2 py-1 rounded-lg font-bold flex gap-1 items-center shadow-sm">
-                                                <Icons.Gift size={12}/> 每日额外奖励 +{form.dailyBonus}
+                                                <Icons.Sparkles size={12}/> 每日额外奖励 +{form.dailyBonus}
                                             </div>
                                         )}
                                         {form.shopDiscount > 0 && (
