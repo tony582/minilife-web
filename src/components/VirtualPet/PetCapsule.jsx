@@ -143,12 +143,12 @@ export default function PetCapsule({ kidId, completedTasksToday = 0 }) {
                     <div style={{
                         background: 'linear-gradient(160deg, #FF8C42, #FF4757)',
                         borderRadius: '14px 0 0 14px',
-                        padding: '10px 8px 10px 13px',
-                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                        padding: '14px 10px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
                         boxShadow: '-4px 4px 24px rgba(255,71,87,0.4), inset 1px 1px 0 rgba(255,255,255,0.25)',
                     }}>
-                        <span style={{ fontSize: 20 }}>🐱</span>
-                        <span style={{ fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.9)', writingMode: 'vertical-rl', letterSpacing: 1 }}>叫我</span>
+                        {/* 像素风爪印 */}
+                        <span style={{ fontSize: 22, lineHeight: 1, filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.3))' }}>🐾</span>
                     </div>
                 </div>
             </>
@@ -158,6 +158,13 @@ export default function PetCapsule({ kidId, completedTasksToday = 0 }) {
     // ── Main capsule ────────────────────────────────────────
     return (
         <>
+            {/* 全屏透明遮罩：showManage 时点空白处关闭 */}
+            {showManage && (
+                <div
+                    className="fixed inset-0 z-[79]"
+                    onClick={() => setShowManage(false)}
+                />
+            )}
             <style>{`
                 @keyframes petFloat {
                     0%,100% { transform: translateY(0px);  }
@@ -254,35 +261,28 @@ export default function PetCapsule({ kidId, completedTasksToday = 0 }) {
                         <div
                             style={{
                                 position:'absolute', inset:0, borderRadius:'50%',
-                                background:'rgba(15,15,25,0.75)',
+                                background:'rgba(15,15,25,0.78)',
                                 backdropFilter:'blur(6px)',
-                                display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:4,
+                                display:'flex', alignItems:'center', justifyContent:'center',
                                 zIndex:5,
                                 animation:'petManageIn 0.2s ease-out',
+                                cursor:'pointer',
+                            }}
+                            onPointerDown={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setHidden(true);
+                                setShowManage(false);
                             }}
                         >
-                            <button
-                                onPointerDown={(e) => e.stopPropagation()}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setHidden(true);
-                                    setShowManage(false);
-                                }}
-                                style={{
-                                    background:'linear-gradient(135deg,#FF8C42,#FF4757)',
-                                    border:'none', borderRadius:10, color:'white',
-                                    fontSize:11, fontWeight:900, padding:'5px 12px',
-                                    cursor:'pointer', boxShadow:'0 4px 12px rgba(255,71,87,0.4)',
-                                    pointerEvents:'all',
-                                }}
-                            >
-                                🙈 收起
-                            </button>
-                            <span
-                                style={{ color:'rgba(255,255,255,0.4)', fontSize:8.5, fontWeight:700, pointerEvents:'none' }}
-                            >
-                                点空白处关闭
-                            </span>
+                            <span style={{
+                                fontSize: 20,
+                                fontWeight: 900,
+                                color: 'white',
+                                letterSpacing: 4,
+                                textShadow: '0 2px 10px rgba(0,0,0,0.5)',
+                                userSelect: 'none',
+                            }}>隐藏</span>
                         </div>
                     )}
                 </div>
