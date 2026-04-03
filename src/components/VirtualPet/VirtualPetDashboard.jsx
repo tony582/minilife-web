@@ -817,141 +817,23 @@ export default function VirtualPetDashboard({
                     </button>
                 </div>
 
-                {/* ── DEBUG TOOLBAR ── */}
+                {/* ── DEBUG TOOLBAR (hidden in production) ── */}
+                {false && (
                 <div className="flex-shrink-0 border-b-2 border-dashed border-orange-300 bg-orange-50 px-4 py-2 flex flex-col gap-2 text-[10px] font-mono">
                     {/* Row 1: Time & Species & Growth */}
                     <div className="flex flex-wrap items-center gap-2">
                         <span className="font-bold text-orange-600 mr-1">🛠 DEBUG</span>
-                        {/* Time Phase */}
                         {['dawn','day','dusk','night','lateNight'].map(p => (
                             <button key={p} onClick={() => setDebugTimePhase(prev => prev === p ? null : p)}
                                 className={`px-2 py-0.5 rounded border ${(debugTimePhase || timePhase) === p ? 'bg-orange-500 text-white border-orange-600' : 'bg-white border-gray-300 text-gray-600'}`}>
                                 {TIME_PHASES[p].label}
                             </button>
                         ))}
-                        <span className="mx-1 text-gray-300">|</span>
-                        {/* Species */}
-                        {[
-                            {id:'cat',          label:'🐱 小橘'},
-                            {id:'pochi',        label:'🐱 奶油'},
-                            {id:'pochi_black',  label:'🖤 黑猫'},
-                            {id:'pochi_grey',   label:'🩶 灰猫'},
-                            {id:'pochi_grey_white', label:'🤍 灰白'},
-                            {id:'pochi_orange', label:'🟠 橘猫'},
-                            {id:'pochi_white',  label:'🤍 白猫'},
-                        ].map(s => (
-                            <button key={s.id} onClick={() => setDebugSpecies(s.id)}
-                                className={`px-2 py-0.5 rounded border text-xs ${debugSpecies === s.id ? 'bg-blue-500 text-white border-blue-600' : 'bg-white border-gray-300 text-gray-600'}`}>
-                                {s.label}
-                            </button>
-                        ))}
-                        <span className="mx-1 text-gray-300">|</span>
-                        {/* Growth Stage */}
-                        {[{lv:1,label:'奶宝宝'},{lv:8,label:'少年期'},{lv:15,label:'成年期'}].map(g => (
-                            <button key={g.lv} onClick={() => setDebugBondLevel(prev => prev === g.lv ? null : g.lv)}
-                                className={`px-2 py-0.5 rounded border ${debugBondLevel === g.lv ? 'bg-green-500 text-white border-green-600' : 'bg-white border-gray-300 text-gray-600'}`}>
-                                {g.label}
-                            </button>
-                        ))}
-                        <span className="mx-1 text-gray-300">|</span>
-                        <button onClick={() => setIsEditMode(!isEditMode)} 
-                            className={`px-2 py-0.5 rounded border ${isEditMode ? 'bg-pink-500 text-white border-pink-600 font-bold' : 'bg-white border-gray-300 text-gray-600'}`}>
-                            {isEditMode ? '装修模式 [开启]' : '编辑摆放'}
-                        </button>
-                        {isEditMode && (
-                            <button onClick={() => console.log('===================\nFINAL CONFIG:\n', JSON.stringify(roomConfig, null, 2), '\n===================')} 
-                                className="px-2 py-0.5 rounded border bg-gray-900 text-white border-black font-bold animate-pulse hover:bg-black transition">
-                                💾 控制台打印坐标
-                            </button>
-                        )}
-                    </div>
-                    {/* Row 2: Pet Actions & Animations */}
-                    <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="font-bold text-purple-600 mr-1">🎬 动作</span>
-                        {[
-                            { label: '🚶 散步', action: () => { if(petRef.current) petRef.current.play(); } },
-                            { label: '🍽️ 喂食', action: () => handleAction('feed') },
-                            { label: '😴 睡觉', action: () => handleAction('sleep') },
-                            { label: '🛁 洗澡', action: () => handleAction('bathe') },
-                            { label: '🏥 看病', action: () => { setIsSick(true); setTimeout(() => handleAction('heal'), 300); } },
-                            { label: '🎉 跳舞', action: () => { if(petRef.current) { const gs = petRef.current; gs.play(); } } },
-                            { label: '🧹 扫除', action: () => { setPoops([{ id: 1, x: engineSize.w*0.7, y: engineSize.h*0.7 }]); setTimeout(() => handleAction('clean'), 300); } },
-                        ].map(btn => (
-                            <button key={btn.label} onClick={btn.action}
-                                className="px-2 py-0.5 rounded border bg-purple-50 border-purple-300 text-purple-700 hover:bg-purple-200 active:bg-purple-300 transition">
-                                {btn.label}
-                            </button>
-                        ))}
-                        <span className="mx-1 text-gray-300">|</span>
-                        <span className="font-bold text-rose-600 mr-1">🎞️ 帧</span>
-                        {[
-                            { fk: 'idle', action: (gs) => { setIsSick(false); setIsSleeping(false); gs.heal(); } },
-                            { fk: 'walk', action: (gs) => { setIsSick(false); setIsSleeping(false); gs.play(); } },
-                            { fk: 'run', action: (gs) => { setIsSick(false); setIsSleeping(false); gs.play(); } },
-                            { fk: 'eat', action: (gs) => { gs.feed(engineSize.w * 0.5); } },
-                            { fk: 'sleep', action: (gs) => { gs.sleep(); setIsSleeping(true); } },
-                            { fk: 'sleep2', action: (gs) => { gs.sleep(); setIsSleeping(true); } },
-                            { fk: 'sick', action: () => { setIsSick(true); } },
-                            { fk: 'sickRun', action: () => { setIsSick(true); } },
-                            { fk: 'dance', action: (gs) => { setIsSick(false); setIsSleeping(false); gs.play(); } },
-                            { fk: 'wait', action: (gs) => { setIsSick(false); setIsSleeping(false); gs.heal(); } },
-                            { fk: 'cry', action: (gs) => { setIsSick(false); setIsSleeping(false); gs.heal(); } },
-                            { fk: 'surprised', action: (gs) => { setIsSick(false); setIsSleeping(false); gs.heal(); } },
-                            { fk: 'excited', action: (gs) => { setIsSick(false); setIsSleeping(false); gs.heal(); } },
-                            { fk: 'bathe', action: (gs) => { gs.bathe(); } },
-                        ].map(({ fk, action }) => (
-                            <button key={fk} onClick={() => {
-                                if(petRef.current) action(petRef.current);
-                            }}
-                                className="px-1.5 py-0.5 rounded border bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-200 active:bg-rose-300 transition text-[9px]">
-                                {fk}
-                            </button>
-                        ))}
-                    </div>
-                    {/* Row 3: Scene Switches */}
-                    <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="font-bold text-teal-600 mr-1">🏠 场景</span>
-                        {[
-                            { id: 'home', label: '🏡 家', emoji: '🏡' },
-                            { id: 'bathroom', label: '🛁 浴室' },
-                            { id: 'hospital', label: '🏥 医院' },
-                        ].map(scene => (
-                            <button key={scene.id} onClick={() => {
-                                setIsTransitioning(true);
-                                setTimeout(() => {
-                                    setActiveScene(scene.id);
-                                    setIsTransitioning(false);
-                                }, 300);
-                            }}
-                                className={`px-2 py-0.5 rounded border ${activeScene === scene.id ? 'bg-teal-500 text-white border-teal-600' : 'bg-white border-gray-300 text-gray-600'} hover:bg-teal-100 transition`}>
-                                {scene.label}
-                            </button>
-                        ))}
-                        <span className="mx-1 text-gray-300">|</span>
-                        <span className="font-bold text-amber-600 mr-1">⚡ 状态</span>
-                        <button onClick={() => setIsSick(!isSick)}
-                            className={`px-2 py-0.5 rounded border ${isSick ? 'bg-red-500 text-white border-red-600' : 'bg-white border-gray-300 text-gray-600'} transition`}>
-                            {isSick ? '🤒 生病中' : '生病'}
-                        </button>
-                        <button onClick={() => { setIsSleeping(!isSleeping); if(!isSleeping && petRef.current) petRef.current.sleep(); }}
-                            className={`px-2 py-0.5 rounded border ${isSleeping ? 'bg-indigo-500 text-white border-indigo-600' : 'bg-white border-gray-300 text-gray-600'} transition`}>
-                            {isSleeping ? '💤 睡觉中' : '睡觉'}
-                        </button>
-                        <button onClick={() => setBowlHasFood(!bowlHasFood)}
-                            className={`px-2 py-0.5 rounded border ${bowlHasFood ? 'bg-amber-500 text-white border-amber-600' : 'bg-white border-gray-300 text-gray-600'} transition`}>
-                            {bowlHasFood ? '🍖 碗满' : '碗空'}
-                        </button>
-                        <button onClick={() => setStats({ satiety: 30, clean: 20, mood: 15 })}
-                            className="px-2 py-0.5 rounded border bg-white border-gray-300 text-gray-600 hover:bg-red-100 transition">
-                            📉 低状态
-                        </button>
-                        <button onClick={() => setStats({ satiety: 100, clean: 100, mood: 100 })}
-                            className="px-2 py-0.5 rounded border bg-white border-gray-300 text-gray-600 hover:bg-green-100 transition">
-                            📈 满状态
-                        </button>
                     </div>
                 </div>
+                )}
 
+                {/* ── SCROLLABLE INNER ── */}
                 {/* ── SCROLLABLE INNER ── */}
                 <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col">
                     <div className="p-3 md:p-6 flex flex-col gap-5">
