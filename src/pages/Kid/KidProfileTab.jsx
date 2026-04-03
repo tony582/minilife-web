@@ -11,9 +11,11 @@ import { useNavigationStore } from '../../stores/navigationStore';
 import { ACHIEVEMENTS } from '../../utils/achievements';
 import PetBoxTeaser from '../../components/VirtualPet/PetBoxTeaser';
 import VirtualPetDashboard from '../../components/VirtualPet/VirtualPetDashboard';
+import { ExpHistoryModal } from './ExpHistoryModal';
+import { LevelPrivilegeModal } from '../../components/modals/LevelPrivilegeModal';
 import { usePetRooms } from '../../hooks/usePetRooms';
 
-// ── Palette ──────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────
 const C = {
     bg: '#FBF7F0', bgCard: '#FFFFFF', bgLight: '#F0EBE1', bgMuted: '#E8E0D4',
     orange: '#FF8C42', yellow: '#FFD93D', teal: '#4ECDC4',
@@ -192,61 +194,6 @@ function BadgeDrawer({ badge, onClose }) {
     );
 }
 
-// ── Star Dust History Modal ──────────────────────────────────────
-function ExpHistoryModal({ activeKid, transactions, nextLevelExp, onClose }) {
-    const expPercent = Math.max(0, Math.min(100, (activeKid.exp / nextLevelExp) * 100));
-    
-    // Star dust transactions
-    const expTx = useMemo(() =>
-        transactions
-            .filter(t => t.kidId === activeKid.id && t.type === 'income' && (t.category === 'task' || t.category === 'habit'))
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-            .slice(0, 30),
-        [transactions, activeKid.id]
-    );
-
-    return (
-        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onClick={onClose}>
-            <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden flex flex-col shadow-2xl animate-fade-in max-h-[80vh]" onClick={e => e.stopPropagation()}>
-                {/* Header */}
-                <div className="px-5 py-4 flex items-center justify-between bg-slate-50 border-b border-slate-100">
-                    <div className="font-black text-slate-800 text-base">✨ 星尘获取明细</div>
-                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><Icons.X size={20} /></button>
-                </div>
-                
-                {/* Summary */}
-                <div className="px-5 py-4 bg-slate-50/50">
-                    <div className="flex justify-between items-center mb-2">
-                        <span className="text-xs font-bold text-slate-500">Lv.{activeKid.level} → Lv.{activeKid.level+1}</span>
-                        <span className="text-[10px] font-black text-orange-500 bg-orange-100 px-2 py-0.5 rounded">总计 {activeKid.exp} ✨</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
-                        <div className="h-full rounded-full transition-all" style={{ width: `${expPercent}%`, background: 'linear-gradient(90deg, #4ade80, #facc15)' }} />
-                    </div>
-                    <div className="text-[10px] text-slate-400 font-bold mt-1.5">还需 {nextLevelExp - activeKid.exp} 星尘升级</div>
-                </div>
-
-                {/* List */}
-                <div className="flex-1 overflow-y-auto px-2 py-2">
-                    {expTx.length === 0 ? (
-                        <div className="text-center py-8 text-slate-400 text-xs font-bold">还没有记录，完成任务获取星尘！</div>
-                    ) : expTx.map((t, i) => (
-                        <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50">
-                            <span className="text-lg">{t.category === 'habit' ? '🎯' : '📚'}</span>
-                            <div className="flex-1 min-w-0">
-                                <div className="text-[11px] font-bold text-slate-700 truncate">{t.title || (t.category === 'habit' ? '习惯打卡' : '学习规则')}</div>
-                                <div className="text-[9px] text-slate-400 mt-0.5">{new Date(t.date).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric'})}</div>
-                            </div>
-                            <div className="font-black text-sm text-teal-500">+{t.amount}</div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-}
-
-
 // ── Main ─────────────────────────────────────────────────────────
 export const KidProfileTab = () => {
     const { kids, activeKidId, transactions } = useDataContext();
@@ -256,8 +203,7 @@ export const KidProfileTab = () => {
     const [badgeDrawer,    setBadgeDrawer]    = useState(null);
     const [showPetRoom,    setShowPetRoom]    = useState(false);
     const [showExpModal,   setShowExpModal]   = useState(false);
-    const [spiritMsg,      setSpiritMsg]      = useState('');
-    const [showSpiritMsg,  setShowSpiritMsg]  = useState(false);
+    const [showLevelPrivilegeModal, setShowLevelPrivilegeModal]  = useState(false);
 
     const activeKid = kids.find(k => k.id === activeKidId);
     if (!activeKid) return null;
@@ -267,6 +213,8 @@ export const KidProfileTab = () => {
     const privileges   = getSpiritPrivileges(activeKid.level);
     const term         = getCurrentTerm(parentSettings);
     const expPercent   = Math.max(0, Math.min(100, (activeKid.exp / nextLevelExp) * 100));
+    const spiritMsg    = getSpiritMessage(activeKid.level);
+    const showSpiritMsg = !!spiritMsg;
 
     const achievementStatus = useMemo(() =>
         ACHIEVEMENTS.map(a => ({ ...a, unlocked: a.check(activeKid, transactions) })),
@@ -275,17 +223,7 @@ export const KidProfileTab = () => {
     const unlockedCount = achievementStatus.filter(a => a.unlocked).length;
 
     const handleSpiritTap = () => {
-        const today = new Date().toISOString().slice(0, 10);
-        const recentTaskCount = transactions.filter(t =>
-            t.kidId === activeKid.id && t.type === 'income' &&
-            t.category === 'task' && t.date?.startsWith(today)
-        ).length;
-        setSpiritMsg(getSpiritMessage(activeKid.level, {
-            spiritName: activeKid.spirit_name,
-            recentTaskCount, streakDays: activeKid.streak_days || 0,
-        }));
-        setShowSpiritMsg(true);
-        setTimeout(() => setShowSpiritMsg(false), 3000);
+        setShowLevelPrivilegeModal(true);
     };
 
     return (
@@ -295,6 +233,7 @@ export const KidProfileTab = () => {
             {showPetRoom && <VirtualPetDashboard activeKid={activeKid} onClose={() => setShowPetRoom(false)} />}
             <BadgeDrawer badge={badgeDrawer} onClose={() => setBadgeDrawer(null)} />
             {showExpModal && <ExpHistoryModal activeKid={activeKid} transactions={transactions} nextLevelExp={nextLevelExp} onClose={() => setShowExpModal(false)} />}
+            <LevelPrivilegeModal isOpen={showLevelPrivilegeModal} onClose={() => setShowLevelPrivilegeModal(false)} activeKid={activeKid} currentForm={form} />
 
             {/* ══════════════════════════════
                 1. HERO — 学习档案
@@ -339,22 +278,10 @@ export const KidProfileTab = () => {
 
                         <div className="flex-1 min-w-0">
                             {/* Level tap */}
-                            <button onClick={handleSpiritTap} className="relative mb-2">
+                            <button onClick={handleSpiritTap} className="relative mb-2 transition-transform hover:scale-105 active:scale-95">
                                 <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black bg-gradient-to-r ${form.bg} text-white/90 shadow-md`}>
-                                    {form.emoji} Lv.{activeKid.level} · {form.name}
+                                    Lv.{activeKid.level} · {form.name} <Icons.ChevronRight size={12} className="ml-0.5 opacity-70" />
                                 </div>
-                                {showSpiritMsg && (
-                                    <div className="absolute left-0 -top-11 whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold z-50"
-                                        style={{
-                                            background: 'rgba(255,255,255,0.95)', color: C.textPrimary,
-                                            boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
-                                            animation: 'messageFloat 3s ease-in-out forwards',
-                                        }}>
-                                        {spiritMsg}
-                                        <div className="absolute -bottom-1 left-5 w-2 h-2 rotate-45"
-                                            style={{ background: 'rgba(255,255,255,0.95)' }} />
-                                    </div>
-                                )}
                             </button>
                             <h2 className="text-2xl md:text-4xl font-black text-white truncate drop-shadow-sm">
                                 {activeKid.name}
