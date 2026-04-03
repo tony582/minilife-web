@@ -258,10 +258,10 @@ export const KidApp = () => {
 
             {/* --- 专属头像选择器 Modal --- */}
             {showAvatarPickerModal && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[250] flex items-center justify-center p-4 pb-12 animate-fade-in">
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-fade-in">
 
                     {/* Modal Container */}
-                    <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative flex flex-col max-h-[75vh] md:max-h-[80vh] w-full z-10">
+                    <div className="bg-white w-[90%] max-w-sm rounded-[2rem] p-6 shadow-2xl relative flex flex-col max-h-[85vh] z-10 animate-fade-in">
 
                         {/* Sticky Header */}
                         <h3 className="font-black text-xl text-slate-800 mb-4 shrink-0 text-center">选择新头像</h3>
