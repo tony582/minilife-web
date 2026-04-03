@@ -268,7 +268,10 @@ export default function PetCapsule({ kidId, completedTasksToday = 0 }) {
                         justifyContent: 'center',
                         overflow: 'hidden',
                     }}>
-                        <PetBoxTeaser size={72} />
+                        {/* 猫图案在sprite中偏下，整体上移使视觉居中 */}
+                        <div style={{ transform: 'translateY(-8px)', lineHeight: 0 }}>
+                            <PetBoxTeaser size={72} />
+                        </div>
                     </div>
 
                     {/* Long-press manage overlay */}
