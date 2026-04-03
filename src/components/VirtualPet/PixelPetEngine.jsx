@@ -26,10 +26,19 @@ const PixelPetEngine = forwardRef(
       species = 'mochi',
       activityMult = 1.0,
       bondLevel = 1,
+      bedPosition = null, // { xPct, yPct } from roomConfig
     },
     ref,
   ) => {
     const requestRef = useRef();
+
+    // Keep latest prop values in refs so the rAF game loop never uses stale closures
+    const isSleepingRef = useRef(isSleeping);
+    const isSickRef = useRef(isSick);
+    const bedPositionRef = useRef(bedPosition);
+    useEffect(() => { isSleepingRef.current = isSleeping; }, [isSleeping]);
+    useEffect(() => { isSickRef.current = isSick; }, [isSick]);
+    useEffect(() => { bedPositionRef.current = bedPosition; }, [bedPosition]);
 
     const gameState = useRef({
       screenW: width,
@@ -88,20 +97,56 @@ const PixelPetEngine = forwardRef(
         const cat = state.cat;
 
         // --- 动画与 AI 状态机 ---
-        if (isSick && cat.state !== "eating") {
+        const currentSick = isSickRef.current;
+        const currentSleeping = isSleepingRef.current;
+        const currentBedPos = bedPositionRef.current;
+
+        if (currentSick && cat.state !== "eating") {
           cat.state = "sick";
-          cat.frameKey = "sick";
+          cat.frameKey = "sickRun";
           cat.dx = 0;
           cat.bounceY = 0;
-        } else if (isSleeping) {
-          cat.state = "sleeping";
-          cat.frameKey = "sleep";
-          cat.dx = 0;
-          cat.bounceY = 0;
-          cat.x = state.screenW * 0.70; // Map directly onto pixel bed
+        } else if (currentSleeping) {
+          if (cat.state !== "sleeping" && cat.state !== "walk_to_bed") {
+            // Start walking to bed
+            cat.state = "walk_to_bed";
+            cat.frameKey = "walk";
+            cat.dx = 0;
+            cat.bounceY = 0;
+          }
+          
+          if (cat.state === "walk_to_bed") {
+            // Calculate bed target position
+            const bedX = currentBedPos ? state.screenW * currentBedPos.xPct : state.screenW * 0.50;
+            const bedY = currentBedPos ? state.screenH * (1 - currentBedPos.yPct) + state.screenH * 0.06 : state.screenH * 0.52;
+            
+            const dirX = bedX - cat.x;
+            const dirY = bedY - cat.y;
+            const dist = Math.sqrt(dirX * dirX + dirY * dirY);
+            cat.facingLeft = dirX < 0;
+            
+            if (dist > 5) {
+              const speed = 0.12;
+              cat.x += (dirX / dist) * speed * dt;
+              cat.y += (dirY / dist) * speed * dt;
+              cat.frameKey = "walk";
+            } else {
+              // Arrived at bed!
+              cat.x = bedX;
+              cat.y = bedY;
+              cat.state = "sleeping";
+              cat.frameKey = Math.random() < 0.5 ? "sleep" : "sleep2";
+              if (onStateChange) onStateChange("sleeping");
+            }
+          } else {
+            // Already sleeping at bed — keep whichever sleep variant was chosen
+            if (cat.frameKey !== "sleep" && cat.frameKey !== "sleep2") cat.frameKey = "sleep";
+            cat.dx = 0;
+            cat.bounceY = 0;
+          }
         } else {
           // Normal states
-          if (cat.state === "idle") {
+           if (cat.state === "idle") {
             cat.timer -= dt;
             cat.bounceY = 0;
             cat.frameKey = "idle";
@@ -111,54 +156,46 @@ const PixelPetEngine = forwardRef(
                 cat.state = "walk_to_target";
               } else {
                 const roll = Math.random();
-                const wanderChance = 0.35 * activityMult;
-                if (roll < wanderChance) {
+                if (roll < 0.25) {
+                  // Gentle wander — cat strolls to a new spot
                   cat.state = "wander";
-                  cat.dx = (Math.random() > 0.5 ? 1 : -1) * (0.04 + Math.random() * 0.04) * activityMult;
-                  cat.timer = 1500 + Math.random() * 3000;
-                } else if (roll < 0.50) {
-                  cat.state = "yawning";
-                  cat.timer = 1500;
-                  cat.frameKey = "wait"; // mapping to wait animation
-                } else if (roll < 0.65) {
-                  cat.state = "staring";
-                  cat.timer = 2500;
-                  cat.facingLeft = true;
-                  cat.frameKey = "idle";
-                } else if (roll < 0.78) {
-                  cat.state = "grooming";
-                  cat.timer = 2000;
-                  cat.frameKey = "wait";
-                } else if (roll < 0.85) {
-                  cat.state = "chase_tail";
-                  cat.timer = 2500;
-                  cat.frameKey = "run";
+                  cat.dx = (Math.random() > 0.5 ? 1 : -1) * (0.02 + Math.random() * 0.02) * activityMult;
+                  cat.timer = 2000 + Math.random() * 3000;
+                } else if (roll < 0.40) {
+                  // Look around — just face the other direction
+                  cat.facingLeft = !cat.facingLeft;
+                  cat.timer = 3000 + Math.random() * 3000;
                 } else {
-                  cat.timer = 1000 + Math.random() * 2000;
+                  // Stay idle — just sit there peacefully
+                  cat.timer = 3000 + Math.random() * 5000;
                 }
               }
             }
           } else if (cat.state === "sleeping") {
             cat.frameKey = "sleep";
             cat.timer -= dt;
-            if (cat.timer <= 0) {
+            if (cat.timer <= 0 || !currentSleeping) {
               cat.state = "idle";
               cat.timer = 2000;
+              cat.y = state.floorY;
               if (onStateChange) onStateChange("idle");
             }
           } else if (cat.state === "bathing") {
-            cat.frameKey = "wait"; // Mochi waits in bathtub
+            cat.frameKey = "bathe"; // Mochi uses bathe bathtub animation
             cat.timer -= dt;
             if (cat.timer <= 0) {
               cat.state = "idle";
               cat.timer = 2000;
+              cat.y = state.floorY;
               if (onStateChange) onStateChange("idle");
             }
           } else if (cat.state === "wander" || cat.state === "walk_to_target") {
-            cat.frameKey = "run"; // mapping to run (excited)
+            // Use 'walk' for calm wandering, 'run' for rushing to food
+            cat.frameKey = cat.state === "walk_to_target" && state.items[0]?.type === "hiddenFood" ? "run" : "walk";
 
             if (cat.state === "wander") {
               cat.x += cat.dx * dt;
+              cat.y += (state.floorY - cat.y) * 0.005 * dt; // Gradually return to floorY
               cat.facingLeft = cat.dx < 0;
 
               const leftBound = state.screenW * 0.25;
@@ -178,20 +215,29 @@ const PixelPetEngine = forwardRef(
               if (!target) { cat.state = "idle"; return; }
 
               const isFoodTarget = target.type === "hiddenFood";
-              const targetX = isFoodTarget ? target.x + 40 : target.x;
-              const dir = targetX - cat.x;
-              cat.facingLeft = dir < 0;
+              // Move towards exact target.x and target.y
+              const targetX = target.x;
+              const targetY = target.y !== undefined ? target.y : state.floorY;
+              
+              const dirX = targetX - cat.x;
+              const dirY = targetY - cat.y;
+              cat.facingLeft = dirX < 0;
 
-              if (Math.abs(dir) > 5) {
+              const dist = Math.sqrt(dirX*dirX + dirY*dirY);
+              if (dist > 5) {
                 let speed = 0.08;
                 if (isFoodTarget) {
                   speed = 0.45 - (satiety / 100) * 0.3;
                 } else {
                   speed = 0.04 + (satiety / 100) * 0.08;
                 }
-                cat.dx = Math.sign(dir) * speed;
+                cat.dx = (dirX / dist) * speed;
+                const dy = (dirY / dist) * speed;
                 cat.x += cat.dx * dt;
+                cat.y += dy * dt;
               } else {
+                cat.x = targetX;
+                cat.y = targetY;
                 cat.state = isFoodTarget ? "eating" : "playing";
                 cat.timer = isFoodTarget ? 3000 : 3000;
                 cat.frameKey = isFoodTarget ? "eat" : "dance";
@@ -209,16 +255,22 @@ const PixelPetEngine = forwardRef(
             }
           } else if (cat.state === "playing") {
             cat.timer -= dt;
-            cat.frameKey = "dance"; // Cat plays wildly
+            cat.frameKey = "wait"; // Use chilling anim for play — dance is reserved for click reactions
             if (cat.timer <= 0) {
               cat.state = "idle";
               cat.timer = 2000;
               if (onStateChange) onStateChange("idle");
             }
+          } else if (cat.state === "reacting") {
+            // Click reaction — plays surprised or excited then returns to idle
+            cat.timer -= dt;
+            if (cat.timer <= 0) {
+              cat.state = "idle";
+              cat.timer = 2000;
+            }
           } else if (cat.state === "yawning" || cat.state === "staring" || cat.state === "grooming" || cat.state === "chase_tail") {
              // Catch all fallbacks based on timer
              cat.timer -= dt;
-             // Only update facing if chase_tail
              if(cat.state === "chase_tail") {
                 const spinCycle = Math.floor(time / 200) % 4;
                 cat.facingLeft = spinCycle < 2;
@@ -246,14 +298,12 @@ const PixelPetEngine = forwardRef(
     // ==========================
     useImperativeHandle(ref, () => ({
       feed: (x) => {
-        // Drop food somewhere on the allowed floor bounds
-        const leftBound = gameState.current.screenW * 0.25;
-        const rightBound = gameState.current.screenW * 0.75;
+        // Drop food at the center-bottom bowl
         gameState.current.items.push({
           id: Math.random(),
           type: "hiddenFood",
-          x: x !== undefined ? x : leftBound + Math.random() * (rightBound - leftBound),
-          y: gameState.current.cat.y,
+          x: x !== undefined ? x : gameState.current.screenW * 0.40,
+          y: gameState.current.screenH * 0.82, // Bowl is at the bottom
           dy: 0,
         });
       },
@@ -265,19 +315,24 @@ const PixelPetEngine = forwardRef(
            id: Math.random(),
            type: "hiddenToy",
            x: leftBound + Math.random() * (rightBound - leftBound),
-           y: gameState.current.cat.y,
+           y: gameState.current.floorY,
            dy: 0,
         });
       },
       bathe: () => {
         gameState.current.cat.state = "bathing";
-        gameState.current.cat.timer = 3000;
+        gameState.current.cat.frameKey = "bathe";
+        gameState.current.cat.timer = 5000;
+        gameState.current.cat.x = gameState.current.screenW * 0.5;
+        gameState.current.cat.y = gameState.current.screenH; // Full-height animation aligns to bottom
         if (onStateChange) onStateChange("bathing");
       },
       sleep: () => {
-        gameState.current.cat.state = "sleeping";
-        gameState.current.cat.timer = 5000;
-        if (onStateChange) onStateChange("sleeping");
+        // Just reset to walk_to_bed - the game loop will handle walking + sleeping
+        if (gameState.current.cat.state !== 'walk_to_bed' && gameState.current.cat.state !== 'sleeping') {
+          gameState.current.cat.state = "walk_to_bed";
+          gameState.current.cat.frameKey = "walk";
+        }
       },
       triggerHeart: () => {
         // Maybe trigger cry or dance depending on some input, but doing a no-op is fine!
@@ -285,6 +340,18 @@ const PixelPetEngine = forwardRef(
       heal: () => {
         gameState.current.cat.state = "idle";
         gameState.current.cat.timer = 2000;
+      },
+      cry: () => {
+        // Used by hospital scene — pet cries while sick
+        gameState.current.cat.state = "reacting";
+        gameState.current.cat.frameKey = "cry";
+        gameState.current.cat.timer = 4000;
+      },
+      _forceFrameKey: (key) => {
+        // Emergency override — for scene-specific animations
+        gameState.current.cat.state = "reacting";
+        gameState.current.cat.frameKey = key;
+        gameState.current.cat.timer = 99999; // Hold until manually reset
       },
     }));
 
@@ -303,17 +370,18 @@ const PixelPetEngine = forwardRef(
           item.type === 'hiddenToy' ? (
             <div
               key={item.id}
-              className="absolute z-10 bottom-0"
+              className="absolute z-10"
               style={{
                 left: item.x,
-                bottom: '25%', // Roughly floor level
-                width: 32,
-                height: 32,
+                bottom: '25%',
+                width: 24,
+                height: 16,
                 backgroundImage: 'url(/pets/items/PinkBall-Sheet.png)',
-                backgroundSize: '128px 32px', // 4 frames of 32x32
-                backgroundPosition: `-${Math.floor(Date.now() / 150) % 4 * 32}px 0`,
+                backgroundSize: '120px 16px',
+                backgroundPosition: '0 0',
                 imageRendering: 'pixelated',
-                transform: 'translate(-50%, 0)',
+                transform: `translate(-50%, 0) scale(${(state.screenW / 512) * 2.5})`,
+                transformOrigin: 'center bottom',
               }}
             />
           ) : null
@@ -330,6 +398,14 @@ const PixelPetEngine = forwardRef(
           }}
           onClick={(e) => {
             e.stopPropagation();
+            // Trigger click reaction: surprised / excited / dance (3 options)
+            const cat = gameState.current.cat;
+            if (cat.state !== 'eating' && cat.state !== 'sleeping' && cat.state !== 'bathing') {
+              cat.state = 'reacting';
+              const r = Math.random();
+              cat.frameKey = r < 0.33 ? 'surprised' : r < 0.66 ? 'excited' : 'dance';
+              cat.timer = 1500 + Math.random() * 1000;
+            }
             if (onPetClick) onPetClick({ x: state.cat.x, y: state.cat.y });
           }}
         >
@@ -342,8 +418,9 @@ const PixelPetEngine = forwardRef(
             const frameH = sheet.frameH || 32;
             // Native room is 512px. The container scales it to state.screenW.
             // Responsive scale keeps the cat visually cohesive across all device widths.
-            const baseScale = 2.5; // Base visual multiplier relative to original pixel art
-            const responsiveMultiplier = state.screenW / 512;
+            const baseScale = 1.4; // Relative to original pixel art
+            // Cap at 1.0 — no upscaling beyond native 512px room width on desktop
+            const responsiveMultiplier = Math.min(state.screenW / 512, 1.0);
             const scale = frameH > 100 ? 1 : (baseScale * responsiveMultiplier);
 
             const displayWidth = frameW * scale;
@@ -351,8 +428,11 @@ const PixelPetEngine = forwardRef(
             
             // For eating, sick and dance we can speed it up or slow it down
             let animationSpeed = 120;
-            if (frameKey === "sick") animationSpeed = 200;
+            if (frameKey === "sick" || frameKey === "sickRun") animationSpeed = 180;
             else if (frameKey === "run" || frameKey === "dance") animationSpeed = 100;
+            else if (frameKey === "walk") animationSpeed = 140;
+            else if (frameKey === "surprised" || frameKey === "excited") animationSpeed = 160;
+            else if (frameKey === "sleep2") animationSpeed = 500; // Single frame — show it slow
             
             const frameIndex = Math.floor(Date.now() / animationSpeed) % sheet.frames;
             

@@ -8,6 +8,7 @@ import { useNavigationStore } from '../../stores/navigationStore';
 import { HelpTip, HELP } from '../../components/HelpTip.jsx';
 import { ACHIEVEMENTS, BADGE_CATEGORY_IMAGES } from '../../utils/achievements';
 import PixelPetEngine from '../../components/VirtualPet/PixelPetEngine';
+import PetBoxTeaser from '../../components/VirtualPet/PetBoxTeaser';
 import VirtualPetDashboard from '../../components/VirtualPet/VirtualPetDashboard';
 
 // Shared warm Headspace palette
@@ -149,11 +150,7 @@ export const KidProfileTab = () => {
                         className="flex-shrink-0 w-[140px] h-[140px] md:w-[160px] md:h-[160px] relative hover:scale-105 transition-transform cursor-pointer group"
                     >
                         <div className="absolute inset-0 bg-white/5 rounded-full blur-xl group-hover:bg-white/10 transition-colors pointer-events-none"></div>
-                        <PixelPetEngine 
-                            width={160} 
-                            height={160} 
-                            scale={0.8}
-                        />
+                        <PetBoxTeaser size={140} />
                         {/* Spirit message bubble over Pet */}
                         {showSpiritMsg && (
                             <div className="absolute top-[0px] left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 rounded-xl text-[10px] font-bold z-50 pointer-events-none"
@@ -168,7 +165,7 @@ export const KidProfileTab = () => {
                             </div>
                         )}
                         <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[9px] font-black px-2 py-0.5 rounded-full whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity bg-white/20 text-white backdrop-blur-sm shadow-sm pointer-events-none">
-                            点击互动
+                            点击进入宠物房间 🏠
                         </div>
                     </button>
 

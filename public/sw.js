@@ -32,7 +32,9 @@ self.addEventListener('fetch', (event) => {
     // For navigation requests (HTML pages): ALWAYS go to network, never serve stale HTML
     if (event.request.mode === 'navigate') {
         event.respondWith(
-            fetch(event.request).catch(() => caches.match('/'))
+            fetch(event.request).catch(() =>
+                caches.match('/').then((cached) => cached || new Response('Offline', { status: 503 }))
+            )
         );
         return;
     }
@@ -47,6 +49,10 @@ self.addEventListener('fetch', (event) => {
                 }
                 return response;
             })
-            .catch(() => caches.match(event.request))
+            .catch(() =>
+                caches.match(event.request).then(
+                    (cached) => cached || new Response('Offline', { status: 503 })
+                )
+            )
     );
 });
