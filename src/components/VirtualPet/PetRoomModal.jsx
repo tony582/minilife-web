@@ -185,7 +185,7 @@ export default function PetRoomModal({
                             title={`解锁新房间 (${nextCost} 币)`}
                         >
                             {unlocking
-                                ? <Icons.Loader size={12} className="animate-spin text-orange-400" />
+                                ? <div className="w-3 h-3 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" />
                                 : <Icons.Plus size={14} />}
                         </button>
                     )}
