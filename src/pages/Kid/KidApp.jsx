@@ -504,12 +504,14 @@ export const KidApp = () => {
             )}
         </div>
 
-        {/* ── Global Pet Capsule — floats over all tabs ── */}
-        <PetCapsule
-            key={activeKidId}
-            kidId={activeKidId}
-            completedTasksToday={completedTasksToday}
-        />
+        {/* ── Global Pet Capsule — floats over all tabs except 我的 ── */}
+        {kidTab !== 'profile' && (
+            <PetCapsule
+                key={activeKidId}
+                kidId={activeKidId}
+                completedTasksToday={completedTasksToday}
+            />
+        )}
         </>
     );
 };
