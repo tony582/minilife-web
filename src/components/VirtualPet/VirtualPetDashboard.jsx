@@ -1467,9 +1467,12 @@ export default function VirtualPetDashboard({
                                 <div className="absolute inset-0 transition-all duration-[2000ms] flex items-center justify-center overflow-hidden"
                                      style={{ filter: (isSleeping || isNightTime) ? 'brightness(0.6)' : 'none' }}>
                                     
-                                    {/* Perfect 1:1 scaling container using SVG spacer trick */}
-                                    <div className="relative inline-flex flex-col items-center justify-center max-w-full max-h-full" ref={roomAspectRef}>
-                                        <svg viewBox="0 0 100 100" className="block w-[10000px] h-[10000px] max-w-full max-h-full pointer-events-none" style={{ visibility: 'hidden' }} />
+                                    {/* Perfect 1:1 scaling container using native CSS aspect-ratio */}
+                                    <div 
+                                        className="relative max-w-full max-h-full shrink-0" 
+                                        style={{ width: '10000px', aspectRatio: '1 / 1' }} 
+                                        ref={roomAspectRef}
+                                    >
                                         <div className="absolute inset-0">
                                             <img src={currentRoomSrc}
                                                  className={`absolute inset-0 w-full h-full object-contain select-none transition-opacity duration-500 ${
@@ -1732,10 +1735,10 @@ export default function VirtualPetDashboard({
 
 
                         {/* ── Desktop Right Column Action Grid (Replaces old dock) ── */}
-                        <div className="flex flex-col p-4 shrink-0 pb-6 w-full mx-auto flex-1 justify-center">
+                        <div className="flex flex-col p-4 shrink-0 pb-6 w-full mx-auto">
                             
                             {/* Action Panel Card */}
-                            <div className="flex flex-col gap-0 flex-1">
+                            <div className="flex flex-col gap-0">
                                 
                                 <div className="flex justify-between items-center mb-5 mt-1">
                                     {/* Styled Title */}
@@ -1751,7 +1754,7 @@ export default function VirtualPetDashboard({
                                 </div>
 
                                 {/* 6-slot Action Grid */}
-                                <div className="grid grid-cols-2 gap-3 flex-1 pb-2">
+                                <div className="grid grid-cols-2 gap-3 pb-2">
                                     {FIXED_TOOLBAR.map((itemId, idx) => {
                                         const item = getItem(itemId);
                                         const qty = consumables[itemId] ?? 0;
