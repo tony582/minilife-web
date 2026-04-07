@@ -418,16 +418,17 @@ export default function VirtualPetDashboard({
     const roomAspectRef = useRef(null);
 
     useEffect(() => {
-        if (!roomAspectRef.current) return;
+        if (!containerRef.current) return;
         const observer = new ResizeObserver(entries => {
             const entry = entries[0];
             if (entry) {
-                setEngineSize({ w: entry.contentRect.width, h: entry.contentRect.height });
+                const maxAllowed = Math.min(entry.contentRect.width, entry.contentRect.height);
+                setEngineSize({ w: maxAllowed, h: maxAllowed });
             }
         });
-        observer.observe(roomAspectRef.current);
+        observer.observe(containerRef.current);
         return () => observer.disconnect();
-    }, [activeScene, isEditMode, showDecorate]);
+    }, []);
     const lastPosRef = useRef(null);
 
     const handlePointerDown = (e, id) => {
@@ -1469,10 +1470,10 @@ export default function VirtualPetDashboard({
                                 <div className="absolute inset-0 transition-all duration-[2000ms] flex items-center justify-center overflow-hidden"
                                      style={{ filter: (isSleeping || isNightTime) ? 'brightness(0.6)' : 'none' }}>
                                     
-                                    {/* Perfect 1:1 scaling container using native CSS aspect-ratio */}
+                                    {/* Perfect 1:1 scaling container using explicit JS sizing to prevent CSS flex bugs */}
                                     <div 
-                                        className="relative max-w-full max-h-full shrink-0" 
-                                        style={{ width: '10000px', height: '10000px', aspectRatio: '1 / 1' }} 
+                                        className="relative shrink-0" 
+                                        style={{ width: engineSize.w > 0 ? engineSize.w : '100%', height: engineSize.h > 0 ? engineSize.h : '100%' }} 
                                         ref={roomAspectRef}
                                     >
                                         <div className="absolute inset-0">
