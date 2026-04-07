@@ -223,16 +223,16 @@ export default function VirtualPetDashboard({
     const [engineSize, setEngineSize] = useState({ w: 400, h: 300 });
 
     useEffect(() => {
-        if (!containerRef.current) return;
+        if (!roomAspectRef.current) return;
         const observer = new ResizeObserver(entries => {
             const entry = entries[0];
             if (entry) {
                 setEngineSize({ w: entry.contentRect.width, h: entry.contentRect.height });
             }
         });
-        observer.observe(containerRef.current);
+        observer.observe(roomAspectRef.current);
         return () => observer.disconnect();
-    }, []);
+    }, [activeScene, isEditMode, showDecorate]);
 
     // ── GAME STATE — init from roomData if provided ──
     const [stats, setStats] = useState(() => ({
