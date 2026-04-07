@@ -6,7 +6,7 @@ import PixelBackground from './PixelBackground';
 import { SPIRIT_FORMS } from '../../utils/spiritUtils';
 import { DEFAULT_ROOM, FURNITURE_VARIANTS, ROOM_VARIANTS, FURNITURE_VARIANT_LABELS } from '../../data/roomConfig';
 import { usePetCoins } from '../../hooks/usePetCoins';
-import { PRICE_TABLE, SKIN_CHANGE_COST, ROOM_SKIN_COST } from '../../data/furnitureCatalog';
+import { PRICE_TABLE, SKIN_CHANGE_COST, ROOM_SKIN_COST, BOWL_VARIANTS } from '../../data/furnitureCatalog';
 import { ITEMS_CATALOG, getItem, getHearts, FIXED_TOOLBAR } from '../../data/itemsCatalog';
 import { useDataContext } from '../../context/DataContext.jsx';
 import { isSameDay } from '../../utils/dateUtils';
@@ -495,6 +495,7 @@ export default function VirtualPetDashboard({
     // ── CINEMATIC STATES ──
     const [isFeeding, setIsFeeding] = useState(false);
     const [bowlHasFood, setBowlHasFood] = useState(false);
+    const [bowlFoodType, setBowlFoodType] = useState(null);
     const [isCleaning, setIsCleaning] = useState(false);
     const [speechBubble, setSpeechBubble] = useState(null);
     
@@ -734,7 +735,33 @@ export default function VirtualPetDashboard({
         return () => window.removeEventListener('minilife-task-complete', handler);
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const handleAction = (type) => {
+    const handlePetStateChange = useCallback((newState) => {
+        if (newState === 'idle') {
+            setIsFeeding(prevFeeding => {
+                if (prevFeeding) {
+                    setBowlHasFood(false);
+                    setBowlFoodType(null);
+                    const now = new Date().toISOString();
+                    setStats(s => {
+                        const nextStats = { ...s, satiety: Math.min(100, s.satiety + 40) };
+                        vitalsRef.current = nextStats;
+                        onPetVitalsChange?.({
+                            petHunger: Math.round(nextStats.satiety),
+                            petMood:   Math.round(nextStats.mood),
+                            petState:  'idle',
+                            petLastFed: now,
+                        });
+                        return nextStats;
+                    });
+                    setPetLastFed(now);
+                    return false;
+                }
+                return prevFeeding;
+            });
+        }
+    }, [onPetVitalsChange, setStats, setPetLastFed]);
+
+    const handleAction = (type, payload) => {
         if (!petRef.current || isTransitioning) return;
         const pet = petRef.current;
 
@@ -756,13 +783,18 @@ export default function VirtualPetDashboard({
                 if (activeScene !== 'home') return;
                 setIsFeeding(true);
                 setBowlHasFood(true);
-                // Drop meant perfectly at the bowl
-                pet.feed((() => {
-                    // Walk to the exact bowl position from roomConfig
-                    const bowl = roomConfig.furniture.find(f => f.id === 'bowl_food');
-                    const leftPct = bowl ? parseFloat(bowl.style.left) / 100 : 0.553;
-                    return engineSize.w * leftPct;
-                })());
+                setBowlFoodType(payload === 'food' ? 'kibble' : 'treat');
+                // Walk to the center of the bowl (in both x and y dimensions)
+                const bowlPos = (() => {
+                    const bowl = roomConfig.furniture.find(f => (f.type || f.id) === 'bowl_food');
+                    const leftPct = bowl && bowl.style && bowl.style.left ? parseFloat(bowl.style.left) / 100 : 0.46;
+                    const bottomPct = bowl && bowl.style && bowl.style.bottom ? parseFloat(bowl.style.bottom) / 100 : 0.18;
+                    return { 
+                        x: engineSize.w * (leftPct + 0.045), // Center of the bowl
+                        y: engineSize.h * (1 - bottomPct)    // Bottom edge of the bowl
+                    };
+                })();
+                pet.feed(bowlPos.x, bowlPos.y);
 
                 // Dynamic speech and timing based on satiety!
                 let speechConfig = { text: "吧唧吧唧...太香了嘟！", delay: 900 };
@@ -770,22 +802,8 @@ export default function VirtualPetDashboard({
                 else if (stats.satiety <= 30) speechConfig = { text: "饿死本喵了！大口炫！", delay: 500 };
                 
                 triggerSpeech(speechConfig.text, '25%', speechConfig.delay, 3000); // Pops up right as the cat sprints into position
-                setTimeout(() => setIsFeeding(false), 3000); // Wait 3s before zooming out
                 
-                // Wait 4s (time to walk + time to eat) before emptying the bowl and gaining satiety
-                setTimeout(() => {
-                    setBowlHasFood(false);
-                    const now = new Date().toISOString();
-                    setStats(s => ({ ...s, satiety: Math.min(100, s.satiety + 40) }));
-                    setPetLastFed(now);
-                    // Immediate persist on feed
-                    onPetVitalsChange?.({
-                        petHunger: Math.min(100, Math.round(vitalsRef.current.satiety + 40)),
-                        petMood:   Math.round(vitalsRef.current.mood),
-                        petState:  'idle',
-                        petLastFed: now,
-                    });
-                }, 4000);
+                // Note: The UI resets (zoom out, empty bowl, add satiety) are handled by handlePetStateChange when the eating animation organically concludes and the pet returns to 'idle'.
                 break;
             }
 
@@ -1053,9 +1071,15 @@ export default function VirtualPetDashboard({
                                                 .map(item => {
                                                 const typeKey = item.type || item.id;
                                                 const hasVariants = !!FURNITURE_VARIANTS[typeKey];
-                                                const imgSrc = (item.id === 'bowl_food' && bowlHasFood)
-                                                    ? item.srcFull
-                                                    : item.src;
+                                                let imgSrc = item.src;
+                                                if ((item.type || item.id) === 'bowl_food') {
+                                                    const bVariant = BOWL_VARIANTS[item.skinIdx || 0] || BOWL_VARIANTS[0];
+                                                    if (bowlHasFood) {
+                                                        imgSrc = (bowlFoodType === 'kibble' && bVariant.kibble) ? bVariant.kibble : (bVariant.treat || item.srcFull);
+                                                    } else {
+                                                        imgSrc = bVariant.empty;
+                                                    }
+                                                }
                                                 const isFlipped = item.flipped || item.flipX;
                                                 const instId = item.instanceId ?? item.id;
                                                 return (
@@ -1329,7 +1353,7 @@ export default function VirtualPetDashboard({
             switch (itemId) {
                 case 'food':
                 case 'catcan':
-                    handleAction('feed');
+                    handleAction('feed', itemId);
                     break;
                 case 'soap':
                     handleAction('bathe');
@@ -1382,8 +1406,8 @@ export default function VirtualPetDashboard({
                 if (onBuyConsumable) {
                     const success = await onBuyConsumable(item.id, item.price);
                     if (success) {
-                        showToastEmbed(`💸 -${item.price}金币！已兑换 ${item.label}`);
-                        performUseCinematic(itemId, item, false); // Purchased out of stock, so deduct it directly
+                        showToastEmbed(`💸 -${item.price}金币！已购买 ${item.label}，再次点击使用。`);
+                        // WE DO NOT performUseCinematic HERE anymore! The item is bought into inventory.
                     }
                 }
             }
@@ -1461,9 +1485,15 @@ export default function VirtualPetDashboard({
                                                 .map(item => {
                                                 const typeKey = item.type || item.id;
                                                 const hasVariants = !!FURNITURE_VARIANTS[typeKey];
-                                                const imgSrc = (item.id === 'bowl_food' && bowlHasFood)
-                                                    ? item.srcFull
-                                                    : item.src;
+                                                let imgSrc = item.src;
+                                                if ((item.type || item.id) === 'bowl_food') {
+                                                    const bVariant = BOWL_VARIANTS[item.skinIdx || 0] || BOWL_VARIANTS[0];
+                                                    if (bowlHasFood) {
+                                                        imgSrc = (bowlFoodType === 'kibble' && bVariant.kibble) ? bVariant.kibble : (bVariant.treat || item.srcFull);
+                                                    } else {
+                                                        imgSrc = bVariant.empty;
+                                                    }
+                                                }
                                                 const isFlipped = item.flipped || item.flipX;
                                                 const instId = item.instanceId ?? item.id;
                                                 return (
@@ -1554,6 +1584,7 @@ export default function VirtualPetDashboard({
                                                     species={debugSpecies}
                                                     bondLevel={debugBondLevel !== null ? debugBondLevel : currentLevel}
                                                     onPetClick={handlePetClick}
+                                                    onStateChange={handlePetStateChange}
                                                     bedPosition={bedPosition}
                                                 />
                                             </div>

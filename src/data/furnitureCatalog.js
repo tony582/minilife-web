@@ -53,12 +53,12 @@ const PLACEMENTS = {
 
 // Bowl color variants — empty src + full src pairs
 export const BOWL_VARIANTS = [
-    { empty: '/pets/furniture/bowl_blue_empty_exact.png',   full: '/pets/furniture/bowl_blue_full_exact.png',   label: '蓝色' },
-    { empty: '/pets/furniture/bowl_beige_empty.png',         full: '/pets/furniture/bowl_beige_kibble.png',       label: '米色' },
-    { empty: '/pets/furniture/bowl_brown_empty.png',         full: '/pets/furniture/bowl_brown_food.png',         label: '棕色' },
-    { empty: '/pets/furniture/bowl_gray_empty.png',          full: '/pets/furniture/bowl_gray_kibble.png',        label: '灰色' },
-    { empty: '/pets/furniture/bowl_purple_empty.png',        full: '/pets/furniture/bowl_purple_kibble.png',      label: '紫色' },
-    { empty: '/pets/furniture/bowl_sage_empty.png',          full: '/pets/furniture/bowl_sage_kibble.png',        label: '绿色' },
+    { empty: '/pets/furniture/bowl_blue_empty.png',   treat: '/pets/furniture/bowl_blue_treats.png',   kibble: '/pets/furniture/bowl_blue_kibble.png',   label: '蓝色' },
+    { empty: '/pets/furniture/bowl_beige_empty.png',  treat: '/pets/furniture/bowl_beige_treats.png',  kibble: '/pets/furniture/bowl_beige_kibble.png',   label: '米色' },
+    { empty: '/pets/furniture/bowl_brown_empty.png',  treat: '/pets/furniture/bowl_brown_treats.png',  kibble: '/pets/furniture/bowl_brown_kibble.png',  label: '棕色' },
+    { empty: '/pets/furniture/bowl_gray_empty.png',   treat: '/pets/furniture/bowl_gray_treats.png',   kibble: '/pets/furniture/bowl_gray_kibble.png',   label: '灰色' },
+    { empty: '/pets/furniture/bowl_purple_empty.png', treat: '/pets/furniture/bowl_purple_treats.png', kibble: '/pets/furniture/bowl_purple_kibble.png', label: '紫色' },
+    { empty: '/pets/furniture/bowl_sage_empty.png',   treat: '/pets/furniture/bowl_sage_treats.png',   kibble: '/pets/furniture/bowl_sage_kibble.png',   label: '绿色' },
 ];
 
 export const FURNITURE_CATALOG = [
@@ -121,7 +121,8 @@ export function createFurnitureItem(catalogId, overrides = {}, selectedVariantId
             id:          `bowl_food_${Date.now()}`,
             type:        'bowl_food',
             src:         variant.empty,
-            srcFull:     variant.full,
+            srcKibble:   variant.kibble,
+            srcTreat:    variant.treat,
             interactive: true,
             style:       { ...placement },
             zIndex:      placement.zIndex,

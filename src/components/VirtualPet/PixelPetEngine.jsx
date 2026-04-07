@@ -215,9 +215,16 @@ const PixelPetEngine = forwardRef(
               if (!target) { cat.state = "idle"; return; }
 
               const isFoodTarget = target.type === "hiddenFood";
+              
               // Move towards exact target.x and target.y
-              const targetX = target.x;
+              let targetX = target.x;
               const targetY = target.y !== undefined ? target.y : state.floorY;
+              
+              if (isFoodTarget) {
+                 // The target is the CENTER of the bowl. We must stop 5-6% away from center based on which side the cat is on.
+                 const offset = state.screenW * 0.055;
+                 targetX = cat.x < target.x ? target.x - offset : target.x + offset;
+              }
               
               const dirX = targetX - cat.x;
               const dirY = targetY - cat.y;
@@ -241,6 +248,10 @@ const PixelPetEngine = forwardRef(
                 cat.state = isFoodTarget ? "eating" : "playing";
                 cat.timer = isFoodTarget ? 3000 : 3000;
                 cat.frameKey = isFoodTarget ? "eat" : "dance";
+                // Force pet to face the food once arrived
+                if (isFoodTarget) {
+                   cat.facingLeft = cat.x > target.x;
+                }
                 state.items.shift();
                 if (onStateChange) onStateChange(cat.state);
               }
@@ -297,15 +308,22 @@ const PixelPetEngine = forwardRef(
     // EXPOSED IMPERATIVE API
     // ==========================
     useImperativeHandle(ref, () => ({
-      feed: (x) => {
+      feed: (x, y) => {
         // Drop food at the center-bottom bowl
         gameState.current.items.push({
           id: Math.random(),
           type: "hiddenFood",
           x: x !== undefined ? x : gameState.current.screenW * 0.40,
-          y: gameState.current.screenH * 0.82, // Bowl is at the bottom
+          y: y !== undefined ? y : gameState.current.screenH * 0.82, // Dynamic bowl height position
           dy: 0,
         });
+
+        // IMMEDIATELY FORCE THE CAT TO NOTICE IT if it is in an interruptible state
+        const cat = gameState.current.cat;
+        if (cat.state !== "eating" && cat.state !== "sleeping" && cat.state !== "walk_to_bed" && cat.state !== "bathing") {
+            cat.state = "walk_to_target";
+            cat.timer = 0;
+        }
       },
       play: () => {
         // Drop a random toy as an invisible target for the cat to run to

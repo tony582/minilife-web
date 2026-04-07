@@ -93,8 +93,11 @@ export const FURNITURE_VARIANTS = {
   // ── Cat Bowls (food) ──────────────────────────────────────────────────────
   bowl_food: [
     '/pets/furniture/bowl_blue_empty_exact.png',
-    '/pets/furniture/bowl_empty.png',
-    '/pets/furniture/bowl_empty_fixed.png',
+    '/pets/furniture/bowl_beige_empty.png',
+    '/pets/furniture/bowl_brown_empty.png',
+    '/pets/furniture/bowl_gray_empty.png',
+    '/pets/furniture/bowl_purple_empty.png',
+    '/pets/furniture/bowl_sage_empty.png',
   ],
   // ── Cat Towers (3-layer) ──────────────────────────────────────────────────
   tower3: [
@@ -201,7 +204,7 @@ export const DEFAULT_ROOM = {
   base: '/pets/rooms/room_01.png',
   furniture: [
     { "id": "bed_1", "type": "bed", "src": "/pets/furniture/bed_pink.png", "style": { "bottom": "49.905%", "left": "39.875%", "width": "21.484%", "zIndex": 7 }, "zIndex": 7, "skinIdx": 0, "placed": true, "flipped": false, "instanceId": "item_default_1" },
-    { "id": "bowl_food_1", "type": "bowl_food", "src": "/pets/furniture/bowl_blue_empty_exact.png", "srcFull": "/pets/furniture/bowl_blue_full_exact.png", "interactive": true, "style": { "bottom": "17.920%", "left": "46.772%", "width": "8.398%", "zIndex": 11 }, "zIndex": 11, "skinIdx": 0, "placed": true, "flipped": false, "instanceId": "item_default_2" },
+    { "id": "bowl_food_1", "type": "bowl_food", "src": "/pets/furniture/bowl_blue_empty.png", "srcFull": "/pets/furniture/bowl_blue_full.png", "interactive": true, "style": { "bottom": "17.920%", "left": "46.772%", "width": "8.398%", "zIndex": 11 }, "zIndex": 11, "skinIdx": 0, "placed": true, "flipped": false, "instanceId": "item_default_2" },
     { "id": "window_frame_1", "type": "window_frame", "src": "/pets/furniture/frame_light.png", "style": { "bottom": "59.363%", "left": "67.226%", "width": "10.000%", "zIndex": 1 }, "zIndex": 1, "skinIdx": 0, "placed": true, "flipped": false, "instanceId": "item_default_3" },
     { "id": "painting_plant_1", "type": "painting_plant", "src": "/pets/furniture/painting_plant.png", "style": { "bottom": "51.072%", "left": "83.062%", "width": "8.000%", "zIndex": 1 }, "zIndex": 1, "skinIdx": 0, "placed": true, "flipped": false, "instanceId": "item_default_4" },
     { "id": "litter_1", "type": "litter", "src": "/pets/furniture/litter_tan.png", "style": { "bottom": "35.308%", "left": "78.177%", "width": "10.000%", "zIndex": 5 }, "zIndex": 5, "skinIdx": 0, "placed": true, "flipped": false, "instanceId": "item_default_5" },
@@ -247,4 +250,5 @@ export const FURNITURE_VARIANT_LABELS = {
     window_blind:  ['紫色百叶','深色百叶','蓝绿百叶','白色百叶'],
     window_frame:  ['白色','棕色','灰色','棕褐色'],
     shelf:         ['米色','蓝色','金色','绿色','紫色'],
+    bowl_food:     ['蓝色','米色','棕色','灰色','紫色','绿色'],
 };
