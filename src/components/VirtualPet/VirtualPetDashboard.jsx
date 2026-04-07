@@ -222,17 +222,7 @@ export default function VirtualPetDashboard({
     };
     const [engineSize, setEngineSize] = useState({ w: 400, h: 300 });
 
-    useEffect(() => {
-        if (!roomAspectRef.current) return;
-        const observer = new ResizeObserver(entries => {
-            const entry = entries[0];
-            if (entry) {
-                setEngineSize({ w: entry.contentRect.width, h: entry.contentRect.height });
-            }
-        });
-        observer.observe(roomAspectRef.current);
-        return () => observer.disconnect();
-    }, [activeScene, isEditMode, showDecorate]);
+
 
     // ── GAME STATE — init from roomData if provided ──
     const [stats, setStats] = useState(() => ({
@@ -426,6 +416,18 @@ export default function VirtualPetDashboard({
     const [isEditMode, setIsEditMode] = useState(false);
     const [draggingId, setDraggingId] = useState(null);
     const roomAspectRef = useRef(null);
+
+    useEffect(() => {
+        if (!roomAspectRef.current) return;
+        const observer = new ResizeObserver(entries => {
+            const entry = entries[0];
+            if (entry) {
+                setEngineSize({ w: entry.contentRect.width, h: entry.contentRect.height });
+            }
+        });
+        observer.observe(roomAspectRef.current);
+        return () => observer.disconnect();
+    }, [activeScene, isEditMode, showDecorate]);
     const lastPosRef = useRef(null);
 
     const handlePointerDown = (e, id) => {
