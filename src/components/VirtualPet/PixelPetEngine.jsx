@@ -342,7 +342,7 @@ const PixelPetEngine = forwardRef(
         gameState.current.cat.frameKey = "bathe";
         gameState.current.cat.timer = 5000;
         gameState.current.cat.x = gameState.current.screenW * 0.5;
-        gameState.current.cat.y = gameState.current.screenH; // Full-height animation aligns to bottom
+        gameState.current.cat.y = gameState.current.screenH * 0.85; // Visual vertical center for the water tub bottom segment
         if (onStateChange) onStateChange("bathing");
       },
       sleep: () => {
@@ -364,6 +364,9 @@ const PixelPetEngine = forwardRef(
         gameState.current.cat.state = "reacting";
         gameState.current.cat.frameKey = "cry";
         gameState.current.cat.timer = 4000;
+        // Instantly force to the center of the viewport floor
+        gameState.current.cat.x = gameState.current.screenW * 0.5;
+        gameState.current.cat.y = gameState.current.screenH * 0.85;
       },
       _forceFrameKey: (key) => {
         // Emergency override — for scene-specific animations

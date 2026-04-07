@@ -274,6 +274,9 @@ export default function VirtualPetDashboard({
             furniture: parseFurnitureField(roomData?.furnitureJson ?? roomData?.furniture_json),
         });
     }, [roomData?.id, roomData?.furnitureJson]);
+    
+    const roomConfigRef = useRef(roomConfig);
+    useEffect(() => { roomConfigRef.current = roomConfig; }, [roomConfig]);
 
     // Called by usePetCoins (only available when kidId provided)
     const { balance: coinBalance, spendCoins, refundCoins } = usePetCoins(kidId || '') ?? {};
@@ -551,10 +554,30 @@ export default function VirtualPetDashboard({
                 // Poop Spawner
                 const poopChance = 0.008;
                 if (activeScene === 'home' && Math.random() < poopChance && s.satiety > 20 && poops.length < 5) {
+                    let targetX = engineSize.w * 0.8 + (Math.random() * 40 - 20);
+                    let targetY = engineSize.h * 0.75 - 15 + (Math.random() * 20);
+                    
+                    const litter = roomConfigRef.current.furniture.find(i => (i.type || i.id).includes('litter') && i.placed !== false);
+                    if (litter && litter.style) {
+                        if (litter.style.left) {
+                            const leftPct = parseFloat(litter.style.left) / 100;
+                            const widthPct = parseFloat(litter.style.width || "10") / 100;
+                            targetX = engineSize.w * (leftPct + widthPct / 2) + (Math.random() * 4 - 2);
+                        }
+                        if (litter.style.bottom) {
+                            const bottomPct = parseFloat(litter.style.bottom) / 100;
+                            // Move 20px up from the bottom baseline to hit the visual center of the "sand"
+                            targetY = engineSize.h * (1 - bottomPct) - 20 + (Math.random() * 4 - 2);
+                        } else if (litter.style.top) {
+                            const topPct = parseFloat(litter.style.top) / 100;
+                            targetY = engineSize.h * (topPct) + 15 + (Math.random() * 4 - 2);
+                        }
+                    }
+
                     setPoops(prev => [...prev, {
                         id: Date.now() + Math.random(),
-                        x: engineSize.w * 0.8 + (Math.random() * 40 - 20),
-                        y: engineSize.h * 0.75 - 15 + (Math.random() * 20)
+                        x: targetX,
+                        y: targetY
                     }]);
                 }
                 
@@ -823,14 +846,32 @@ export default function VirtualPetDashboard({
 
             case 'bathe':
                 if (activeScene !== 'home') return;
-                pet.bathe(); // Trigger engine bathtub visual
-                triggerSpeech("洗香香啦，好舒爽嘟~", '50%', 500, 3000);
+                setIsTransitioning(true);
+                setTimeout(() => {
+                    setActiveScene('bathroom');
+                    setIsTransitioning(false);
+                    
+                    if (engineSize && engineSize.w > 0 && petRef.current && petRef.current.feed) {
+                        petRef.current.feed(engineSize.w / 2, engineSize.h / 2);
+                    }
+                    
+                    pet.bathe(); // Trigger engine bathtub visual
+                    triggerSpeech("洗香香啦，好舒爽嘟~", '50%', 500, 3000);
                 
                 // Wait for bathing to finish
                 setTimeout(() => {
                     setStats(s => ({ ...s, clean: 100 }));
                     pet.triggerHeart();
+                    
+                    setTimeout(() => {
+                        setIsTransitioning(true);
+                        setTimeout(() => {
+                            setActiveScene('home');
+                            setIsTransitioning(false);
+                        }, 500);
+                    }, 2000);
                 }, 5000);
+                }, 500);
                 break;
 
             case 'heal':
@@ -839,6 +880,10 @@ export default function VirtualPetDashboard({
                     setTimeout(() => {
                         setActiveScene('hospital');
                         setIsTransitioning(false);
+                        
+                        if (engineSize && engineSize.w > 0 && petRef.current && petRef.current.feed) {
+                            petRef.current.feed(engineSize.w / 2, engineSize.h / 2);
+                        }
                         
                         // Pochi cries at the hospital — sad but will be ok!
                         if (pet && pet.cry) pet.cry();
@@ -1225,7 +1270,7 @@ export default function VirtualPetDashboard({
                             )}
 
                             {/* --- DROPPED POOPS --- */}
-                            {poops.map((p) => (
+                            {activeScene === 'home' && poops.map((p) => (
                                 <div key={p.id} className="absolute z-10 animate-bounce" style={{ left: p.x, top: p.y, transform: 'translate(-50%, -50%)', opacity: isTransitioning ? 0 : 1 }}>
                                     <PixelIcon grid={POOP_ICON.grid} palette={POOP_ICON.palette} size={3} />
                                 </div>
@@ -1465,8 +1510,7 @@ export default function VirtualPetDashboard({
 
 
 
-                            {/* Home scene */}
-                            {activeScene === 'home' && (
+                            <div className="absolute inset-0 transition-opacity duration-700 hover:pointer-events-auto" style={{ opacity: isTransitioning ? 0 : 1 }}>
                                 <div className="absolute inset-0 transition-all duration-[2000ms] flex items-center justify-center overflow-hidden"
                                      style={{ filter: (isSleeping || isNightTime) ? 'brightness(0.6)' : 'none' }}>
                                     
@@ -1476,13 +1520,19 @@ export default function VirtualPetDashboard({
                                         style={{ width: engineSize.w > 0 ? engineSize.w : '100%', height: engineSize.h > 0 ? engineSize.h : '100%' }} 
                                         ref={roomAspectRef}
                                     >
-                                        <div className="absolute inset-0">
-                                            <img src={currentRoomSrc}
-                                                 className={`absolute inset-0 w-full h-full object-contain select-none transition-opacity duration-500 ${
-                                                     !isEditMode && !showDecorate ? 'cursor-pointer' : 'cursor-default pointer-events-none'
-                                                 }`}
-                                                 style={{ imageRendering: 'pixelated', zIndex: 0 }}
-                                                 onClick={handleRoomClick}
+                                        <div className="absolute inset-0 pointer-events-none">
+                                            {/* SCENE: HOME */}
+                                            {activeScene === 'home' && (
+                                            <div className="absolute inset-0 pointer-events-auto">
+                                                {showDecorate && !decorateMode && (
+                                                    <div className="absolute inset-0 border-2 border-dashed border-orange-400/60 rounded-sm pointer-events-none z-10" style={{ margin: '-3px' }} />
+                                                )}
+                                                <img src={currentRoomSrc}
+                                                     className={`absolute inset-0 w-full h-full object-contain select-none transition-opacity duration-500 ${
+                                                         !isEditMode && !showDecorate ? 'cursor-pointer' : 'cursor-default pointer-events-none'
+                                                     } ${showDecorate ? 'opacity-80' : ''}`}
+                                                     style={{ imageRendering: 'pixelated', zIndex: 0 }}
+                                                     onClick={handleRoomClick}
                                                  alt="Room" />
                                             
                                             {/* Layer 1+: Assembled furniture pieces */}
@@ -1576,7 +1626,38 @@ export default function VirtualPetDashboard({
                                                     </div>
                                                 );
                                             })}
-                                        
+                                            </div>
+                                            )}
+
+                                        {/* SCENE: BATHROOM */}
+                                        {activeScene === 'bathroom' && (
+                                            <>
+                                                <div className="absolute top-0 w-full h-[65%] bg-[#f8fafc] border-b-8 border-[#94a3b8]" style={{ backgroundImage: 'linear-gradient(90deg, #e2e8f0 4px, transparent 4px), linear-gradient(#e2e8f0 4px, transparent 4px)', backgroundSize: '40px 40px' }}>
+                                                    <div className="absolute top-[10%] left-1/2 -translate-x-1/2 opacity-80">
+                                                        <PixelIcon grid={SCENE_PROPS.showerHead.grid} palette={SCENE_PROPS.showerHead.palette} size={5} />
+                                                    </div>
+                                                </div>
+                                                <div className="absolute bottom-0 w-full h-[35%] bg-[#38bdf8] flex justify-center items-center">
+                                                    <div className="w-[90%] h-full bg-[#7dd3fc] opacity-50" style={{ backgroundImage: 'radial-gradient(circle, #bae6fd 4px, transparent 4px)', backgroundSize: '16px 16px' }}></div>
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {/* SCENE: HOSPITAL */}
+                                        {activeScene === 'hospital' && (
+                                            <>
+                                                <div className="absolute top-0 w-full h-[65%] bg-[#d1fae5] border-b-8 border-[#94a3b8]">
+                                                    <div className="absolute top-[20%] left-1/2 -translate-x-1/2 opacity-90 p-3 bg-white border-4 border-gray-900 rounded shadow-[4px_4px_0px_rgba(0,0,0,0.1)]">
+                                                        <PixelIcon grid={SCENE_PROPS.medicalCross.grid} palette={SCENE_PROPS.medicalCross.palette} size={4} />
+                                                    </div>
+                                                </div>
+                                                <div className="absolute bottom-0 w-full h-[35%] bg-[#f1f5f9] flex justify-center">
+                                                    <div className="w-full h-full opacity-50" style={{ backgroundImage: 'linear-gradient(90deg, #e2e8f0 2px, transparent 2px), linear-gradient(#e2e8f0 2px, transparent 2px)', backgroundSize: '60px 20px' }}></div>
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {/* OVERLAYS & SHARED ENTITIES */}
                                         {engineSize.w > 0 && (
                                             <div className="absolute inset-0 z-20 transition-opacity duration-500 pointer-events-none" style={{ filter: isSleeping ? 'brightness(0.6)' : 'none', opacity: isTransitioning ? 0 : 1 }}>
                                                 <PixelPetEngine
@@ -1602,7 +1683,7 @@ export default function VirtualPetDashboard({
                                                 </div>
                                             </div>
                                         )}
-                                        {poops.map((p) => (
+                                        {activeScene === 'home' && poops.map((p) => (
                                             <div key={p.id} className="absolute z-10 animate-bounce" style={{ left: p.x, top: p.y, transform: 'translate(-50%, -50%)', opacity: isTransitioning ? 0 : 1 }}>
                                                 <PixelIcon grid={POOP_ICON.grid} palette={POOP_ICON.palette} size={3} />
                                             </div>
@@ -1618,7 +1699,7 @@ export default function VirtualPetDashboard({
                                         </div>{/* /absolute inset-0 */}
                                     </div>{/* /relative max-w-full */}
                                 </div>
-                            )}
+                            </div>
                         </div>{/* /canvas inner */}
                     </div>{/* /canvas absolute */}
                 {/* RIGHT: Controls panel (Stacked on Mobile, Right side on PC) */}
