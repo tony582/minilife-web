@@ -1470,7 +1470,7 @@ export default function VirtualPetDashboard({
                                     {/* Perfect 1:1 scaling container using native CSS aspect-ratio */}
                                     <div 
                                         className="relative max-w-full max-h-full shrink-0" 
-                                        style={{ width: '10000px', aspectRatio: '1 / 1' }} 
+                                        style={{ width: '10000px', height: '10000px', aspectRatio: '1 / 1' }} 
                                         ref={roomAspectRef}
                                     >
                                         <div className="absolute inset-0">
