@@ -2,10 +2,14 @@ import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom';
 import { Icons } from '../../utils/Icons';
 import PixelPetEngine from './PixelPetEngine';
+import PixelBackground from './PixelBackground';
 import { SPIRIT_FORMS } from '../../utils/spiritUtils';
-import { DEFAULT_ROOM, FURNITURE_VARIANTS, ROOM_VARIANTS } from '../../data/roomConfig';
+import { DEFAULT_ROOM, FURNITURE_VARIANTS, ROOM_VARIANTS, FURNITURE_VARIANT_LABELS } from '../../data/roomConfig';
 import { usePetCoins } from '../../hooks/usePetCoins';
 import { PRICE_TABLE, SKIN_CHANGE_COST, ROOM_SKIN_COST } from '../../data/furnitureCatalog';
+import { ITEMS_CATALOG, getItem, getHearts, FIXED_TOOLBAR } from '../../data/itemsCatalog';
+import { useDataContext } from '../../context/DataContext.jsx';
+import { isSameDay } from '../../utils/dateUtils';
 
 // ═══════════════════════════════════════════════
 // 🌅 DAY/NIGHT CYCLE
@@ -29,6 +33,54 @@ const SYSTEM_ICONS = {
             "  o# ",
             " #o# ",
             "  ## "
+        ]
+    },
+    backpack: {
+        palette: { 'o': '#451a03', 'x': '#f59e0b', '-': '#d97706', '=': '#fbbf24' },
+        grid: [
+            "  ooo  ",
+            " oxxxo ",
+            "oxxxxxo",
+            "ox---xo",
+            "ox-=-xo",
+            "oxxxxxo",
+            " ooooo "
+        ]
+    },
+    shop: {
+        palette: { 'o': '#1a1a1a', 'r': '#ef4444', 'w': '#fca5a5', 'y': '#fef08a', 'd': '#cbd5e1' },
+        grid: [
+            "  ooo  ",
+            " orrro ",
+            "orwrror",
+            "ooooooo",
+            "oydydyo",
+            "oydydyo",
+            "ooooooo"
+        ]
+    },
+    decorate: {
+        palette: { 'o': '#1e293b', 'b': '#3b82f6', 'w': '#94a3b8', '-': '#64748b' },
+        grid: [
+            "    ooo",
+            "   oboo",
+            "  obooo",
+            " ooow  ",
+            " o-w   ",
+            " o-    ",
+            "oo     "
+        ]
+    },
+    check: {
+        palette: { 'o': '#14532d', 'g': '#22c55e' },
+        grid: [
+            "       ",
+            "     og",
+            "    ogg",
+            " ogoggg",
+            " oggggo",
+            "  oggo ",
+            "   oo  "
         ]
     }
 };
@@ -79,18 +131,95 @@ const PixelIcon = ({ grid, palette, size = 3, className = "" }) => {
 export default function VirtualPetDashboard({
     activeKid, onClose,
     // ── Phase 2: Room persistence + decoration mode ──
-    roomData       = null,
-    onSkinChange   = null,
+    roomData          = null,
+    onSkinChange      = null,
     onFurnitureChange = null,
     onPetVitalsChange = null,
-    embedded       = false,
-    showDecorate   = false,
-    kidId          = null,
-    newFurnitureToAdd = null,   // set by PetRoomModal when shop purchase confirmed
+    embedded          = false,
+    showDecorate      = false,
+    onDecorateToggle  = null,
+    kidId             = null,
+    newFurnitureToAdd = null,
+    // ── Phase 3: Inventory ──
+    decorateMode         = false,
+    onFurnitureItemClick = null,
+    onFlipFurniture      = null,
+    onStowFurniture      = null,
+    // ── Phase 4: Unified Game HUD ──
+    extensionActions     = [],
+    // ── Phase 5: Item / Consumables system ──
+    consumables          = {},    // { food: 3, soap: 2, ... }
+    hotbar               = [...DEFAULT_HOTBAR],  // ['food', null, 'lamp', ...]
+    onUseItem            = null,  // (itemId) => void — fires when item used on pet
+    onOpenChest          = null,  // () => void — open inventory
+    onOpenShop,            // Callback to open shop mode
+    
+    // Auto-purchase
+    balance              = 0,
+    onBuyConsumable      = null,
+    
+    // Furniture callbacks
+    onHotbarChange       = null,  // (slots) => void
 }) {
     
     const petRef = useRef(null);
     const containerRef = useRef(null);
+    
+    // ── ACTION POINTS LOGIC ──
+    let dataContext;
+    try { dataContext = useDataContext(); } catch(e) {}
+    const tasks = dataContext?.tasks || [];
+    
+    const earnedAP = useMemo(() => {
+        if (!kidId) return 0;
+        // Generate current day string in local time, safely
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+        
+        let completions = 0;
+        tasks.forEach(t => {
+            const hist = t.history || {};
+            let entry = t.kidId === 'all' ? hist[todayStr]?.[kidId] : hist[todayStr];
+            if (!entry) return;
+            if (Array.isArray(entry)) {
+                completions += entry.filter(e => ['completed', 'pending_approval', 'in_progress'].includes(e.status)).length;
+            } else if (['completed', 'pending_approval', 'in_progress'].includes(entry.status)) {
+                completions += (entry.count || 1);
+            }
+        });
+        return completions;
+    }, [tasks, kidId]);
+
+    const BASE_AP = 3;
+    const totalAP = BASE_AP + earnedAP;
+
+    const [usedAP, setUsedAP] = useState(() => {
+        if (!kidId) return 0;
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const key = `minilife_used_ap_${kidId}_${todayStr}`;
+        const stored = localStorage.getItem(key);
+        return stored ? parseInt(stored, 10) : 0;
+    });
+
+    const availableAP = Math.max(0, totalAP - usedAP);
+
+    const consumeAP = () => {
+        if (!kidId) return;
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const key = `minilife_used_ap_${kidId}_${todayStr}`;
+        const newUsed = usedAP + 1;
+        localStorage.setItem(key, newUsed);
+        // Clear old ones just in case
+        const yest = new Date(now); yest.setDate(yest.getDate() - 1);
+        const yestStr = `${yest.getFullYear()}-${String(yest.getMonth() + 1).padStart(2, '0')}-${String(yest.getDate()).padStart(2, '0')}`;
+        localStorage.removeItem(`minilife_used_ap_${kidId}_${yestStr}`);
+        setUsedAP(newUsed);
+    };
     const [engineSize, setEngineSize] = useState({ w: 400, h: 300 });
 
     useEffect(() => {
@@ -115,31 +244,62 @@ export default function VirtualPetDashboard({
     const [poops, setPoops] = useState([]);
     const [isSick, setIsSick] = useState(false);
     const [isSleeping, setIsSleeping] = useState(false);
-    
+    const [embeddedToast, setEmbeddedToast] = useState('');
+    const showToastEmbed = useCallback((msg) => {
+        setEmbeddedToast(msg);
+        setTimeout(() => setEmbeddedToast(''), 2000);
+    }, []);
+
     // ── DEBUG CONTROLS ──
     const [debugTimePhase, setDebugTimePhase] = useState(null); // null = auto
-    const [debugSpecies, setDebugSpecies] = useState('cat');
+    const [debugSpecies, setDebugSpecies] = useState('pochi');
     const [debugBondLevel, setDebugBondLevel] = useState(null); // null = use real level
     
     // ── SCENE STATE ──
     const [activeScene, setActiveScene] = useState('home');
     const [isTransitioning, setIsTransitioning] = useState(false);
-    const [roomConfig, setRoomConfig] = useState(() => {
-        if (roomData?.furnitureJson?.length > 0)
-            return { ...DEFAULT_ROOM, furniture: roomData.furnitureJson };
-        return DEFAULT_ROOM;
-    });
+
+    // ── Pet Renaming State
+    const [isRenamingPet, setIsRenamingPet] = useState(false);
+    const [newPetName, setNewPetName] = useState(roomData?.petName || '波奇');
+
+    // ── Parse furniture: can be JSON string (new) or array (legacy) ──
+    const parseFurnitureField = (raw) => {
+        if (Array.isArray(raw)) return raw;
+        if (typeof raw === 'string' && raw.length > 0) {
+            try { return JSON.parse(raw); } catch { return []; }
+        }
+        return [];
+    };
+
+    const [roomConfig, setRoomConfig] = useState(() => ({
+        ...DEFAULT_ROOM,
+        furniture: parseFurnitureField(roomData?.furnitureJson ?? roomData?.furniture_json),
+    }));
+
+    // Keep roomConfig in sync when roomData prop changes (e.g. room switcher)
+    useEffect(() => {
+        setRoomConfig({
+            ...DEFAULT_ROOM,
+            furniture: parseFurnitureField(roomData?.furnitureJson ?? roomData?.furniture_json),
+        });
+    }, [roomData?.id, roomData?.furnitureJson]);
 
     // Called by usePetCoins (only available when kidId provided)
     const { balance: coinBalance, spendCoins, refundCoins } = usePetCoins(kidId || '') ?? {};
 
     // Decoration mode: selected furniture for action menu
-    const [selectedFurnitureAction, setSelectedFurnitureAction] = useState(null); // {item, rect}
+    const [selectedFurnitureAction, setSelectedFurnitureAction] = useState(null);
 
-    // Clear action menu on decorate mode exit
+    // Confirmation for buying consumable via coins when AP runs out
+    const [forceBuyConfirm, setForceBuyConfirm] = useState(null);
+
+    // Sync drag/edit mode with decorate mode — when decorating, furniture can be dragged
     useEffect(() => {
+        setIsEditMode(!!showDecorate);
         if (!showDecorate) setSelectedFurnitureAction(null);
     }, [showDecorate]);
+
 
     // ── ROOM SKIN (background color cycling) ──
     const [roomSkinIdx, setRoomSkinIdx] = useState(() => roomData?.skinIdx ?? 0);
@@ -148,15 +308,11 @@ export default function VirtualPetDashboard({
     const handleRoomClick = async (e) => {
         if (isEditMode) return;
         if (e.target !== e.currentTarget) return;
+        // Only allow skin change in decorate mode (coin-gated)
         if (showDecorate) {
-            // Coin-gated change in decoration mode
             await handleDecorateSkinChange();
-            return;
         }
-        // Free preview in normal mode
-        const nextIdx = (roomSkinIdx + 1) % ROOM_VARIANTS.length;
-        setRoomSkinIdx(nextIdx);
-        onSkinChange?.(nextIdx);
+        // Normal mode: clicking room does nothing
     };
 
     // Save room skin (called from decoration mode confirm)
@@ -173,63 +329,80 @@ export default function VirtualPetDashboard({
     }, [spendCoins, roomSkinIdx, onSkinChange, coinBalance]);
 
     // ── FURNITURE COLOR SKINS ──
-    const [furnitureSkins, setFurnitureSkins] = useState({});
+    const [dyeTarget, setDyeTarget] = useState(null); // The instance being dyed
 
     const handleFurnitureClick = (e, item) => {
         if (isEditMode) return;
         e.stopPropagation();
-
-        // Decoration mode: show action menu
+        // Only show action menu in decorate mode
         if (showDecorate) {
             const rect = e.currentTarget.getBoundingClientRect();
             setSelectedFurnitureAction({ item, rect });
-            return;
         }
-
-        // Normal mode: free color cycle
-        const variants = FURNITURE_VARIANTS[item.type || item.id];
-        if (!variants || variants.length <= 1) return;
-        setFurnitureSkins(prev => {
-            const currentSrc = prev[item.id] || item.src;
-            const currentIdx = variants.indexOf(currentSrc);
-            const nextIdx = (currentIdx + 1) % variants.length;
-            return { ...prev, [item.id]: variants[nextIdx] };
-        });
+        // Normal mode: clicking furniture does nothing
     };
 
-    // ── Decoration Mode: change furniture color (costs coins) ─────────
-    const handleDecorateFurnitureColor = useCallback(async (item) => {
-        if (!spendCoins) return;
-        const result = await spendCoins(SKIN_CHANGE_COST, '家具换色');
-        if (!result.ok) {
-            alert(`家庭币不足！需要 ${SKIN_CHANGE_COST} 币`);
-            return;
-        }
-        const variants = FURNITURE_VARIANTS[item.type || item.id];
-        if (!variants || variants.length <= 1) return;
-        setFurnitureSkins(prev => {
-            const currentSrc = prev[item.id] || item.src;
-            const currentIdx = variants.indexOf(currentSrc);
-            const nextSrc = variants[(currentIdx + 1) % variants.length];
-            const updated = { ...prev, [item.id]: nextSrc };
-            // Persist furniture with new src
-            const newFurniture = roomConfig.furniture.map(f =>
-                f.id === item.id ? { ...f, src: nextSrc } : f
-            );
-            setRoomConfig(c => ({ ...c, furniture: newFurniture }));
-            onFurnitureChange?.(newFurniture);
-            return updated;
-        });
+    // ── Decoration Mode: change furniture color (opens Dye Drawer) ─────────
+    const handleDecorateFurnitureColor = useCallback((item) => {
+        setDyeTarget(item);
         setSelectedFurnitureAction(null);
-    }, [spendCoins, coinBalance, roomConfig.furniture, onFurnitureChange]);
+    }, []);
+
+    // Handle unlocking or switching to a color variant
+    const handleDyeAction = async (variantIdx) => {
+        if (!dyeTarget) return;
+
+        const baseType = dyeTarget.type || dyeTarget.id;
+        const variants = FURNITURE_VARIANTS[baseType];
+        
+        let unlocked = dyeTarget.unlockedVariants || [0];
+
+        // Ensure 0 is always unlocked
+        if (!unlocked.includes(0)) {
+            unlocked = [0, ...unlocked];
+        }
+
+        const isUnlocked = unlocked.includes(variantIdx);
+
+        // If locked, attempt purchase
+        if (!isUnlocked) {
+            if (!spendCoins) return;
+            const result = await spendCoins(50, '家具换色'); // flat 50 coin fee
+            if (!result.ok) {
+                alert(`家庭币不足！染色需要 50 币`);
+                return;
+            }
+            // Add to unlocked
+            unlocked.push(variantIdx);
+        }
+
+        // Apply new skin and save
+        const nextSrc = variants[variantIdx];
+        const newFurniture = roomConfig.furniture.map(f =>
+            (f.instanceId === dyeTarget.instanceId || f.id === dyeTarget.id)
+                ? { ...f, src: nextSrc, unlockedVariants: unlocked } 
+                : f
+        );
+        
+        setRoomConfig(c => ({ ...c, furniture: newFurniture }));
+        setTimeout(() => onFurnitureChange?.(JSON.stringify(newFurniture)), 0);
+        
+        // Update local active target so UI updates instantly
+        setDyeTarget(newFurniture.find(f => (f.instanceId === dyeTarget.instanceId || f.id === dyeTarget.id)));
+    };
 
     // ── Decoration Mode: remove furniture (refund 50%) ────────────────
     const handleDecorateFurnitureRemove = useCallback(async (item) => {
+        if (onStowFurniture) {
+            onStowFurniture(item.instanceId || item.id);
+            setSelectedFurnitureAction(null);
+            return;
+        }
         const price = PRICE_TABLE[item.type || item.id] ?? 0;
         const refund = Math.floor(price * 0.5);
         const newFurniture = roomConfig.furniture.filter(f => f.id !== item.id);
         setRoomConfig(c => ({ ...c, furniture: newFurniture }));
-        onFurnitureChange?.(newFurniture);
+        onFurnitureChange?.(JSON.stringify(newFurniture));
         if (refund > 0 && refundCoins) await refundCoins(refund, '移除装饰退款');
         setSelectedFurnitureAction(null);
     }, [roomConfig.furniture, onFurnitureChange, refundCoins]);
@@ -238,7 +411,7 @@ export default function VirtualPetDashboard({
     const addFurnitureToRoom = useCallback((newItem) => {
         setRoomConfig(prev => {
             const newFurniture = [...prev.furniture, newItem];
-            onFurnitureChange?.(newFurniture);
+            setTimeout(() => onFurnitureChange?.(JSON.stringify(newFurniture)), 0);
             return { ...prev, furniture: newFurniture };
         });
     }, [onFurnitureChange]);
@@ -303,7 +476,7 @@ export default function VirtualPetDashboard({
             // Persist layout after drag in decoration mode
             if (onFurnitureChange) {
                 setRoomConfig(c => {
-                    onFurnitureChange(c.furniture);
+                    setTimeout(() => onFurnitureChange(JSON.stringify(c.furniture)), 0);
                     return c;
                 });
             }
@@ -579,7 +752,7 @@ export default function VirtualPetDashboard({
         }
 
         switch (type) {
-            case 'feed':
+            case 'feed': {
                 if (activeScene !== 'home') return;
                 setIsFeeding(true);
                 setBowlHasFood(true);
@@ -614,6 +787,7 @@ export default function VirtualPetDashboard({
                     });
                 }, 4000);
                 break;
+            }
 
             case 'clean':
                 // Sweep home poops
@@ -818,7 +992,7 @@ export default function VirtualPetDashboard({
                 </div>
 
                 {/* ── DEBUG TOOLBAR (hidden in production) ── */}
-                {false && (
+                {true && (
                 <div className="flex-shrink-0 border-b-2 border-dashed border-orange-300 bg-orange-50 px-4 py-2 flex flex-col gap-2 text-[10px] font-mono">
                     {/* Row 1: Time & Species & Growth */}
                     <div className="flex flex-wrap items-center gap-2">
@@ -873,32 +1047,81 @@ export default function VirtualPetDashboard({
                                                  title={`点击切换房间颜色 (${roomSkinIdx + 1}/${ROOM_VARIANTS.length})`}
                                                  alt="Room" />
 
-                                            {/* Layer 1+: Assembled furniture pieces */}
-                                            {roomConfig.furniture.map(item => {
-                                                const skin = furnitureSkins[item.id];
+                                            {/* Layer 1+: Assembled furniture pieces (only placed:true, or legacy items without placed field) */}
+                                            {roomConfig.furniture
+                                                .filter(item => item.placed !== false)
+                                                .map(item => {
                                                 const typeKey = item.type || item.id;
                                                 const hasVariants = !!FURNITURE_VARIANTS[typeKey];
                                                 const imgSrc = (item.id === 'bowl_food' && bowlHasFood)
                                                     ? item.srcFull
-                                                    : (skin || item.src);
+                                                    : item.src;
+                                                const isFlipped = item.flipped || item.flipX;
+                                                const instId = item.instanceId ?? item.id;
                                                 return (
-                                                    <div key={item.id}
+                                                    <div key={instId}
                                                          className={`absolute ${
                                                              isEditMode
                                                                  ? 'cursor-move ring-offset-1 hover:ring-2 hover:ring-pink-400 touch-none select-none pointer-events-auto'
-                                                                 : showDecorate
-                                                                     ? 'pointer-events-auto cursor-pointer'
-                                                                     : hasVariants
-                                                                         ? 'pointer-events-auto cursor-pointer group'
-                                                                         : 'pointer-events-none'
+                                                                 : decorateMode
+                                                                     ? 'pointer-events-auto'
+                                                                     : showDecorate
+                                                                         ? 'pointer-events-auto cursor-pointer'
+                                                                         : hasVariants
+                                                                             ? 'pointer-events-auto cursor-pointer group'
+                                                                             : 'pointer-events-none'
                                                          }`}
                                                          style={{
                                                              ...item.style,
                                                              zIndex: isEditMode && draggingId === item.id ? 9999 : item.zIndex,
                                                          }}
                                                          onPointerDown={(e) => handlePointerDown(e, item.id)}
-                                                         onClick={(e) => handleFurnitureClick(e, item)}>
-                                                        {showDecorate && (
+                                                         onClick={(e) => {
+                                                             if (!decorateMode) {
+                                                                 if (onFurnitureItemClick) onFurnitureItemClick(e, item);
+                                                                 else handleFurnitureClick(e, item);
+                                                             } else {
+                                                                 // Show new unified Action Toolbar
+                                                                 setSelectedFurnitureAction({ item });
+                                                             }
+                                                         }}>
+                                                        
+                                                        {/* ── Contextual Smart Toolbar (Glassmorphism) ── */}
+                                                        {decorateMode && showDecorate && selectedFurnitureAction?.item.id === item.id && (
+                                                            <div
+                                                                className="absolute -top-[50px] left-1/2 -translate-x-1/2 flex items-center justify-center gap-1.5 z-50 px-2 py-1.5 rounded-full shadow-2xl animate-pop-in"
+                                                                style={{
+                                                                    background: 'rgba(255,255,255,0.85)',
+                                                                    backdropFilter: 'blur(12px)',
+                                                                    border: '1px solid rgba(255,255,255,1)',
+                                                                    boxShadow: '0 8px 16px rgba(0,0,0,0.1), inset 0 2px 4px rgba(255,255,255,1)',
+                                                                    minWidth: 'max-content'
+                                                                }}
+                                                                onPointerDown={e => { e.stopPropagation(); }}
+                                                                onClick={e => { e.stopPropagation(); }}
+                                                            >
+                                                                {onFlipFurniture && (
+                                                                    <button
+                                                                        onClick={() => onFlipFurniture(instId)}
+                                                                        className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-[15px] hover:-translate-y-0.5 active:scale-95 transition-all text-slate-700 hover:shadow-md border border-slate-100"
+                                                                    >🔄</button>
+                                                                )}
+                                                                {FURNITURE_VARIANTS[item.type || item.id]?.length > 1 && (
+                                                                    <button
+                                                                        onClick={() => handleDecorateFurnitureColor(item)}
+                                                                        className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-[15px] hover:-translate-y-0.5 active:scale-95 transition-all text-orange-600 hover:shadow-md border border-orange-100"
+                                                                    >🎨</button>
+                                                                )}
+                                                                {onStowFurniture && (
+                                                                    <button
+                                                                        onClick={() => { onStowFurniture(instId); setSelectedFurnitureAction(null); }}
+                                                                        className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-[15px] hover:-translate-y-0.5 active:scale-95 transition-all text-rose-600 hover:shadow-md border border-rose-100"
+                                                                    >📦</button>
+                                                                )}
+                                                            </div>
+                                                        )}
+
+                                                        {showDecorate && !decorateMode && (
                                                             <div className="absolute inset-0 border-2 border-dashed border-orange-400/60 rounded-sm pointer-events-none z-10"
                                                                 style={{ margin: '-3px' }} />
                                                         )}
@@ -907,52 +1130,12 @@ export default function VirtualPetDashboard({
                                                              className={`w-full h-auto object-contain pointer-events-none select-none transition-all duration-150 ${
                                                                  hasVariants && !isEditMode && !showDecorate ? 'group-hover:brightness-110 group-hover:scale-105' : ''
                                                              } ${showDecorate ? 'hover:brightness-110 hover:scale-105' : ''}`}
-                                                             style={{ imageRendering: 'pixelated', transform: item.flipX ? 'scaleX(-1)' : 'none' }}
+                                                             style={{ imageRendering: 'pixelated', transform: isFlipped ? 'scaleX(-1)' : 'none' }}
                                                              alt={item.id} />
                                                     </div>
                                                 );
                                             })}
 
-                                            {/* Decoration Mode Action Menu */}
-                                            {showDecorate && selectedFurnitureAction && (() => {
-                                                const { item } = selectedFurnitureAction;
-                                                const typeKey = item.type || item.id;
-                                                const variantCount = FURNITURE_VARIANTS[typeKey]?.length ?? 0;
-                                                const refundAmt = Math.floor((PRICE_TABLE[typeKey] ?? 0) * 0.5);
-                                                return (
-                                                    <div className="absolute inset-0 z-50 flex items-center justify-center"
-                                                        onClick={() => setSelectedFurnitureAction(null)}>
-                                                        <div className="bg-white rounded-2xl shadow-2xl p-3 w-44 border border-slate-100"
-                                                            onClick={e => e.stopPropagation()}>
-                                                            <div className="text-xs font-black text-slate-600 text-center mb-2 pb-2 border-b border-slate-100">
-                                                                {typeKey}
-                                                            </div>
-                                                            {variantCount > 1 && (
-                                                                <button
-                                                                    onClick={() => handleDecorateFurnitureColor(item)}
-                                                                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-orange-50 transition-colors mb-1"
-                                                                >
-                                                                    <span className="text-xs font-bold text-slate-700">🎨 换色</span>
-                                                                    <span className="text-[11px] font-black text-orange-500">🪙{SKIN_CHANGE_COST}</span>
-                                                                </button>
-                                                            )}
-                                                            <button
-                                                                onClick={() => handleDecorateFurnitureRemove(item)}
-                                                                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-red-50 transition-colors mb-1"
-                                                            >
-                                                                <span className="text-xs font-bold text-red-500">🗑 移除</span>
-                                                                {refundAmt > 0 && (
-                                                                    <span className="text-[11px] font-black text-green-500">+{refundAmt}返还</span>
-                                                                )}
-                                                            </button>
-                                                            <button
-                                                                onClick={() => setSelectedFurnitureAction(null)}
-                                                                className="w-full text-center py-2 text-xs text-slate-400 hover:text-slate-600 transition-colors"
-                                                            >取消</button>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })()}
                                         </div>
                                     </div>
                                     )}
@@ -1094,42 +1277,6 @@ export default function VirtualPetDashboard({
                         </div>
 
 
-                        {/* ── HORIZONTAL BOND TRACK ── */}
-                        <div className="w-full bg-white border-4 border-gray-900 p-4 md:p-5 rounded-2xl shadow-[6px_6px_0px_#111827] flex flex-col gap-4 mt-1">
-                            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 z-10 w-full">
-                                <h3 className="font-black text-lg text-gray-900 flex items-center gap-2">
-                                    <PixelIcon grid={STAGE_ICONS[2].grid} palette={STAGE_ICONS[2].palette} size={1.5} /> 
-                                    羁绊阶级 (Lv.{currentLevel})
-                                </h3>
-                                <div className="text-xs font-bold text-gray-700 bg-pink-100 px-3 py-1.5 border-2 border-gray-900 rounded-lg shadow-[2px_2px_0px_#111827] flex-shrink-0">
-                                    {SPIRIT_FORMS[currentStageDisplay - 1]?.unlockText}
-                                </div>
-                            </div>
-                            
-                            <div className="relative flex justify-between items-center mt-1 px-2 md:px-6">
-                                <div className="absolute left-[10%] right-[10%] top-1/2 h-2.5 bg-gray-200 border-y-2 border-gray-900 -translate-y-1/2 z-0 hidden md:block"></div>
-                                <div className="absolute left-[10%] top-1/2 h-2.5 bg-pink-500 border-y-2 border-gray-900 -translate-y-1/2 z-0 transition-all duration-1000 hidden md:block" style={{ width: `${(Math.min(currentStageDisplay, 4)) * 20}%` }}></div>
-                                {SPIRIT_FORMS.map((stage, idx) => {
-                                    const lvl = idx + 1;
-                                    const isCurrent = currentStageDisplay === lvl;
-                                    const isLocked = currentStageDisplay < lvl;
-                                    
-                                    return (
-                                        <div key={idx} className={`relative z-10 flex flex-col items-center gap-2 transition-all`}>
-                                            <div className={`w-[46px] h-[46px] md:w-16 md:h-16 border-[3px] md:border-4 border-gray-900 rounded-full flex items-center justify-center bg-white ${!isLocked && 'shadow-[4px_4px_0px_#111827]'} ${isCurrent && 'border-pink-500 bg-pink-50 translate-y-[-4px] shadow-[4px_8px_0px_#111827]'} ${isLocked && 'bg-gray-100'} transition-transform z-10`}>
-                                                <div className={`${isLocked ? 'opacity-30 grayscale' : 'opacity-100'}`}>
-                                                    <PixelIcon grid={STAGE_ICONS[idx].grid} palette={STAGE_ICONS[idx].palette} size={isCurrent ? 2.5 : 2} />
-                                                </div>
-                                            </div>
-                                            <span className={`font-black text-[10px] md:text-xs text-center border-2 border-gray-900 px-1.5 md:px-2 py-0.5 rounded shadow-[2px_2px_0px_#111827] ${isCurrent ? 'bg-pink-500 text-white' : 'bg-white text-gray-900'} ${isLocked ? 'text-gray-400 opacity-60' : 'opacity-100'}`}>
-                                                {stage.name}
-                                            </span>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        </div>
-
                         {/* ── 5 HUD ACTION DECK (Split Actions) ── */}
                         <div className="grid grid-cols-5 gap-2 md:gap-3 mt-1">
                             {ACTION_CARDS.map(btn => (
@@ -1172,5 +1319,612 @@ export default function VirtualPetDashboard({
     );
     
     if (typeof document === 'undefined') return null;
+
+    // ── EMBEDDED MODE: render inline inside PetRoomModal (no portal) ──
+    if (embedded) {
+        const hearts = getHearts(stats.satiety, stats.clean, stats.mood);
+
+        // Direct Item cinematic usage
+        const performUseCinematic = (itemId, item, bypassDeduction) => {
+            switch (itemId) {
+                case 'food':
+                case 'catcan':
+                    handleAction('feed');
+                    break;
+                case 'soap':
+                    handleAction('bathe');
+                    break;
+                case 'broom':
+                    handleAction('clean');
+                    break;
+                case 'yarn':
+                    if (petRef.current && petRef.current.play) petRef.current.play();
+                    setStats(s => ({ ...s, mood: Math.min(100, s.mood + 30) }));
+                    break;
+                case 'medicine':
+                    handleAction('heal');
+                    break;
+            }
+
+            // Sync with backend / inventory logic
+            if (!bypassDeduction) {
+                onUseItem?.(itemId);
+            }
+            showToastEmbed(`使用了 ${item.emoji} ${item.label}!`);
+        };
+
+        const handleDirectUseConsumable = async (itemId, bypassConfirmation = false) => {
+            const qty = consumables[itemId] ?? 0;
+            const item = getItem(itemId);
+            if (!item) return;
+
+            if (availableAP > 0) {
+                // AP overrides everything
+                consumeAP();
+                showToastEmbed(`✨ 消耗 1 次免费互动！`);
+                performUseCinematic(itemId, item, true);
+            } else if (qty > 0) {
+                // Have inventory items, consume it
+                performUseCinematic(itemId, item, false);
+            } else {
+                // Auto-Purchase flow (AP is empty, and inventory is empty)
+                if (balance < item.price) {
+                    showToastEmbed('❌ 免费次数和金币均不足，快去完成任务赚取吧！');
+                    return;
+                }
+                
+                // Prompt user to consider doing tasks instead of spending money
+                if (!bypassConfirmation) {
+                    setForceBuyConfirm({ itemId, item });
+                    return;
+                }
+
+                if (onBuyConsumable) {
+                    const success = await onBuyConsumable(item.id, item.price);
+                    if (success) {
+                        showToastEmbed(`💸 -${item.price}金币！已兑换 ${item.label}`);
+                        performUseCinematic(itemId, item, false); // Purchased out of stock, so deduct it directly
+                    }
+                }
+            }
+        };
+
+        return (
+            <div className="w-full h-full flex flex-col md:flex-row overflow-y-auto md:overflow-hidden relative" style={{ background: '#F4F4F0' }}>
+                {/* ── MAIN CONTENT: full-bleed canvas ── */}
+                <div className="w-full aspect-square md:w-auto md:aspect-auto md:flex-1 md:h-full overflow-hidden relative flex-shrink-0 bg-[#e0dbd3]">
+                    {/* Game Canvas fills its container completely */}
+                    <div className="absolute inset-0 w-full h-full"
+                        ref={containerRef}
+                    >
+                            {/* ── Pixel art time-based background ── */}
+                            <PixelBackground timePhase={debugTimePhase ?? timePhase} />
+
+                            {/* ── Top HUD overlay ── */}
+                            <div className="absolute top-3 left-3 right-3 z-40 flex items-start justify-between pointer-events-none">
+                                {/* Left: Time pill */}
+                                <div className="flex flex-col gap-1.5">
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full w-max"
+                                        style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', color: '#fff' }}>
+                                        <span className="text-[11px]">{isNightTime ? '🌙' : '☀️'}</span>
+                                        <span className="text-[10px] font-black tracking-wide">{timeConfig.label}</span>
+                                    </div>
+                                </div>
+                                {/* Right: Controls & Indicators */}
+                                <div className="flex flex-col gap-1.5 items-end">
+                                    {(isSick || isSleeping) && (
+                                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full w-max"
+                                            style={{ background: isSick ? 'rgba(239,68,68,0.85)' : 'rgba(30,30,80,0.7)', backdropFilter: 'blur(8px)', color: '#fff' }}>
+                                            <span className="text-[11px]">{isSick ? '🤒' : '😴'}</span>
+                                            <span className="text-[10px] font-black">{isSick ? '生病了！' : 'Zzz...'}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex gap-1.5 justify-end pointer-events-none w-max">
+                                        <button onClick={onOpenChest} className="px-2.5 py-1.5 bg-[#f4f4f5] border-[2.5px] border-gray-900 rounded-full shadow-[2px_2px_0px_#111827] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all flex items-center justify-center gap-[5px] pointer-events-auto hover:bg-white shrink-0">
+                                            <PixelIcon grid={SYSTEM_ICONS.backpack.grid} palette={SYSTEM_ICONS.backpack.palette} size={1.5} />
+                                            <span className="text-[11px] font-black tracking-wide leading-none pointer-events-none text-gray-900 pr-0.5">仓库</span>
+                                        </button>
+                                        <button onClick={onOpenShop} className="px-2.5 py-1.5 bg-[#f4f4f5] border-[2.5px] border-gray-900 rounded-full shadow-[2px_2px_0px_#111827] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all flex items-center justify-center gap-[4px] pointer-events-auto hover:bg-white shrink-0">
+                                            <PixelIcon grid={SYSTEM_ICONS.shop.grid} palette={SYSTEM_ICONS.shop.palette} size={1.4} />
+                                            <span className="text-[11px] font-black tracking-wide leading-none pointer-events-none text-gray-900 pr-0.5">商店</span>
+                                        </button>
+                                        <button onClick={() => onDecorateToggle?.()} className={`px-2.5 py-1.5 border-[2.5px] border-gray-900 rounded-full shadow-[2px_2px_0px_#111827] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all flex items-center justify-center gap-[4px] pointer-events-auto hover:brightness-105 shrink-0 ${showDecorate ? 'bg-[#f472b6] text-white' : 'bg-[#FFE566] text-gray-900'}`}>
+                                            <PixelIcon grid={showDecorate ? SYSTEM_ICONS.check.grid : SYSTEM_ICONS.decorate.grid} palette={showDecorate ? SYSTEM_ICONS.check.palette : SYSTEM_ICONS.decorate.palette} size={1.5} />
+                                            <span className="text-[11px] font-black tracking-wide leading-none pointer-events-none pr-0.5">{showDecorate ? '完成' : '布局'}</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            {/* Home scene */}
+                            {activeScene === 'home' && (
+                                <div className="absolute inset-0 transition-all duration-[2000ms] flex items-center justify-center overflow-hidden"
+                                     style={{ filter: (isSleeping || isNightTime) ? 'brightness(0.6)' : 'none' }}>
+                                    
+                                    {/* Perfect 1:1 scaling container using SVG spacer trick */}
+                                    <div className="relative inline-flex flex-col items-center justify-center max-w-full max-h-full" ref={roomAspectRef}>
+                                        <svg viewBox="0 0 100 100" className="block w-[10000px] h-[10000px] max-w-full max-h-full pointer-events-none" style={{ visibility: 'hidden' }} />
+                                        <div className="absolute inset-0">
+                                            <img src={currentRoomSrc}
+                                                 className={`absolute inset-0 w-full h-full object-contain select-none transition-opacity duration-500 ${
+                                                     !isEditMode && !showDecorate ? 'cursor-pointer' : 'cursor-default pointer-events-none'
+                                                 }`}
+                                                 style={{ imageRendering: 'pixelated', zIndex: 0 }}
+                                                 onClick={handleRoomClick}
+                                                 alt="Room" />
+                                            
+                                            {/* Layer 1+: Assembled furniture pieces */}
+                                            {roomConfig.furniture
+                                                .filter(item => item.placed !== false)
+                                                .map(item => {
+                                                const typeKey = item.type || item.id;
+                                                const hasVariants = !!FURNITURE_VARIANTS[typeKey];
+                                                const imgSrc = (item.id === 'bowl_food' && bowlHasFood)
+                                                    ? item.srcFull
+                                                    : item.src;
+                                                const isFlipped = item.flipped || item.flipX;
+                                                const instId = item.instanceId ?? item.id;
+                                                return (
+                                                    <div key={instId}
+                                                         className={`absolute ${
+                                                             isEditMode
+                                                                 ? 'cursor-move ring-offset-1 hover:ring-2 hover:ring-pink-400 touch-none select-none pointer-events-auto'
+                                                                 : decorateMode
+                                                                     ? 'pointer-events-auto'
+                                                                     : showDecorate
+                                                                         ? 'pointer-events-auto cursor-pointer'
+                                                                         : hasVariants
+                                                                             ? 'pointer-events-auto cursor-pointer group'
+                                                                             : 'pointer-events-none'
+                                                         }`}
+                                                         style={{
+                                                             ...item.style,
+                                                             zIndex: isEditMode && draggingId === item.id ? 9999 : item.zIndex,
+                                                         }}
+                                                         onPointerDown={(e) => handlePointerDown(e, item.id)}
+                                                         onClick={(e) => {
+                                                             if (!decorateMode) {
+                                                                 if (onFurnitureItemClick) onFurnitureItemClick(e, item);
+                                                                 else handleFurnitureClick(e, item);
+                                                             } else {
+                                                                 setSelectedFurnitureAction({ item });
+                                                             }
+                                                         }}>
+                                                        
+                                                        {/* ── Contextual Smart Toolbar ── */}
+                                                        {decorateMode && showDecorate && selectedFurnitureAction?.item.id === item.id && (
+                                                            <div
+                                                                className="absolute -top-[50px] left-1/2 -translate-x-1/2 flex items-center justify-center gap-1.5 z-50 px-2 py-1.5 rounded-full shadow-2xl animate-pop-in"
+                                                                style={{
+                                                                    background: 'rgba(255,255,255,0.85)',
+                                                                    backdropFilter: 'blur(12px)',
+                                                                    border: '1px solid rgba(255,255,255,1)',
+                                                                    boxShadow: '0 8px 16px rgba(0,0,0,0.1), inset 0 2px 4px rgba(255,255,255,1)',
+                                                                    minWidth: 'max-content'
+                                                                }}
+                                                                onPointerDown={e => { e.stopPropagation(); }}
+                                                                onClick={e => { e.stopPropagation(); }}
+                                                            >
+                                                                {onFlipFurniture && (
+                                                                    <button
+                                                                        onClick={() => onFlipFurniture(instId)}
+                                                                        className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-[15px] hover:-translate-y-0.5 active:scale-95 transition-all text-slate-700 hover:shadow-md border border-slate-100"
+                                                                    >🔄</button>
+                                                                )}
+                                                                {FURNITURE_VARIANTS[item.type || item.id]?.length > 1 && (
+                                                                    <button
+                                                                        onClick={() => handleDecorateFurnitureColor(item)}
+                                                                        className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-[15px] hover:-translate-y-0.5 active:scale-95 transition-all text-orange-600 hover:shadow-md border border-orange-100"
+                                                                    >🎨</button>
+                                                                )}
+                                                                {onStowFurniture && !['bed', 'bowl_food', 'litter'].includes(item.type || item.id) && (
+                                                                    <button
+                                                                        onClick={() => { onStowFurniture(instId); setSelectedFurnitureAction(null); }}
+                                                                        className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-[15px] hover:-translate-y-0.5 active:scale-95 transition-all text-rose-600 hover:shadow-md border border-rose-100"
+                                                                    >📦</button>
+                                                                )}
+                                                            </div>
+                                                        )}
+
+                                                        {showDecorate && !decorateMode && (
+                                                            <div className="absolute inset-0 border-2 border-dashed border-orange-400/60 rounded-sm pointer-events-none z-10" style={{ margin: '-3px' }} />
+                                                        )}
+                                                        <img src={imgSrc} draggable={false}
+                                                             className={`w-full h-auto object-contain pointer-events-none select-none transition-all duration-150 ${
+                                                                 hasVariants && !isEditMode && !showDecorate ? 'group-hover:brightness-110 group-hover:scale-105' : ''
+                                                             } ${showDecorate ? 'hover:brightness-110 hover:scale-105' : ''}`}
+                                                             style={{ imageRendering: 'pixelated', transform: isFlipped ? 'scaleX(-1)' : 'none' }}
+                                                             alt={item.id} />
+                                                    </div>
+                                                );
+                                            })}
+                                        
+                                        {engineSize.w > 0 && (
+                                            <div className="absolute inset-0 z-20 transition-opacity duration-500 pointer-events-none" style={{ filter: isSleeping ? 'brightness(0.6)' : 'none', opacity: isTransitioning ? 0 : 1 }}>
+                                                <PixelPetEngine
+                                                    ref={petRef}
+                                                    width={engineSize.w}
+                                                    height={engineSize.h}
+                                                    isSick={isSick}
+                                                    isSleeping={isSleeping}
+                                                    isDirty={stats.clean < 50}
+                                                    satiety={stats.satiety}
+                                                    species={debugSpecies}
+                                                    bondLevel={debugBondLevel !== null ? debugBondLevel : currentLevel}
+                                                    onPetClick={handlePetClick}
+                                                    bedPosition={bedPosition}
+                                                />
+                                            </div>
+                                        )}
+                                        {speechBubble && !isTransitioning && (
+                                            <div className="absolute z-50 animate-bounce" style={{ left: speechBubble.x, bottom: '45%', transform: 'translate(-50%, 0)' }}>
+                                                <div className="bg-white/95 backdrop-blur border-2 border-[#3b3b6b] px-3 py-2 rounded-2xl shadow-xl text-slate-800 font-black text-xs whitespace-nowrap">
+                                                    {speechBubble.text}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {poops.map((p) => (
+                                            <div key={p.id} className="absolute z-10 animate-bounce" style={{ left: p.x, top: p.y, transform: 'translate(-50%, -50%)', opacity: isTransitioning ? 0 : 1 }}>
+                                                <PixelIcon grid={POOP_ICON.grid} palette={POOP_ICON.palette} size={3} />
+                                            </div>
+                                        ))}
+                                        {wantsBubble && !speechBubble && !isSleeping && !isTransitioning && (
+                                            <div className="absolute z-50" style={{ right: '12%', top: '15%' }}>
+                                                <div className="bg-white/90 backdrop-blur border border-[#3b3b6b] px-2 py-1 rounded-2xl shadow-xl flex items-center gap-1 animate-bounce">
+                                                    <span className="text-base">{wantsBubble.emoji}</span>
+                                                    <span className="font-black text-xs text-slate-700">{wantsBubble.text}</span>
+                                                </div>
+                                            </div>
+                                        )}
+                                        </div>{/* /absolute inset-0 */}
+                                    </div>{/* /relative max-w-full */}
+                                </div>
+                            )}
+                        </div>{/* /canvas inner */}
+                    </div>{/* /canvas absolute */}
+                {/* RIGHT: Controls panel (Stacked on Mobile, Right side on PC) */}
+                <div className="flex flex-col w-full md:w-[360px] md:h-full flex-shrink-0 overflow-y-auto relative z-20 border-t-4 md:border-t-0 md:border-l-4 border-gray-900"
+                    style={{ background: '#F4F4F0' }}>
+
+                        <div className="flex-shrink-0 p-4 bg-white border-b-4 border-gray-900 relative">
+                            {/* Name + Edit icon */}
+                            <div className="flex items-start justify-between mb-3">
+                                <div className="flex items-center gap-3">
+                                    <div className="text-[22px] font-black leading-tight text-gray-900 tracking-tight">
+                                        {roomData?.petName || '波奇'}
+                                    </div>
+                                    <button onClick={() => { setIsRenamingPet(true); setNewPetName(roomData?.petName || '波奇'); }} 
+                                        className="px-2 py-1 bg-white hover:bg-yellow-300 font-black text-[12px] border-[2px] border-gray-900 transition-all cursor-pointer shadow-[2px_2px_0_#111827] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                                        style={{ borderRadius: '0' }}>
+                                        ✎ 改名
+                                    </button>
+                                </div>
+                                
+                                {/* 像素化健康状态指示器 */}
+                                <div className="px-3 py-1.5 flex items-center gap-1.5 text-xs font-black shadow-[2px_2px_0px_#111827] flex-shrink-0"
+                                    style={{ background: isSick ? '#fee2e2' : isSleeping ? '#e0e7ff' : '#fef9c3', color: isSick ? '#dc2626' : isSleeping ? '#4338ca' : '#92400e', border: `3px solid #111827` }}>
+                                    
+                                    {isSick ? (
+                                        <div className="w-3 h-3 bg-red-600 relative">
+                                            <div className="absolute top-1 bottom-1 -left-1 -right-1 bg-red-600"></div>
+                                            <div className="absolute top-1 bottom-1 left-1 right-1 bg-white z-10"></div>
+                                            <div className="absolute top-[4px] bottom-[4px] left-0 right-0 bg-white z-10"></div>
+                                        </div>
+                                    ) : isSleeping ? (
+                                        <span className="font-mono text-[14px] leading-none mb-[2px]">Zzz</span>
+                                    ) : (
+                                        <div className="w-3 h-3 bg-green-500 relative">
+                                            <div className="absolute top-1 bottom-1 -left-1 -right-1 bg-green-500"></div>
+                                            <div className="absolute top-1 bottom-1 left-[2px] right-[2px] bg-white z-10"></div>
+                                        </div>
+                                    )}
+                                    <span>{isSick ? '生病' : isSleeping ? '睡眠' : '健康'}</span>
+                                </div>
+                            </div>
+
+                            {/* Minecraft-style Grid Hearts */}
+                            <div className="flex items-center gap-[4px] mb-5">
+                                {Array.from({ length: 5 }).map((_, i) => {
+                                    const active = i < hearts;
+                                    const grid = [
+                                        [0,1,1,0,0,0,1,1,0],
+                                        [1,2,2,1,0,1,3,3,1],
+                                        [1,2,3,3,1,3,3,3,1],
+                                        [1,3,3,3,3,3,3,3,1],
+                                        [0,1,3,3,3,3,3,1,0],
+                                        [0,0,1,3,3,3,1,0,0],
+                                        [0,0,0,1,3,1,0,0,0],
+                                        [0,0,0,0,1,0,0,0,0]
+                                    ];
+                                    return (
+                                        <div key={i} className={`flex flex-col ${active ? '' : 'grayscale opacity-30'} ${active && isTransitioning ? 'scale-110' : ''}`} style={{ filter: active ? 'drop-shadow(2px 2px 0px rgba(17,24,39,0.4))' : 'none', transition: 'all 0.2s', flexShrink: 0 }}>
+                                            {grid.map((row, rIdx) => (
+                                                <div key={rIdx} className="flex">
+                                                    {row.map((cell, cIdx) => (
+                                                        <div key={cIdx} style={{ 
+                                                            width: '2.5px', height: '2.5px', 
+                                                            backgroundColor: cell === 1 ? '#111827' : cell === 2 ? '#fca5a5' : cell === 3 ? '#ef4444' : 'transparent' 
+                                                        }} />
+                                                    ))}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* THICK STATUS BARS */}
+                            <div className="flex flex-col gap-3">
+                                {[
+                                    { pixelSrc: '/pets/furniture/catfood_small.png', name: '饱腹', val: stats.satiety, color: 'bg-[#FF8C42]', alert: stats.satiety <= 30, help: '饿了！拖拽【脆脆粮】喂宝宝！' },
+                                    { pixelSrc: '/pets/furniture/litter_white.png',  name: '清洁', val: stats.clean,   color: 'bg-[#3BCECD]', alert: stats.clean   <= 40, help: '太脏了！买【香草浴】或【扫帚】！' },
+                                    { pixelSrc: '/pets/furniture/mouse_toy.png',     name: '心情', val: stats.mood,    color: 'bg-[#FF90E8]', alert: stats.mood    <= 20, help: '无聊了！给它买个【毛线球】玩耍！' },
+                                ].map((s, i) => {
+                                    const filledBlocks = Math.round(s.val / 10); // 0-10 blocks
+                                    return (
+                                        <div key={i} className="flex items-center gap-2">
+                                            {/* Name */}
+                                            <div className="flex items-center shrink-0 w-[32px]">
+                                                <span className="text-[14px] font-black leading-none text-gray-900 tracking-tight">{s.name}</span>
+                                            </div>
+
+                                            {/* Blocky Progress Bar */}
+                                            <div className="flex-1 flex gap-[2px] h-[16px] shrink-0">
+                                                {Array.from({ length: 10 }).map((_, bIdx) => (
+                                                    <div key={bIdx} className={`flex-1 border-[2px] border-gray-900 ${bIdx < filledBlocks ? s.color : 'bg-gray-200'}`} style={{ borderRadius: '0' }} />
+                                                ))}
+                                            </div>
+
+                                            {/* Alert Button / Percentage */}
+                                            <div className="w-[38px] shrink-0 flex items-center justify-end">
+                                                {s.alert ? (
+                                                    <button 
+                                                        onClick={() => showToastEmbed(s.help)}
+                                                        className="w-[20px] h-[20px] bg-red-500 hover:bg-red-400 border-[2px] border-gray-900 text-white font-black text-[12px] flex items-center justify-center shadow-[1px_1px_0_#111827] cursor-pointer animate-pulse"
+                                                        style={{ borderRadius: '0', marginLeft: 'auto' }}
+                                                    >
+                                                        ?
+                                                    </button>
+                                                ) : (
+                                                    <span className="text-[14px] font-black font-mono tracking-tighter" style={{ color: '#111827' }}>
+                                                        {Math.floor(s.val)}%
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+
+                        {/* ── Desktop Right Column Action Grid (Replaces old dock) ── */}
+                        <div className="flex flex-col p-4 shrink-0 pb-6 w-full mx-auto flex-1 justify-center">
+                            
+                            {/* Action Panel Card */}
+                            <div className="flex flex-col gap-0 flex-1">
+                                
+                                <div className="flex justify-between items-center mb-5 mt-1">
+                                    {/* Styled Title */}
+                                    <div className="flex bg-[#111827] text-white px-3 py-1.5 rounded-l-xl rounded-r-sm shadow-[2px_2px_0_#A78BFA] border-2 border-[#111827]">
+                                        <span className="text-[14px] font-black tracking-widest leading-none pt-0.5">逗宠百宝箱</span>
+                                    </div>
+                                    
+                                    {/* Free AP Badge */}
+                                    <div className="flex items-center gap-1.5 bg-yellow-400 border-[3px] border-gray-900 shadow-[2px_2px_0_#111827] px-2.5 py-1 rounded-full z-10">
+                                        <Icons.Star size={12} className="fill-white text-white drop-shadow-[1px_1px_0_rgba(17,24,39,0.5)]" />
+                                        <span className="text-xs font-black text-gray-900 leading-none pt-0.5">免费 {availableAP} 次</span>
+                                    </div>
+                                </div>
+
+                                {/* 6-slot Action Grid */}
+                                <div className="grid grid-cols-2 gap-3 flex-1 pb-2">
+                                    {FIXED_TOOLBAR.map((itemId, idx) => {
+                                        const item = getItem(itemId);
+                                        const qty = consumables[itemId] ?? 0;
+                                        const hasStock = qty > 0;
+                                        
+                                        return (
+                                            <button key={idx} onClick={() => handleDirectUseConsumable(itemId)}
+                                                className="relative flex flex-col items-center justify-center gap-1.5 border-[3px] border-gray-900 rounded-2xl transition-all shadow-[4px_4px_0_#111827] active:translate-y-[2px] active:translate-x-[2px] active:shadow-[2px_2px_0_#111827] group overflow-hidden h-full min-h-[90px]"
+                                                style={{
+                                                    background: hasStock ? '#fbbf24' : '#F4F4F0'
+                                                }}
+                                            >
+                                                {item && (<div className={`pointer-events-none flex flex-col flex-1 items-center justify-center`}>
+                                                    {item.src ? (
+                                                        <img src={item.src} className="w-8 h-8 object-contain mb-1 drop-shadow-[0_2px_2px_rgba(0,0,0,0.1)]" style={{ imageRendering: 'pixelated' }} alt={item.label} />
+                                                    ) : item.pixelGrid ? (
+                                                        <PixelIcon grid={item.pixelGrid.layout || item.pixelGrid} palette={item.pixelGrid.palette || item.pixelPalette} size={2.5} className="mb-0.5 drop-shadow-[0_2px_2px_rgba(0,0,0,0.1)]" />
+                                                    ) : (
+                                                        <span className="text-[20px] mb-1">{item.emoji}</span>
+                                                    )}
+                                                    
+                                                    <div className="text-[11px] font-black text-gray-900 mt-1 uppercase tracking-tight">
+                                                        {item.label}
+                                                    </div>
+                                                </div>)}
+                                                
+                                                {/* Corner badge */}
+                                                <div className="absolute top-0 right-0 min-w-[22px] h-[22px] flex items-center justify-center rounded-bl-xl text-[10px] font-black px-1.5 border-b-[3px] border-l-[3px] border-gray-900 transition-colors tracking-widest" 
+                                                    style={{ background: availableAP > 0 ? '#10B981' : (hasStock ? '#ef4444' : '#f59e0b'), color: '#fff' }}>
+                                                    {availableAP > 0 ? '免费' : (hasStock ? qty : (
+                                                        <div className="flex items-center gap-[1px] tracking-normal">
+                                                            <Icons.Star size={10} className="fill-white text-white drop-shadow-[0_1px_0_rgba(0,0,0,0.2)]" />
+                                                            <span className="leading-none text-[11px] pt-px">{item.price}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                {/* ── Dye Bottom Drawer UI ── */}
+                {dyeTarget && (
+                    <div className="absolute inset-x-0 bottom-0 z-50 bg-[#F4F4F0] border-t-4 border-gray-900 shadow-[0_-8px_32px_rgba(0,0,0,0.15)] overflow-hidden rounded-t-3xl pb-safe">
+                        <div className="px-5 pt-4 pb-6 flex flex-col gap-4">
+                            {/* Header */}
+                            <div className="flex justify-between items-center mb-1">
+                                <div className="flex items-center gap-2">
+                                    <h3 className="text-xl font-black text-gray-900 tracking-tight">🖌️ 换个颜色</h3>
+                                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-black bg-white border-[3px] border-gray-900 shadow-[2px_2px_0_#1a1a1a]">
+                                        <Icons.StarFilled size={16} className="text-yellow-400" />
+                                        <span className="leading-none pt-0.5">{coinBalance?.toLocaleString() || 0}</span>
+                                    </div>
+                                </div>
+                                <button onClick={() => setDyeTarget(null)} className="flex items-center justify-center w-10 h-10 rounded-full bg-white border-[3px] border-gray-900 shadow-[2px_2px_0_#1a1a1a] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all">
+                                    <Icons.X size={20} strokeWidth={3} className="text-gray-900" />
+                                </button>
+                            </div>
+
+                            {/* Color Grid */}
+                            <div className="flex gap-4 overflow-x-auto pb-4 pt-1 px-1" style={{ scrollbarWidth: 'none' }}>
+                                {(FURNITURE_VARIANTS[dyeTarget.type || dyeTarget.id] || []).map((src, idx) => {
+                                    const labels = FURNITURE_VARIANT_LABELS[dyeTarget.type || dyeTarget.id] || [];
+                                    const label = labels[idx] || `颜色 ${idx + 1}`;
+                                    
+                                    const unlocked = dyeTarget.unlockedVariants || [0];
+                                    const isUnlocked = idx === 0 || unlocked.includes(idx);
+                                    const isCurrent = dyeTarget.src === src || (idx === 0 && !FURNITURE_VARIANTS[dyeTarget.type || dyeTarget.id]?.includes(dyeTarget.src) && dyeTarget.src === src); // Fallback for base src checking
+
+                                    return (
+                                        <button
+                                            key={idx}
+                                            onClick={() => handleDyeAction(idx)}
+                                            className="flex-shrink-0 flex flex-col items-center gap-2 relative group"
+                                            style={{ width: '80px' }}
+                                        >
+                                            <div 
+                                                className="w-20 h-20 rounded-2xl flex items-center justify-center transition-all bg-white relative"
+                                                style={{
+                                                    border: isCurrent ? '4px solid #1a1a1a' : '3px solid #e5e7eb',
+                                                    boxShadow: isCurrent ? '0 6px 0 #1a1a1a' : 'none',
+                                                    transform: isCurrent ? 'translateY(-4px)' : 'none',
+                                                    opacity: !isUnlocked ? 0.6 : 1,
+                                                }}
+                                            >
+                                                <img src={src} alt={label} style={{ imageRendering: 'pixelated', maxHeight: '56px', maxWidth: '56px', objectFit: 'contain' }} />
+                                                
+                                                {!isUnlocked && (
+                                                    <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white border-2 border-gray-900 shadow-sm flex items-center justify-center">
+                                                        <Icons.Lock size={14} className="text-gray-900" />
+                                                    </div>
+                                                )}
+                                                
+                                                {isCurrent && (
+                                                    <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-[#10b981] border-[3px] border-gray-900 shadow-[2px_2px_0_#1a1a1a] flex items-center justify-center">
+                                                        <Icons.Check size={16} strokeWidth={4} className="text-white" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            
+                                            <span className="text-[11px] font-black tracking-tight" style={{ color: isCurrent ? '#1a1a1a' : '#6b7280' }}>
+                                                {label}
+                                            </span>
+                                            
+                                            {!isUnlocked && (
+                                                <div className="inline-flex items-center gap-1 bg-[#fbbf24] px-2 py-0.5 rounded-full border-2 border-gray-900">
+                                                    <Icons.StarFilled size={10} className="text-yellow-50" fill="white" />
+                                                    <span className="text-[10px] font-black text-gray-900">50</span>
+                                                </div>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ── Renaming Modal (Neo-Brutalist) ── */}
+                {isRenamingPet && (
+                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+                        <div className="bg-[#fef9c3] w-[300px] border-[4px] border-gray-900 shadow-[8px_8px_0_#111827] p-5" style={{ borderRadius: '0' }}>
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-black text-gray-900 tracking-tight">给小宝贝起个名字</h3>
+                                <button onClick={() => setIsRenamingPet(false)} className="text-gray-500 hover:text-gray-900 cursor-pointer border-2 border-transparent">
+                                    <Icons.X size={20} weight="bold" />
+                                </button>
+                            </div>
+                            <input
+                                type="text"
+                                maxLength={8}
+                                value={newPetName}
+                                onChange={e => setNewPetName(e.target.value)}
+                                className="w-full bg-white border-[3px] border-gray-900 p-2 font-black text-center mb-5 outline-none focus:bg-[#e0e7ff] transition-colors shadow-[inset_2px_2px_0_rgba(0,0,0,0.1)]"
+                                style={{ borderRadius: '0', fontSize: '18px' }}
+                            />
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setIsRenamingPet(false)}
+                                    className="flex-1 py-2 font-black border-[3px] border-gray-900 bg-white hover:bg-gray-100 shadow-[2px_2px_0_#111827] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none cursor-pointer"
+                                    style={{ borderRadius: '0' }}
+                                >
+                                    取消
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (newPetName.trim() && onPetNameChange) {
+                                            onPetNameChange(newPetName.trim());
+                                        }
+                                        setIsRenamingPet(false);
+                                    }}
+                                    className="flex-1 py-2 font-black border-[3px] border-gray-900 bg-[#fbbf24] hover:bg-[#f59e0b] shadow-[2px_2px_0_#111827] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none cursor-pointer"
+                                    style={{ borderRadius: '0' }}
+                                >
+                                    确定
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {/* ── Force Buy Confirmation Modal ── */}
+                {forceBuyConfirm && (
+                    <div className="absolute inset-0 z-[100] flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 animate-fade-in">
+                        <div className="bg-[#FDFBF7] border-[3px] border-gray-900 shadow-[6px_6px_0_#111827] rounded-3xl w-full max-w-sm overflow-hidden flex flex-col items-center p-6 text-center animate-scale-up">
+                            <div className="text-4xl mb-3 drop-shadow-md">{forceBuyConfirm.item?.emoji || '⚠️'}</div>
+                            <h3 className="text-lg font-black text-gray-900 mb-2">免费次数用完啦！</h3>
+                            <p className="text-[13px] font-bold text-gray-600 mb-6 px-2">
+                                去完成任务赚取更多免费互动次数吧！<br/>
+                                也可花费 <span className="text-yellow-600 font-black">金币</span> 购买噢。
+                            </p>
+                            
+                            <div className="flex w-full gap-3">
+                                {/* Cancel */}
+                                <button
+                                    onClick={() => setForceBuyConfirm(null)}
+                                    className="flex-1 py-3 bg-white border-2 border-gray-900 rounded-2xl font-black text-gray-900 shadow-[2px_2px_0_#111827] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all text-sm"
+                                >
+                                    去完成任务
+                                </button>
+                                {/* Confirm */}
+                                <button
+                                    onClick={() => {
+                                        const id = forceBuyConfirm.itemId;
+                                        setForceBuyConfirm(null);
+                                        handleDirectUseConsumable(id, true); // bypass confirmation
+                                    }}
+                                    className="flex-1 flex justify-center items-center gap-1 py-3 bg-yellow-400 border-2 border-gray-900 rounded-2xl font-black text-gray-900 shadow-[2px_2px_0_#111827] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all text-sm"
+                                >
+                                    继续购买(<Icons.Star size={12} className="fill-white text-white drop-shadow-[0_1px_0_rgba(0,0,0,0.2)] -mr-0.5" /> {forceBuyConfirm.item?.price})
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
+            </div>
+        );
+    }
+
+    // ── FULL-SCREEN MODE: render as portal overlay ──
     return createPortal(modalContent, document.body);
 }
+

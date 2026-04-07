@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>家具预览（最终）</title>
+<style>
+  body { background: #f8f4ef; margin: 0; padding: 20px; font-family: sans-serif; }
+  h2 { color: #444; font-size: 14px; margin: 16px 0 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+  .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 8px; }
+  .card { background: white; border-radius: 12px; padding: 8px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .img-wrap { width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; }
+  .img-wrap img { max-width: 64px; max-height: 64px; object-fit: contain; image-rendering: pixelated; }
+  .name { font-size: 10px; font-weight: 700; text-align: center; margin-top: 6px; color: #333; }
+  .price { font-size: 9px; color: #f97316; font-weight: 800; margin-top: 2px; }
+  .missing { border: 2px dashed #f87171; }
+</style>
+</head>
+<body>
+<script>
+const sections = [
+  { cat: '🛏 床铺', items: [
+    { name: '猫咪爱床 (粉)', img: '/pets/furniture/bed_pink.png',              price: 150 },
+    { name: '猫咪爱床 (蓝)', img: '/pets/furniture/bed_blue.png',              price: 150 },
+    { name: '猫咪爱床 (紫)', img: '/pets/furniture/bed_purple.png',            price: 150 },
+  ]},
+  { cat: '🐾 猫爬架', items: [
+    { name: '三层猫爬架',    img: '/pets/furniture/tower3_white.png',          price: 180 },
+    { name: '楼梯猫爬架',    img: '/pets/furniture/tower_stair_tan.png',       price: 160 },
+    { name: '猫抓柱',        img: '/pets/furniture/post_lime.png',             price: 80  },
+    { name: '双环磨爪器',    img: '/pets/furniture/scratcher_gray.png',        price: 100 },
+  ]},
+  { cat: '🪑 家具', items: [
+    { name: '双层书架(米)',  img: '/pets/furniture/shelf_beige.png',           price: 120 },
+    { name: '双层书架(蓝)',  img: '/pets/furniture/shelf_blue.png',            price: 120 },
+    { name: '双层书架(金)',  img: '/pets/furniture/shelf_gold.png',            price: 120 },
+    { name: '双层书架(绿)',  img: '/pets/furniture/shelf_green.png',           price: 120 },
+    { name: '双层书架(紫)',  img: '/pets/furniture/shelf_purple.png',          price: 120 },
+    { name: '小椅子',        img: '/pets/furniture/chair_cream.png',           price: 60  },
+    { name: '猫砂盆(棕)',    img: '/pets/furniture/litter_tan.png',            price: 70  },
+    { name: '猫砂盆(白)',    img: '/pets/furniture/litter_white.png',          price: 70  },
+  ]},
+  { cat: '🌿 植物', items: [
+    { name: '落地绿植(灰盆)', img: '/pets/furniture/plant_large_gray.png',     price: 80  },
+    { name: '落地绿植(黑盆)', img: '/pets/furniture/plant_large_black.png',    price: 80  },
+    { name: '落地绿植(蓝盆)', img: '/pets/furniture/plant_large_blue.png',     price: 80  },
+    { name: '落地绿植(紫盆)', img: '/pets/furniture/plant_large_purple.png',   price: 80  },
+    { name: '桌面小盆栽(粉)', img: '/pets/furniture/plant_pot_pink.png',       price: 40  },
+    { name: '桌面小盆栽(蓝)', img: '/pets/furniture/plant_pot_blue.png',       price: 40  },
+    { name: '桌面小盆栽(黄)', img: '/pets/furniture/plant_pot_yellow.png',     price: 40  },
+    { name: '桌面小盆栽(灰)', img: '/pets/furniture/plant_pot_gray.png',       price: 40  },
+  ]},
+  { cat: '🪟 窗户', items: [
+    { name: '窗帘(白)',      img: '/pets/furniture/window_curtain_white.png',  price: 100 },
+    { name: '窗帘(红)',      img: '/pets/furniture/window_curtain_red.png',    price: 100 },
+    { name: '窗帘(蓝)',      img: '/pets/furniture/window_curtain_blue.png',   price: 100 },
+    { name: '百叶窗(紫)',    img: '/pets/furniture/window_blind_purple.png',   price: 80  },
+    { name: '百叶窗(深)',    img: '/pets/furniture/window_blind_dark.png',     price: 80  },
+    { name: '百叶窗(蓝绿)',  img: '/pets/furniture/window_blind_teal.png',     price: 80  },
+    { name: '百叶窗(白)',    img: '/pets/furniture/window_blind_white.png',    price: 80  },
+    { name: '彩色窗框(白)',  img: '/pets/furniture/frame_light.png',           price: 90  },
+    { name: '彩色窗框(棕)',  img: '/pets/furniture/frame_brown.png',           price: 90  },
+    { name: '彩色窗框(灰)',  img: '/pets/furniture/frame_gray.png',            price: 90  },
+    { name: '彩色窗框(棕褐)',img: '/pets/furniture/frame_tan.png',             price: 90  },
+
+  ]},
+  { cat: '🧶 玩具', items: [
+    { name: '毛线球',        img: '/pets/furniture/ball.png',                  price: 30  },
+    { name: '毛线球(蓝)',    img: '/pets/furniture/ball_blue.png',             price: 30  },
+    { name: '绒线球',        img: '/pets/furniture/ball_2.png',                price: 30  },
+    { name: '蝴蝶结玩具',    img: '/pets/furniture/toy_bowtie_cyan.png',       price: 40  },
+    { name: '魔方',          img: '/pets/furniture/cube_1.png',                price: 35  },
+    { name: '小老鼠玩具',    img: '/pets/furniture/mouse_toy.png',             price: 25  },
+  ]},
+  { cat: '🍽 食品', items: [
+    { name: '猫咪饭碗(蓝)',  img: '/pets/furniture/bowl_blue_empty_exact.png', price: 60  },
+    { name: '猫咪饭碗(米)',  img: '/pets/furniture/bowl_beige_empty.png',      price: 60  },
+    { name: '小包猫粮',      img: '/pets/furniture/catfood_small.png',         price: 30  },
+    { name: '大包猫粮',      img: '/pets/furniture/catfood_large.png',         price: 50  },
+    { name: '猫罐头(梅花肉)',img: '/pets/furniture/can_mauve.png',             price: 35  },
+    { name: '猫罐头(金枪鱼)',img: '/pets/furniture/can_tan.png',              price: 35  },
+    { name: '猫罐头(鸡肉)',  img: '/pets/furniture/can_gray.png',             price: 35  },
+    { name: '猫罐头(薰衣草)',img: '/pets/furniture/can_lavender.png',         price: 35  },
+  ]},
+  { cat: '🎨 装饰', items: [
+    { name: '爱心挂件(棕)',  img: '/pets/furniture/heart_brown.png',           price: 50  },
+    { name: '爱心挂件(蓝)',  img: '/pets/furniture/heart_blue.png',            price: 50  },
+    { name: '爱心挂件(紫)',  img: '/pets/furniture/heart_purple.png',          price: 50  },
+    { name: '挂画(绿植)',    img: '/pets/furniture/painting_plant.png',        price: 80  },
+    { name: '挂画(线条)',    img: '/pets/furniture/painting_stripe.png',       price: 80  },
+    { name: '挂画(漩涡)',    img: '/pets/furniture/painting_swirl.png',        price: 80  },
+  ]},
+];
+
+sections.forEach(sec => {
+  const h = document.createElement('h2');
+  h.textContent = sec.cat;
+  document.body.appendChild(h);
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+  sec.items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="img-wrap">
+        <img src="${item.img}" alt="${item.name}" onerror="this.parentNode.innerHTML='<span style=font-size:24px>❌</span>';this.parentNode.parentNode.classList.add('missing')" />
+      </div>
+      <div class="name">${item.name}</div>
+      <div class="price">🪙${item.price}</div>
+    `;
+    grid.appendChild(card);
+  });
+  document.body.appendChild(grid);
+});
+</script>
+</body>
+</html>

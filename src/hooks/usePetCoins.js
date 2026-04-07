@@ -5,15 +5,18 @@ import { useCallback } from 'react';
 import { useDataContext } from '../context/DataContext';
 import { apiFetch } from '../api/client';
 
+// 🛠 DEV_MODE: set true to get unlimited coins for testing
+const DEV_MODE = true;
+
 export function usePetCoins(kidId) {
     const { kids, setKids } = useDataContext();
     const kid = kids.find(k => k.id === kidId);
-    const balance = kid?.balances?.spend ?? 0;
+    const balance = DEV_MODE ? 999999 : (kid?.balances?.spend ?? 0);
 
     // ── Optimistically deduct from local state + persist ─────────────
     const spendCoins = useCallback(async (amount, description = '房间装饰') => {
         if (!kid) return { ok: false, reason: 'kid_not_found' };
-        if (balance < amount) return { ok: false, reason: 'insufficient', balance, required: amount };
+        if (!DEV_MODE && balance < amount) return { ok: false, reason: 'insufficient', balance, required: amount };
 
         const newBalance = balance - amount;
 

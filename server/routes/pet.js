@@ -91,17 +91,21 @@ module.exports = (db, { authenticateToken }) => {
     router.put('/rooms/:id', (req, res) => {
         const { id } = req.params;
         const userId = req.user.id;
-        const { skinIdx, furnitureJson, roomName, petHunger, petMood, petState, petLastFed } = req.body;
+        const { skinIdx, furnitureJson, roomName, petName, petHunger, petMood, petState, petLastFed,
+                consumablesJson, hotbarJson } = req.body;
 
         const updates = [];
         const params = [];
-        if (skinIdx !== undefined)      { updates.push(`skin_idx = ?`);      params.push(skinIdx); }
-        if (furnitureJson !== undefined) { updates.push(`furniture_json = ?`); params.push(JSON.stringify(furnitureJson)); }
-        if (roomName !== undefined)      { updates.push(`room_name = ?`);      params.push(roomName); }
-        if (petHunger !== undefined)     { updates.push(`pet_hunger = ?`);     params.push(petHunger); }
-        if (petMood !== undefined)       { updates.push(`pet_mood = ?`);       params.push(petMood); }
-        if (petState !== undefined)      { updates.push(`pet_state = ?`);      params.push(petState); }
-        if (petLastFed !== undefined)    { updates.push(`pet_last_fed = ?`);   params.push(petLastFed); }
+        if (skinIdx !== undefined)        { updates.push(`skin_idx = ?`);         params.push(skinIdx); }
+        if (furnitureJson !== undefined)  { updates.push(`furniture_json = ?`);   params.push(JSON.stringify(furnitureJson)); }
+        if (roomName !== undefined)       { updates.push(`room_name = ?`);        params.push(roomName); }
+        if (petName !== undefined)        { updates.push(`pet_name = ?`);         params.push(petName); }
+        if (petHunger !== undefined)      { updates.push(`pet_hunger = ?`);       params.push(petHunger); }
+        if (petMood !== undefined)        { updates.push(`pet_mood = ?`);         params.push(petMood); }
+        if (petState !== undefined)       { updates.push(`pet_state = ?`);        params.push(petState); }
+        if (petLastFed !== undefined)     { updates.push(`pet_last_fed = ?`);     params.push(petLastFed); }
+        if (consumablesJson !== undefined){ updates.push(`consumables_json = ?`); params.push(consumablesJson); }
+        if (hotbarJson !== undefined)     { updates.push(`hotbar_json = ?`);      params.push(hotbarJson); }
 
         if (updates.length === 0) return res.json({ ok: true });
 
@@ -172,6 +176,7 @@ function parseRoom(room) {
             : (rawFurniture || []),
         coinsSpent:   Number(room.coins_spent ?? room.coinsSpent ?? 0),
         petId:        room.pet_id      ?? room.petId      ?? '',
+        petName:      room.pet_name    ?? room.petName    ?? '波奇',
         petHunger:    Number(room.pet_hunger  ?? room.petHunger  ?? 100),
         petMood:      Number(room.pet_mood    ?? room.petMood    ?? 100),
         petState:     room.pet_state   ?? room.petState   ?? 'idle',

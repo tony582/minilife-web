@@ -58,9 +58,10 @@ const COLUMN_MAP = {
     interest_bonus: 'interest_bonus', calculated_at: 'calculated_at',
     // Pet rooms
     room_name: 'roomName', skin_idx: 'skinIdx', furniture_json: 'furnitureJson',
-    coins_spent: 'coinsSpent', pet_id: 'petId', sort_order: 'sortOrder',
+    coins_spent: 'coinsSpent', pet_id: 'petId', pet_name: 'petName', sort_order: 'sortOrder',
     unlocked_at: 'unlockedAt', pet_hunger: 'petHunger', pet_mood: 'petMood',
     pet_state: 'petState', pet_last_fed: 'petLastFed',
+    consumables_json: 'consumablesJson', hotbar_json: 'hotbarJson',
     // Anti-addiction
     date_str: 'dateStr', total_seconds: 'totalSeconds',
     bonus_seconds: 'bonusSeconds', last_session_at: 'lastSessionAt',
@@ -391,6 +392,7 @@ async function initializeDatabase() {
             furniture_json TEXT DEFAULT '[]',
             coins_spent INTEGER DEFAULT 0,
             pet_id TEXT DEFAULT '',
+            pet_name TEXT DEFAULT '波奇',
             pet_hunger INTEGER DEFAULT 100,
             pet_mood INTEGER DEFAULT 100,
             pet_state TEXT DEFAULT 'idle',
@@ -398,6 +400,10 @@ async function initializeDatabase() {
             unlocked_at TEXT NOT NULL
         )`);
 
+        // Migrate: add consumables_json, hotbar_json, and pet_name columns if missing
+        await client.query(`ALTER TABLE pet_rooms ADD COLUMN IF NOT EXISTS consumables_json TEXT DEFAULT '{}'`);
+        await client.query(`ALTER TABLE pet_rooms ADD COLUMN IF NOT EXISTS hotbar_json TEXT DEFAULT '[]'`);
+        await client.query(`ALTER TABLE pet_rooms ADD COLUMN IF NOT EXISTS pet_name TEXT DEFAULT '波奇'`);
         // ── Pet Anti-Addiction: daily interaction tracking ──────────────
         await client.query(`CREATE TABLE IF NOT EXISTS pet_anti_addiction (
             id TEXT PRIMARY KEY,

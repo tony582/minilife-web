@@ -1,54 +1,87 @@
 // ═══════════════════════════════════════════════════════════
-// PetRoomModal — 多房间全屏弹窗（Phase 2：装饰经济系统）
+// PetRoomModal — Phase 3: Responsive Full-Screen Layout
+//   Mobile: 3-tab (房间/商店/背包) full-screen UX
+//   PC    : wide side-by-side (room left, shop right)
 // ═══════════════════════════════════════════════════════════
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { ROOM_VARIANTS } from '../../data/roomConfig';
 import { ROOM_UNLOCK_COSTS } from '../../data/furnitureCatalog';
 import VirtualPetDashboard from './VirtualPetDashboard';
 import FurnitureShop from './FurnitureShop';
+import BackpackModal from './BackpackModal';
 import { usePetCoins } from '../../hooks/usePetCoins';
-import { useDataContext } from '../../context/DataContext';
 import { Icons } from '../../utils/Icons';
+import { DEFAULT_CONSUMABLES, DEFAULT_HOTBAR, getItem } from '../../data/itemsCatalog';
 
-// Peer constant: keep in sync with furnitureCatalog ROOM_UNLOCK_COSTS
 const NEXT_ROOM_COSTS = [0, 500, 1500, 3000];
 
 export default function PetRoomModal({
     rooms, activeRoomIdx, setActiveRoomIdx,
-    updateSkin, updateFurniture, updatePetVitals,
+    updateSkin, updateFurniture, updatePetVitals, updatePetName,
     unlockRoom, kidId, activeKid, onClose,
     isLocked, remainingLabel, remainingSeconds, limitSeconds, progressPct,
+    backpack = [],
+    updateFurnitureItem,
+    placeFurnitureFromGlobal,
+    // ── Consumables system ──
+    consumables       = { ...DEFAULT_CONSUMABLES },
+    hotbar            = [...DEFAULT_HOTBAR],
+    updateConsumables = null,
+    updateHotbar      = null,
 }) {
-    const [unlocking, setUnlocking]             = useState(false);
-    const [showDecorate, setShowDecorate]       = useState(false);
-    const [newFurnitureToAdd, setNewFurniture]  = useState(null);
-    const [toastMsg, setToastMsg]               = useState('');
-    const modalRef   = useRef(null);
-    const touchStartY = useRef(null);
+    // ── Nav & mode state ─────────────────────────────────────────────
+    const [activeOverlay, setActiveOverlay] = useState(null); // null | 'shop' | 'backpack' | 'itemShop' | 'chest'
+    const [decorateMode,  setDecorateMode]  = useState(false);
+    const [pendingPlace, setPendingPlace] = useState(null);    // item waiting to be tapped-placed
+
+    // ── Misc state ───────────────────────────────────────────────────
+    const [unlocking,  setUnlocking]  = useState(false);
+    const [toastMsg,   setToastMsg]   = useState('');
+    const [dragState,  setDragState]  = useState(null);        // ghost drag {item,ghostX,ghostY}
+
+    const modalRef        = useRef(null);
+    const touchStartY     = useRef(null);
+    const roomContainerRef = useRef(null);
 
     const activeRoom = rooms[activeRoomIdx] ?? rooms[0];
     const canUnlock  = rooms.length < 4;
     const nextCost   = NEXT_ROOM_COSTS[rooms.length] ?? 3000;
 
-    // ── Coin hook (for furniture purchase deduction) ─────────────────
-    const { balance, spendCoins } = usePetCoins(kidId) ?? {};
-
-    // ── Toast helper ─────────────────────────────────────────────────
+    // ── Helpers ──────────────────────────────────────────────────────
     const showToast = useCallback((msg) => {
         setToastMsg(msg);
         setTimeout(() => setToastMsg(''), 2500);
     }, []);
 
-    // ── Swipe-down to close ──────────────────────────────────────────
+    const parseFurniture = (room) => {
+        try { return JSON.parse(room?.furnitureJson ?? '[]') || []; } catch { return []; }
+    };
+
+    const ownedCounts = useMemo(() => {
+        const arr = parseFurniture(activeRoom);
+        const counts = {};
+        arr.forEach(f => {
+            const t = f.type || f.id;
+            counts[t] = (counts[t] || 0) + 1;
+        });
+        return counts;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeRoom?.furnitureJson]);
+
+    // ── Coin hook ────────────────────────────────────────────────────
+    const { balance, spendCoins } = usePetCoins(kidId) ?? {};
+
+    // ── Swipe-down to close (mobile) ─────────────────────────────────
     const handleTouchStart = (e) => { touchStartY.current = e.touches[0].clientY; };
     const handleTouchEnd   = (e) => {
         if (!touchStartY.current) return;
         const dy = e.changedTouches[0].clientY - touchStartY.current;
-        if (dy > 80) onClose();
+        if (dy > 80 && !activeOverlay && !decorateMode) onClose();
         touchStartY.current = null;
     };
 
-    // ── Unlock new room ──────────────────────────────────────────────
+    // ── Unlock room ──────────────────────────────────────────────────
     const handleUnlock = useCallback(async () => {
         if (!canUnlock || unlocking) return;
         if (balance < nextCost) { showToast(`解锁需要 ${nextCost} 家庭币`); return; }
@@ -57,168 +90,206 @@ export default function PetRoomModal({
             const result = await spendCoins(nextCost, `解锁第${rooms.length + 1}间小窝`);
             if (result?.ok) {
                 await unlockRoom(`第${rooms.length + 1}间小窝`);
+            } else if (result?.reason === 'api_error') {
+                showToast('网络连接失败');
             } else {
                 showToast('家庭币不足');
             }
         } catch (e) {
             showToast('解锁失败：' + e.message);
-        } finally {
-            setUnlocking(false);
-        }
+        } finally { setUnlocking(false); }
     }, [canUnlock, unlocking, balance, nextCost, spendCoins, unlockRoom, rooms.length, showToast]);
 
-    // ── Buy furniture from shop ──────────────────────────────────────
+    // ── Buy furniture → backpack ─────────────────────────────────────
     const handleBuyFurniture = useCallback(async (furnitureItem, price, name) => {
         if (!spendCoins) return showToast('初始化中...');
         const result = await spendCoins(price, `购买${name}`);
         if (result?.ok) {
-            // Pass to VirtualPetDashboard via prop change
-            setNewFurniture({ ...furnitureItem, _ts: Date.now() });
-            showToast(`✅ ${name} 已加入房间！`);
+            const newItem = { ...furnitureItem, placed: false, flipped: false, instanceId: `item_${Date.now()}` };
+            const current = parseFurniture(rooms[activeRoomIdx] ?? rooms[0]);
+            updateFurniture(JSON.stringify([...current, newItem]));
+            showToast(`🎒 ${name} 已放入背包！`);
+        } else if (result?.reason === 'api_error') {
+            showToast('购买失败：网络连接异常');
         } else {
             showToast(`家庭币不足，需要 ${price} 币`);
         }
-    }, [spendCoins, showToast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [spendCoins, showToast, rooms, activeRoomIdx, updateFurniture]);
 
-    // ── Toggle decoration mode ────────────────────────────────────────
-    const handleToggleDecorate = () => {
-        setShowDecorate(d => !d);
-        setNewFurniture(null); // clear pending add
-    };
+    // ── Place from inventory (物品栏 furniture tap-to-place flow) ──
+    const handlePlaceFurnitureFromInventory = useCallback((item) => {
+        setActiveOverlay(null);  // Close 物品栏 modal
+        setPendingPlace(item);   // Enter placement mode
+        // Don't force decorateMode — placement works in normal mode too
+    }, []);
 
+    const handleRoomTapPlace = useCallback((e) => {
+        if (!pendingPlace) return;
+        const rect = roomContainerRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        const leftPct   = (((e.clientX - rect.left) / rect.width) * 100).toFixed(1) + '%';
+        const bottomPct = ((1 - (e.clientY - rect.top) / rect.height) * 100).toFixed(1) + '%';
+        const newStyle = { ...pendingPlace.style, left: leftPct, bottom: bottomPct };
+        if (placeFurnitureFromGlobal && pendingPlace.originRoomId) {
+            placeFurnitureFromGlobal(pendingPlace.instanceId, pendingPlace.originRoomId, newStyle);
+        } else {
+            updateFurnitureItem?.(pendingPlace.instanceId, f => ({
+                placed: true,
+                style: newStyle,
+            }));
+        }
+        setPendingPlace(null);
+        showToast('✅ 已放置！进装修模式可调整位置');
+    }, [pendingPlace, updateFurnitureItem, placeFurnitureFromGlobal, showToast]);
+
+    // ── Ghost drag (PC/desktop drag from backpack drawer) ───────────
+    const handleStartDrag = useCallback((item, e) => {
+        e.preventDefault();
+        document.body.style.overflow = 'hidden';
+        setDragState({ item, ghostX: e.clientX, ghostY: e.clientY });
+    }, []);
+
+    useEffect(() => {
+        if (!dragState) return;
+        const onMove = (e) =>
+            setDragState(prev => prev ? { ...prev, ghostX: e.clientX, ghostY: e.clientY } : null);
+        const onUp = (e) => {
+            document.body.style.overflow = '';
+            const rect = roomContainerRef.current?.getBoundingClientRect();
+            if (rect
+                && e.clientX >= rect.left && e.clientX <= rect.right
+                && e.clientY >= rect.top  && e.clientY <= rect.bottom
+                && updateFurnitureItem
+            ) {
+                const leftPct   = (((e.clientX - rect.left) / rect.width) * 100).toFixed(1) + '%';
+                const bottomPct = ((1 - (e.clientY - rect.top) / rect.height) * 100).toFixed(1) + '%';
+                const newStyle = { ...dragState.item.style, left: leftPct, bottom: bottomPct };
+                if (placeFurnitureFromGlobal && dragState.item.originRoomId) {
+                    placeFurnitureFromGlobal(dragState.item.instanceId, dragState.item.originRoomId, newStyle);
+                } else {
+                    updateFurnitureItem(dragState.item.instanceId, f => ({
+                        placed: true,
+                        style: newStyle,
+                    }));
+                }
+                showToast('✅ 家具已放置！');
+            }
+            setDragState(null);
+        };
+        window.addEventListener('pointermove', onMove, { passive: true });
+        window.addEventListener('pointerup',   onUp);
+        return () => {
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup',   onUp);
+        };
+    }, [dragState, updateFurnitureItem, placeFurnitureFromGlobal, showToast]);
+
+    // ── Furniture flip / stow (passed into VirtualPetDashboard) ─────
+    const handleFlipItem  = useCallback((instanceId) => {
+        updateFurnitureItem?.(instanceId, f => ({ flipped: !f.flipped }));
+    }, [updateFurnitureItem]);
+
+    const handleStowItem = useCallback((instanceId) => {
+        updateFurnitureItem?.(instanceId, { placed: false, style: {} });
+        showToast('📦 已收回物品栏');
+    }, [updateFurnitureItem, showToast]);
+
+    // ── Item use handler ──
+    const handleUseItem = useCallback((itemId) => {
+        const item = getItem(itemId);
+        if (!item) return;
+        const qty = consumables[itemId] ?? 0;
+        if (qty <= 0) return;
+        updateConsumables?.({ [itemId]: qty - 1 });
+    }, [consumables, updateConsumables]);
+
+    // ── Buy consumable item from shop ──
+    const handleBuyItem = useCallback(async (itemId, price) => {
+        if (!spendCoins) return false;
+        const itemObj = getItem(itemId);
+        if (!itemObj) return false;
+
+        const result = await spendCoins(price, `购买 ${itemObj.label}`);
+        if (result?.ok) {
+            const qty = consumables[itemId] ?? 0;
+            updateConsumables?.({ [itemId]: qty + 1 });
+            return true;
+        } else if (result?.reason === 'api_error') {
+            showToast('购买失败：网络连接异常');
+            return false;
+        } else {
+            showToast(`金币不足，需要 ${price} 币`);
+            return false;
+        }
+    }, [spendCoins, consumables, updateConsumables, showToast]);
+
+    // ── Add item to hotbar from chest ──
+    const handleAddToHotbar = useCallback((itemId, targetIdx = null) => {
+        const newSlots = [...hotbar];
+        if (targetIdx !== null && targetIdx >= 0 && targetIdx < newSlots.length) {
+            // Place into specific slot
+            newSlots[targetIdx] = itemId;
+        } else {
+            const emptyIdx = newSlots.findIndex(s => s === null);
+            if (emptyIdx === -1) { showToast('道具栏已满！请先清空一格'); return; }
+            newSlots[emptyIdx] = itemId;
+        }
+        updateHotbar?.(newSlots);
+        showToast(`✅ ${getItem(itemId)?.emoji} 已放入道具栏`);
+    }, [hotbar, updateHotbar, showToast]);
+
+    const handleClearHotbarSlot = useCallback((idx) => {
+        const newSlots = [...hotbar];
+        newSlots[idx] = null;
+        updateHotbar?.(newSlots);
+    }, [hotbar, updateHotbar]);
+
+    // ── Render ───────────────────────────────────────────────────────
     return (
-        <div className="fixed inset-0 z-[90] flex flex-col"
-            style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}
+        <div className="fixed inset-0 z-[90] p-0 md:p-8 flex justify-center items-center"
+            style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
             onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
-            {/* Modal container — slides up */}
             <div
                 ref={modalRef}
-                className="absolute inset-x-0 bottom-0 flex flex-col rounded-t-[2rem] overflow-hidden"
-                style={{
-                    height: '92vh',
-                    background: '#f8f4ef',
-                    animation: 'slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1)',
-                }}
-                onTouchStart={handleTouchStart}
-                onTouchEnd={handleTouchEnd}
+                className="w-full max-w-6xl h-[100dvh] md:h-[88vh] bg-[#F4F4F0] flex flex-col md:rounded-3xl shadow-[0_28px_80px_-15px_rgba(0,0,0,0.6)] overflow-hidden relative border-0 md:border-4 border-gray-900"
             >
-                {/* ── Header ──────────────────────────────────────── */}
-                <div className="flex-shrink-0 px-4 pt-3 pb-2 flex items-center gap-2 relative"
-                    style={{ borderBottom: '1px solid #e8e0d5' }}
-                >
-                    {/* Drag handle */}
-                    <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-slate-300 rounded-full" />
-
-                    {/* Room name */}
-                    <div className="flex-1 mt-2">
-                        <span className="text-base font-black text-slate-800">
-                            {activeRoom?.roomName ?? '我的小窝'}
+                {/* ── Header ───────────────────────────────── */}
+                <div className="flex-shrink-0 bg-white px-5 py-3 flex items-center justify-between z-10" style={{ borderBottom: '1px solid #e8e0d5' }}>
+                    <div className="flex items-center gap-3">
+                        <span className="text-lg font-black text-slate-800">
+                            {activeRoom?.petName ? `${activeRoom.petName}的小窝` : (activeRoom?.roomName ?? '我的小窝')}
                         </span>
-                        {showDecorate && (
-                            <span className="ml-2 text-[10px] font-bold text-orange-400 bg-orange-50 px-2 py-0.5 rounded-full">
+                        {decorateMode && (
+                            <span className="text-[10px] font-bold text-orange-400 bg-orange-50 px-2 py-0.5 rounded-full">
                                 装饰中
                             </span>
                         )}
                     </div>
-
-                    {/* Balance badge (shown in decorate mode) */}
-                    {showDecorate && (
-                        <div className="flex items-center gap-1 px-2.5 py-1 bg-amber-50 rounded-xl border border-amber-200 mt-2">
-                            <span className="text-sm">🪙</span>
-                            <span className="text-xs font-black text-amber-700">{balance ?? '—'}</span>
-                        </div>
-                    )}
-
-                    {/* Anti-addiction timer */}
-                    {!isLocked && !showDecorate && (
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold mt-2"
-                            style={{ background: remainingSeconds < 180 ? '#fef3c7' : '#f0fdf4',
-                                     color:      remainingSeconds < 180 ? '#92400e' : '#166534' }}
-                        >
-                            <div className="w-10 h-1.5 rounded-full overflow-hidden bg-slate-200">
-                                <div className="h-full rounded-full transition-all"
-                                    style={{ width: `${100 - progressPct}%`,
-                                             background: progressPct > 70 ? '#f87171' : '#4ade80' }} />
+                    
+                    <div className="flex items-center gap-3">
+                        {!decorateMode && (
+                            <div className="flex items-center gap-1.5 px-3 py-1 bg-[#F4F4F0] rounded-xl text-xs font-black text-slate-700">
+                                <span className="text-sm">🪙</span>
+                                <span>{balance?.toLocaleString() ?? 0}</span>
                             </div>
-                            ⏱ {remainingLabel}
-                        </div>
-                    )}
-                    {isLocked && (
-                        <div className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-500 mt-2">
-                            🔒 今日已满
-                        </div>
-                    )}
-
-                    {/* Close */}
-                    <button onClick={onClose}
-                        className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors mt-2"
-                    >
-                        <Icons.X size={16} className="text-slate-500" />
-                    </button>
-                </div>
-
-                {/* ── Room switcher dots ───────────────────────────── */}
-                <div className="flex-shrink-0 flex items-center justify-center gap-2 py-2">
-                    {rooms.map((room, idx) => (
-                        <button
-                            key={room.id}
-                            onClick={() => { setActiveRoomIdx(idx); setShowDecorate(false); }}
-                            className={`transition-all duration-200 rounded-full ${
-                                idx === activeRoomIdx
-                                    ? 'w-6 h-2.5 bg-orange-400'
-                                    : 'w-2.5 h-2.5 bg-slate-300 hover:bg-slate-400'
-                            }`}
-                            title={room.roomName}
-                        />
-                    ))}
-                    {/* Unlock button */}
-                    {canUnlock && !isLocked && (
-                        <button
-                            onClick={handleUnlock}
-                            disabled={unlocking || (balance ?? 0) < nextCost}
-                            className={`w-7 h-7 rounded-full border-2 border-dashed flex items-center justify-center transition-all ${
-                                (balance ?? 0) >= nextCost
-                                    ? 'border-orange-300 text-orange-400 hover:border-orange-500'
-                                    : 'border-slate-200 text-slate-300 cursor-not-allowed'
-                            }`}
-                            title={`解锁新房间 (${nextCost} 币)`}
-                        >
-                            {unlocking
-                                ? <div className="w-3 h-3 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" />
-                                : <Icons.Plus size={14} />}
+                        )}
+                        <button onClick={onClose}
+                            className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all text-slate-400 hover:text-slate-600">
+                            <Icons.X size={18} />
                         </button>
-                    )}
+                    </div>
                 </div>
 
-                {/* ── Locked overlay ───────────────────────────────── */}
-                {isLocked && (
-                    <div className="absolute inset-0 z-30 flex flex-col items-center justify-center"
-                        style={{ background: 'rgba(248,244,239,0.93)', backdropFilter: 'blur(4px)', top: '80px' }}
-                    >
-                        <div className="text-6xl mb-4 animate-bounce">😴</div>
-                        <h3 className="text-xl font-black text-slate-700 mb-2">小猫已经休息啦</h3>
-                        <p className="text-slate-500 text-sm text-center px-8 mb-6">
-                            今天的互动时间到了哦！<br />
-                            完成学习任务可以解锁更多时间 🎯
-                        </p>
-                        <div className="flex flex-col gap-3 w-48">
-                            <button onClick={onClose}
-                                className="w-full py-3 bg-orange-400 text-white rounded-2xl font-black text-sm shadow-md"
-                            >去完成任务！</button>
-                            <button onClick={onClose}
-                                className="w-full py-2.5 bg-slate-100 text-slate-500 rounded-2xl font-bold text-sm"
-                            >明天再来</button>
-                        </div>
-                    </div>
-                )}
-
-                {/* ── Main room + shop layout ──────────────────────── */}
-                <div className={`flex-1 overflow-hidden flex flex-col min-h-0 transition-all duration-300`}>
-                    {/* Room viewport — shrinks when shop is open */}
-                    <div className={`overflow-hidden transition-all duration-300 flex-shrink-0 ${
-                        showDecorate ? 'h-[48%]' : 'flex-1'
-                    }`}>
+                {/* ── Main Dashboard ──────────────────────────────── */}
+                <div
+                    className="overflow-hidden flex-1 relative flex flex-col"
+                    ref={roomContainerRef}
+                    onClick={pendingPlace ? handleRoomTapPlace : undefined}
+                    style={{ cursor: pendingPlace ? 'crosshair' : 'default' }}
+                >
+                    <div style={{ display: activeOverlay ? 'none' : 'flex', flex: 1, flexDirection: 'column', minHeight: 0 }}>
                         {activeRoom && (
                             <VirtualPetDashboard
                                 key={activeRoom.id}
@@ -227,80 +298,111 @@ export default function PetRoomModal({
                                 onSkinChange={updateSkin}
                                 onFurnitureChange={updateFurniture}
                                 onPetVitalsChange={updatePetVitals}
+                                onPetNameChange={updatePetName}
                                 embedded={true}
-                                showDecorate={showDecorate}
+                                showDecorate={decorateMode}
+                                onDecorateToggle={() => setDecorateMode(!decorateMode)}
                                 kidId={kidId}
-                                newFurnitureToAdd={newFurnitureToAdd}
+                                newFurnitureToAdd={null}
+                                decorateMode={decorateMode}
+                                onFlipFurniture={handleFlipItem}
+                                onStowFurniture={handleStowItem}
+                                consumables={consumables}
+                                hotbar={hotbar}
+                                onUseItem={handleUseItem}
+                                onOpenChest={() => setActiveOverlay('backpack')}
+                                onOpenShop={() => setActiveOverlay('shop')}
+                                balance={balance ?? 0}
+                                onBuyConsumable={handleBuyItem}
+                                onHotbarChange={updateHotbar}
                             />
                         )}
                     </div>
-
-                    {/* Furniture shop — slides up in decorate mode */}
-                    {showDecorate && (
-                        <div className="flex-1 min-h-0 border-t border-slate-200">
-                            <FurnitureShop
-                                balance={balance ?? 0}
-                                onBuyFurniture={handleBuyFurniture}
-                                roomSkinIdx={activeRoom?.skinIdx ?? 0}
-                                totalRoomSkins={ROOM_VARIANTS.length}
-                                disabled={isLocked}
-                            />
-                        </div>
-                    )}
                 </div>
 
-                {/* ── Bottom action bar ────────────────────────────── */}
-                {!isLocked && (
-                    <div className="flex-shrink-0 px-4 py-2.5 flex items-center gap-3"
-                        style={{ borderTop: showDecorate ? 'none' : '1px solid #e8e0d5', background: '#f8f4ef' }}
-                    >
-                        <button
-                            onClick={handleToggleDecorate}
-                            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-sm transition-all active:scale-95 ${
-                                showDecorate
-                                    ? 'bg-orange-400 text-white shadow-md'
-                                    : 'bg-white text-slate-600 border border-slate-200 hover:border-orange-300'
-                            }`}
-                        >
-                            {showDecorate ? '✅ 完成装饰' : '🎨 装饰房间'}
-                        </button>
 
-                        {showDecorate && (
-                            <span className="text-[11px] text-slate-400 font-bold flex-1">
-                                👆 点击背景换色 · 点家具操作
-                            </span>
-                        )}
-
-                        {!showDecorate && (
-                            <div className="flex-1 text-right text-xs text-slate-400 font-bold">
-                                {rooms.length} / 4 个房间
+                {/* ── Unified Shop overlay (家具 + 道具 + 背包) ── */}
+                {activeOverlay === 'shop' && createPortal(
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-0 md:p-6" style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }}>
+                        <div className="w-full h-full md:max-w-2xl md:h-[85dvh] flex flex-col md:rounded-3xl shadow-2xl overflow-hidden animate-slide-up-fast md:animate-none md:border-4 border-gray-900 bg-[#F4F4F0]">
+                            <div className="flex-shrink-0 flex items-center justify-between px-5 py-3 md:py-4 bg-white" 
+                                style={{ borderBottom: '3px solid #1a1a1a', paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
+                                <span className="font-black text-lg text-gray-900">🏠 家具商城</span>
+                                <button onClick={() => setActiveOverlay(null)}
+                                    className="w-8 h-8 rounded-full flex items-center justify-center transition-all bg-gray-100 hover:bg-gray-200"
+                                    style={{ border: '2px solid #1a1a1a', boxShadow: '2px 2px 0 #1a1a1a' }}>
+                                    <Icons.X size={15} className="text-gray-900" strokeWidth={3} />
+                                </button>
                             </div>
+                            <div className="flex-1 overflow-hidden relative">
+                                    <FurnitureShop
+                                        balance={balance ?? 0}
+                                        onBuyFurniture={handleBuyFurniture}
+                                        roomSkinIdx={activeRoom?.skinIdx ?? 0}
+                                        totalRoomSkins={ROOM_VARIANTS.length}
+                                        disabled={isLocked}
+                                        ownedCounts={ownedCounts}
+                                        onBackpackItemTap={handlePlaceFurnitureFromInventory}
+                                    />
+                                </div>
+                        </div>
+                    </div>,
+                    document.body
+                )}
+
+                {/* ── Placement floatbar — shown when pendingPlace is set ── */}
+                {pendingPlace && (
+                    <div
+                        className="absolute top-0 left-0 right-0 z-[98] flex items-center gap-3 px-4 py-3"
+                        style={{
+                            background: 'rgba(26,26,26,0.92)',
+                            backdropFilter: 'blur(8px)',
+                            borderBottom: '2px solid #4DD9C0',
+                        }}
+                    >
+                        {pendingPlace.src && (
+                            <img
+                                src={pendingPlace.src}
+                                alt={pendingPlace.label}
+                                style={{ imageRendering: 'pixelated', width: 32, height: 32, objectFit: 'contain' }}
+                            />
                         )}
+                        <span className="flex-1 text-sm font-black" style={{ color: '#4DD9C0' }}>
+                            🛠 点击房间任意位置放下「{pendingPlace.label || pendingPlace.type}」
+                        </span>
+                        <button
+                            onClick={() => setPendingPlace(null)}
+                            className="px-3 py-1 rounded-xl text-xs font-black"
+                            style={{ background: 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}
+                        >
+                            取消
+                        </button>
                     </div>
                 )}
 
-                {/* ── Toast notification ───────────────────────────── */}
+                {/* ── Backpack overlay ── */}
+                {activeOverlay === 'backpack' && (
+                    <BackpackModal
+                        onClose={() => setActiveOverlay(null)}
+                        furnitureItems={backpack}
+                        onPlaceFurniture={handlePlaceFurnitureFromInventory}
+                    />
+                )}
+
+                {/* Toast */}
                 {toastMsg && (
-                    <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-50
-                        bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-2xl
-                        shadow-xl opacity-90 whitespace-nowrap animate-bounce-in">
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-black shadow-xl border border-slate-700 whitespace-nowrap z-[100]">
                         {toastMsg}
                     </div>
                 )}
-            </div>
 
-            <style>{`
-                @keyframes slideUp {
-                    from { transform: translateY(100%); }
-                    to   { transform: translateY(0); }
-                }
-                @keyframes bounce-in {
-                    0%   { opacity: 0; transform: translateX(-50%) scale(0.85); }
-                    60%  { transform: translateX(-50%) scale(1.05); }
-                    100% { opacity: 0.9; transform: translateX(-50%) scale(1); }
-                }
-                .animate-bounce-in { animation: bounce-in 0.3s ease-out; }
-            `}</style>
+                {/* Ghost drag */}
+                {dragState && (
+                    <div className="fixed z-[200] pointer-events-none" style={{ left: dragState.ghostX - 30, top: dragState.ghostY - 30, width: 60, height: 60 }}>
+                        <img src={dragState.item.src} alt="drag" className="w-full h-full object-contain opacity-80" style={{ imageRendering: 'pixelated' }} />
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

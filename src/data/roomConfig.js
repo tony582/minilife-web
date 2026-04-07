@@ -29,23 +29,15 @@ export const FURNITURE_VARIANTS = {
     '/pets/furniture/bed_dark.png',
     '/pets/furniture/bed.png',
   ],
-  // ── Bookshelves ───────────────────────────────────────────────────────────
-  bookshelf: [
-    '/pets/furniture/bookshelf.png',
-    '/pets/furniture/bookshelf_blue.png',
-    '/pets/furniture/bookshelf_green.png',
-    '/pets/furniture/bookshelf_orange.png',
-    '/pets/furniture/bookshelf_purple.png',
-    '/pets/furniture/bookshelf_tan.png',
-  ],
+  // ── Shelf (双层书架) ───────────────────────────────────────────────────────
   shelf: [
-    '/pets/furniture/bookshelf_tan_fixed.png',
-    '/pets/furniture/bookshelf_blue.png',
-    '/pets/furniture/bookshelf_green.png',
-    '/pets/furniture/bookshelf_orange.png',
-    '/pets/furniture/bookshelf_purple.png',
-    '/pets/furniture/bookshelf.png',
+    '/pets/furniture/shelf_beige.png',
+    '/pets/furniture/shelf_blue.png',
+    '/pets/furniture/shelf_gold.png',
+    '/pets/furniture/shelf_green.png',
+    '/pets/furniture/shelf_purple.png',
   ],
+
   // ── Yarn Balls ────────────────────────────────────────────────────────────
   ball: [
     '/pets/furniture/ball.png',
@@ -59,35 +51,38 @@ export const FURNITURE_VARIANTS = {
     '/pets/furniture/ball_blue.png',
     '/pets/furniture/ball_green.png',
   ],
-  // ── Wall Frames ───────────────────────────────────────────────────────────
-  frame_art: [
-    '/pets/furniture/frame_art.png',
+  // ── Colored Window Frames — 4 colors ─────────────────────────────────────
+  window_frame: [
+    '/pets/furniture/frame_light.png',
     '/pets/furniture/frame_brown.png',
     '/pets/furniture/frame_gray.png',
-    '/pets/furniture/frame_light.png',
-    '/pets/furniture/frame_mirror.png',
-    '/pets/furniture/frame_peach.png',
-    '/pets/furniture/frame_pink.png',
-    '/pets/furniture/frame_square.png',
+    '/pets/furniture/frame_tan.png',
   ],
+
+
+
   // ── Plants ────────────────────────────────────────────────────────────────
   plant_tree: [
-    '/pets/furniture/plant_tree.png',
-    '/pets/furniture/plant_tall.png',
+    '/pets/furniture/plant_large_gray.png',
+    '/pets/furniture/plant_large_black.png',
+    '/pets/furniture/plant_large_blue.png',
+    '/pets/furniture/plant_large_purple.png',
   ],
+
   plant_desk: [
-    '/pets/furniture/plant_succulent.png',
-    '/pets/furniture/plant_art.png',
-    '/pets/furniture/plant_small.png',
+    '/pets/furniture/plant_pot_pink.png',
+    '/pets/furniture/plant_pot_cream.png',
+    '/pets/furniture/plant_pot_blue.png',
+    '/pets/furniture/plant_pot_gray.png',
+    '/pets/furniture/plant_pot_navy.png',
+    '/pets/furniture/plant_pot_yellow.png',
   ],
-  // ── Windows ───────────────────────────────────────────────────────────────
+
+  // ── Windows with Curtains ───────────────────────────────────────────────────
   window_curtain: [
     '/pets/furniture/window_curtain_white.png',
     '/pets/furniture/window_curtain_red.png',
     '/pets/furniture/window_curtain_blue.png',
-    '/pets/furniture/railing_window.png',
-    '/pets/furniture/window.png',
-    '/pets/furniture/window_plain.png',
   ],
   window_blind: [
     '/pets/furniture/window_blind_purple.png',
@@ -149,13 +144,11 @@ export const FURNITURE_VARIANTS = {
     '/pets/furniture/heart_cream.png',
     '/pets/furniture/heart_teal.png',
   ],
-  // ── Plant Wall Painting ───────────────────────────────────────────────────
-  painting_plant: [
-    '/pets/furniture/painting_plant.png',
-  ],
-  // ── Cat Food Bags ─────────────────────────────────────────────────────────
-  catfood: [
+  // ── Cat Food Bags (split into small and large) ───────────────────────────
+  catfood_small: [
     '/pets/furniture/catfood_small.png',
+  ],
+  catfood_large: [
     '/pets/furniture/catfood_large.png',
   ],
   // ── Cat Cans (8 colors) ───────────────────────────────────────────────────
@@ -189,209 +182,44 @@ export const FURNITURE_VARIANTS = {
     '/pets/furniture/cube_3.png',
     '/pets/furniture/cube_4.png',
   ],
+  // ── Cat Litter Box ────────────────────────────────────────────────────────
+  litter: [
+    '/pets/furniture/litter_tan.png',
+    '/pets/furniture/litter_white.png',
+  ],
+  // ── Mouse Toy ─────────────────────────────────────────────────────────────
+  mouse_toy: [
+    '/pets/furniture/mouse_toy.png',
+  ],
+  // ── Decorative Paintings (painting_cactus.png removed — broken image) ─────
+  painting_plant: [ '/pets/furniture/painting_plant.png' ],
+  painting_stripe: [ '/pets/furniture/painting_stripe.png' ],
+  painting_swirl: [ '/pets/furniture/painting_swirl.png' ],
 };
 
 export const DEFAULT_ROOM = {
-  "base": "/pets/room/Room1_base.png",
-  "furniture": [
-    {
-      "id": "window_curtain",
-      "src": "/pets/furniture/railing_window.png",
-      "style": {
-        "bottom": "52.315%",
-        "left": "17.719%",
-        "width": "22.000%"
-      },
-      "zIndex": 1,
-      "layer": "wall",
-      "swappable": true,
-      "category": "window"
-    },
-    {
-      "id": "shelf",
-      "src": "/pets/furniture/bookshelf_tan_fixed.png",
-      "style": {
-        "bottom": "34.686%",
-        "left": "5.224%",
-        "width": "17.000%"
-      },
-      "zIndex": 2,
-      "layer": "floor",
-      "swappable": true,
-      "category": "furniture"
-    },
-    {
-      "id": "plant_tree",
-      "src": "/pets/furniture/plant_tree.png",
-      "style": {
-        "bottom": "42.196%",
-        "left": "21.620%",
-        "width": "10.000%"
-      },
-      "zIndex": 2,
-      "layer": "floor",
-      "swappable": true,
-      "category": "plant"
-    },
-    {
-      "id": "plant_desk",
-      "src": "/pets/furniture/plant_succulent.png",
-      "style": {
-        "bottom": "50.468%",
-        "left": "13.554%",
-        "width": "4.500%"
-      },
-      "zIndex": 3,
-      "layer": "floor",
-      "swappable": true,
-      "category": "plant"
-    },
-    {
-      "id": "frame_art",
-      "src": "/pets/furniture/frame_art.png",
-      "style": {
-        "bottom": "39.748%",
-        "left": "69.819%",
-        "width": "10.742%"
-      },
-      "zIndex": 1,
-      "layer": "wall",
-      "swappable": true,
-      "category": "wall_art"
-    },
-    {
-      "id": "painting_pink",
-      "src": "/pets/furniture/item_38x62.png",
-      "style": {
-        "bottom": "70.894%",
-        "left": "40.460%",
-        "width": "7.422%"
-      },
-      "zIndex": 2,
-      "layer": "floor",
-      "swappable": true,
-      "category": "plant"
-    },
-    {
-      "id": "scratch_post",
-      "src": "/pets/furniture/scratch_post.png",
-      "style": {
-        "bottom": "64.256%",
-        "left": "56.639%",
-        "width": "11.914%"
-      },
-      "zIndex": 3,
-      "layer": "floor",
-      "swappable": true,
-      "category": "furniture"
-    },
-    {
-      "id": "item_39x89",
-      "src": "/pets/furniture/item_39x89.png",
-      "style": {
-        "bottom": "58.030%",
-        "left": "72.858%",
-        "width": "7.617%"
-      },
-      "zIndex": 4,
-      "layer": "floor",
-      "swappable": true,
-      "category": "furniture"
-    },
-    {
-      "id": "ball",
-      "src": "/pets/furniture/ball.png",
-      "style": {
-        "bottom": "50.232%",
-        "left": "62.266%",
-        "width": "3.320%"
-      },
-      "zIndex": 5,
-      "layer": "floor",
-      "swappable": true,
-      "category": "toy"
-    },
-    {
-      "id": "bowl",
-      "src": "/pets/furniture/bowl.png",
-      "style": {
-        "bottom": "47.653%",
-        "left": "31.045%",
-        "width": "4.688%"
-      },
-      "zIndex": 6,
-      "layer": "floor",
-      "swappable": true,
-      "category": "decoration"
-    },
-    {
-      "id": "bed",
-      "src": "/pets/furniture/bed_pink.png",
-      "style": {
-        "bottom": "50.240%",
-        "left": "39.808%",
-        "width": "21.484%"
-      },
-      "zIndex": 7,
-      "layer": "floor",
-      "swappable": true,
-      "category": "bed"
-    },
-    {
-      "id": "bowl_water",
-      "src": "/pets/furniture/bowl_water.png",
-      "style": {
-        "bottom": "50.349%",
-        "left": "36.588%",
-        "width": "4.297%"
-      },
-      "zIndex": 8,
-      "layer": "floor",
-      "swappable": true,
-      "category": "bowl"
-    },
-    {
-      "id": "ball_2",
-      "src": "/pets/furniture/ball_2.png",
-      "style": {
-        "bottom": "44.860%",
-        "left": "49.239%",
-        "width": "3.320%"
-      },
-      "zIndex": 9,
-      "layer": "floor",
-      "swappable": true,
-      "category": "toy"
-    },
-    {
-      "id": "bookshelf",
-      "src": "/pets/furniture/bookshelf.png",
-      "style": {
-        "bottom": "33.674%",
-        "left": "78.904%",
-        "width": "12.500%"
-      },
-      "zIndex": 10,
-      "layer": "floor",
-      "swappable": true,
-      "category": "furniture"
-    },
-    {
-      "id": "bowl_food",
-      "src": "/pets/furniture/bowl_blue_empty_exact.png",
-      "srcFull": "/pets/furniture/bowl_blue_full_exact.png",
-      "style": {
-        "bottom": "20.195%",
-        "left": "55.285%",
-        "width": "8.398%"
-      },
-      "zIndex": 11,
-      "layer": "floor",
-      "swappable": true,
-      "category": "bowl",
-      "interactive": true
-    }
-  ]
+  base: '/pets/rooms/room_01.png',
+  furniture: [
+    { "id": "bed_1", "type": "bed", "src": "/pets/furniture/bed_pink.png", "style": { "bottom": "49.905%", "left": "39.875%", "width": "21.484%", "zIndex": 7 }, "zIndex": 7, "skinIdx": 0, "placed": true, "flipped": false, "instanceId": "item_default_1" },
+    { "id": "bowl_food_1", "type": "bowl_food", "src": "/pets/furniture/bowl_blue_empty_exact.png", "srcFull": "/pets/furniture/bowl_blue_full_exact.png", "interactive": true, "style": { "bottom": "17.920%", "left": "46.772%", "width": "8.398%", "zIndex": 11 }, "zIndex": 11, "skinIdx": 0, "placed": true, "flipped": false, "instanceId": "item_default_2" },
+    { "id": "window_frame_1", "type": "window_frame", "src": "/pets/furniture/frame_light.png", "style": { "bottom": "59.363%", "left": "67.226%", "width": "10.000%", "zIndex": 1 }, "zIndex": 1, "skinIdx": 0, "placed": true, "flipped": false, "instanceId": "item_default_3" },
+    { "id": "painting_plant_1", "type": "painting_plant", "src": "/pets/furniture/painting_plant.png", "style": { "bottom": "51.072%", "left": "83.062%", "width": "8.000%", "zIndex": 1 }, "zIndex": 1, "skinIdx": 0, "placed": true, "flipped": false, "instanceId": "item_default_4" },
+    { "id": "litter_1", "type": "litter", "src": "/pets/furniture/litter_tan.png", "style": { "bottom": "35.308%", "left": "78.177%", "width": "10.000%", "zIndex": 5 }, "zIndex": 5, "skinIdx": 0, "placed": true, "flipped": false, "instanceId": "item_default_5" },
+    { "id": "shelf_1", "type": "shelf", "src": "/pets/furniture/shelf_beige.png", "style": { "bottom": "35.617%", "left": "10.003%", "width": "17.000%", "zIndex": 2 }, "zIndex": 2, "skinIdx": 0, "placed": true, "flipped": false, "instanceId": "item_default_6" },
+    { "id": "window_curtain_1", "type": "window_curtain", "src": "/pets/furniture/window_curtain_white.png", "style": { "bottom": "55.237%", "left": "26.007%", "width": "22.000%", "zIndex": 1 }, "zIndex": 1, "skinIdx": 0, "placed": true, "flipped": false, "instanceId": "item_default_7" },
+    { "id": "post_1", "type": "post", "src": "/pets/furniture/post_lime.png", "style": { "bottom": "41.887%", "left": "70.218%", "width": "8.000%", "zIndex": 3 }, "zIndex": 3, "skinIdx": 0, "placed": true, "flipped": false, "instanceId": "item_default_8" },
+    { "id": "plant_tree_1", "type": "plant_tree", "src": "/pets/furniture/plant_large_gray.png", "style": { "bottom": "43.385%", "left": "25.296%", "width": "10.000%", "zIndex": 2 }, "zIndex": 2, "skinIdx": 0, "placed": true, "flipped": false, "instanceId": "item_default_9" },
+    { "id": "plant_desk_1", "type": "plant_desk", "src": "/pets/furniture/plant_pot_pink.png", "style": { "bottom": "51.859%", "left": "18.157%", "width": "4.500%", "zIndex": 3 }, "zIndex": 3, "skinIdx": 0, "placed": true, "flipped": false, "instanceId": "item_default_10" },
+    
+    // Backups for the backpack
+    { "id": "window_frame_1_bp", "type": "window_frame", "src": "/pets/furniture/frame_light.png", "style": { "bottom": "50%", "left": "50%", "width": "10.000%", "zIndex": 1 }, "zIndex": 1, "skinIdx": 0, "placed": false, "flipped": false, "instanceId": "item_default_bp_3" },
+    { "id": "painting_plant_1_bp", "type": "painting_plant", "src": "/pets/furniture/painting_plant.png", "style": { "bottom": "50%", "left": "50%", "width": "8.000%", "zIndex": 1 }, "zIndex": 1, "skinIdx": 0, "placed": false, "flipped": false, "instanceId": "item_default_bp_4" },
+    { "id": "shelf_1_bp", "type": "shelf", "src": "/pets/furniture/shelf_beige.png", "style": { "bottom": "50%", "left": "50%", "width": "17.000%", "zIndex": 2 }, "zIndex": 2, "skinIdx": 0, "placed": false, "flipped": false, "instanceId": "item_default_bp_6" },
+    { "id": "window_curtain_1_bp", "type": "window_curtain", "src": "/pets/furniture/window_curtain_white.png", "style": { "bottom": "50%", "left": "50%", "width": "22.000%", "zIndex": 1 }, "zIndex": 1, "skinIdx": 0, "placed": false, "flipped": false, "instanceId": "item_default_bp_7" },
+    { "id": "post_1_bp", "type": "post", "src": "/pets/furniture/post_lime.png", "style": { "bottom": "50%", "left": "50%", "width": "8.000%", "zIndex": 3 }, "zIndex": 3, "skinIdx": 0, "placed": false, "flipped": false, "instanceId": "item_default_bp_8" },
+    { "id": "plant_tree_1_bp", "type": "plant_tree", "src": "/pets/furniture/plant_large_gray.png", "style": { "bottom": "50%", "left": "50%", "width": "10.000%", "zIndex": 2 }, "zIndex": 2, "skinIdx": 0, "placed": false, "flipped": false, "instanceId": "item_default_bp_9" },
+    { "id": "plant_desk_1_bp", "type": "plant_desk", "src": "/pets/furniture/plant_pot_pink.png", "style": { "bottom": "50%", "left": "50%", "width": "4.500%", "zIndex": 3 }, "zIndex": 3, "skinIdx": 0, "placed": false, "flipped": false, "instanceId": "item_default_bp_10" }
+  ],
 };
 
 export const FURNITURE_CATALOG = {
@@ -401,8 +229,22 @@ export const FURNITURE_CATALOG = {
 };
 
 export const ROOM_BASES = Object.fromEntries(
-  Array.from({length: 15}, (_, i) => [
-    `room${i+1}`,
-    `/pets/rooms/room_${String(i+1).padStart(2,'0')}.png`,
+  Array.from({ length: 15 }, (_, i) => [
+    `room${i + 1}`,
+    `/pets/rooms/room_${String(i + 1).padStart(2, '0')}.png`,
   ])
 );
+
+export const FURNITURE_VARIANT_LABELS = {
+    catcan:        ['梅花肉味','金枪鱼味','鸡肉味','熏火腿味','三文鱼味','海藻虾味','深海鱼味','海苔鲣鱼味'],
+    bed:           ['粉色','蓝色','蓝绿色','紫色','灰色','深色','原色'],
+    frame_art:     ['棕色','灰色','浅色','镜面','蜜桃色','粉色','方形'],
+    pendant_heart: ['棕色','灰色','蓝色','浅棕','白色','紫色','粉色','米色','蓝绿'],
+    chair:         ['米色','灰色','藕荷色','蓝绿色','薰衣草色'],
+    plant_desk:    ['粉色盆','米色盆','蓝色盆','灰色盆','深蓝盆','黄色盆'],
+    plant_tree:    ['灰盆','黑盆','蓝盆','紫盆'],
+    window_curtain:['白色窗帘','红色窗帘','蓝色窗帘'],
+    window_blind:  ['紫色百叶','深色百叶','蓝绿百叶','白色百叶'],
+    window_frame:  ['白色','棕色','灰色','棕褐色'],
+    shelf:         ['米色','蓝色','金色','绿色','紫色'],
+};

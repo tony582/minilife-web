@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useDataContext }    from '../../context/DataContext.jsx';
 import { useUIContext }      from '../../context/UIContext.jsx';
 import { Icons, AvatarDisplay } from '../../utils/Icons';
@@ -7,7 +8,7 @@ import { getSpiritForm, getSpiritPrivileges, getCurrentTerm } from '../../utils/
 import { useNavigationStore }    from '../../stores/navigationStore';
 import { ACHIEVEMENTS }          from '../../utils/achievements';
 import PetBoxTeaser              from '../../components/VirtualPet/PetBoxTeaser';
-import VirtualPetDashboard       from '../../components/VirtualPet/VirtualPetDashboard';
+import PetRoomModal              from '../../components/VirtualPet/PetRoomModal';
 import { ExpHistoryModal }       from './ExpHistoryModal';
 import { LevelPrivilegeModal }   from '../../components/modals/LevelPrivilegeModal';
 import { usePetRooms }           from '../../hooks/usePetRooms';
@@ -52,8 +53,8 @@ const StatCard = ({ Icon, label, value, unit, accent = '#FF8C42' }) => (
 );
 
 /* ─── Pet section ─────────────────────────── */
-function PetCard({ activeKid, onOpenRoom }) {
-    const { rooms, activeRoom, activeRoomIdx, setActiveRoomIdx, loading } = usePetRooms(activeKid?.id);
+function PetCard({ activeKid, onOpenRoom, petRooms }) {
+    const { rooms, activeRoom, activeRoomIdx, setActiveRoomIdx, loading } = petRooms;
     const [timedOut, setTimedOut] = useState(false);
     useEffect(() => { const t = setTimeout(() => setTimedOut(true), 5000); return () => clearTimeout(t); }, []);
 
@@ -87,8 +88,7 @@ function PetCard({ activeKid, onOpenRoom }) {
                 <div style={{ flex: 1, padding: '16px 18px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                         <div>
-                            <div style={{ fontWeight: 900, fontSize: 14, color: '#1C1410' }}>{activeRoom?.roomName || '我的小窝'}</div>
-                            {activeKid.spirit_name && <div style={{ fontSize: 10, fontWeight: 700, color: '#B0A090', marginTop: 1 }}>「{activeKid.spirit_name}」</div>}
+                            <div style={{ fontWeight: 900, fontSize: 14, color: '#1C1410' }}>{petRooms.activeRoom?.petName ? `${petRooms.activeRoom.petName}的小窝` : (petRooms.activeRoom?.roomName || '我的小窝')}</div>
                         </div>
                         <button onClick={onOpenRoom} style={{ fontSize: 11, fontWeight: 900, color: '#FF8C42', background: '#FFF3EB', border: 'none', padding: '5px 12px', borderRadius: 99, cursor: 'pointer' }}>
                             进入
@@ -172,10 +172,12 @@ export const KidProfileTab = () => {
     const { parentSettings }                  = useNavigationStore();
     const { setShowAvatarPickerModal }         = useUIContext();
 
+    // ── All hooks MUST be called before any early return ──
     const [badgeDrawer,             setBadgeDrawer]             = useState(null);
     const [showPetRoom,             setShowPetRoom]             = useState(false);
     const [showExpModal,            setShowExpModal]            = useState(false);
     const [showLevelPrivilegeModal, setShowLevelPrivilegeModal] = useState(false);
+    const petRooms = usePetRooms(activeKidId);   // use activeKidId directly
 
     const activeKid = kids.find(k => k.id === activeKidId);
     if (!activeKid) return null;
@@ -203,7 +205,34 @@ export const KidProfileTab = () => {
         <div style={{ background: '#F9F6F2', minHeight: '100%', paddingBottom: 110 }}>
             <style>{CSS}</style>
 
-            {showPetRoom  && <VirtualPetDashboard activeKid={activeKid} onClose={() => setShowPetRoom(false)} />}
+            {showPetRoom && createPortal(
+                <PetRoomModal
+                    rooms={petRooms.rooms}
+                    activeRoomIdx={petRooms.activeRoomIdx}
+                    setActiveRoomIdx={petRooms.setActiveRoomIdx}
+                    updateSkin={petRooms.updateSkin}
+                    updateFurniture={petRooms.updateFurniture}
+                    updatePetVitals={petRooms.updatePetVitals}
+                    updatePetName={petRooms.updatePetName}
+                    unlockRoom={petRooms.unlockRoom}
+                    kidId={activeKid.id}
+                    activeKid={activeKid}
+                    onClose={() => setShowPetRoom(false)}
+                    isLocked={false}
+                    remainingLabel="∞"
+                    remainingSeconds={9999}
+                    limitSeconds={9999}
+                    progressPct={0}
+                    backpack={petRooms.globalBackpack}
+                    updateFurnitureItem={petRooms.updateFurnitureItem}
+                    placeFurnitureFromGlobal={petRooms.placeFurnitureFromGlobal}
+                    consumables={petRooms.consumables}
+                    hotbar={petRooms.hotbar}
+                    updateConsumables={petRooms.updateConsumables}
+                    updateHotbar={petRooms.updateHotbar}
+                />,
+                document.body
+            )}
             <BadgeDrawer   badge={badgeDrawer} onClose={() => setBadgeDrawer(null)} />
             {showExpModal && <ExpHistoryModal activeKid={activeKid} transactions={transactions} nextLevelExp={nextLevelExp} onClose={() => setShowExpModal(false)} />}
             <LevelPrivilegeModal isOpen={showLevelPrivilegeModal} onClose={() => setShowLevelPrivilegeModal(false)} activeKid={activeKid} currentForm={form} />
@@ -307,7 +336,7 @@ export const KidProfileTab = () => {
                     </button>
                 </div>
                 <div style={{ marginBottom: 24 }}>
-                    <PetCard activeKid={activeKid} onOpenRoom={() => setShowPetRoom(true)} />
+                <PetCard activeKid={activeKid} onOpenRoom={() => setShowPetRoom(true)} petRooms={petRooms} />
                 </div>
 
                 {/* ── ACHIEVEMENTS ─────────────────────────────── */}
