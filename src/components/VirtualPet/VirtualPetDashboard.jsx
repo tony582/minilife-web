@@ -233,7 +233,12 @@ export default function VirtualPetDashboard({
     const [petLastFed, setPetLastFed] = useState(roomData?.petLastFed ?? '');
     const [poops, setPoops] = useState([]);
     const [isSick, setIsSick] = useState(false);
-    const [isSleeping, setIsSleeping] = useState(false);
+    const [isSleeping, setIsSleeping] = useState(() => {
+        const initialPhase = getTimePhase();
+        // Only keep sleeping if it's actually late night right now
+        if (initialPhase === 'lateNight') return true;
+        return false;
+    });
     const [embeddedToast, setEmbeddedToast] = useState('');
     const showToastEmbed = useCallback((msg) => {
         setEmbeddedToast(msg);
@@ -661,17 +666,30 @@ export default function VirtualPetDashboard({
     const [activeEvent, setActiveEvent] = useState(null); // { type, timer }
     const eventTimerRef = useRef(null);
 
-    // Memoize bed position so it doesn't create a new object every render
+    // Memoize bed position so it perfectly tracks the dynamic furniture placement
     const bedPosition = useMemo(() => {
-        const bed = roomConfig.furniture.find(f => f.id === 'bed');
-        if (!bed) return null;
-        const bedWidthPct = parseFloat(bed.style.width);
-        const bedLeftPct = parseFloat(bed.style.left);
-        const bedBottomPct = parseFloat(bed.style.bottom);
+        // Robust lookup for the bed regardless of legacy database schema nuances
+        const bed = roomConfig.furniture.find(f => {
+            if (f.placed === false) return false; // Ignore stowed items
+            const hasBedKeyword = (str) => str && str.toLowerCase().includes('bed');
+            return hasBedKeyword(f.type) || hasBedKeyword(f.id) || hasBedKeyword(f.src);
+        });
+        if (!bed || !bed.style) return null;
+        const parseVal = (str, fallback) => {
+            const val = parseFloat(str);
+            return isNaN(val) ? fallback : val;
+        };
+        // Retrieve width (fallback to 20), left (fallback to 40), bottom (fallback to 50) safely
+        const bedWidthPct = parseVal(bed.style.width, 20);
+        const bedLeftPct = parseVal(bed.style.left, 40);
+        const bedBottomPct = parseVal(bed.style.bottom, 50);
         const bedHeightPct = bedWidthPct * (82 / 110);
         return {
-            xPct: (bedLeftPct + bedWidthPct / 2) / 100,
-            yPct: (bedBottomPct + bedHeightPct * 0.55) / 100
+            xPct: (bedLeftPct + bedWidthPct / 2) / 100 + (bed.flipped ? -0.01 : 0.01), // Shift 1% towards the pillow
+            // Since the Pixel engine draws the cat UPWARDS from its feet (translateY(-100%)), 
+            // we anchor its feet to the lower front edge of the mattress (0.15) rather than the center (0.5).
+            // This perfectly centers the cat's body visually on the mattress.
+            yPct: (bedBottomPct + bedHeightPct * 0.15) / 100
         };
     }, [roomConfig]);
 
@@ -699,7 +717,7 @@ export default function VirtualPetDashboard({
         { 
             type: 'nightmare', weight: 10, emoji: '😱', needsSleep: true,
             speech: '做了噩梦...好可怕！', 
-            onTrigger: () => { setStats(s => ({ ...s, mood: Math.max(0, s.mood - 10) })); setIsSleeping(false); },
+            onTrigger: () => { setStats(s => ({ ...s, mood: Math.max(0, s.mood - 10) })); },
         },
     ], []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -1039,7 +1057,7 @@ export default function VirtualPetDashboard({
     const currentZone = getZoneStatus();
 
     const modalContent = (
-        <div className="fixed inset-0 z-[9999] p-0 md:p-8 flex justify-center items-center bg-gray-900/60 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-[99999] p-0 md:p-8 flex justify-center items-center bg-gray-900/60 backdrop-blur-sm animate-fade-in">
             <div className="w-full max-w-4xl h-[100dvh] md:h-auto md:max-h-[95vh] bg-[#F4F4F0] flex flex-col md:rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden relative border-0 md:border-4 border-gray-900">
                 
                 {/* ── HEAD BAR ── */}

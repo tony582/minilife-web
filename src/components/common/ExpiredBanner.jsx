@@ -8,7 +8,7 @@ import { Icons } from '../../utils/Icons';
 export const ExpiredBanner = ({ onRenew }) => {
     return (
         <div
-            className="sticky top-0 z-[9998] flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-white cursor-pointer select-none"
+            className="sticky top-0 z-50 flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-white cursor-pointer select-none"
             style={{
                 background: 'linear-gradient(135deg, #FF6B35, #FF8C42, #FFB347)',
                 boxShadow: '0 2px 12px rgba(255,140,66,0.3)',

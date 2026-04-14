@@ -30,6 +30,12 @@ export default function PetRoomModal({
     updateConsumables = null,
     updateHotbar      = null,
 }) {
+    // ── Notify App to hide bottom nav ─────────────────────────────────
+    useEffect(() => {
+        window.dispatchEvent(new Event('petroom:open'));
+        return () => window.dispatchEvent(new Event('petroom:close'));
+    }, []);
+
     // ── Nav & mode state ─────────────────────────────────────────────
     const [activeOverlay, setActiveOverlay] = useState(null); // null | 'shop' | 'backpack' | 'itemShop' | 'chest'
     const [decorateMode,  setDecorateMode]  = useState(false);

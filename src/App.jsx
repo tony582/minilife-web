@@ -25,6 +25,16 @@ function AppContent() {
   const { appState, kidTab, setKidTab, parentTab, setParentTab, showTransactionHistoryModal, showAddItemModal, showShopConfirmModal, showReviewModal, showAddPlanModal, showAddKidModal, showSettingsModal, showLevelModal, qrModalValue, showTimerModal } = useUIContext();
   const location = useLocation();
   const [paywallVisible, setPaywallVisible] = useState(false);
+  const [petRoomOpen, setPetRoomOpen] = useState(false);
+
+  // Listen for pet room open/close events
+  useEffect(() => {
+    const onOpen = () => setPetRoomOpen(true);
+    const onClose = () => setPetRoomOpen(false);
+    window.addEventListener('petroom:open', onOpen);
+    window.addEventListener('petroom:close', onClose);
+    return () => { window.removeEventListener('petroom:open', onOpen); window.removeEventListener('petroom:close', onClose); };
+  }, []);
 
   const isExpired = user && user.role !== 'admin' && new Date(user.sub_end_date) < new Date();
 
@@ -41,7 +51,7 @@ function AppContent() {
   const renderMobileNavigationBar = () => {
     if (appState !== 'kid_app' && appState !== 'parent_app') return null;
     // Hide bottom nav when any modal is open (it has z-[9999] which blocks modal buttons)
-    if (showTransactionHistoryModal || showAddItemModal || showShopConfirmModal || showReviewModal || showAddPlanModal || showAddKidModal || showSettingsModal || showLevelModal || qrModalValue || showTimerModal) return null;
+    if (petRoomOpen || showTransactionHistoryModal || showAddItemModal || showShopConfirmModal || showReviewModal || showAddPlanModal || showAddKidModal || showSettingsModal || showLevelModal || qrModalValue || showTimerModal) return null;
     const isParent = appState === 'parent_app';
 
     const mobileTabs = isParent
@@ -131,7 +141,7 @@ function AppContent() {
   return (
     <div className="font-sans selection:bg-indigo-100">
       {/* Expired banner */}
-      {isExpired && <ExpiredBanner onRenew={() => setPaywallVisible(true)} />}
+      {isExpired && !petRoomOpen && <ExpiredBanner onRenew={() => setPaywallVisible(true)} />}
       <Routes>
         <Route path="/" element={<ProfileSelectionPage />} />
         <Route path="/parent/pin" element={<ParentPinPage />} />

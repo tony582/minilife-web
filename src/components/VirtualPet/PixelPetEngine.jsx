@@ -55,8 +55,11 @@ const PixelPetEngine = forwardRef(
         frameKey: "idle", // 'idle', 'run', 'eat', 'sleep', 'sick', 'dance', 'wait', 'cry'
       },
       items: [],
+      items: [],
       lastTime: 0,
     });
+    
+    const initSleepRef = useRef(false);
 
     const [, setTick] = useState(0);
 
@@ -80,12 +83,30 @@ const PixelPetEngine = forwardRef(
       gameState.current.screenW = width;
       gameState.current.screenH = height;
       gameState.current.floorY = height * 0.75;
-      gameState.current.cat.y = height * 0.75;
+      
+      const cat = gameState.current.cat;
+      
+      // If sleeping, re-snap position using the NEW dimensions
+      if (cat.state === 'sleeping') {
+        const bp = bedPositionRef.current;
+        if (bp) {
+          cat.x = width * bp.xPct;
+          cat.y = height * (1 - bp.yPct);
+        } else {
+          cat.x = width * 0.5;
+          cat.y = height * 0.65;
+        }
+      } else if (cat.state === 'idle' || cat.state === 'wander' || cat.state === 'walk_to_target' || cat.state === 'walk_to_bed') {
+        // Only reset the Y coordinate to the floor if on the floor logically
+        cat.y = height * 0.75;
+      }
       
       const leftBound = width * 0.25;
       const rightBound = width * 0.75;
-      if (gameState.current.cat.x > rightBound) gameState.current.cat.x = rightBound;
-      if (gameState.current.cat.x < leftBound) gameState.current.cat.x = leftBound;
+      if (cat.state !== 'sleeping') {
+        if (cat.x > rightBound) cat.x = rightBound;
+        if (cat.x < leftBound) cat.x = leftBound;
+      }
     }, [width, height]);
 
     const updateGame = useCallback(
@@ -100,6 +121,25 @@ const PixelPetEngine = forwardRef(
         const currentSick = isSickRef.current;
         const currentSleeping = isSleepingRef.current;
         const currentBedPos = bedPositionRef.current;
+
+        // Default sleep position when no bed is placed: center of the floor
+        const fallbackBedX = state.screenW * 0.5;
+        const fallbackBedY = state.screenH * 0.65;
+
+        // Instant teleport on first load if sleeping
+        if (!initSleepRef.current) {
+          if (currentSleeping) {
+            const targetX = currentBedPos ? state.screenW * currentBedPos.xPct : fallbackBedX;
+            const targetY = currentBedPos ? state.screenH * (1 - currentBedPos.yPct) : fallbackBedY;
+            cat.x = targetX;
+            cat.y = targetY;
+            cat.state = "sleeping";
+            cat.frameKey = "sleep";
+            initSleepRef.current = true;
+          } else {
+            initSleepRef.current = true;
+          }
+        }
 
         if (currentSick && cat.state !== "eating") {
           cat.state = "sick";
@@ -117,8 +157,8 @@ const PixelPetEngine = forwardRef(
           
           if (cat.state === "walk_to_bed") {
             // Calculate bed target position
-            const bedX = currentBedPos ? state.screenW * currentBedPos.xPct : state.screenW * 0.50;
-            const bedY = currentBedPos ? state.screenH * (1 - currentBedPos.yPct) + state.screenH * 0.06 : state.screenH * 0.52;
+            const bedX = currentBedPos ? state.screenW * currentBedPos.xPct : fallbackBedX;
+            const bedY = currentBedPos ? state.screenH * (1 - currentBedPos.yPct) : fallbackBedY;
             
             const dirX = bedX - cat.x;
             const dirY = bedY - cat.y;
@@ -173,8 +213,7 @@ const PixelPetEngine = forwardRef(
             }
           } else if (cat.state === "sleeping") {
             cat.frameKey = "sleep";
-            cat.timer -= dt;
-            if (cat.timer <= 0 || !currentSleeping) {
+            if (!currentSleeping) {
               cat.state = "idle";
               cat.timer = 2000;
               cat.y = state.floorY;
@@ -386,6 +425,7 @@ const PixelPetEngine = forwardRef(
         className="relative overflow-hidden pointer-events-none"
         style={{ width: "100%", height: "100%" }}
       >
+
         {/* ITEMS (Toys) */}
         {state.items.map((item) => (
           item.type === 'hiddenToy' ? (
