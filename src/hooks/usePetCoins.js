@@ -6,7 +6,7 @@ import { useDataContext } from '../context/DataContext';
 import { apiFetch } from '../api/client';
 
 // 🛠 DEV_MODE: set true to get unlimited coins for testing
-const DEV_MODE = true;
+const DEV_MODE = false;
 
 export function usePetCoins(kidId) {
     const { kids, setKids } = useDataContext();

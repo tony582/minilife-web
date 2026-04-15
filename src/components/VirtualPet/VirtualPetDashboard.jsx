@@ -1077,7 +1077,7 @@ export default function VirtualPetDashboard({
                 </div>
 
                 {/* ── DEBUG TOOLBAR (hidden in production) ── */}
-                {true && (
+                {false && (
                 <div className="flex-shrink-0 border-b-2 border-dashed border-orange-300 bg-orange-50 px-4 py-2 flex flex-col gap-2 text-[10px] font-mono">
                     {/* Row 1: Time & Species & Growth */}
                     <div className="flex flex-wrap items-center gap-2">

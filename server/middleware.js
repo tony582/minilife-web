@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = 'minilife_super_secret_key_2026'; // In production, use env variable
+const JWT_SECRET = process.env.JWT_SECRET || 'minilife_super_secret_key_2026'; // ⚠️ 生产环境务必在 .env 中设置 JWT_SECRET
 
 // Global Active SSE Connections Mapping
 const clients = {};
