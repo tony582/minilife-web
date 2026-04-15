@@ -195,9 +195,11 @@ PostgreSQL 部署在阿里云 ECS 本地，连接信息在 `.env` 中配置 (`DA
 4. **VirtualPetDashboard 巨型文件**：128KB 超大组件，修改时注意性能和 JSX 嵌套层级
 5. **useTaskManager 巨型 Hook**：78KB，是最大的业务逻辑聚合点，拆分困难需谨慎
 6. **宠物系统跨组件通信**：使用 `window.addEventListener('petroom:open/close')` 自定义事件，非 React 标准模式
-7. **DEV_MODE 常量**：`usePetCoins.js` 中 `DEV_MODE = true` 会给无限金币，上线前务必改为 `false`
-8. **Zustand store 分散**：4 个 store 文件，修改前先确认状态属于哪个 store
-9. **.env 不要提交**：包含 Gemini API Key 和数据库密码
+7. **DEV_MODE 常量**：`usePetCoins.js` 中 `DEV_MODE` 当前为 `false`（v1.1.0 已修复）。本地调试时可临时改为 `true` 获得无限金币，**提交前务必改回 `false`**
+8. **Debug Toolbar**：`VirtualPetDashboard.jsx` 中有 `{false && (` 控制的调试工具栏，本地调试时可改为 `true` 启用，**提交前务必改回 `false`**
+9. **Zustand store 分散**：4 个 store 文件，修改前先确认状态属于哪个 store
+10. **JWT Secret**：`middleware.js` 从 `process.env.JWT_SECRET` 读取密钥（v1.1.0 已修复）。如需更换密钥，所有用户的 token 会失效需重新登录
+11. **.env 不要提交**：包含 Gemini API Key、数据库密码、JWT Secret
 
 ## 8. 账号信息
 
