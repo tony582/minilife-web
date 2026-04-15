@@ -30,11 +30,25 @@ export default function PetRoomModal({
     updateConsumables = null,
     updateHotbar      = null,
 }) {
-    // ── Notify App to hide bottom nav ─────────────────────────────────
+    // ── Notify App to hide bottom nav & intercept mobile back gesture ──
+    const closedByBackRef = useRef(false);
     useEffect(() => {
         window.dispatchEvent(new Event('petroom:open'));
-        return () => window.dispatchEvent(new Event('petroom:close'));
-    }, []);
+        
+        // Push a history entry so swipe-back closes the modal instead of navigating
+        window.history.pushState({ petRoom: true }, '');
+        
+        const handlePopState = () => {
+            closedByBackRef.current = true;
+            onClose();
+        };
+        window.addEventListener('popstate', handlePopState);
+        
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+            window.dispatchEvent(new Event('petroom:close'));
+        };
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ── Nav & mode state ─────────────────────────────────────────────
     const [activeOverlay, setActiveOverlay] = useState(null); // null | 'shop' | 'backpack' | 'itemShop' | 'chest'
@@ -277,7 +291,7 @@ export default function PetRoomModal({
                     <div className="flex items-center gap-3">
                         {!decorateMode && (
                             <div className="flex items-center gap-1.5 px-3 py-1 bg-[#F4F4F0] rounded-xl text-xs font-black text-slate-700">
-                                <span className="text-sm">🪙</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="#FACC15" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                                 <span>{balance?.toLocaleString() ?? 0}</span>
                             </div>
                         )}

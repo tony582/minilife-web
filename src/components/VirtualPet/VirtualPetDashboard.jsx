@@ -376,9 +376,10 @@ export default function VirtualPetDashboard({
 
         // Apply new skin and save
         const nextSrc = variants[variantIdx];
+        const isBowl = baseType === 'bowl_food';
         const newFurniture = roomConfig.furniture.map(f =>
             (f.instanceId === dyeTarget.instanceId || f.id === dyeTarget.id)
-                ? { ...f, src: nextSrc, unlockedVariants: unlocked } 
+                ? { ...f, src: nextSrc, unlockedVariants: unlocked, ...(isBowl ? { skinIdx: variantIdx } : {}) } 
                 : f
         );
         
@@ -1496,19 +1497,15 @@ export default function VirtualPetDashboard({
                                 <div className="flex flex-col gap-1.5">
                                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full w-max"
                                         style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', color: '#fff' }}>
-                                        <span className="text-[11px]">{isNightTime ? '🌙' : '☀️'}</span>
+                                        <div className="shrink-0 flex items-center justify-center">
+                                            <PixelIcon grid={isNightTime ? SYSTEM_ICONS.moon.grid : SYSTEM_ICONS.sun.grid} palette={isNightTime ? SYSTEM_ICONS.moon.palette : SYSTEM_ICONS.sun.palette} size={1.5} />
+                                        </div>
                                         <span className="text-[10px] font-black tracking-wide">{timeConfig.label}</span>
                                     </div>
                                 </div>
                                 {/* Right: Controls & Indicators */}
                                 <div className="flex flex-col gap-1.5 items-end">
-                                    {(isSick || isSleeping) && (
-                                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full w-max"
-                                            style={{ background: isSick ? 'rgba(239,68,68,0.85)' : 'rgba(30,30,80,0.7)', backdropFilter: 'blur(8px)', color: '#fff' }}>
-                                            <span className="text-[11px]">{isSick ? '🤒' : '😴'}</span>
-                                            <span className="text-[10px] font-black">{isSick ? '生病了！' : 'Zzz...'}</span>
-                                        </div>
-                                    )}
+
                                     <div className="flex gap-1.5 justify-end pointer-events-none w-max">
                                         <button onClick={onOpenChest} className="px-2.5 py-1.5 bg-[#f4f4f5] border-[2.5px] border-gray-900 rounded-full shadow-[2px_2px_0px_#111827] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all flex items-center justify-center gap-[5px] pointer-events-auto hover:bg-white shrink-0">
                                             <PixelIcon grid={SYSTEM_ICONS.backpack.grid} palette={SYSTEM_ICONS.backpack.palette} size={1.5} />
