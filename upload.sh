@@ -94,11 +94,19 @@ echo "   后端上传完成 ✅"
 echo ""
 echo "🔧 [4/4] 远程安装依赖并启动..."
 ssh root@$SERVER_IP << 'REMOTE_CMD'
-cd /opt/minilife/server
-# 复制 .env
+cd /opt/minilife
+# 复制 .env 到 server/ 子目录
 cp /opt/minilife/.env /opt/minilife/server/.env 2>/dev/null || true
-# 安装后端依赖
-npm install --production
+
+# 安装根目录依赖（multer 等后端共享依赖在这里）
+echo "   📦 安装根目录依赖..."
+npm install --production --omit=dev 2>&1 | tail -3
+
+# 安装 server/ 子目录依赖
+echo "   📦 安装 server/ 依赖..."
+cd /opt/minilife/server
+npm install --production --omit=dev 2>&1 | tail -3
+
 # 用 PM2 启动/重启
 pm2 delete minilife 2>/dev/null || true
 pm2 start server.js --name minilife --max-memory-restart 300M
