@@ -122,7 +122,10 @@ timerStore.js       → 计时器状态（正计时/倒计时/番茄钟）
 ### 架构
 ```
 VirtualPet/
-├── VirtualPetDashboard.jsx   # 宠物主界面（状态面板 + 互动）
+├── VirtualPetDashboard.jsx   # 宠物主视图（纯 JSX 渲染，~1100行）
+├── usePetGame.js             # 游戏逻辑 Hook（状态 + 循环 + 交互，~860行）
+├── petConstants.js           # 像素图标常量 + 时段定义（~210行）
+├── PixelIcon.jsx             # 通用像素图标渲染组件
 ├── PetRoomModal.jsx          # 房间全屏弹窗
 ├── PixelPetEngine.jsx        # 像素渲染引擎（Sprite动画）
 ├── PixelBackground.jsx       # 像素风格房间背景

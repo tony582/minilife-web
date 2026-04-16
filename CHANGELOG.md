@@ -4,6 +4,21 @@
 
 ---
 
+## [1.2.0] - 2026-04-16
+
+### 🏗 架构重构
+- **VirtualPetDashboard 拆分** — 2064 行巨型文件拆分为 4 个模块：
+  - `usePetGame.js` (861行) — 游戏状态 Hook（30+ useState、游戏循环、随机事件、交互逻辑）
+  - `petConstants.js` (208行) — 像素图标常量、昼夜时段定义
+  - `PixelIcon.jsx` (29行) — 通用像素图标渲染组件
+  - `VirtualPetDashboard.jsx` (1101行) — 纯 JSX 渲染层（从 2064 行减少 47%）
+
+### 📝 文档
+- ARCHITECTURE.md 更新虚拟宠物模块目录结构
+- HANDOFF.md 更新常见陷阱：Dashboard 拆分后的修改指引
+
+---
+
 ## [1.1.0] - 2026-04-15
 
 ### 🔒 安全修复

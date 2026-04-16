@@ -59,7 +59,10 @@ minilife/
 │   │   │   ├── SmartInstallBanner.jsx # PWA 安装引导
 │   │   │   └── ReorderableList.jsx   # 可拖拽排序列表
 │   │   ├── VirtualPet/              # 宠物系统（8个组件）
-│   │   │   ├── VirtualPetDashboard.jsx  # 主界面 (128KB)
+│   │   │   ├── VirtualPetDashboard.jsx  # 主视图（纯JSX，~1100行）
+│   │   │   ├── usePetGame.js            # 游戏逻辑Hook（~860行）
+│   │   │   ├── petConstants.js          # 像素图标常量
+│   │   │   ├── PixelIcon.jsx            # 通用像素渲染组件
 │   │   │   ├── PetRoomModal.jsx      # 房间全屏弹窗
 │   │   │   ├── PixelPetEngine.jsx    # 像素渲染引擎
 │   │   │   ├── PixelBackground.jsx   # 像素背景
@@ -192,7 +195,7 @@ PostgreSQL 部署在阿里云 ECS 本地，连接信息在 `.env` 中配置 (`DA
 1. **GlobalModals 解构遗漏**：`useTaskManager` 导出的方法必须在 `GlobalModals` 的 `context` 解构中显式列出，否则按钮点击无效（不报错但不工作）
 2. **JSX 嵌套错误**：GlobalModals 文件极大 (29KB)，改完务必 `npm run build` 验证
 3. **SSE 竞态**：`useAppData.js` 中的 `pauseSync/resumeSync` 机制很脆弱，修改打卡/审核逻辑时要注意
-4. **VirtualPetDashboard 巨型文件**：128KB 超大组件，修改时注意性能和 JSX 嵌套层级
+4. **VirtualPetDashboard 已拆分**：逻辑在 `usePetGame.js`，渲染在 `VirtualPetDashboard.jsx`，像素常量在 `petConstants.js`。修改游戏逻辑找 hook，修改 UI 找 Dashboard
 5. **useTaskManager 巨型 Hook**：78KB，是最大的业务逻辑聚合点，拆分困难需谨慎
 6. **宠物系统跨组件通信**：使用 `window.addEventListener('petroom:open/close')` 自定义事件，非 React 标准模式
 7. **DEV_MODE 常量**：`usePetCoins.js` 中 `DEV_MODE` 当前为 `false`（v1.1.0 已修复）。本地调试时可临时改为 `true` 获得无限金币，**提交前务必改回 `false`**
