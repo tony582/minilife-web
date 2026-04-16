@@ -158,7 +158,7 @@ function AppContent() {
         {notifications.map((n) => (
           <div key={n.id} className={`px-6 py-4 rounded-2xl shadow-xl animate-bounce-in text-white text-sm font-bold flex items-center justify-between gap-4 pointer-events-auto ${n.type === 'error' ? 'bg-rose-500' : n.type === 'info' ? 'bg-slate-800' : 'bg-emerald-500'}`}>
             <div className="flex items-center gap-2">
-              <Icons.Bell size={18} /> {n.msg}
+              <Icons.Bell size={18} /> {n.message}
             </div>
             <button onClick={() => setNotifications((p) => p.filter((x) => x.id !== n.id))} className="opacity-70 hover:opacity-100 transition-opacity flex-shrink-0">
               <Icons.X size={16} />

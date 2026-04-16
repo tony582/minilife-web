@@ -199,7 +199,7 @@ export const AuthPage = () => {
                 {notifications.map(n => (
                     <div key={n.id} className={`p-4 rounded-xl shadow-xl flex items-center gap-3 animate-slide-in pointer-events-auto backdrop-blur-md ${n.type === 'success' ? 'bg-emerald-50/90 text-emerald-700 border border-emerald-200' : 'bg-rose-50/90 text-rose-700 border border-rose-200'}`}>
                         {n.type === 'success' ? <Icons.CheckCircle size={24} /> : <Icons.AlertCircle size={24} />}
-                        <span className="font-bold text-sm tracking-wide">{n.msg}</span>
+                        <span className="font-bold text-sm tracking-wide">{n.message}</span>
                     </div>
                 ))}
             </div>

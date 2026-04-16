@@ -176,7 +176,7 @@ export const ExpiredPage = () => {
                 {notifications.map(n => (
                     <div key={n.id} className={`px-5 py-3 rounded-xl shadow-xl flex items-center gap-3 animate-bounce-in text-sm font-bold ${n.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
                         {n.type === 'success' ? <Icons.CheckCircle size={20} /> : <Icons.AlertCircle size={20} />}
-                        <span>{n.msg}</span>
+                        <span>{n.message}</span>
                     </div>
                 ))}
             </div>

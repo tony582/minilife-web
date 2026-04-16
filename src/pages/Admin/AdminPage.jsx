@@ -174,12 +174,63 @@ export const AdminPage = () => {
         const d = await apiFetch(`/api/admin/users/${userId}/details`).then(r => safeJsonOr(r, null));
         setUserDetails(d);
     };
-    const generateCodes = async (days) => {
-        try { const d = await apiFetch('/api/admin/codes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ count: 5, duration_days: days }) }).then(r => safeJson(r)); if (d.error) return notify(d.error, 'error'); setAdminCodes(prev => [...(d.codes || []).map(c => ({ code: c, duration_days: days, status: 'active', created_at: new Date().toISOString() })), ...prev]); notify(`已生成 5 个 ${days}天码`, 'success'); } catch { notify('失败', 'error'); }
+    const generateCodes = async (planType, days, count = 5) => {
+        try {
+            let endpoint, body;
+            if (planType === 'quarterly') {
+                endpoint = '/api/admin/codes/quarterly';
+                body = { count, note: '季度订阅 90天' };
+            } else if (planType === 'annual') {
+                endpoint = '/api/admin/codes/annual';
+                body = { count, note: '年度订阅 365天' };
+            } else {
+                endpoint = '/api/admin/codes';
+                body = { count, duration_days: days, plan_type: 'custom' };
+            }
+            const d = await apiFetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            }).then(r => safeJson(r));
+            if (d.error) return notify(d.error, 'error');
+            setAdminCodes(prev => [
+                ...(d.codes || []).map(c => ({
+                    code: c,
+                    duration_days: d.duration_days || days,
+                    plan_type: d.plan_type || 'custom',
+                    status: 'active',
+                    created_at: new Date().toISOString()
+                })),
+                ...prev
+            ]);
+            notify(`已生成 ${count} 个${planType === 'quarterly' ? '季度' : planType === 'annual' ? '年度' : ''}码`, 'success');
+        } catch { notify('失败', 'error'); }
     };
     const revokeCode = async (code) => { try { const d = await apiFetch(`/api/admin/codes/${code}/revoke`, { method: 'PUT' }).then(r => safeJson(r)); if (d.error) return notify(d.error, 'error'); setAdminCodes(prev => prev.map(c => c.code === code ? { ...c, status: 'revoked' } : c)); notify('已作废', 'success'); } catch { notify('失败', 'error'); } };
     const deleteCode = async (code) => { try { const d = await apiFetch(`/api/admin/codes/${code}`, { method: 'DELETE' }).then(r => safeJson(r)); if (d.error) return notify(d.error, 'error'); setAdminCodes(prev => prev.filter(c => c.code !== code)); notify('已删除', 'success'); } catch { notify('失败', 'error'); } };
-    const exportCodes = () => { const a = adminCodes.filter(c => c.status === 'active'); if (!a.length) return notify('无可导出码', 'error'); const csv = 'Code,Days,Created\n' + a.map(c => `${c.code},${c.duration_days},${c.created_at || ''}`).join('\n'); const b = new Blob([csv], { type: 'text/csv' }); const u = URL.createObjectURL(b); const el = document.createElement('a'); el.href = u; el.download = `codes_${new Date().toISOString().split('T')[0]}.csv`; el.click(); URL.revokeObjectURL(u); notify(`已导出 ${a.length} 个`, 'success'); };
+    const exportCodes = (format = 'csv') => {
+        const active = adminCodes.filter(c => c.status === 'active');
+        if (!active.length) return notify('无可导出码', 'error');
+        let content, filename, mime;
+        if (format === 'txt') {
+            // One code per line — ready to paste into Xiaohongshu card code pool
+            content = active.map(c => c.code).join('\n');
+            filename = `codes_xhs_${new Date().toISOString().split('T')[0]}.txt`;
+            mime = 'text/plain';
+        } else {
+            content = 'Code,Plan,Days,Created\n' + active.map(c =>
+                `${c.code},${c.plan_type || 'custom'},${c.duration_days},${c.created_at || ''}`
+            ).join('\n');
+            filename = `codes_${new Date().toISOString().split('T')[0]}.csv`;
+            mime = 'text/csv';
+        }
+        const b = new Blob([content], { type: mime });
+        const u = URL.createObjectURL(b);
+        const el = document.createElement('a');
+        el.href = u; el.download = filename; el.click();
+        URL.revokeObjectURL(u);
+        notify(`已导出 ${active.length} 个码`, 'success');
+    };
 
     const saveAiConfig = async () => {
         if (!editingConfig) return;
@@ -578,17 +629,38 @@ export const AdminPage = () => {
                     {/* ═══ CODES ═══ */}
                     {adminTab === 'codes' && (
                         <div className="space-y-4 animate-fade-in">
-                            <div className="bg-white rounded-xl border border-slate-200/80 p-4">
+                        <div className="bg-white rounded-xl border border-slate-200/80 p-4">
                                 <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-800 mb-3"><Icons.Tag size={15} /> 发行激活码</div>
+                                {/* Quick plan buttons */}
+                                <div className="grid grid-cols-2 gap-2 mb-3">
+                                    <button onClick={() => generateCodes('quarterly', 90, 5)}
+                                        className="flex flex-col items-center py-3 rounded-xl border-2 border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors">
+                                        <span className="text-xs font-black text-indigo-600">季度码 ×5</span>
+                                        <span className="text-[10px] text-indigo-400 font-bold mt-0.5">Q-XXXXXXX · 90天 · ¥38</span>
+                                    </button>
+                                    <button onClick={() => generateCodes('annual', 365, 5)}
+                                        className="flex flex-col items-center py-3 rounded-xl border-2 border-orange-200 bg-orange-50 hover:bg-orange-100 transition-colors">
+                                        <span className="text-xs font-black text-orange-600">年度码 ×5</span>
+                                        <span className="text-[10px] text-orange-400 font-bold mt-0.5">A-XXXXXXX · 365天 · ¥98</span>
+                                    </button>
+                                </div>
+                                {/* Custom + export */}
                                 <div className="flex gap-2 flex-wrap items-center">
-                                    <ActionBtn onClick={() => generateCodes(30)} variant="default">30天 ×5</ActionBtn>
-                                    <ActionBtn onClick={() => generateCodes(365)} variant="default">365天 ×5</ActionBtn>
-                                    <ActionBtn onClick={() => generateCodes(9999)} variant="default">永久 ×5</ActionBtn>
+                                    <span className="text-xs text-slate-400 font-semibold">自定义:</span>
+                                    <ActionBtn onClick={() => generateCodes(null, 30, 5)} variant="default">30天 ×5</ActionBtn>
+                                    <ActionBtn onClick={() => generateCodes(null, 9999, 5)} variant="default">永久 ×5</ActionBtn>
                                     <div className="flex items-center gap-1.5">
                                         <input value={customDays} onChange={e => setCustomDays(e.target.value)} type="number" placeholder="天数" className="w-20 px-2 py-1.5 rounded-md border border-slate-200 text-xs focus:outline-none focus:border-indigo-400" />
-                                        <ActionBtn onClick={() => customDays > 0 && generateCodes(parseInt(customDays))} variant="primary">生成</ActionBtn>
+                                        <ActionBtn onClick={() => customDays > 0 && generateCodes(null, parseInt(customDays), 5)} variant="primary">生成</ActionBtn>
                                     </div>
-                                    <ActionBtn onClick={exportCodes} variant="default" className="ml-auto"><Icons.Download size={12} className="inline mr-0.5" />导出CSV</ActionBtn>
+                                    <div className="flex gap-1.5 ml-auto">
+                                        <ActionBtn onClick={() => exportCodes('txt')} variant="success">
+                                            <Icons.Download size={12} className="inline mr-0.5" />小红书TXT
+                                        </ActionBtn>
+                                        <ActionBtn onClick={() => exportCodes('csv')} variant="default">
+                                            <Icons.Download size={12} className="inline mr-0.5" />CSV
+                                        </ActionBtn>
+                                    </div>
                                 </div>
                             </div>
                             <div className="bg-white rounded-xl border border-slate-200/80 overflow-hidden">

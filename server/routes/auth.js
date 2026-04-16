@@ -7,6 +7,12 @@ const { sendResetCode } = require('../emailService');
 // In-memory store for reset codes: { email: { code, expires, attempts } }
 const resetCodes = new Map();
 
+// In-memory rate limiter for code redemption: { userId: { count, resetAt } }
+const redeemAttempts = new Map();
+const REDEEM_MAX = 5;        // max failed attempts
+const REDEEM_WINDOW = 15 * 60 * 1000; // 15 minutes
+
+
 module.exports = (db, { JWT_SECRET, authenticateToken, notifyUser }) => {
 
     // --- Forgot Password: Send verification code ---
@@ -176,10 +182,39 @@ module.exports = (db, { JWT_SECRET, authenticateToken, notifyUser }) => {
     // --- Redeem activation code ---
     router.post('/redeem-code', authenticateToken, (req, res) => {
         const { code } = req.body;
-        db.get("SELECT * FROM activation_codes WHERE code = ?", [code], (err, codeRow) => {
+
+        // Input validation
+        if (!code || typeof code !== 'string' || code.length > 30) {
+            return res.status(400).json({ error: '激活码格式错误' });
+        }
+        const normalizedCode = code.trim().toUpperCase();
+
+        // Rate limiting: 5 failed attempts per 15 min per user
+        const userId = req.user.id;
+        const now = Date.now();
+        const record = redeemAttempts.get(userId) || { count: 0, resetAt: now + REDEEM_WINDOW };
+        if (now > record.resetAt) { record.count = 0; record.resetAt = now + REDEEM_WINDOW; }
+        if (record.count >= REDEEM_MAX) {
+            const waitMin = Math.ceil((record.resetAt - now) / 60000);
+            return res.status(429).json({ error: `尝试次数过多，请 ${waitMin} 分钟后再试` });
+        }
+
+        db.get("SELECT * FROM activation_codes WHERE code = ?", [normalizedCode], (err, codeRow) => {
             if (err) return res.status(500).json({ error: err.message });
-            if (!codeRow) return res.status(400).json({ error: "激活码无效" });
-            if (codeRow.status !== 'active') return res.status(400).json({ error: "Code already used" });
+            if (!codeRow) {
+                // Increment failed attempt counter
+                record.count++;
+                redeemAttempts.set(userId, record);
+                const remaining = REDEEM_MAX - record.count;
+                return res.status(400).json({
+                    error: '激活码无效',
+                    remaining_attempts: remaining,
+                });
+            }
+            if (codeRow.status !== 'active') return res.status(400).json({ error: '该激活码已被使用' });
+
+            // Success — clear rate limit record
+            redeemAttempts.delete(userId);
 
             db.get("SELECT sub_end_date FROM users WHERE id = ?", [req.user.id], (err, user) => {
                 if (err || !user) return res.status(500).json({ error: "User error" });
@@ -194,7 +229,14 @@ module.exports = (db, { JWT_SECRET, authenticateToken, notifyUser }) => {
                     db.run("UPDATE activation_codes SET status = 'used', used_by = ?, used_at = ? WHERE code = ?", [req.user.id, now.toISOString(), code]);
                     db.run("UPDATE users SET sub_end_date = ? WHERE id = ?", [newEnd.toISOString(), req.user.id], function (err) {
                         if (err) return res.status(500).json({ error: err.message });
-                        res.json({ success: true, new_sub_end_date: newEnd.toISOString() });
+                        res.json({
+                            success: true,
+                            new_sub_end_date: newEnd.toISOString(),
+                            plan_type: codeRow.plan_type || 'custom',
+                            duration_days: codeRow.duration_days,
+                            plan_label: codeRow.plan_type === 'quarterly' ? '季度订阅' :
+                                        codeRow.plan_type === 'annual' ? '年度订阅' : '临时订阅',
+                        });
                     });
                 });
             });
@@ -203,7 +245,7 @@ module.exports = (db, { JWT_SECRET, authenticateToken, notifyUser }) => {
 
     // --- Used codes history ---
     router.get('/me/codes', authenticateToken, (req, res) => {
-        db.all("SELECT code, duration_days, used_at FROM activation_codes WHERE used_by = ? ORDER BY used_at DESC", [req.user.id], (err, rows) => {
+        db.all("SELECT code, duration_days, plan_type, used_at FROM activation_codes WHERE used_by = ? ORDER BY used_at DESC", [req.user.id], (err, rows) => {
             if (err) return res.status(500).json({ error: err.message });
             res.json(rows);
         });

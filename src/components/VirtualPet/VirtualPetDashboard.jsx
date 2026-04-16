@@ -75,6 +75,7 @@ export default function VirtualPetDashboard({
         activeEvent, bedPosition,
         handlePetClick, handlePetStateChange, handleAction,
         currentLevel, currentStageDisplay, currentZone,
+        poops,
     } = usePetGame({
         activeKid,
         roomData,

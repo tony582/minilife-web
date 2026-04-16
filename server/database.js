@@ -50,7 +50,7 @@ const COLUMN_MAP = {
     default_quota: 'default_quota', updated_at: 'updated_at',
     tokens_used: 'tokens_used', duration_days: 'duration_days',
     used_by: 'used_by', used_at: 'used_at', batch_id: 'batch_id',
-    expires_at: 'expires_at',
+    expires_at: 'expires_at', plan_type: 'plan_type',
     spirit_type: 'spirit_type', spirit_accessories: 'spirit_accessories',
     streak_days: 'streak_days', last_streak_date: 'last_streak_date',
     highest_level: 'highest_level', badges: 'badges',
@@ -166,6 +166,7 @@ async function initializeDatabase() {
         await client.query(`CREATE TABLE IF NOT EXISTS activation_codes (
             code TEXT PRIMARY KEY,
             duration_days INTEGER NOT NULL,
+            plan_type TEXT DEFAULT 'custom',
             status TEXT DEFAULT 'active',
             used_by TEXT,
             used_at TEXT,
@@ -173,6 +174,8 @@ async function initializeDatabase() {
             created_at TEXT,
             note TEXT
         )`);
+        // Migrate: add plan_type if missing on existing installs
+        await client.query(`ALTER TABLE activation_codes ADD COLUMN IF NOT EXISTS plan_type TEXT DEFAULT 'custom'`);
 
         // Kids Table (all lowercase columns — PG auto-lowercases unquoted SQL)
         await client.query(`CREATE TABLE IF NOT EXISTS kids (

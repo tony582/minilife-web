@@ -42,8 +42,8 @@ const aiRoutes = require('./aiRoutes');
 app.use('/api/ai', authenticateToken, aiRoutes);
 
 app.use('/api', require('./routes/auth')(db, deps));
-app.use('/api/admin', require('./routes/admin')(db, deps));
 app.use('/api/admin/stats', require('./routes/admin-stats')(db, deps));
+app.use('/api/admin', require('./routes/admin')(db, deps));
 app.use('/api/kids', require('./routes/kids')(db, deps));
 app.use('/api/tasks', require('./routes/tasks')(db, deps));
 app.use('/api/inventory', require('./routes/inventory')(db, deps));

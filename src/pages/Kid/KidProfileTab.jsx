@@ -202,7 +202,7 @@ export const KidProfileTab = () => {
     ].filter(Boolean);
 
     return (
-        <div style={{ background: '#F9F6F2', minHeight: '100%', paddingBottom: 110 }}>
+        <div className="animate-fade-in pb-20" style={{ background: '#FBF7F0', minHeight: '100vh' }}>
             <style>{CSS}</style>
 
             {showPetRoom && createPortal(
@@ -237,34 +237,36 @@ export const KidProfileTab = () => {
             {showExpModal && <ExpHistoryModal activeKid={activeKid} transactions={transactions} nextLevelExp={nextLevelExp} onClose={() => setShowExpModal(false)} />}
             <LevelPrivilegeModal isOpen={showLevelPrivilegeModal} onClose={() => setShowLevelPrivilegeModal(false)} activeKid={activeKid} currentForm={form} />
 
-            <div style={{ maxWidth: 640, margin: '0 auto', padding: '12px 16px 0' }}>
+            <div className="max-w-5xl mx-auto">
 
-                {/* ── COMPACT HEADER ───────────────────────────────
-                    Small avatar · greeting · term badge
-                ──────────────────────────────────────────────── */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-                    {/* Small avatar */}
-                    <button onClick={() => setShowAvatarPickerModal(true)}
-                        style={{ width: 46, height: 46, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', border: '2.5px solid #fff', boxShadow: '0 2px 10px rgba(0,0,0,0.12)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, background: '#F0ECE8', padding: 0 }}>
-                        <AvatarDisplay avatar={activeKid.avatar} />
-                    </button>
-                    {/* Greeting */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: '#B0A090' }}>你好！</div>
-                        <div style={{ fontSize: 18, fontWeight: 900, color: '#1C1410', lineHeight: 1.1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {activeKid.name}
+                {/* ═══ Hero Section with Lavender Blob ═══ */}
+                <div className="relative overflow-hidden pb-4 px-4">
+                    {/* Decorative blobs — lavender/purple, matches Study tab pattern */}
+                    <div className="absolute -top-32 -left-20 w-56 h-56 rounded-full opacity-15" style={{ background: '#9B8EC4' }}></div>
+                    <div className="absolute -top-20 -left-12 w-40 h-40 rounded-full opacity-10" style={{ background: '#C4B8E8' }}></div>
+
+                    {/* ── COMPACT HEADER ─────────────────────────────── */}
+                    <div className="relative z-10 flex items-center gap-3 pt-6 mb-5">
+                        {/* Small avatar */}
+                        <button onClick={() => setShowAvatarPickerModal(true)}
+                            style={{ width: 48, height: 48, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', border: '3px solid #fff', boxShadow: '0 4px 14px rgba(27,46,75,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, background: '#F0EBE1', padding: 0 }}>
+                            <AvatarDisplay avatar={activeKid.avatar} />
+                        </button>
+                        {/* Greeting */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: '#9CAABE' }}>你好！</div>
+                            <div style={{ fontSize: 22, fontWeight: 900, color: '#1B2E4B', lineHeight: 1.1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {activeKid.name}
+                            </div>
+                        </div>
+                        {/* Term pill */}
+                        <div style={{ fontSize: 12, fontWeight: 800, color: '#9B8EC4', background: '#fff', padding: '6px 14px', borderRadius: 99, flexShrink: 0, boxShadow: '0 2px 12px rgba(27,46,75,0.06)' }}>
+                            {term.emoji} {term.daysLeft}天
                         </div>
                     </div>
-                    {/* Term pill */}
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#8C7E70', background: '#fff', border: '1px solid #EDE8E2', padding: '6px 12px', borderRadius: 99, flexShrink: 0, boxShadow: '0 1px 6px rgba(0,0,0,0.04)' }}>
-                        {term.emoji} {term.daysLeft}天
-                    </div>
-                </div>
 
-                {/* ── FEATURED PROGRESS CARD ───────────────────────
-                    Level-coloured card, like the "Weekly Progress" hero
-                ──────────────────────────────────────────────── */}
-                <div style={{ borderRadius: 24, background: `linear-gradient(135deg, ${form.color}DD, ${form.color})`, padding: '22px 22px 24px', marginBottom: 14, boxShadow: `0 8px 28px ${form.color}50`, position: 'relative', overflow: 'hidden' }}>
+                {/* ── FEATURED PROGRESS CARD ─────────────────────── */}
+                <div className="relative z-10" style={{ borderRadius: 24, background: `linear-gradient(135deg, ${form.color}DD, ${form.color})`, padding: '22px 22px 24px', marginBottom: 0, boxShadow: `0 8px 28px ${form.color}50`, position: 'relative', overflow: 'hidden' }}>
                     {/* Decorative circles */}
                     <div style={{ position:'absolute', top:-30, right:-20, width:120, height:120, borderRadius:'50%', background:'rgba(255,255,255,0.12)', pointerEvents:'none' }} />
                     <div style={{ position:'absolute', bottom:-40, right:60, width:100, height:100, borderRadius:'50%', background:'rgba(255,255,255,0.08)', pointerEvents:'none' }} />
@@ -320,6 +322,10 @@ export const KidProfileTab = () => {
                         </div>
                     </div>
                 </div>
+                </div>
+                {/* ── End Hero Section ── */}
+
+                <div className="px-4 pt-4">
 
                 {/* ── STATS 2-COL GRID ─────────────────────────── */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
@@ -374,7 +380,7 @@ export const KidProfileTab = () => {
                         </button>
                     ))}
                 </div>
-
+                </div>
             </div>
         </div>
     );

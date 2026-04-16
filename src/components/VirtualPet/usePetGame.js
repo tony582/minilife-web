@@ -136,15 +136,19 @@ export default function usePetGame({
         return [];
     };
 
-    const [roomConfig, setRoomConfig] = useState(() => ({
-        ...DEFAULT_ROOM,
-        furniture: parseFurnitureField(roomData?.furnitureJson ?? roomData?.furniture_json),
-    }));
+    const [roomConfig, setRoomConfig] = useState(() => {
+        const parsed = parseFurnitureField(roomData?.furnitureJson ?? roomData?.furniture_json);
+        return {
+            ...DEFAULT_ROOM,
+            furniture: parsed.length > 0 ? parsed : DEFAULT_ROOM.furniture,
+        };
+    });
 
     useEffect(() => {
+        const parsed = parseFurnitureField(roomData?.furnitureJson ?? roomData?.furniture_json);
         setRoomConfig({
             ...DEFAULT_ROOM,
-            furniture: parseFurnitureField(roomData?.furnitureJson ?? roomData?.furniture_json),
+            furniture: parsed.length > 0 ? parsed : DEFAULT_ROOM.furniture,
         });
     }, [roomData?.id, roomData?.furnitureJson]);
     

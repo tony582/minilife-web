@@ -5,7 +5,7 @@ export const useToast = () => {
 
     const notify = (msg, type = 'info') => {
         const id = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-        setNotifications(p => [...p, { id, msg, type }]);
+        setNotifications(p => [...p, { id, message: msg, type }]);
         setTimeout(() => setNotifications(p => p.filter(n => n.id !== id)), 3000);
     };
 
