@@ -2,8 +2,10 @@ import React, { useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Icons, renderIcon } from '../../utils/Icons';
 import { renderHabitIcon } from '../../utils/habitIcons';
+import { useTransactionDetails } from '../../hooks/useTransactionDetails.jsx';
 
 export function ExpHistoryModal({ activeKid, transactions, nextLevelExp, onClose, tasks = [] }) {
+    const parseTx = useTransactionDetails();
     const expPercent = Math.max(0, Math.min(100, (activeKid.exp / nextLevelExp) * 100));
     
     // Star dust transactions
@@ -46,22 +48,14 @@ export function ExpHistoryModal({ activeKid, transactions, nextLevelExp, onClose
                             <div className="text-slate-500 text-sm font-bold">还没有记录，完成任务获取星尘！</div>
                         </div>
                     ) : expTx.map((t, i) => {
-                        // Attempt to find the source task by title logic ("记录成长: {title}")
-                        const sourceTitle = t.title ? t.title.replace(/^记录成长:\s*/, '') : '';
-                        const matchedTask = tasks.find(tk => tk.title === sourceTitle || (tk.title && t.title.includes(tk.title)));
+                        const meta = parseTx(t);
                         return (
                             <div key={i} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white border border-transparent hover:border-slate-100 hover:shadow-[0_4px_12px_rgba(0,0,0,0.02)] transition-all">
                                 <div className={`w-10 h-10 rounded-[14px] flex items-center justify-center shadow-inner border border-slate-50 relative ${t.category === 'habit' ? 'bg-[#FEF3C7]' : 'bg-[#E0E7FF]'}`}>
-                                    {matchedTask ? (
-                                        <div style={{ color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            {renderHabitIcon(matchedTask.iconEmoji, null, 20) || renderIcon(matchedTask.iconName, 20)}
-                                        </div>
-                                    ) : (
-                                        t.category === 'habit' ? <Icons.Target size={20} style={{ color: '#D97706' }} /> : <Icons.CheckCircle size={20} style={{ color: '#4F46E5' }} />
-                                    )}
+                                    {meta.renderIcon(20)}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <div className="text-sm font-black text-slate-800 truncate">{t.title || (t.category === 'habit' ? '习惯打卡' : '学习规则')}</div>
+                                    <div className="text-sm font-black text-slate-800 truncate">{meta.title}</div>
                                     <div className="text-[10px] text-slate-400 font-bold mt-1 tracking-wider uppercase">{new Date(t.date).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'})}</div>
                                 </div>
                                 <div className="font-black text-base text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg">+{t.amount}</div>

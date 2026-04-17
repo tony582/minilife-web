@@ -270,7 +270,8 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
           amount: Math.abs(task.reward || 0),
           title: `记录成长: ${task.title}`,
           date: new Date().toISOString(),
-          category: 'habit'
+          category: 'habit',
+          taskId: task.id
         }, ...prev]);
       }
       playSuccessSound();
@@ -316,7 +317,8 @@ const checkPeriodLimits = (task, kidId, selectedDStr) => {
             amount: Math.abs(task.reward || 0),
             title: `记录成长: ${task.title}`,
             date: new Date().toISOString(),
-            category: 'habit'
+            category: 'habit',
+            taskId: task.id
           })
         }).catch(e => console.error(e));
       }
@@ -762,8 +764,6 @@ const handleQuickComplete = async () => {
   if (qcTimeMode === 'actual' && (!qcStartTime || !qcEndTime)) {
     return notify('请填写完整的起止时间', 'error');
   }
-  isSubmittingRef.current = true;
-  playSuccessSound(); // Fire exactly on click to bypass iOS async suspensions
   let spentStr = '';
   if (qcTimeMode === 'duration') {
     if (qcHours === 0 && qcMinutes === 0 && qcSeconds === 0) return notify('请填写耗时', 'error');
@@ -771,6 +771,9 @@ const handleQuickComplete = async () => {
   } else {
     spentStr = `${qcStartTime} ~ ${qcEndTime}`;
   }
+
+  isSubmittingRef.current = true;
+  playSuccessSound(); // Fire exactly on click to bypass iOS async suspensions
   const taskToSubmit = quickCompleteTask;
   if (!taskToSubmit) return;
 
@@ -933,7 +936,8 @@ const handleQuickComplete = async () => {
         amount: taskToSubmit.reward || 0,
         title: `完成: ${taskToSubmit.title}`,
         date: new Date().toISOString(),
-        category: 'task'
+        category: 'task',
+        taskId: taskToSubmit.id
       };
 
       const transRes = await apiFetch('/api/transactions', {
@@ -1207,7 +1211,7 @@ const handleQuickComplete = async () => {
           amount: task.reward || 0,
           title: `完成记录: ${task.title}`,
           date: new Date().toISOString(),
-          category: 'habit'
+          category: 'habit', taskId: task.id
         };
         await apiFetch('/api/transactions', {
           method: 'POST',
@@ -1225,7 +1229,7 @@ const handleQuickComplete = async () => {
           amount: expGained,
           title: `完成记录: ${task.title}`,
           date: new Date().toISOString(),
-          category: 'habit'
+          category: 'habit', taskId: task.id
         };
         await apiFetch('/api/transactions', {
           method: 'POST',
@@ -1286,7 +1290,7 @@ const handleQuickComplete = async () => {
           amount: absPenalty,
           title: `违规扣分: ${task.title}`,
           date: new Date().toISOString(),
-          category: 'habit'
+          category: 'habit', taskId: task.id
         };
         const expRefundTrans = {
           id: `trans_${Date.now()}_penalty_exp`,
@@ -1295,7 +1299,7 @@ const handleQuickComplete = async () => {
           amount: expPenalty,
           title: `违规扣分: ${task.title}`,
           date: new Date().toISOString(),
-          category: 'habit'
+          category: 'habit', taskId: task.id
         };
         await apiFetch('/api/transactions', {
           method: 'POST',
@@ -1386,7 +1390,7 @@ const handleQuickComplete = async () => {
             amount: absReward,
             title: `未达标撤回: ${task.title}`,
             date: new Date().toISOString(),
-            category: 'task'
+            category: 'task', taskId: task.id || taskToSubmit?.id
           };
           await apiFetch('/api/transactions', {
             method: 'POST',
@@ -1423,7 +1427,7 @@ const handleQuickComplete = async () => {
               amount: absReward,
               title: `违规撤回记录: ${task.title}`,
               date: new Date().toISOString(),
-              category: 'task'
+              category: 'task', taskId: task.id || taskToSubmit?.id
             };
             const expRefundTrans = {
               id: `trans_${Date.now()}_reversed_exp`,
@@ -1432,7 +1436,7 @@ const handleQuickComplete = async () => {
               amount: Math.ceil(absReward * 1.5),
               title: `违规撤回记录: ${task.title}`,
               date: new Date().toISOString(),
-              category: 'habit'
+              category: 'habit', taskId: task.id
             };
             await apiFetch('/api/transactions', {
               method: 'POST',
@@ -1472,7 +1476,7 @@ const handleQuickComplete = async () => {
               amount: absReward,
               title: `补偿撤销扣分: ${task.title}`,
               date: new Date().toISOString(),
-              category: 'task'
+              category: 'task', taskId: task.id || taskToSubmit?.id
             };
             const expRefundTrans = {
               id: `trans_${Date.now()}_refund_exp`,
@@ -1481,7 +1485,7 @@ const handleQuickComplete = async () => {
               amount: Math.ceil(absReward * 1.5),
               title: `补偿撤销扣分: ${task.title}`,
               date: new Date().toISOString(),
-              category: 'habit'
+              category: 'habit', taskId: task.id
             };
             await apiFetch('/api/transactions', {
               method: 'POST',
@@ -1526,7 +1530,7 @@ const handleQuickComplete = async () => {
       amount: task.reward || 0,
       title: `完成: ${task.title}`,
       date: new Date().toISOString(),
-      category: 'task'
+      category: 'task', taskId: task.id || taskToSubmit?.id
     };
     if (task.reward > 0) {
       await apiFetch('/api/transactions', {
@@ -1648,7 +1652,7 @@ const handleQuickComplete = async () => {
           amount: task.reward || 0,
           title: `完成: ${task.title}`,
           date: new Date().toISOString(),
-          category: 'task'
+          category: 'task', taskId: task.id || taskToSubmit?.id
         });
       }
       // Compile task history updates
@@ -1887,7 +1891,7 @@ const handleSavePlan = async () => {
       timeStr: timeStr,
       standards: planForm.desc || "",
       iconName: planForm.iconName || getIconForCategory(planForm.category),
-      iconEmoji: planForm.iconEmoji,
+      iconEmoji: planType === 'study' ? '' : (planForm.iconEmoji || ''),
       requireApproval: planForm.requireApproval,
       attachments: planForm.attachments || [],
       periodMaxPerDay: planType === 'habit' ? Number(planForm.periodMaxPerDay) : undefined,
@@ -1930,7 +1934,7 @@ const handleSavePlan = async () => {
     type: planType,
     status: 'todo',
     iconName: planForm.iconName || getIconForCategory(planForm.category),
-    iconEmoji: planForm.iconEmoji,
+    iconEmoji: planType === 'study' ? '' : (planForm.iconEmoji || ''),
     standards: planForm.desc || "",
     category: planType === 'study' ? planForm.category : "行为",
     catColor: color,
@@ -2007,7 +2011,7 @@ const handleSavePlan = async () => {
       durationPreset: 25,
       pointRule: 'default',
       reward: '',
-      iconEmoji: '📚',
+      iconEmoji: '',
       iconName: getIconForCategory('语文'),
       habitColor: 'from-blue-400 to-blue-500',
       habitType: 'daily_once',

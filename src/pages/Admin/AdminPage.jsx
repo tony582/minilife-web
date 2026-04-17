@@ -4,6 +4,7 @@ import { useDataContext } from '../../context/DataContext.jsx';
 import { useToast } from '../../hooks/useToast';
 import { Icons } from '../../utils/Icons';
 import { apiFetch, safeJson, safeJsonOr } from '../../api/client';
+import { MonitorTab } from './MonitorTab';
 
 const PROVIDERS = [
     { id: 'gemini', name: 'Google Gemini', color: '#4285F4', models: ['gemini-2.0-flash', 'gemini-2.0-pro', 'gemini-1.5-flash'] },
@@ -259,6 +260,7 @@ export const AdminPage = () => {
         { id: 'users', Icon: Icons.Users, label: `用户 (${adminUsers?.length || 0})` },
         { id: 'codes', Icon: Icons.Tag, label: `激活码 (${adminCodes?.length || 0})` },
         { id: 'ai', Icon: Icons.Sparkles, label: 'AI 管理' },
+        { id: 'monitor', Icon: Icons.ShieldAlert, label: '监控' },
         { id: 'settings', Icon: Icons.Settings, label: '设置' },
     ];
 
@@ -765,6 +767,13 @@ export const AdminPage = () => {
                                     </div>))}
                                 </div>
                             </div>
+                        </div>
+                    )}
+
+                    {/* ═══ MONITOR ═══ */}
+                    {adminTab === 'monitor' && (
+                        <div className="animate-fade-in">
+                            <MonitorTab notify={notify} />
                         </div>
                     )}
 

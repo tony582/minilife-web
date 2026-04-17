@@ -20,9 +20,9 @@ module.exports = (db, { authenticateToken, notifyUser }) => {
 
     // --- Create transaction ---
     router.post('/', authenticateToken, (req, res) => {
-        const { id, kidId, type, amount, title, date, category } = req.body;
-        const insert = "INSERT INTO transactions (id, userId, kidId, type, amount, title, date, category) VALUES (?,?,?,?,?,?,?,?)";
-        db.run(insert, [id, req.user.id, kidId, type, amount, title, date, category], function (err) {
+        const { id, kidId, type, amount, title, date, category, taskId } = req.body;
+        const insert = "INSERT INTO transactions (id, userId, kidId, type, amount, title, date, category, taskId) VALUES (?,?,?,?,?,?,?,?,?)";
+        db.run(insert, [id, req.user.id, kidId, type, amount, title, date, category, taskId || null], function (err) {
             if (err) return res.status(500).json({ error: err.message });
             notifyUser(req.user.id);
             res.json({ id });

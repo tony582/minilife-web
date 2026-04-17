@@ -69,4 +69,45 @@ async function sendResetCode(to, code) {
     });
 }
 
-module.exports = { sendResetCode };
+/**
+ * Send a monitoring alert email to admin
+ * @param {string} subject - Alert subject
+ * @param {string} body - Alert body (HTML)
+ * @param {'error'|'warning'|'info'} severity - Alert severity
+ */
+async function sendAlert(subject, body, severity = 'error') {
+    const adminEmail = process.env.ALERT_EMAIL || process.env.SMTP_USER || 'noreply@minilife.online';
+    const colorMap = { error: '#ef4444', warning: '#f59e0b', info: '#3b82f6' };
+    const labelMap = { error: '🚨 ERROR', warning: '⚠️ WARNING', info: 'ℹ️ INFO' };
+    const color = colorMap[severity] || colorMap.error;
+    const label = labelMap[severity] || labelMap.error;
+
+    const html = `
+    <div style="max-width:600px;margin:0 auto;font-family:'Helvetica Neue',Arial,sans-serif;background:#f8f9fc;padding:24px 0;">
+        <div style="background:#fff;border-radius:12px;padding:32px;margin:0 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-top:4px solid ${color};">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+                <span style="background:${color};color:#fff;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;">${label}</span>
+                <span style="color:#64748b;font-size:12px;">${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}</span>
+            </div>
+            <h2 style="margin:0 0 16px;font-size:18px;color:#1e293b;">${subject}</h2>
+            <div style="background:#f1f5f9;border-radius:8px;padding:16px;font-size:13px;color:#334155;line-height:1.8;word-break:break-all;">
+                ${body}
+            </div>
+            <hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0;">
+            <p style="color:#94a3b8;font-size:11px;margin:0;">MiniLife Monitoring · ${process.env.NODE_ENV || 'development'}</p>
+        </div>
+    </div>`;
+
+    try {
+        await transporter.sendMail({
+            from: `"MiniLife Monitor" <${process.env.SMTP_USER || 'noreply@minilife.online'}>`,
+            to: adminEmail,
+            subject: `[MiniLife ${label}] ${subject}`,
+            html,
+        });
+    } catch (e) {
+        console.error('[Monitor] Failed to send alert email:', e.message);
+    }
+}
+
+module.exports = { sendResetCode, sendAlert };

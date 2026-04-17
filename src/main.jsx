@@ -2,6 +2,10 @@ import React, { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import { initErrorReporter, reportError } from './utils/errorReporter'
+
+// Initialize global error monitoring
+initErrorReporter();
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -16,6 +20,11 @@ class ErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     this.setState({ errorInfo });
     console.error("Uncaught error:", error, errorInfo);
+    // Report to monitoring backend
+    reportError(error?.message || 'React crash', error?.stack, {
+      type: 'react_error_boundary',
+      componentStack: errorInfo?.componentStack?.substring(0, 500),
+    });
   }
 
   render() {

@@ -217,7 +217,8 @@ export const GlobalModals = () => {
                 amount: price,
                 title: `兑换商品: ${item.name}`,
                 date: new Date().toISOString(),
-                category: 'shop'
+                category: 'shop',
+                taskId: item.id
             };
             await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newTrans) });
 
@@ -299,7 +300,7 @@ export const GlobalModals = () => {
             }
 
             // 2. Post transaction
-            const refundTrans = { id: `trans_${Date.now()}_penalty_${targetKid.id}`, kidId: targetKid.id, type: 'expense', amount: penalty, title: `手动惩罚: ${penaltyTaskContext.title}`, date: new Date().toISOString(), category: 'habit' };
+            const refundTrans = { id: `trans_${Date.now()}_penalty_${targetKid.id}`, kidId: targetKid.id, type: 'expense', amount: penalty, title: `手动惩罚: ${penaltyTaskContext.title}`, date: new Date().toISOString(), category: 'habit', taskId: penaltyTaskContext.id };
             try {
                 await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(refundTrans) });
             } catch (e) { console.error('Transaction post error:', e); }
@@ -384,7 +385,7 @@ export const GlobalModals = () => {
             }
 
             // 2. Post transaction
-            const rewardTrans = { id: `trans_${Date.now()}_reward_${targetKid.id}`, kidId: targetKid.id, type: 'income', amount: reward, title: `奖励加分: ${penaltyTaskContext.title}`, date: new Date().toISOString(), category: 'habit' };
+            const rewardTrans = { id: `trans_${Date.now()}_reward_${targetKid.id}`, kidId: targetKid.id, type: 'income', amount: reward, title: `奖励加分: ${penaltyTaskContext.title}`, date: new Date().toISOString(), category: 'habit', taskId: penaltyTaskContext.id };
             try {
                 await apiFetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rewardTrans) });
             } catch (e) { console.error('Transaction post error:', e); }

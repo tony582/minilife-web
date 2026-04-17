@@ -54,6 +54,11 @@ app.use('/api/settings', require('./routes/settings')(db, deps));
 app.use('/api/interest', require('./routes/interest')(db, deps));
 app.use('/api/pet', require('./routes/pet')(db, deps));
 
+// --- Monitoring Routes (health check, error reporting, anomaly detection) ---
+const { sendAlert } = require('./emailService');
+const monitoringRoutes = require('./routes/monitoring')(db, { ...deps, sendAlert });
+app.use('/api/monitor', monitoringRoutes);
+
 // --- Serve uploaded assets (QR codes etc.) ---
 app.use('/assets', express.static(path.join(__dirname, '../public/assets')));
 
@@ -61,9 +66,13 @@ app.use('/assets', express.static(path.join(__dirname, '../public/assets')));
 app.use(express.static(path.join(__dirname, '../dist')));
 
 // SPA fallback: serve index.html for any non-API request
-app.use((req, res) => {
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api/')) return next();
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
+
+// --- Global Error Handler (must be last middleware) ---
+app.use(monitoringRoutes.backendErrorLogger);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {

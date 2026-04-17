@@ -28,8 +28,11 @@ module.exports = (db, { authenticateToken, notifyUser }) => {
         const requireApprovalInt = requireApproval ? 1 : 0;
         const orderInt = order || 0;
 
+        // Server-side guard: study-type tasks must NEVER have emoji icons
+        const safeIconEmoji = (type === 'study' && iconEmoji && !iconEmoji.startsWith('ph:')) ? '' : iconEmoji;
+
         const insert = `INSERT INTO tasks (id, userId, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, dates, history, startDate, pointRule, habitType, attachments, requireApproval, repeatConfig, "order", periodMaxPerDay, periodMaxType) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
-        db.run(insert, [id, req.user.id, kidId, title, type, reward, status, iconName, iconEmoji, category, catColor, frequency, timeStr, standards, datesStr, '{}', startDate, pointRule, habitType, attachmentsStr, requireApprovalInt, repeatConfigStr, orderInt, periodMaxPerDay, periodMaxType], function (err) {
+        db.run(insert, [id, req.user.id, kidId, title, type, reward, status, iconName, safeIconEmoji, category, catColor, frequency, timeStr, standards, datesStr, '{}', startDate, pointRule, habitType, attachmentsStr, requireApprovalInt, repeatConfigStr, orderInt, periodMaxPerDay, periodMaxType], function (err) {
             if (err) return res.status(500).json({ error: err.message });
             notifyUser(req.user.id);
             res.json({ id });
@@ -49,7 +52,12 @@ module.exports = (db, { authenticateToken, notifyUser }) => {
         if (standards !== undefined) { query += "standards = ?, "; params.push(standards); }
         if (category !== undefined) { query += "category = ?, "; params.push(category); }
         if (catColor !== undefined) { query += "catColor = ?, "; params.push(catColor); }
-        if (iconEmoji !== undefined) { query += "iconEmoji = ?, "; params.push(iconEmoji); }
+        if (iconEmoji !== undefined) {
+            // Server-side guard: only allow ph: prefixed or empty emoji
+            // study tasks should never have emoji; habits always use ph: prefix
+            const safeEmoji = (iconEmoji && !iconEmoji.startsWith('ph:')) ? '' : iconEmoji;
+            query += "iconEmoji = ?, "; params.push(safeEmoji);
+        }
         if (iconName !== undefined) { query += "iconName = ?, "; params.push(iconName); }
         if (dates !== undefined) { query += "dates = ?, "; params.push(JSON.stringify(dates)); }
         if (history !== undefined) { query += "history = ?, "; params.push(JSON.stringify(history)); }

@@ -360,7 +360,7 @@ export const ParentPlansTab = () => {
                         const defaultTimes = getDefaultTimeRange();
                         setEditingTask(null);
                         setPlanType('habit');
-                        setPlanForm({ targetKids: ['all'], category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5, 6, 7], periodTargetCount: 1, periodMaxPerDay: 1, periodMaxType: 'daily', timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', iconEmoji: 'ph:Star', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
+                        setPlanForm({ targetKids: ['all'], category: '语文', iconName: getIconForCategory('语文'), title: '', desc: '', startDate: new Date().toISOString().split('T')[0], endDate: '', repeatType: 'today', weeklyDays: [1, 2, 3, 4, 5], ebbStrength: 'normal', periodDaysType: 'any', periodCustomDays: [1, 2, 3, 4, 5, 6, 7], periodTargetCount: 1, periodMaxPerDay: 1, periodMaxType: 'daily', timeSetting: 'range', startTime: defaultTimes.start, endTime: defaultTimes.end, durationPreset: 25, pointRule: 'default', reward: '', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [] });
                         setShowAddPlanModal(true);
                     }} className="flex-1 py-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
                         style={{ background: C.teal, color: '#fff', boxShadow: `0 3px 10px ${C.teal}35` }}>
@@ -661,7 +661,7 @@ export const ParentPlansTab = () => {
                                         pointRule: (t.pointRule && t.pointRule === 'custom') || (t.type === 'habit') ? 'custom' : 'default',
                                         reward: String(Math.abs(t.reward ?? 0)),
                                         habitRewardType: (t.reward || 0) < 0 ? 'penalty' : 'reward',
-                                        iconEmoji: t.iconEmoji || '📘', habitColor: t.catColor || t.habitColor || 'from-blue-400 to-blue-500', habitType: t.habitType || 'daily_once', attachments: t.attachments || [], requireApproval: t.requireApproval !== undefined ? t.requireApproval : true
+                                        iconEmoji: t.iconEmoji || '', habitColor: t.catColor || t.habitColor || 'from-blue-400 to-blue-500', habitType: t.habitType || 'daily_once', attachments: t.attachments || [], requireApproval: t.requireApproval !== undefined ? t.requireApproval : true
                                     });
                                     setShowAddPlanModal(true);
                                 }} className="flex-1 py-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95"

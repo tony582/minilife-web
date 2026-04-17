@@ -1,7 +1,9 @@
 import React from 'react';
 import { Icons } from '../../utils/Icons';
+import { useTransactionDetails } from '../../hooks/useTransactionDetails.jsx';
 
 export const TransactionHistoryModal = ({ context }) => {
+    const parseTx = useTransactionDetails();
     const {
         showTransactionHistoryModal, setShowTransactionHistoryModal,
         transactionHistoryKidId, setTransactionHistoryKidId,
@@ -22,18 +24,6 @@ export const TransactionHistoryModal = ({ context }) => {
 
     const modalKidId = transactionHistoryKidId || activeKidId;
     const modalKid = kids.find(k => k.id === modalKidId);
-
-    const _txMeta = (item) => {
-        if (item.category === 'interest' || item.title?.includes('利息') || item.title?.includes('生息'))
-            return { icon: 'Sparkles', color: _C.teal, label: '利息' };
-        if (item.category === 'charity' || item.category === 'give' || item.title?.includes('爱心') || item.title?.includes('公益') || item.title?.includes('捐'))
-            return { icon: 'Heart', color: '#EC4899', label: '爱心' };
-        if (item.category === 'purchase' || item.category === 'shop')
-            return { icon: 'ShoppingBag', color: _C.coral, label: '兑换' };
-        if (item.type === 'income')
-            return { icon: 'TrendingUp', color: _C.green, label: '收入' };
-        return { icon: 'ShoppingBag', color: _C.coral, label: '消费' };
-    };
 
     let filteredTrans = transactions.filter(t => t.kidId === modalKidId && t.category !== 'habit');
 
@@ -176,25 +166,23 @@ export const TransactionHistoryModal = ({ context }) => {
                                                 </div>
                                             </div>
                                             {groupedTrans[dateStr].map((item, idx) => {
-                                                const isIncome = item.type === 'income';
-                                                const meta = _txMeta(item);
-                                                const IconCmp = Icons[meta.icon] || Icons.Star;
+                                                const meta = parseTx(item);
                                                 return (
                                                     <div key={item.id || `tx-${idx}`} className="flex items-center justify-between px-3 py-2.5 rounded-xl mb-1" style={{ background: _C.bgCard }}>
                                                         <div className="flex items-center gap-3 min-w-0 flex-1">
                                                             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${meta.color}10` }}>
-                                                                <IconCmp size={15} style={{ color: meta.color }} />
+                                                                {meta.renderIcon(15)}
                                                             </div>
                                                             <div className="min-w-0 flex-1">
-                                                                <div className="font-bold text-xs leading-tight truncate" style={{ color: _C.textPrimary }}>{item.title}</div>
+                                                                <div className="font-bold text-xs leading-tight truncate" style={{ color: _C.textPrimary }}>{meta.title}</div>
                                                                 <div className="flex items-center gap-1.5 mt-0.5">
                                                                     <span className="text-[8px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${meta.color}08`, color: meta.color }}>{meta.label}</span>
                                                                     <span className="text-[9px] font-bold" style={{ color: _C.textMuted }}>{new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div className="font-black text-sm shrink-0 ml-3" style={{ color: isIncome ? _C.green : _C.textPrimary }}>
-                                                            {isIncome ? '+' : '-'}{Number(item.amount).toLocaleString()}
+                                                        <div className="font-black text-sm shrink-0 ml-3" style={{ color: meta.amountColor }}>
+                                                            {meta.amountStr}
                                                         </div>
                                                     </div>
                                                 );

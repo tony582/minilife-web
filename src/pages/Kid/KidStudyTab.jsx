@@ -529,19 +529,11 @@ export const KidStudyTab = () => {
                                     return (
                                         <>
                                         {showActionBtn && (
-                                            t.durationPreset || t.timeSetting === 'range' ? (
-                                                <button onClick={() => handleStartTask(t.id)}
-                                                    className="rounded-full py-1.5 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
-                                                    style={{ background: C.orange }}>
-                                                    <Icons.Play size={12} fill="currentColor" /> {status === 'failed' ? '重来' : 'START'}
-                                                </button>
-                                            ) : (
-                                                <button onClick={() => openQuickComplete(t)}
-                                                    className="rounded-full py-1.5 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
-                                                    style={{ background: status === 'failed' ? '#EF4444' : C.teal }}>
-                                                    {status === 'failed' ? <><Icons.RefreshCw size={12} /> 重来</> : <><Icons.Check size={12} strokeWidth={3} /> 完成</>}
-                                                </button>
-                                            )
+                                            <button onClick={() => openQuickComplete(t)}
+                                                className="rounded-full py-1.5 px-4 text-xs font-black text-white transition-all active:scale-95 flex items-center gap-1"
+                                                style={{ background: status === 'failed' ? '#EF4444' : C.teal }}>
+                                                {status === 'failed' ? <><Icons.RefreshCw size={12} /> 重来</> : <><Icons.Check size={12} strokeWidth={3} /> 完成</>}
+                                            </button>
                                         )}
                                         {!showActionBtn && status === 'in_progress' && (
                                             <button onClick={() => handleAttemptSubmit(t)}

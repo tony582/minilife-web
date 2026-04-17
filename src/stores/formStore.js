@@ -17,10 +17,7 @@ const defaultPlanForm = {
     timeSetting: 'range',
     startTime: '', endTime: '', durationPreset: 25,
     pointRule: 'default',
-    reward: '', iconEmoji: '📚',
-    habitColor: 'from-blue-400 to-blue-500',
-    habitType: 'daily_once',
-    attachments: [],
+    reward: '', habitColor: 'from-blue-400 to-blue-500', habitType: 'daily_once', attachments: [],
     requireApproval: true,
 };
 

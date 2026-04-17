@@ -87,7 +87,7 @@ export const InterestClassApp = () => {
         if (form.kidIds.length === 0) return notify('请选择孩子', 'warning');
         const timeStr = form.startTime && form.endTime ? `${form.startTime}-${form.endTime}` : '';
         const payload = {
-            kidId: form.kidIds.join(','), name: form.name.trim(), iconEmoji: '📚',
+            kidId: form.kidIds.join(','), name: form.name.trim(), iconEmoji: '',
             totalSessions: form.classMode === 'tutor' ? 0 : (parseInt(form.totalSessions) || 0),
             sessionsPerClass: parseInt(form.sessionsPerClass) || 1,
             scheduleDays: form.scheduleDays, timeStr,

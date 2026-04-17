@@ -6,6 +6,7 @@ import { isTaskDueOnDate } from '../../utils/taskUtils';
 import { formatDate } from '../../utils/dateUtils';
 import { getSpiritForm, getSpiritPrivileges } from '../../utils/spiritUtils';
 import { HelpTip, HELP } from '../../components/HelpTip.jsx';
+import { useTransactionDetails } from '../../hooks/useTransactionDetails.jsx';
 
 // Shared warm Headspace theme (same as KidHabitTab / KidStudyTab)
 const C = {
@@ -15,27 +16,10 @@ const C = {
     textPrimary: '#1B2E4B', textSoft: '#5A6E8A', textMuted: '#9CAABE',
 };
 
-// Map transaction categories to flat icon + color
-const txMeta = (item) => {
-    const isIncome = item.type === 'income';
-    if (item.category === 'interest' || item.title?.includes('利息') || item.title?.includes('生息'))
-        return { icon: 'Sparkles', color: C.teal, label: '利息' };
-    if (item.category === 'charity' || item.category === 'give' || item.title?.includes('爱心') || item.title?.includes('公益') || item.title?.includes('捐'))
-        return { icon: 'Heart', color: '#EC4899', label: '爱心' };
-    if (item.category === 'habit' && isIncome)
-        return { icon: 'CheckCircle', color: C.green, label: '打卡' };
-    if (item.category === 'habit' && !isIncome)
-        return { icon: 'ShieldAlert', color: C.coral, label: '扣分' };
-    if (item.category === 'purchase' || item.category === 'shop')
-        return { icon: 'ShoppingBag', color: C.coral, label: '兑换' };
-    if (isIncome)
-        return { icon: 'TrendingUp', color: C.green, label: '收入' };
-    return { icon: 'ShoppingBag', color: C.coral, label: '消费' };
-};
-
 export const KidWealthTab = () => {
     const { transactions, kids, activeKidId, tasks } = useDataContext();
     const activeKid = kids.find(k => k.id === activeKidId);
+    const parseTx = useTransactionDetails();
     const {
         setShowInterestDetailsModal,
         setShowTransactionHistoryModal
@@ -124,9 +108,9 @@ export const KidWealthTab = () => {
 
                 {/* ═══ Hero Section ═══ */}
                 <div className="relative overflow-hidden pb-5 px-4">
-                    {/* Decorative blobs — same as habit/task tabs */}
-                    <div className="absolute -top-32 -left-20 w-56 h-56 rounded-full opacity-15" style={{ background: C.orange }}></div>
-                    <div className="absolute -top-20 -left-12 w-40 h-40 rounded-full opacity-10" style={{ background: C.yellow }}></div>
+                    {/* Decorative blobs — blue theme for wealth */}
+                    <div className="absolute -top-32 -left-20 w-56 h-56 rounded-full opacity-15" style={{ background: '#6C9CFF' }}></div>
+                    <div className="absolute -top-20 -left-12 w-40 h-40 rounded-full opacity-10" style={{ background: '#93B8FF' }}></div>
                     <div className="absolute -top-16 right-8 w-24 h-24 rounded-full opacity-8" style={{ background: C.teal }}></div>
 
                     {/* Title */}
@@ -446,9 +430,7 @@ export const KidWealthTab = () => {
                         ) : (
                             <div className="space-y-1">
                                 {filteredTx.map((item, idx) => {
-                                    const isIncome = item.type === 'income';
-                                    const meta = txMeta(item);
-                                    const IconCmp = Icons[meta.icon] || Icons.Star;
+                                    const meta = parseTx(item);
                                     return (
                                         <div key={item.id || `tx-${idx}`}
                                             className="flex items-center justify-between px-3 py-3 rounded-xl transition-all hover:shadow-sm"
@@ -456,11 +438,11 @@ export const KidWealthTab = () => {
                                             <div className="flex items-center gap-3 min-w-0 flex-1">
                                                 <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                                                     style={{ background: `${meta.color}10` }}>
-                                                    <IconCmp size={17} style={{ color: meta.color }} />
+                                                    {meta.renderIcon(17)}
                                                 </div>
                                                 <div className="min-w-0 flex-1">
                                                     <div className="font-bold text-[13px] leading-tight truncate" style={{ color: C.textPrimary }}>
-                                                        {item.title}
+                                                        {meta.title}
                                                     </div>
                                                     <div className="flex items-center gap-2 mt-0.5">
                                                         <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md"
@@ -476,8 +458,8 @@ export const KidWealthTab = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="font-black text-sm shrink-0 ml-3" style={{ color: isIncome ? C.green : C.coral }}>
-                                                {isIncome ? '+' : '-'}{item.amount?.toLocaleString()}
+                                            <div className="font-black text-sm shrink-0 ml-3" style={{ color: meta.amountColor }}>
+                                                {meta.amountStr}
                                             </div>
                                         </div>
                                     );

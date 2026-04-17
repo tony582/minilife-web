@@ -9,7 +9,7 @@ import { apiFetch } from '../api/client';
 const DEV_MODE = false;
 
 export function usePetCoins(kidId) {
-    const { kids, setKids } = useDataContext();
+    const { kids, setKids, setTransactions } = useDataContext();
     const kid = kids.find(k => k.id === kidId);
     const balance = DEV_MODE ? 999999 : (kid?.balances?.spend ?? 0);
 
@@ -27,26 +27,30 @@ export function usePetCoins(kidId) {
                 : k
         ));
 
+        const txRecord = {
+            id:       `pet_${kidId}_${Date.now()}`,
+            kidId,
+            type:     'expense',
+            amount:   -amount,
+            title:    description,
+            category: 'pet',
+            date:     new Date().toISOString(),
+        };
+
         try {
             await apiFetch(`/api/kids/${kidId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ balances: { spend: newBalance } }),
             });
-            // Log transaction (fire and forget)
+            // Log transaction and update local state
             apiFetch('/api/transactions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id:       `pet_${kidId}_${Date.now()}`,
-                    kidId,
-                    type:     'expense',
-                    amount:   -amount,
-                    title:    description,
-                    category: 'pet',
-                    date:     new Date().toISOString().split('T')[0],
-                }),
+                body: JSON.stringify(txRecord),
             }).catch(() => {});
+            // Add to local transactions immediately
+            setTransactions(prev => [txRecord, ...prev]);
             return { ok: true, newBalance };
         } catch (e) {
             // Rollback on failure
@@ -57,7 +61,7 @@ export function usePetCoins(kidId) {
             ));
             return { ok: false, reason: 'api_error' };
         }
-    }, [kid, kidId, balance, setKids]);
+    }, [kid, kidId, balance, setKids, setTransactions]);
 
     // ── Refund coins (e.g. furniture removal) ────────────────────────
     const refundCoins = useCallback(async (amount, description = '移除装饰退款') => {

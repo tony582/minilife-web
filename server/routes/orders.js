@@ -13,9 +13,9 @@ module.exports = (db, { authenticateToken, notifyUser }) => {
 
     // --- Create order ---
     router.post('/', authenticateToken, (req, res) => {
-        const { id, kidId, itemName, itemImage, price, status, date, rating, comment, redeemCode } = req.body;
-        const insert = `INSERT INTO orders (id, userId, kidId, itemName, itemImage, price, status, date, rating, comment, redeemCode) VALUES (?,?,?,?,?,?,?,?,?,?,?)`;
-        db.run(insert, [id, req.user.id, kidId, itemName, itemImage, price, status, date, rating, comment, redeemCode], function (err) {
+        const { id, kidId, itemId, itemName, itemImage, price, status, date, rating, comment, redeemCode } = req.body;
+        const insert = `INSERT INTO orders (id, userId, kidId, itemId, itemName, itemImage, price, status, date, rating, comment, redeemCode) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`;
+        db.run(insert, [id, req.user.id, kidId, itemId || null, itemName, itemImage, price, status, date, rating, comment, redeemCode], function (err) {
             if (err) return res.status(500).json({ error: err.message });
             notifyUser(req.user.id);
             res.json({ id });

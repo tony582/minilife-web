@@ -29,7 +29,8 @@ const pool = new Pool({
 
 // ─── Column name mapping: lowercase PG → camelCase JS ───
 const COLUMN_MAP = {
-    userid: 'userId', kidid: 'kidId', iconname: 'iconName',
+    userid: 'userId', kidid: 'kidId', taskid: 'taskId', itemid: 'itemId',
+    iconname: 'iconName',
     iconemoji: 'iconEmoji', catcolor: 'catColor', timestr: 'timeStr',
     startdate: 'startDate', pointrule: 'pointRule', habittype: 'habitType',
     requireapproval: 'requireApproval', repeatconfig: 'repeatConfig',
@@ -243,6 +244,7 @@ async function initializeDatabase() {
             id TEXT PRIMARY KEY,
             userid TEXT NOT NULL,
             kidid TEXT,
+            itemid TEXT,
             itemname TEXT,
             itemimage TEXT,
             price INTEGER,
@@ -252,7 +254,8 @@ async function initializeDatabase() {
             comment TEXT,
             redeemcode TEXT
         )`);
-
+        // Migration: add itemid column if missing on existing DBs
+        await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS itemid TEXT`);
         // Transactions Table
         await client.query(`CREATE TABLE IF NOT EXISTS transactions (
             id TEXT PRIMARY KEY,
@@ -262,8 +265,11 @@ async function initializeDatabase() {
             amount INTEGER,
             title TEXT,
             date TEXT,
-            category TEXT
+            category TEXT,
+            taskid TEXT
         )`);
+        // Migration: add taskid column if missing on existing DBs
+        await client.query(`ALTER TABLE transactions ADD COLUMN IF NOT EXISTS taskid TEXT`);
 
         // Interest Classes Table
         await client.query(`CREATE TABLE IF NOT EXISTS classes (
@@ -335,6 +341,19 @@ async function initializeDatabase() {
             active INTEGER DEFAULT 1,
             created_at TEXT,
             expires_at TEXT
+        )`);
+
+        // Error Logs Table (for monitoring)
+        await client.query(`CREATE TABLE IF NOT EXISTS error_logs (
+            id TEXT PRIMARY KEY,
+            source TEXT DEFAULT 'frontend',
+            message TEXT,
+            stack TEXT,
+            url TEXT,
+            user_agent TEXT,
+            user_id TEXT,
+            extra TEXT DEFAULT '{}',
+            created_at TEXT NOT NULL
         )`);
 
         // Create default Admin user if not exists

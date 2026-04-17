@@ -144,6 +144,10 @@ export const KidProfileTab = () => {
         }}>
             <style>{CSS}</style>
 
+            {/* Decorative half-circle blobs — pink theme for profile */}
+            <div className="absolute -top-32 -left-20 w-56 h-56 rounded-full opacity-15" style={{ background: '#EC4899', position: 'absolute', zIndex: 0 }}></div>
+            <div className="absolute -top-20 -left-12 w-40 h-40 rounded-full opacity-10" style={{ background: '#F472B6', position: 'absolute', zIndex: 0 }}></div>
+
             {/* Ambient Background Glows connecting PC/Mobile boundaries softly */}
             <div className="bg-glow-1"></div>
             <div className="bg-glow-2"></div>
