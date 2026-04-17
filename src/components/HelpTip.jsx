@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Icons } from '../utils/Icons';
 
 /**
@@ -17,6 +18,11 @@ const C = {
 
 export const HelpTip = ({ title, content, emoji, size = 16, color, steps }) => {
     const [open, setOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     return (
         <>
@@ -36,8 +42,8 @@ export const HelpTip = ({ title, content, emoji, size = 16, color, steps }) => {
                 <Icons.HelpCircle size={size - 2} />
             </button>
 
-            {/* Modal overlay */}
-            {open && (
+            {/* Modal overlay directly rendered to body to avoid overflow hidden trapping */}
+            {open && mounted && createPortal(
                 <div
                     className="fixed inset-0 z-[10000] flex items-center justify-center p-6 animate-fade-in"
                     style={{ background: 'rgba(27,46,75,0.3)', backdropFilter: 'blur(6px)' }}
@@ -112,7 +118,7 @@ export const HelpTip = ({ title, content, emoji, size = 16, color, steps }) => {
                                 className="w-full py-2.5 rounded-xl text-sm font-black text-white transition-all active:scale-[0.98]"
                                 style={{ background: `linear-gradient(135deg, ${color || C.teal}, ${color || C.teal}DD)` }}
                             >
-                                我知道了 👍
+                                我知道了
                             </button>
                         </div>
                     </div>
@@ -124,7 +130,8 @@ export const HelpTip = ({ title, content, emoji, size = 16, color, steps }) => {
                             100% { transform: scale(1) translateY(0); opacity: 1; }
                         }
                     `}</style>
-                </div>
+                </div>,
+                document.body
             )}
         </>
     );
@@ -223,25 +230,25 @@ export const HELP = {
     },
     wealth: {
         title: '家庭币是什么？',
-        emoji: '🪙',
+        emoji: <Icons.Star size={28} style={{ color: '#FFD93D', fill: '#FFD93D' }} />,
         color: '#FF8C42',
-        content: '家庭币是你完成任务获得的奖励！可以存起来赚利息，也可以在家庭超市里兑换奖励！',
+        content: '家庭币是你完成学习任务和习惯打卡获得的奖励！可以存起来赚取利息，或者在家庭超市里兑换心仪的商品！',
         steps: [
-            { emoji: '📚', title: '完成任务赚币', desc: '每完成一个任务就能获得家庭币' },
-            { emoji: '💰', title: '存起来赚利息', desc: '精灵等级越高，利息加成越多' },
-            { emoji: '🛒', title: '去超市兑换', desc: '攒够了去家庭超市兑换想要的奖励' },
+            { emoji: <Icons.BookOpen size={13} style={{ color: '#FF8C42', verticalAlign: '-2px', display: 'inline-block' }} />, title: '完成任务赚币', desc: '每完成一个日常任务就能获得家庭币' },
+            { emoji: <Icons.Wallet size={13} style={{ color: '#4ECDC4', verticalAlign: '-2px', display: 'inline-block' }} />, title: '存进金库生息', desc: '星尘等级越高，每周利息加成越丰厚' },
+            { emoji: <Icons.ShoppingBag size={13} style={{ color: '#F472B6', verticalAlign: '-2px', display: 'inline-block' }} />, title: '去超市兑换', desc: '攒够余额就可以去家庭超市兑换专属奖励' },
         ],
     },
     interest: {
-        title: '利息怎么算？',
-        emoji: '💰',
+        title: '利息是怎么算出的？',
+        emoji: <Icons.TrendingUp size={28} style={{ color: '#4ECDC4' }} />,
         color: '#4ECDC4',
-        content: '你的家庭币余额会自动产生利息，不需要做任何操作！精灵等级越高，利息加成越多哦！',
+        content: '存放在财富中心的家庭币余额会自动为你产生利息，不需要你进行任何额外操作！',
         steps: [
-            { emoji: '🏦', title: '自动生息', desc: '你的余额会自动产生利息，不用存入' },
-            { emoji: '📊', title: '基础利率', desc: '由爸爸妈妈设定（比如每周 2%）' },
-            { emoji: '✨', title: '精灵加成', desc: '精灵等级越高，额外加成越多' },
-            { emoji: '📅', title: '每周发放', desc: '利息每周自动发放到你的账户' },
+            { emoji: <Icons.Activity size={13} style={{ color: '#10B981', verticalAlign: '-2px', display: 'inline-block' }} />, title: '自动生息', desc: '每天躺着也能赚家庭币，余额自动计算利息' },
+            { emoji: <Icons.TrendingUp size={13} style={{ color: '#3B82F6', verticalAlign: '-2px', display: 'inline-block' }} />, title: '基础利率', desc: '由父母为你设定的固定周利率（比如每周2%）' },
+            { emoji: <Icons.Sparkles size={13} style={{ color: '#EC4899', verticalAlign: '-2px', display: 'inline-block' }} />, title: '星尘等级加成', desc: '个人星尘等级越高，额外的利息加成越多' },
+            { emoji: <Icons.Calendar size={13} style={{ color: '#F59E0B', verticalAlign: '-2px', display: 'inline-block' }} />, title: '周末收益发放', desc: '每周结算日的零点，利息会自动存入你的账户' },
         ],
     },
 };

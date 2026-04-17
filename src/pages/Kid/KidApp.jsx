@@ -273,7 +273,7 @@ export const KidApp = () => {
                 </div>
             )}
             {kidTab === 'shop' && (
-                <div className="max-w-5xl mx-auto px-4 md:px-8 pb-28 md:pb-8">
+                <div className="px-4 md:px-8 pb-28 md:pb-8">
                     <KidShopTab />
                 </div>
             )}

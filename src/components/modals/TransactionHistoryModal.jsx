@@ -44,8 +44,8 @@ export const TransactionHistoryModal = ({ context }) => {
         filteredTrans = filteredTrans.filter(t => t.type === transactionHistoryFilterType);
     }
 
-    const totalIncome = filteredTrans.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0);
-    const totalExpense = filteredTrans.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0);
+    const totalIncome = filteredTrans.filter(t => t.type === 'income').reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
+    const totalExpense = filteredTrans.filter(t => t.type === 'expense').reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
     const netChange = totalIncome - totalExpense;
 
     const groupedTrans = filteredTrans.reduce((acc, t) => {
@@ -149,8 +149,8 @@ export const TransactionHistoryModal = ({ context }) => {
                         ) : (
                             <div className="pb-6">
                                 {sortedDates.map(dateStr => {
-                                    const dailyIncome = groupedTrans[dateStr].filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0);
-                                    const dailyExpense = groupedTrans[dateStr].filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0);
+                                    const dailyIncome = groupedTrans[dateStr].filter(t => t.type === 'income').reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
+                                    const dailyExpense = groupedTrans[dateStr].filter(t => t.type === 'expense').reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
                                     const isToday = new Date(dateStr).toDateString() === now.toDateString();
 
                                     return (

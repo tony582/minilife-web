@@ -9,7 +9,7 @@ import { apiFetch } from '../../../api/client';
 const C = {
     bg: '#FBF7F0', bgCard: '#FFFFFF', bgLight: '#F0EBE1', bgMuted: '#E8E0D4',
     orange: '#FF8C42', teal: '#4ECDC4', green: '#10B981', purple: '#8B5CF6',
-    yellow: '#FFD93D', coral: '#FF6B6B',
+    yellow: '#FFD93D', coral: '#FF6B6B', pink: '#EC4899', fuchsia: '#C026D3',
     textPrimary: '#1B2E4B', textSoft: '#5A6E8A', textMuted: '#9CAABE',
 };
 
@@ -55,23 +55,26 @@ export const InterestSettingsApp = () => {
             {/* Header */}
             <div className="rounded-2xl p-5 relative overflow-hidden"
                 style={{
-                    background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-                    boxShadow: '0 8px 32px rgba(15,52,96,0.2)',
+                    background: 'linear-gradient(135deg, #E6EAFF 0%, #FBF7F0 100%)',
+                    border: '1px solid #E6EAFF',
+                    boxShadow: '0 4px 24px rgba(108, 156, 255, 0.1)',
                 }}>
-                <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-15"
-                    style={{ background: `radial-gradient(circle, ${C.teal}, transparent)` }}></div>
+                <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-20"
+                    style={{ background: `radial-gradient(circle, ${C.pink}, transparent)` }}></div>
+                <div className="absolute -left-4 -bottom-4 w-20 h-20 rounded-full opacity-15"
+                    style={{ background: `radial-gradient(circle, #F472B6, transparent)` }}></div>
                 <div className="relative z-10">
                     <div className="flex items-center gap-3 mb-2">
                         <div className="text-3xl">💰</div>
                         <div>
-                            <div className="text-base font-black text-white">精灵能量站设置</div>
-                            <div className="text-[10px] font-bold text-white/40">
+                            <div className="text-base font-black" style={{ color: C.textPrimary }}>星尘等级设置</div>
+                            <div className="text-[10px] font-bold mt-0.5" style={{ color: C.textSoft }}>
                                 管理利息参数，让家庭币生息
                             </div>
                         </div>
                     </div>
-                    <div className="text-[10px] font-bold text-white/30 mt-2">
-                        💡 精灵等级越高，利息加成越多，鼓励孩子坚持打卡！
+                    <div className="text-[10px] font-bold mt-2" style={{ color: C.textSoft }}>
+                        💡 星尘等级越高，利息加成越多，鼓励孩子坚持打卡！
                     </div>
                 </div>
             </div>
@@ -169,7 +172,7 @@ export const InterestSettingsApp = () => {
                                                 +{est}/周
                                             </div>
                                             <div className="text-[8px] font-bold" style={{ color: C.textMuted }}>
-                                                {baseRate}%{priv.interestBonus > 0 ? ` +${priv.interestBonus}%精灵` : ''}
+                                                {baseRate}%{priv.interestBonus > 0 ? ` +${priv.interestBonus}%等级` : ''}
                                             </div>
                                         </div>
                                     </div>

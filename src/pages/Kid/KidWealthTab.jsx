@@ -12,7 +12,7 @@ import { useTransactionDetails } from '../../hooks/useTransactionDetails.jsx';
 const C = {
     bg: '#FBF7F0', bgCard: '#FFFFFF', bgLight: '#F0EBE1', bgMuted: '#E8E0D4',
     orange: '#FF8C42', orangeHot: '#FF6B1A', yellow: '#FFD93D', teal: '#4ECDC4',
-    coral: '#FF6B6B', green: '#10B981', red: '#EF4444',
+    coral: '#FF6B6B', green: '#10B981', red: '#EF4444', pink: '#EC4899',
     textPrimary: '#1B2E4B', textSoft: '#5A6E8A', textMuted: '#9CAABE',
 };
 
@@ -88,8 +88,9 @@ export const KidWealthTab = () => {
     const monthlyIncome = allTx.filter(t => t.type === 'income' && new Date(t.date) >= monthAgo).reduce((s, t) => s + (t.amount || 0), 0);
     const totalSpent = allTx.filter(t => t.type !== 'income').reduce((s, t) => s + (t.amount || 0), 0);
 
-    // Filtered recent transactions for the list
+    // Filtered recent transactions for today
     const filteredTx = allTx
+        .filter(t => new Date(t.date).toDateString() === now.toDateString())
         .filter(t => {
             if (txFilter === 'income') return t.type === 'income';
             if (txFilter === 'expense') return t.type !== 'income';
@@ -97,9 +98,23 @@ export const KidWealthTab = () => {
         })
         .slice(0, 20);
 
-    // Today's earned (completed tasks today)
-    const todayEarned = allTx
-        .filter(t => t.type === 'income' && new Date(t.date).toDateString() === now.toDateString())
+    // Today's earned details
+    const todayTx = allTx.filter(t => new Date(t.date).toDateString() === now.toDateString());
+    
+    const todayTaskEarned = todayTx
+        .filter(t => t.type === 'income' && t.category === 'task')
+        .reduce((s, t) => s + (t.amount || 0), 0);
+        
+    const todayHabitEarned = todayTx
+        .filter(t => t.type === 'income' && t.category === 'habit')
+        .reduce((s, t) => s + (t.amount || 0), 0);
+        
+    const todaySpent = todayTx
+        .filter(t => t.type === 'expense')
+        .reduce((s, t) => s + Math.abs(t.amount || 0), 0);
+
+    const todayEarned = todayTx
+        .filter(t => t.type === 'income')
         .reduce((s, t) => s + (t.amount || 0), 0);
 
     return (
@@ -154,24 +169,24 @@ export const KidWealthTab = () => {
                                 </div>
                             </div>
 
-                            {/* Time-range stats row — weekly / monthly / spent */}
+                            {/* Actively motivating stats row */}
                             <div className="flex items-center gap-4 mb-4 flex-wrap">
                                 <div className="flex items-center gap-1.5">
-                                    <Icons.TrendingUp size={12} style={{ color: C.green }} />
+                                    <Icons.CheckSquare size={12} style={{ color: C.green }} />
                                     <span className="text-[11px] font-bold" style={{ color: C.textSoft }}>
-                                        本周 <span className="font-black" style={{ color: C.green }}>+{weeklyIncome.toLocaleString()}</span>
+                                        今日任务赚取 <span className="font-black" style={{ color: C.green }}>+{todayTaskEarned.toLocaleString()}</span>
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                    <Icons.TrendingUp size={12} style={{ color: C.teal }} />
+                                    <Icons.ShieldCheck size={12} style={{ color: C.teal }} />
                                     <span className="text-[11px] font-bold" style={{ color: C.textSoft }}>
-                                        本月 <span className="font-black" style={{ color: C.teal }}>+{monthlyIncome.toLocaleString()}</span>
+                                        习惯养成 <span className="font-black" style={{ color: C.teal }}>+{todayHabitEarned.toLocaleString()}</span>
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                    <Icons.TrendingDown size={12} style={{ color: C.coral }} />
+                                    <Icons.ShoppingBag size={12} style={{ color: C.coral }} />
                                     <span className="text-[11px] font-bold" style={{ color: C.textSoft }}>
-                                        已消费 <span className="font-black" style={{ color: C.coral }}>{totalSpent.toLocaleString()}</span>
+                                        消费支出 <span className="font-black" style={{ color: C.coral }}>{todaySpent > 0 ? `-${todaySpent.toLocaleString()}` : '0'}</span>
                                     </span>
                                 </div>
                             </div>
@@ -202,52 +217,62 @@ export const KidWealthTab = () => {
                 {/* ═══ Spirit Energy Station (Interest Preview) ═══ */}
                 <div className="mx-4 mb-4 rounded-2xl p-5 relative overflow-hidden"
                     style={{
-                        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-                        border: '1px solid rgba(78,205,196,0.15)',
-                        boxShadow: `0 4px 24px ${spiritForm.glow}`,
+                        background: 'linear-gradient(135deg, #E6EAFF 0%, #FBF7F0 100%)',
+                        border: '1px solid #E6EAFF',
+                        boxShadow: `0 4px 24px rgba(108, 156, 255, 0.1)`,
                     }}>
                     {/* Decorative glow */}
                     <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-20"
                         style={{ background: `radial-gradient(circle, ${spiritForm.color}, transparent)` }}></div>
-                    <div className="absolute -left-4 -bottom-4 w-20 h-20 rounded-full opacity-10"
-                        style={{ background: `radial-gradient(circle, ${C.teal}, transparent)` }}></div>
+                    <div className="absolute -left-4 -bottom-4 w-20 h-20 rounded-full opacity-15"
+                        style={{ background: `radial-gradient(circle, ${spiritForm.color}, transparent)` }}></div>
 
                     <div className="relative z-10">
                         <div className="flex items-center gap-3 mb-3">
-                            <div className="text-3xl"
-                                style={{ animation: 'spiritFloat 3s ease-in-out infinite' }}>
-                                {spiritForm.emoji}
+                            <div style={{ animation: 'spiritFloat 3s ease-in-out infinite' }}>
+                                <Icons.Sparkles size={32} style={{ color: spiritForm.color }} />
                             </div>
                             <div>
-                                <div className="font-black text-sm text-white flex items-center gap-1.5">精灵能量站 <HelpTip {...HELP.interest} size={12} /></div>
-                                <div className="text-[10px] font-bold text-white/40">
-                                    {spiritForm.name} · 精灵帮你用能量站赚利息
+                                <div className="font-black text-sm flex items-center gap-2" style={{ color: C.textPrimary }}>
+                                    星尘等级
+                                    <span className="flex items-center gap-1.5 px-1.5 py-0.5 rounded-md" style={{ background: `${spiritForm.color}15`, border: `1px solid ${spiritForm.color}20` }}>
+                                        <span className="px-1.5 py-0.5 rounded text-[9px] shadow-sm" style={{ background: spiritForm.color, color: '#FFF' }}>
+                                            Lv.{activeKid.level}
+                                        </span>
+                                        <span className="text-[11px] font-black pr-1 truncate" style={{ color: spiritForm.color }}>
+                                            {spiritForm.name}
+                                        </span>
+                                    </span>
+                                    <HelpTip {...HELP.interest} size={12} />
+                                </div>
+                                <div className="text-[10px] font-bold mt-1" style={{ color: C.textSoft }}>
+                                    提升星尘等级，解锁更高专属利息加成！
                                 </div>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-3 gap-2">
-                            <div className="rounded-xl p-2.5 text-center" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                                <div className="text-[9px] font-bold text-white/40 mb-1">基础利率</div>
+                            <div className="rounded-xl p-2.5 text-center" style={{ background: 'rgba(255,255,255,0.6)', border: `1px solid rgba(255,255,255,0.8)` }}>
+                                <div className="text-[9px] font-bold mb-1" style={{ color: C.textSoft }}>基础利率</div>
                                 <div className="text-sm font-black" style={{ color: C.teal }}>{baseInterestRate}%/周</div>
                             </div>
-                            <div className="rounded-xl p-2.5 text-center" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                                <div className="text-[9px] font-bold text-white/40 mb-1">精灵加成</div>
-                                <div className="text-sm font-black" style={{ color: privileges.interestBonus > 0 ? spiritForm.color : 'rgba(255,255,255,0.3)' }}>
+                            <div className="rounded-xl p-2.5 text-center" style={{ background: 'rgba(255,255,255,0.6)', border: `1px solid rgba(255,255,255,0.8)` }}>
+                                <div className="text-[9px] font-bold mb-1" style={{ color: C.textSoft }}>等级加成</div>
+                                <div className="text-sm font-black" style={{ color: privileges.interestBonus > 0 ? spiritForm.color : C.textMuted }}>
                                     {privileges.interestBonus > 0 ? `+${privileges.interestBonus}%` : '未解锁'}
                                 </div>
                             </div>
-                            <div className="rounded-xl p-2.5 text-center" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                                <div className="text-[9px] font-bold text-white/40 mb-1">预计利息</div>
-                                <div className="text-sm font-black" style={{ color: C.yellow }}>
+                            <div className="rounded-xl p-2.5 text-center" style={{ background: 'rgba(255,255,255,0.8)', border: `1px solid #FFF` }}>
+                                <div className="text-[9px] font-bold mb-1" style={{ color: C.textSoft }}>预计收益</div>
+                                <div className="text-sm font-black" style={{ color: C.orange }}>
                                     +{estimatedInterest}
                                 </div>
                             </div>
                         </div>
 
                         <div className="mt-2.5 flex items-center gap-2 px-1">
-                            <Icons.Clock size={10} style={{ color: 'rgba(255,255,255,0.3)' }} />
-                            <span className="text-[9px] font-bold text-white/30">
+                            <Icons.Clock size={10} style={{ color: C.textMuted }} />
+                            <span className="text-[9px] font-bold" style={{ color: C.textSoft }}>
                                 每周日自动结算 · 实际利率 {totalInterestRate}%/周
                             </span>
                         </div>
@@ -261,118 +286,11 @@ export const KidWealthTab = () => {
                     }
                 `}</style>
 
-                {/* ═══ Today's Earning Breakdown — reference-inspired ═══ */}
-                <div className="mx-4 mb-4 rounded-2xl p-5 relative overflow-hidden"
-                    style={{ background: C.bgCard, border: `1px solid ${C.bgLight}`, boxShadow: '0 2px 12px rgba(27,46,75,0.04)' }}>
-                    <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full opacity-[0.05]" style={{ background: C.orange }}></div>
-
-                    <div className="relative z-10">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2.5">
-                                <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-                                    style={{ background: `${C.orange}10` }}>
-                                    <Icons.Zap size={16} style={{ color: C.orange }} />
-                                </div>
-                                <div>
-                                    <div className="font-black text-sm" style={{ color: C.textPrimary }}>今日收入明细</div>
-                                    <div className="text-[11px] font-bold" style={{ color: C.textMuted }}>
-                                        已赚取 <span style={{ color: C.green }}>+{todayEarned}</span> 家庭币
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Breakdown items */}
-                        <div className="space-y-2">
-                            {/* Study tasks */}
-                            <div className="flex items-center justify-between py-2.5 px-3 rounded-xl" style={{ background: C.bg }}>
-                                <div className="flex items-center gap-2.5">
-                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                                        style={{ background: `${C.orange}10` }}>
-                                        <Icons.BookOpen size={14} style={{ color: C.orange }} />
-                                    </div>
-                                    <div>
-                                        <div className="text-xs font-bold" style={{ color: C.textPrimary }}>学习任务</div>
-                                        <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>
-                                            已完成 {completedStudy}/{myStudyTasks.length} 个
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    {pendingStudyReward > 0 ? (
-                                        <span className="text-xs font-black" style={{ color: C.orange }}>可赚 +{pendingStudyReward}</span>
-                                    ) : (
-                                        <span className="text-xs font-black" style={{ color: C.green }}>
-                                            <Icons.CheckCircle size={11} className="inline mr-0.5" style={{ verticalAlign: '-1px' }} /> 全部完成
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Habit tasks */}
-                            <div className="flex items-center justify-between py-2.5 px-3 rounded-xl" style={{ background: C.bg }}>
-                                <div className="flex items-center gap-2.5">
-                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                                        style={{ background: `${C.teal}10` }}>
-                                        <Icons.ShieldCheck size={14} style={{ color: C.teal }} />
-                                    </div>
-                                    <div>
-                                        <div className="text-xs font-bold" style={{ color: C.textPrimary }}>习惯打卡</div>
-                                        <div className="text-[10px] font-bold" style={{ color: C.textMuted }}>
-                                            已打卡 {completedHabit}/{myHabitTasks.length} 个
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    {pendingHabitReward > 0 ? (
-                                        <span className="text-xs font-black" style={{ color: C.teal }}>可赚 +{pendingHabitReward}</span>
-                                    ) : (
-                                        <span className="text-xs font-black" style={{ color: C.green }}>
-                                            <Icons.CheckCircle size={11} className="inline mr-0.5" style={{ verticalAlign: '-1px' }} /> 全部完成
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
 
 
 
-                            {/* Full attendance bonus hint */}
-                            {totalPending > 0 && (
-                                <div className="flex items-center gap-2 pt-2 px-1">
-                                    <Icons.Award size={13} style={{ color: C.orange }} />
-                                    <span className="text-[11px] font-bold" style={{ color: C.orange }}>
-                                        今天最多还能获得 <span className="font-black">{totalPending}</span> 家庭币
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
 
 
-
-                {/* ═══ 4-stat Summary Grid ═══ */}
-                <div className="grid grid-cols-4 gap-2.5 px-4 mb-4">
-                    {[
-                        { label: '总收入', value: allTx.filter(t => t.type === 'income').reduce((s, t) => s + (t.amount || 0), 0), color: C.green, icon: 'TrendingUp' },
-                        { label: '总支出', value: totalSpent, color: C.coral, icon: 'ShoppingBag' },
-                        { label: '净收益', value: allTx.filter(t => t.type === 'income').reduce((s, t) => s + (t.amount || 0), 0) - totalSpent, color: C.teal, icon: 'Activity' },
-                        { label: '交易数', value: allTx.length, color: C.orange, icon: 'Clock' },
-                    ].map((s, i) => {
-                        const IconCmp = Icons[s.icon] || Icons.Star;
-                        return (
-                            <div key={i} className="rounded-2xl p-3 text-center"
-                                style={{ background: C.bgCard, border: `1px solid ${C.bgLight}` }}>
-                                <div className="w-7 h-7 rounded-lg flex items-center justify-center mx-auto mb-1.5"
-                                    style={{ background: `${s.color}10` }}>
-                                    <IconCmp size={13} style={{ color: s.color }} />
-                                </div>
-                                <div className="text-[10px] font-bold mb-0.5" style={{ color: C.textMuted }}>{s.label}</div>
-                                <div className="text-sm font-black" style={{ color: s.color }}>{typeof s.value === 'number' ? s.value.toLocaleString() : s.value}</div>
-                            </div>
-                        );
-                    })}
-                </div>
 
                 {/* ═══ Transaction History — Banking App style with filter ═══ */}
                 <div className="mx-4 rounded-2xl overflow-hidden" style={{ background: C.bgCard, border: `1px solid ${C.bgLight}` }}>
@@ -383,7 +301,7 @@ export const KidWealthTab = () => {
                                 style={{ background: `${C.orange}10` }}>
                                 <Icons.List size={15} style={{ color: C.orange }} />
                             </div>
-                            <h3 className="font-black text-sm" style={{ color: C.textPrimary }}>交易记录</h3>
+                            <h3 className="font-black text-sm" style={{ color: C.textPrimary }}>今日交易明细</h3>
                         </div>
                         <button onClick={() => setShowTransactionHistoryModal(true)}
                             className="text-xs font-bold flex items-center gap-0.5 transition-all active:scale-95"

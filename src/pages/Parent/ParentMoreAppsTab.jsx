@@ -94,10 +94,10 @@ export const ParentMoreAppsTab = () => {
         {
             id: 'interest_settings',
             icon: <Icons.TrendingUp size={22} />,
-            label: '精灵能量站',
+            label: '星尘等级',
             desc: '利息设置与发放',
-            color: 'text-teal-600',
-            bgColor: 'bg-teal-50',
+            color: 'text-fuchsia-600',
+            bgColor: 'bg-fuchsia-50',
             onClick: () => setCurrentApp('interest_settings'),
         },
         {
