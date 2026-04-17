@@ -144,6 +144,34 @@ const db = {
     pool,
 };
 
+// ─── Auto-Migrate schema changes ───
+async function executeCreateTable(client, sql) {
+    await client.query(sql);
+    const match = sql.match(/CREATE TABLE IF NOT EXISTS "?([a-z_]+)"?\s*\(([\s\S]*?)\)/i);
+    if (!match) return;
+    const tableName = match[1];
+    const columnsText = match[2];
+    const colLines = columnsText.split(/\r?\n/);
+    for (let line of colLines) {
+        line = line.trim();
+        if (!line || line.toUpperCase().startsWith("UNIQUE") || line.toUpperCase().startsWith("PRIMARY KEY") || line.toUpperCase().startsWith("FOREIGN KEY")) continue;
+        if (line.endsWith(",")) line = line.substring(0, line.length - 1).trim();
+        
+        const colMatch = line.match(/^"?([a-z_]+)"?\s+(.+)/i);
+        if (colMatch) {
+            if (colMatch[2].toUpperCase().includes("PRIMARY KEY")) continue;
+            const colName = colMatch[1];
+            let definition = colMatch[2];
+            definition = definition.replace(/NOT NULL/gi, "").trim();
+            try {
+                await client.query(`ALTER TABLE ${tableName} ADD COLUMN IF NOT EXISTS ${colName} ${definition}`);
+            } catch (e) {
+                console.warn(`[Auto-Migrate] Warning for ${tableName}.${colName}:`, e.message);
+            }
+        }
+    }
+}
+
 // ─── Initialize Schema ───
 async function initializeDatabase() {
     const client = await pool.connect();
@@ -151,7 +179,7 @@ async function initializeDatabase() {
         console.log('Connected to PostgreSQL database.');
 
         // Users Table
-        await client.query(`CREATE TABLE IF NOT EXISTS users (
+        await executeCreateTable(client, `CREATE TABLE IF NOT EXISTS users (
             id TEXT PRIMARY KEY,
             email TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
@@ -164,7 +192,7 @@ async function initializeDatabase() {
         )`);
 
         // Activation Codes Table
-        await client.query(`CREATE TABLE IF NOT EXISTS activation_codes (
+        await executeCreateTable(client, `CREATE TABLE IF NOT EXISTS activation_codes (
             code TEXT PRIMARY KEY,
             duration_days INTEGER NOT NULL,
             plan_type TEXT DEFAULT 'custom',
@@ -179,7 +207,7 @@ async function initializeDatabase() {
         await client.query(`ALTER TABLE activation_codes ADD COLUMN IF NOT EXISTS plan_type TEXT DEFAULT 'custom'`);
 
         // Kids Table (all lowercase columns — PG auto-lowercases unquoted SQL)
-        await client.query(`CREATE TABLE IF NOT EXISTS kids (
+        await executeCreateTable(client, `CREATE TABLE IF NOT EXISTS kids (
             id TEXT PRIMARY KEY,
             userid TEXT NOT NULL,
             name TEXT NOT NULL,
@@ -194,7 +222,7 @@ async function initializeDatabase() {
         )`);
 
         // Tasks Table
-        await client.query(`CREATE TABLE IF NOT EXISTS tasks (
+        await executeCreateTable(client, `CREATE TABLE IF NOT EXISTS tasks (
             id TEXT PRIMARY KEY,
             userid TEXT NOT NULL,
             kidid TEXT,
@@ -224,7 +252,7 @@ async function initializeDatabase() {
         )`);
 
         // Inventory Table
-        await client.query(`CREATE TABLE IF NOT EXISTS inventory (
+        await executeCreateTable(client, `CREATE TABLE IF NOT EXISTS inventory (
             id TEXT PRIMARY KEY,
             userid TEXT NOT NULL,
             name TEXT NOT NULL,
@@ -240,7 +268,7 @@ async function initializeDatabase() {
         )`);
 
         // Orders Table
-        await client.query(`CREATE TABLE IF NOT EXISTS orders (
+        await executeCreateTable(client, `CREATE TABLE IF NOT EXISTS orders (
             id TEXT PRIMARY KEY,
             userid TEXT NOT NULL,
             kidid TEXT,
@@ -257,7 +285,7 @@ async function initializeDatabase() {
         // Migration: add itemid column if missing on existing DBs
         await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS itemid TEXT`);
         // Transactions Table
-        await client.query(`CREATE TABLE IF NOT EXISTS transactions (
+        await executeCreateTable(client, `CREATE TABLE IF NOT EXISTS transactions (
             id TEXT PRIMARY KEY,
             userid TEXT NOT NULL,
             kidid TEXT,
@@ -272,7 +300,7 @@ async function initializeDatabase() {
         await client.query(`ALTER TABLE transactions ADD COLUMN IF NOT EXISTS taskid TEXT`);
 
         // Interest Classes Table
-        await client.query(`CREATE TABLE IF NOT EXISTS classes (
+        await executeCreateTable(client, `CREATE TABLE IF NOT EXISTS classes (
             id TEXT PRIMARY KEY,
             userid TEXT NOT NULL,
             kidid TEXT NOT NULL,
@@ -299,7 +327,7 @@ async function initializeDatabase() {
         )`);
 
         // AI Config Table
-        await client.query(`CREATE TABLE IF NOT EXISTS ai_config (
+        await executeCreateTable(client, `CREATE TABLE IF NOT EXISTS ai_config (
             id INTEGER PRIMARY KEY DEFAULT 1,
             provider TEXT DEFAULT 'gemini',
             api_key TEXT DEFAULT '',
@@ -310,7 +338,7 @@ async function initializeDatabase() {
         )`);
 
         // AI Usage Log Table
-        await client.query(`CREATE TABLE IF NOT EXISTS ai_usage_log (
+        await executeCreateTable(client, `CREATE TABLE IF NOT EXISTS ai_usage_log (
             id SERIAL PRIMARY KEY,
             user_id TEXT NOT NULL,
             action TEXT DEFAULT 'parse-homework',
@@ -319,13 +347,13 @@ async function initializeDatabase() {
         )`);
 
         // User Settings Table
-        await client.query(`CREATE TABLE IF NOT EXISTS user_settings (
+        await executeCreateTable(client, `CREATE TABLE IF NOT EXISTS user_settings (
             userid TEXT PRIMARY KEY,
             data TEXT DEFAULT '{}'
         )`);
 
         // Login Log
-        await client.query(`CREATE TABLE IF NOT EXISTS login_log (
+        await executeCreateTable(client, `CREATE TABLE IF NOT EXISTS login_log (
             id SERIAL PRIMARY KEY,
             user_id TEXT NOT NULL,
             login_at TEXT NOT NULL,
@@ -333,7 +361,7 @@ async function initializeDatabase() {
         )`);
 
         // System Announcements
-        await client.query(`CREATE TABLE IF NOT EXISTS announcements (
+        await executeCreateTable(client, `CREATE TABLE IF NOT EXISTS announcements (
             id TEXT PRIMARY KEY,
             title TEXT NOT NULL,
             content TEXT,
@@ -344,7 +372,7 @@ async function initializeDatabase() {
         )`);
 
         // Error Logs Table (for monitoring)
-        await client.query(`CREATE TABLE IF NOT EXISTS error_logs (
+        await executeCreateTable(client, `CREATE TABLE IF NOT EXISTS error_logs (
             id TEXT PRIMARY KEY,
             source TEXT DEFAULT 'frontend',
             message TEXT,
@@ -373,7 +401,7 @@ async function initializeDatabase() {
         await client.query(`ALTER TABLE kids ADD COLUMN IF NOT EXISTS badges TEXT DEFAULT '[]'`);
 
         // Interest History Table
-        await client.query(`CREATE TABLE IF NOT EXISTS interest_history (
+        await executeCreateTable(client, `CREATE TABLE IF NOT EXISTS interest_history (
             id TEXT PRIMARY KEY,
             userid TEXT NOT NULL,
             kidid TEXT NOT NULL,
@@ -385,7 +413,7 @@ async function initializeDatabase() {
         )`);
 
         // App Settings Table (key-value config)
-        await client.query(`CREATE TABLE IF NOT EXISTS app_settings (
+        await executeCreateTable(client, `CREATE TABLE IF NOT EXISTS app_settings (
             key TEXT PRIMARY KEY,
             value TEXT DEFAULT ''
         )`);
@@ -404,7 +432,7 @@ async function initializeDatabase() {
         }
 
         // ── Pet Rooms: per-kid customizable rooms ──────────────────────
-        await client.query(`CREATE TABLE IF NOT EXISTS pet_rooms (
+        await executeCreateTable(client, `CREATE TABLE IF NOT EXISTS pet_rooms (
             id TEXT PRIMARY KEY,
             userid TEXT NOT NULL,
             kidid TEXT NOT NULL,
@@ -427,7 +455,7 @@ async function initializeDatabase() {
         await client.query(`ALTER TABLE pet_rooms ADD COLUMN IF NOT EXISTS hotbar_json TEXT DEFAULT '[]'`);
         await client.query(`ALTER TABLE pet_rooms ADD COLUMN IF NOT EXISTS pet_name TEXT DEFAULT '波奇'`);
         // ── Pet Anti-Addiction: daily interaction tracking ──────────────
-        await client.query(`CREATE TABLE IF NOT EXISTS pet_anti_addiction (
+        await executeCreateTable(client, `CREATE TABLE IF NOT EXISTS pet_anti_addiction (
             id TEXT PRIMARY KEY,
             userid TEXT NOT NULL,
             kidid TEXT NOT NULL,
