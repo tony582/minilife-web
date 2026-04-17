@@ -93,7 +93,7 @@ export const KidApp = () => {
 
     return (
         <>
-        <div className="min-h-screen font-sans pb-24 text-left animate-fade-in overflow-x-hidden" style={{ background: (kidTab === 'study' || kidTab === 'habit' || kidTab === 'wealth' || kidTab === 'profile') ? '#FBF7F0' : '#f4f7f9' }}>
+        <div className={`min-h-screen font-sans text-left animate-fade-in overflow-x-hidden ${kidTab !== 'profile' ? 'pb-24' : ''}`} style={{ background: (kidTab === 'study' || kidTab === 'habit' || kidTab === 'wealth' || kidTab === 'profile') ? '#FBF7F0' : '#f4f7f9' }}>
             {/* Mobile navbar - unchanged */}
             <div className="md:hidden bg-white border-b border-slate-100 px-4 py-3 flex justify-between items-center sticky top-0 z-20 shadow-sm">
                 <div className="flex items-center gap-2">
@@ -268,7 +268,7 @@ export const KidApp = () => {
                 </div>
             )}
             {kidTab === 'profile' && (
-                <div className="px-4 md:px-8 pb-28 md:pb-8">
+                <div style={{ marginTop: '-1px' }}>
                     <KidProfileTab />
                 </div>
             )}
