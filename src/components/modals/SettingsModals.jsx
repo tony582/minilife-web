@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Icons, AvatarDisplay } from '../../utils/Icons';
 import { apiFetch, safeJson, safeJsonOr } from '../../api/client';
+import { detectGender, DEFAULT_BOY_AVATAR } from '../../utils/avatarPresets';
 
 export const SettingsModals = ({ context }) => {
     const {
@@ -42,8 +43,7 @@ export const SettingsModals = ({ context }) => {
                                         </div>
                                         <div className="flex items-center gap-2 shrink-0">
                                             <button onClick={() => {
-                                                const boyAvatars = ['👦', '🧑‍🚀', '🦸‍♂️', '🕵️‍♂️', '👼'];
-                                                const gender = boyAvatars.includes(k.avatar) ? 'boy' : 'girl';
+                                                const gender = detectGender(k.avatar);
                                                 setNewKidForm({ id: k.id, name: k.name, gender, avatar: k.avatar });
                                                 setShowAddKidModal(true);
                                             }} className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-500 hover:border-indigo-200 hover:bg-indigo-50 transition-colors">
@@ -68,7 +68,7 @@ export const SettingsModals = ({ context }) => {
                                 if (kids.length >= 5) {
                                     return notify("目前最多支持添加5名家庭成员！", "warning");
                                 }
-                                setNewKidForm({ id: null, name: '', gender: 'boy', avatar: '👦' });
+                                setNewKidForm({ id: null, name: '', gender: 'boy', avatar: DEFAULT_BOY_AVATAR });
                                 setShowAddKidModal(true);
                             }} className="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 border-2 border-dashed border-slate-300 transition-colors flex items-center justify-center gap-2">
                                 <Icons.Plus size={18} className="text-slate-400" /> 添加家庭成员

@@ -161,7 +161,7 @@ export const HabitTemplateModal = ({ isOpen, onClose }) => {
     const badTemplates = BAD_HABIT_TEMPLATES;
 
     return createPortal(
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-0 md:p-6 animate-fade-in"
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-0 md:p-6 animate-fade-in"
             style={{ background: 'rgba(27,46,75,0.35)', backdropFilter: 'blur(10px)' }}
             onClick={onClose}>
             <div className="w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden animate-bounce-in"
@@ -267,7 +267,7 @@ export const HabitTemplateModal = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* Footer */}
-                <div className="shrink-0 p-4" style={{ background: C.bgCard, borderTop: `1px solid ${C.bgLight}` }}>
+                <div className="shrink-0 p-4" style={{ background: C.bgCard, borderTop: `1px solid ${C.bgLight}`, paddingBottom: 'max(1rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))' }}>
                     <button onClick={handleImport}
                         disabled={totalSelected === 0 || importing}
                         className="w-full py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
