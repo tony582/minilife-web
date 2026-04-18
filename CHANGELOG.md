@@ -4,7 +4,35 @@
 
 ---
 
-## [1.2.0] - 2026-04-16
+## [1.3.0] - 2026-04-18
+
+### 🎨 头像系统重建
+- **新增 `avatarPresets.js`** — 统一管理头像预设、URL 生成、性别检测（取代分散的 emoji 数组）
+- **集成 DiceBear Miniavs** — 克制高质感扁平人物风格，纯 CDN，零安装
+- **精选儿童友好预设**：女生 8 个（Lily / Sofia / Xiao / Mila / Bubu / Cherry / Lele / Nini）+ 男生 8 个（Noah / Rex / Bao / Ace / Pangpang / Bear / Paisley / Maple）
+- 所有头像均通过 API 参数限制：无眼镜、无耳环、无胡须，完全儿童友好
+- 存储格式 `miniavs:SeedName`，兼容旧版 base64 照片和 emoji 头像
+
+### 👤 AddKidModal 重构
+- 头像选择器从 emoji 网格升级为 **Miniavs 图片网格**（4列，按性别过滤）
+- **新增宝贝照片上传** — 拍照/相册上传，压缩至 320px JPEG；上传后显示圆形预览 + ✕ 清除
+- 性别切换自动预选对应性别默认头像
+- 男孩/女孩 emoji 替换为 **♂/♀ 扁平符号**
+
+### 🔒 批量导入习惯全屏修复（手机端）
+- `HabitTemplateModal` z-index 从 `z-[200]` 提升至 `z-[10000]`，覆盖底部导航栏（z-9999）
+- Footer 新增 `safe-area-inset-bottom` 内边距，适配 iPhone 刘海
+
+### 🧩 AvatarDisplay 组件升级
+- 支持 `miniavs:seed` 格式渲染，自动拼接 DiceBear API URL
+- 向后兼容 base64 照片和 legacy emoji
+
+### 📝 文档
+- CHANGELOG.md 补充历史版本记录
+- avatarPresets.js 内置注释说明存储格式和参数约束
+
+---
+
 
 ### 🏗 架构重构
 - **VirtualPetDashboard 拆分** — 2064 行巨型文件拆分为 4 个模块：

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Icons } from '../../utils/Icons';
 import { apiFetch } from '../../api/client';
+import { GIRL_AVATAR_SEEDS, BOY_AVATAR_SEEDS, seedToAvatar, getAvatarUrl, detectGender } from '../../utils/avatarPresets';
 
 export const AvatarPickerModal = ({ context }) => {
     const {
@@ -104,16 +105,31 @@ export const AvatarPickerModal = ({ context }) => {
                             </div>
                         </div>
 
-                        {/* Emoji presets */}
-                        {['👦', '👧', '🦁', '🦊', '🐱', '🐶', '🐰', '🐯', '🐼', '🐨', '🦖', '🚀'].map(emoji => (
-                            <button
-                                key={emoji}
-                                onClick={() => setPendingAvatar(emoji)}
-                                className={`w-14 h-14 text-3xl flex items-center justify-center rounded-2xl transition-all flex-shrink-0 ${pendingAvatar === emoji ? 'bg-indigo-100 border-[3px] border-indigo-400 scale-110 shadow-lg' : 'bg-slate-50 border border-slate-100 hover:bg-slate-100 hover:scale-105'} ${pendingAvatar?.startsWith('data:image/') ? 'opacity-50 grayscale' : ''}`}
-                            >
-                                {emoji}
-                            </button>
-                        ))}
+                    {/* Miniavs preset grid */}
+                        <div className="mb-3">
+                            <p className="text-xs font-bold text-slate-400 mb-3">选择专属头像</p>
+                            <div className="grid grid-cols-4 gap-3">
+                                {(() => {
+                                    const gender = detectGender(activeKid.avatar);
+                                    const seeds = gender === 'boy' ? BOY_AVATAR_SEEDS : GIRL_AVATAR_SEEDS;
+                                    return seeds.map(seed => {
+                                        const av = seedToAvatar(seed);
+                                        const isSelected = pendingAvatar === av;
+                                        return (
+                                            <button
+                                                key={seed}
+                                                onClick={() => setPendingAvatar(av)}
+                                                className={`aspect-square rounded-2xl overflow-hidden border-2 transition-all ${
+                                                    isSelected ? 'border-indigo-400 scale-110 shadow-lg' : 'border-transparent bg-slate-50 hover:scale-105'
+                                                } ${pendingAvatar?.startsWith('data:image/') ? 'opacity-50 grayscale' : ''}`}
+                                            >
+                                                <img src={getAvatarUrl(av)} alt={seed} className="w-full h-full object-cover" loading="lazy" />
+                                            </button>
+                                        );
+                                    });
+                                })()}
+                            </div>
+                        </div>
                     </div>
                 </div>
 

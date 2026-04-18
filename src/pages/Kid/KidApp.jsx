@@ -173,10 +173,15 @@ export const KidApp = () => {
                                         </svg>
                                         <div className="w-8 h-8 rounded-full flex items-center justify-center text-lg overflow-hidden relative z-10 bg-amber-50"><AvatarDisplay avatar={activeKid.avatar} /></div>
                                     </div>
-                                    <div className="text-left">
-                                        <div className="text-xs font-bold text-slate-700 leading-tight">{activeKid.name}</div>
-                                        <div className="text-[9px] font-bold text-slate-400 leading-tight">{getSpiritForm(activeKid.level).emoji} LV.{activeKid.level} · {activeKid.exp}/{nextLevelExp}</div>
-                                    </div>
+                                        <div className="text-left">
+                                            <div className="text-xs font-bold text-slate-700 leading-tight">{activeKid.name}</div>
+                                            <div className="flex items-center gap-1.5 mt-0.5">
+                                                <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full text-white" style={{ background: getSpiritForm(activeKid.level).color }}>
+                                                    Lv.{activeKid.level}
+                                                </span>
+                                                <span className="text-[9px] font-bold text-slate-400">{activeKid.exp}/{nextLevelExp}</span>
+                                            </div>
+                                        </div>
                                     <Icons.ChevronDown size={12} className="text-slate-300" />
                                 </button>
                                 {showKidSwitcher && (
@@ -190,8 +195,8 @@ export const KidApp = () => {
                                                 <div>
                                                     <div className="font-black text-sm text-slate-800">{activeKid.name}</div>
                                                     <div className="flex items-center gap-1 mt-0.5">
-                                                        <span className={`text-[9px] font-black text-white px-1.5 py-px rounded bg-gradient-to-r ${getLevelTier(activeKid.level).bg}`}>
-                                                            {getLevelTier(activeKid.level).emoji} LV.{activeKid.level} {getLevelTier(activeKid.level).title}
+                                                        <span className={`text-[9px] font-black text-white px-2 py-0.5 rounded-full bg-gradient-to-r ${getLevelTier(activeKid.level).bg}`}>
+                                                            Lv.{activeKid.level} · {getLevelTier(activeKid.level).title}
                                                         </span>
                                                     </div>
                                                 </div>

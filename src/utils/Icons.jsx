@@ -124,5 +124,11 @@ export const AvatarDisplay = ({ avatar }) => {
     if (avatar.startsWith('data:image/') || avatar.startsWith('http')) {
         return <img src={avatar} alt="avatar" className="w-full h-full object-cover rounded-full" />;
     }
+    if (avatar.startsWith('miniavs:')) {
+        const seed = avatar.slice(8);
+        const url = `https://api.dicebear.com/8.x/miniavs/svg?seed=${encodeURIComponent(seed)}&radius=50&glasses[]=&earrings[]=&facialHair[]=`;
+        return <img src={url} alt={seed} className="w-full h-full object-cover rounded-full" />;
+    }
+    // Legacy emoji fallback
     return <>{avatar}</>;
 };

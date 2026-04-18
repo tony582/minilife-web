@@ -4,6 +4,7 @@ import { useUIContext } from '../../../context/UIContext.jsx';
 import { useToast } from '../../../hooks/useToast';
 import { apiFetch } from '../../../api/client';
 import { Icons, AvatarDisplay } from '../../../utils/Icons';
+import { detectGender, DEFAULT_BOY_AVATAR } from '../../../utils/avatarPresets';
 
 /**
  * KidSettingsApp - 孩子资料与管教
@@ -19,8 +20,7 @@ export const KidSettingsApp = () => {
     const { notify } = useToast();
 
     const handleEditKid = (k) => {
-        const boyAvatars = ['👦', '🧑‍🚀', '🦸‍♂️', '🕵️‍♂️', '👼'];
-        const gender = boyAvatars.includes(k.avatar) ? 'boy' : 'girl';
+        const gender = detectGender(k.avatar);
         setNewKidForm({ id: k.id, name: k.name, gender, avatar: k.avatar });
         setShowAddKidModal(true);
     };
@@ -41,7 +41,7 @@ export const KidSettingsApp = () => {
         if (kids.length >= 5) {
             return notify("目前最多支持添加5名家庭成员！", "warning");
         }
-        setNewKidForm({ id: null, name: '', gender: 'boy', avatar: '👦' });
+        setNewKidForm({ id: null, name: '', gender: 'boy', avatar: DEFAULT_BOY_AVATAR });
         setShowAddKidModal(true);
     };
 
