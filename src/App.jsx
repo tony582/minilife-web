@@ -18,6 +18,7 @@ import { GlobalModals } from './components/common/GlobalModals';
 import { SmartInstallBanner } from './components/common/SmartInstallBanner';
 import { PaywallModal } from './components/common/PaywallModal';
 import { ExpiredBanner } from './components/common/ExpiredBanner';
+import { SplashScreen } from './components/common/SplashScreen';
 
 function AppContent() {
   const { token, user, authLoading } = useAuthContext();
@@ -125,7 +126,7 @@ function AppContent() {
 
   // === 主返回 ===
   if (isLoading || authLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white font-bold text-xl">加载中...</div>;
+    return <SplashScreen />;
   }
 
   // Auth guard: not logged in → show login page

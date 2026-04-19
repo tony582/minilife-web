@@ -72,7 +72,8 @@ echo "   构建完成 ✅"
 # ─── 2. 上传前端 dist ───
 echo ""
 echo "📤 [2/4] 上传前端文件..."
-rsync -avz --delete "$PROJECT_DIR/dist/" root@$SERVER_IP:$APP_DIR/dist/
+# --exclude uploads/: 本地测试上传文件不覆盖生产服务器的用户数据
+rsync -avz --delete --exclude 'uploads/' "$PROJECT_DIR/dist/" root@$SERVER_IP:$APP_DIR/dist/
 echo "   前端上传完成 ✅"
 
 # ─── 3. 上传后端 server ───

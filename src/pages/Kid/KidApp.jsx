@@ -13,6 +13,7 @@ import { KidShopTab } from './KidShopTab';
 import { KidProfileTab } from './KidProfileTab';
 import PetCapsule from '../../components/VirtualPet/PetCapsule';
 
+
 export const KidApp = () => {
     const {
         kids,
@@ -28,10 +29,6 @@ export const KidApp = () => {
         changeAppState,
         showKidSwitcher,
         setShowKidSwitcher,
-        showParentPinModal,
-        setShowParentPinModal,
-        pinInput,
-        setPinInput,
         showAvatarPickerModal,
         setShowAvatarPickerModal,
         pendingAvatar,
@@ -54,29 +51,12 @@ export const KidApp = () => {
     };
 
     const openParentFromKid = () => {
-        if (parentSettings.pinEnabled) {
-            setShowParentPinModal(true);
-        } else {
-            changeAppState('parent_app');
-        }
+        // 直接跳 /parent/pin 全屏页，或者直接进家长端
+        // 和从「谁在使用」点「家长管理」完全一样的流程
+        changeAppState(parentSettings.pinEnabled ? 'parent_pin' : 'parent_app');
     };
 
-    const handlePinClick = (num) => {
-        if (pinInput.length < 4) {
-            const newVal = pinInput + num;
-            setPinInput(newVal);
-            if (newVal.length === 4) {
-                if (newVal === parentSettings.pinCode) {
-                    setShowParentPinModal(false);
-                    setPinInput('');
-                    changeAppState('parent_app');
-                } else {
-                    notify("家长密码错误！", "error");
-                    setPinInput('');
-                }
-            }
-        }
-    };
+
 
     if (!activeKid) return null;
 
@@ -231,77 +211,7 @@ export const KidApp = () => {
                 </div>
             </div>
 
-            {showParentPinModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center animate-fade-in"
-                    style={{ background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(16px)' }}
-                    onClick={() => { setShowParentPinModal(false); setPinInput(''); }}>
-                    <div className="relative bg-slate-800 w-full max-w-xs rounded-[2rem] border border-white/10 shadow-2xl mx-4"
-                        style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom, 1.5rem))' }}
-                        onClick={e => e.stopPropagation()}>
 
-                        {/* Close */}
-                        <button onClick={() => { setShowParentPinModal(false); setPinInput(''); }}
-                            className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center transition-all"
-                            style={{ background: 'rgba(255,255,255,0.08)', color: '#94A3B8' }}>
-                            <Icons.X size={18} />
-                        </button>
-
-                        <div className="px-6 pt-6 pb-2 text-center">
-                            {/* Lock icon */}
-                            <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
-                                style={{ background: 'rgba(99,102,241,0.15)', border: '2px solid rgba(99,102,241,0.3)' }}>
-                                <Icons.Lock size={24} style={{ color: '#818CF8' }} />
-                            </div>
-                            <h2 className="text-white text-lg font-black mb-5">输入家长 PIN 码</h2>
-
-                            {/* Dots */}
-                            <div className="flex gap-4 justify-center mb-6">
-                                {[...Array(4)].map((_, i) => (
-                                    <div key={i} className="w-5 h-5 rounded-full transition-all duration-200"
-                                        style={{
-                                            background: i < pinInput.length ? '#6366F1' : 'rgba(255,255,255,0.15)',
-                                            transform: i < pinInput.length ? 'scale(1.2)' : 'scale(1)',
-                                            boxShadow: i < pinInput.length ? '0 0 10px rgba(99,102,241,0.6)' : 'none'
-                                        }} />
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Keypad */}
-                        <div className="px-6 pb-2">
-                            <div className="grid grid-cols-3 gap-3">
-                                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
-                                    <button key={n} onClick={() => handlePinClick(n)}
-                                        className="h-14 rounded-2xl text-white text-2xl font-bold transition-all active:scale-95 flex items-center justify-center"
-                                        style={{ background: 'rgba(255,255,255,0.08)', WebkitTapHighlightColor: 'transparent' }}
-                                        onPointerDown={e => e.currentTarget.style.background = 'rgba(99,102,241,0.3)'}
-                                        onPointerUp={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-                                        onPointerLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}>
-                                        {n}
-                                    </button>
-                                ))}
-                                {/* empty */}
-                                <div />
-                                {/* 0 */}
-                                <button onClick={() => handlePinClick(0)}
-                                    className="h-14 rounded-2xl text-white text-2xl font-bold transition-all active:scale-95 flex items-center justify-center"
-                                    style={{ background: 'rgba(255,255,255,0.08)', WebkitTapHighlightColor: 'transparent' }}
-                                    onPointerDown={e => e.currentTarget.style.background = 'rgba(99,102,241,0.3)'}
-                                    onPointerUp={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-                                    onPointerLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}>
-                                    0
-                                </button>
-                                {/* Backspace */}
-                                <button onClick={() => setPinInput(pinInput.slice(0, -1))}
-                                    className="h-14 rounded-2xl flex items-center justify-center transition-all active:scale-95"
-                                    style={{ background: 'transparent', color: '#64748B', WebkitTapHighlightColor: 'transparent' }}>
-                                    <Icons.Delete size={24} />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
 
 
 
