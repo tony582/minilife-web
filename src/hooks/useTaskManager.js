@@ -1979,6 +1979,14 @@ const handleSavePlan = async () => {
     }));
   }
   try {
+    // Guard: Check total attachment payload size before sending
+    // base64 is ~133% of file size; iOS Safari crashes on very large JSON.stringify
+    const totalBase64 = (planForm.attachments || []).reduce((sum, a) => sum + (a.data?.length || 0), 0);
+    const PAYLOAD_LIMIT = 40 * 1024 * 1024; // 40MB base64 string limit
+    if (totalBase64 > PAYLOAD_LIMIT) {
+      notify('附件总大小超限，请减少或压缩后重试（视频建议30MB以内）', 'error');
+      return;
+    }
     await Promise.all(newTasks.map(task => apiFetch('/api/tasks', {
       method: 'POST',
       headers: {

@@ -19,7 +19,8 @@ export const AddPlanModal = ({ context }) => {
         getCategoryGradient, getCatHexColor,
         getIconForCategory,
         handleRejectTask,
-        AvatarDisplay
+        AvatarDisplay,
+        notify
     } = context;
 
     const fileInputRef = useRef(null);
@@ -539,7 +540,18 @@ export const AddPlanModal = ({ context }) => {
                                                         multiple style={{ display: 'none' }}
                                                         onChange={e => {
                                                             const files = Array.from(e.target.files);
+                                                            const MAX_VIDEO = 30 * 1024 * 1024;  // 30MB
+                                                            const MAX_AUDIO = 20 * 1024 * 1024;  // 20MB
+                                                            const MAX_IMAGE = 10 * 1024 * 1024;  // 10MB
                                                             files.forEach(file => {
+                                                                const isVideo = file.type.startsWith('video/');
+                                                                const isAudio = file.type.startsWith('audio/');
+                                                                const limit = isVideo ? MAX_VIDEO : isAudio ? MAX_AUDIO : MAX_IMAGE;
+                                                                const limitLabel = isVideo ? '30MB' : isAudio ? '20MB' : '10MB';
+                                                                if (file.size > limit) {
+                                                                    notify?.(`文件 "${file.name}" 超过 ${limitLabel} 限制，请压缩后重试`, 'error');
+                                                                    return;
+                                                                }
                                                                 const reader = new FileReader();
                                                                 reader.onload = ev => {
                                                                     setPlanForm(prev => ({
