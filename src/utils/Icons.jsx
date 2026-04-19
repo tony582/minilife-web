@@ -1,4 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { createAvatar } from '@dicebear/core';
+import * as miniavs from '@dicebear/miniavs';
+
 
 const IconWrapper = ({ size = 24, className = "", style, children }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>{children}</svg>
@@ -123,15 +126,34 @@ export const renderIcon = (name, size = 20, className = "") => {
     return <IconCmp size={size} className={className} />;
 };
 
+// Module-level cache: seed → data-URI so each avatar is generated only once
+const _avatarCache = new Map();
+
 export const AvatarDisplay = ({ avatar }) => {
+    const svgDataUri = useMemo(() => {
+        if (!avatar || !avatar.startsWith('miniavs:')) return null;
+        const seed = avatar.slice(8);
+        if (_avatarCache.has(seed)) return _avatarCache.get(seed);
+        // Generate locally — zero CDN request
+        const svg = createAvatar(miniavs, {
+            seed,
+            radius: 50,
+            glasses:     [],
+            earrings:    [],
+            facialHair:  [],
+        }).toString();
+        const uri = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+        _avatarCache.set(seed, uri);
+        return uri;
+    }, [avatar]);
+
     if (!avatar) return null;
+
+    if (svgDataUri) {
+        return <img src={svgDataUri} alt="avatar" className="w-full h-full object-cover rounded-full" />;
+    }
     if (avatar.startsWith('data:image/') || avatar.startsWith('http')) {
         return <img src={avatar} alt="avatar" className="w-full h-full object-cover rounded-full" />;
-    }
-    if (avatar.startsWith('miniavs:')) {
-        const seed = avatar.slice(8);
-        const url = `https://api.dicebear.com/8.x/miniavs/svg?seed=${encodeURIComponent(seed)}&radius=50&glasses[]=&earrings[]=&facialHair[]=`;
-        return <img src={url} alt={seed} className="w-full h-full object-cover rounded-full" />;
     }
     // Legacy emoji fallback
     return <>{avatar}</>;
