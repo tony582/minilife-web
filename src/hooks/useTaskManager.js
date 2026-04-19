@@ -9,6 +9,7 @@ import { getLevelTier, getLevelReq } from '../utils/levelUtils';
 import { getCatHexColor, getIconForCategory } from '../utils/categoryUtils';
 import { apiFetch } from '../api/client';
 import { isTaskDueOnDate, getPeriodProgress } from '../utils/taskUtils';
+import { useFileUpload } from './useFileUpload';
 
 let globalAudioCtx = null;
 
@@ -19,6 +20,8 @@ export const useTaskManager = (authC, dataC, uiC) => {
     const formStore = useFormStore.getState();
     const timerStore = useTimerStore.getState();
     const context = { ...authC, ...dataC, ...uiC, ...modalStore, ...formStore, ...timerStore };
+    // XHR upload with progress tracking for QC (打卡) attachments
+    const { uploadProgress: qcUploadProgress, enqueueUpload: qcEnqueueUpload } = useFileUpload();
     const { 
         activeKidId, kids, setKids, tasks, setTasks, transactions, setTransactions, notify, 
         pauseSync, resumeSync,
@@ -743,29 +746,17 @@ const getTaskStatusOnDate = (t, date, kidId) => {
     return;
   }
   for (const file of files) {
+    const { tempId, promise } = qcEnqueueUpload(file);
     // Insert uploading placeholder immediately
-    const tempId = `tmp_${Date.now()}_${Math.random()}`;
     setQcAttachments(prev => [...prev, { tempId, name: file.name, type: file.type, uploading: true }]);
-    // Upload
-    const token = localStorage.getItem('minilife_token');
-    const formData = new FormData();
-    formData.append('file', file);
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData,
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `上传失败 (${res.status})`);
-      }
-      const result = await res.json();
+    // Wait for upload result
+    const result = await promise;
+    if (result) {
       setQcAttachments(prev => prev.map(a => a.tempId === tempId
         ? { url: result.url, name: result.name, type: result.type, size: result.size }
         : a));
-    } catch (err) {
-      notify(err.message || '上传失败', 'error');
+    } else {
+      notify(`"${file.name}" 上传失败`, 'error');
       setQcAttachments(prev => prev.filter(a => a.tempId !== tempId));
     }
   }
@@ -2052,6 +2043,7 @@ const handleSavePlan = async () => {
         openQuickComplete,
         handleQcQuickDuration,
         handleQcFileUpload,
+        qcUploadProgress,
         handleQuickComplete,
         handleExpChange,
         handleMarkHabitComplete,

@@ -14,6 +14,7 @@ export const QuickCompleteModal = ({ context }) => {
         qcEndTime, setQcEndTime,
         qcNote, setQcNote,
         qcAttachments, setQcAttachments,
+        qcUploadProgress,
         handleQcQuickDuration,
         handleQcFileUpload,
         handleQuickComplete,
@@ -176,22 +177,54 @@ export const QuickCompleteModal = ({ context }) => {
                         </div>
                         {(qcAttachments || []).length > 0 && (
                             <div className="grid grid-cols-4 gap-2 mb-3">
-                                {(qcAttachments || []).map((att, idx) => (
-                                    <div key={idx} className="relative group">
-                                        {att.type.startsWith('image/') ? (
-                                            <img src={att.data} alt={att.name} className="w-full aspect-square object-cover rounded-xl border-2 border-slate-200" />
-                                        ) : (
-                                            <div className="w-full aspect-square bg-slate-100 rounded-xl border-2 border-slate-200 flex flex-col items-center justify-center p-1">
-                                                <Icons.FileText size={20} className="text-slate-400" />
-                                                <span className="text-[9px] text-slate-400 truncate w-full text-center mt-1">{att.name}</span>
+                                {(qcAttachments || []).map((att, idx) => {
+                                    // Uploading placeholder — progress ring
+                                    if (att.uploading) {
+                                        const pct = qcUploadProgress?.[att.tempId] ?? 0;
+                                        return (
+                                            <div key={att.tempId || idx} className="relative group w-full aspect-square bg-slate-50 rounded-xl border-2 border-slate-200 flex flex-col items-center justify-center gap-1">
+                                                <svg width="36" height="36" viewBox="0 0 36 36">
+                                                    <circle cx="18" cy="18" r="14" fill="none" stroke="#E2E8F0" strokeWidth="3" />
+                                                    <circle cx="18" cy="18" r="14" fill="none" stroke="#6366F1" strokeWidth="3"
+                                                        strokeLinecap="round"
+                                                        strokeDasharray={`${2 * Math.PI * 14}`}
+                                                        strokeDashoffset={`${2 * Math.PI * 14 * (1 - pct / 100)}`}
+                                                        transform="rotate(-90 18 18)"
+                                                        style={{ transition: 'stroke-dashoffset 0.3s ease' }} />
+                                                    <text x="18" y="22" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#6366F1">{pct}%</text>
+                                                </svg>
+                                                <span className="text-[9px] text-slate-400 truncate w-full text-center px-1">
+                                                    {att.name?.split('.').pop()?.toUpperCase()}
+                                                </span>
                                             </div>
-                                        )}
-                                        <button onClick={() => setQcAttachments(prev => prev.filter((_, i) => i !== idx))}
-                                            className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
-                                            <Icons.X size={12} />
-                                        </button>
-                                    </div>
-                                ))}
+                                        );
+                                    }
+                                    const src = att.url || att.data || '';
+                                    const isImage = att.type?.startsWith('image/');
+                                    const isAudio = att.type?.startsWith('audio/') || /\.(mp3|wav|m4a|aac)$/i.test(att.name || '');
+                                    const isVideo = att.type?.startsWith('video/') || /\.(mp4|mov|webm)$/i.test(att.name || '');
+                                    return (
+                                        <div key={idx} className="relative group">
+                                            {isImage && src ? (
+                                                <img src={src} alt={att.name} className="w-full aspect-square object-cover rounded-xl border-2 border-slate-200" />
+                                            ) : (
+                                                <div className="w-full aspect-square rounded-xl border-2 border-slate-200 flex flex-col items-center justify-center p-1"
+                                                    style={{ background: isAudio ? '#F0FDF4' : isVideo ? '#EFF6FF' : '#F8FAFC' }}>
+                                                    {isAudio ? <Icons.Music size={20} className="text-emerald-500" /> :
+                                                     isVideo ? <Icons.Video size={20} className="text-blue-500" /> :
+                                                     <Icons.FileText size={20} className="text-slate-400" />}
+                                                    <span className="text-[9px] text-slate-400 truncate w-full text-center mt-1">
+                                                        {(att.name || '').replace(/\.[^.]+$/, '').slice(0, 8)}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            <button onClick={() => setQcAttachments(prev => prev.filter((_, i) => i !== idx))}
+                                                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
+                                                <Icons.X size={12} />
+                                            </button>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
                         {(qcAttachments || []).length < 5 && (
@@ -200,7 +233,7 @@ export const QuickCompleteModal = ({ context }) => {
                                     <Icons.Upload size={20} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
                                 </div>
                                 <span className="text-sm font-bold text-slate-400 group-hover:text-indigo-500 transition-colors">点击上传图片或文件</span>
-                                <span className="text-[11px] text-slate-300 mt-1">支持图片、音频、视频</span>
+                                <span className="text-[11px] text-slate-300 mt-1">支持图片、音频、视频（上传时显示进度）</span>
                                 <input type="file" multiple accept="image/*,audio/*,video/*" onChange={handleQcFileUpload} className="hidden" />
                             </label>
                         )}

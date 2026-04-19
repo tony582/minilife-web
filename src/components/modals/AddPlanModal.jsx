@@ -4,6 +4,7 @@ import { useSwipeBack } from '../../hooks/useSwipeBack';
 import { Icons } from '../../utils/Icons';
 import { renderHabitIcon } from '../../utils/habitIcons';
 import { CategoryManagerModal } from './CategoryManagerModal';
+import { useFileUpload } from '../../hooks/useFileUpload';
 
 export const AddPlanModal = ({ context }) => {
     const {
@@ -25,31 +26,9 @@ export const AddPlanModal = ({ context }) => {
 
     const fileInputRef = useRef(null);
     const [showCategoryManager, setShowCategoryManager] = useState(false);
-    const [uploadingFiles, setUploadingFiles] = useState({}); // { tempId: true } while uploading
+    const { uploadProgress, enqueueUpload } = useFileUpload();
     const closeModal = useCallback(() => { setShowAddPlanModal(false); setEditingTask(null); }, [setShowAddPlanModal, setEditingTask]);
     const { swipeRef, swipeHandlers } = useSwipeBack(closeModal, { enabled: showAddPlanModal });
-
-    // Upload a single File via FormData, returns attachment object or null
-    const uploadFile = async (file) => {
-        const token = localStorage.getItem('minilife_token');
-        const formData = new FormData();
-        formData.append('file', file);
-        try {
-            const res = await fetch('/api/upload', {
-                method: 'POST',
-                headers: token ? { Authorization: `Bearer ${token}` } : {},
-                body: formData,
-            });
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                throw new Error(err.error || `上传失败 (${res.status})`);
-            }
-            return await res.json(); // { url, name, type, size }
-        } catch (e) {
-            notify?.(e.message || '上传失败', 'error');
-            return null;
-        }
-    };
 
     if (!showAddPlanModal) return null;
 
@@ -527,17 +506,26 @@ export const AddPlanModal = ({ context }) => {
                                         {/* 附件 — 图片/音频/视频 */}
                                         <div className="flex flex-wrap gap-2">
                                             {(planForm.attachments || []).map((att, i) => {
-                                                // Uploading placeholder — show spinner
+                                                // Uploading placeholder — show progress bar
                                                 if (att.uploading) {
+                                                    const pct = uploadProgress[att.tempId] ?? 0;
                                                     return (
-                                                        <div key={att.tempId || i} className="relative w-16 h-16 rounded-xl overflow-hidden flex flex-col items-center justify-center"
+                                                        <div key={att.tempId || i} className="relative w-16 h-16 rounded-xl overflow-hidden flex flex-col items-center justify-center gap-1"
                                                             style={{ border: '2px solid #FFE8D0', background: '#FBF7F0' }}>
-                                                            <div style={{
-                                                                width: 22, height: 22, borderRadius: '50%',
-                                                                border: '2.5px solid #FF8C42', borderTopColor: 'transparent',
-                                                                animation: 'spin 0.8s linear infinite'
-                                                            }} />
-                                                            <span className="text-[8px] font-bold mt-1" style={{ color: '#FF8C42' }}>上传中</span>
+                                                            {/* Circular progress */}
+                                                            <svg width="32" height="32" viewBox="0 0 32 32">
+                                                                <circle cx="16" cy="16" r="12" fill="none" stroke="#F0EBE1" strokeWidth="3" />
+                                                                <circle cx="16" cy="16" r="12" fill="none" stroke="#FF8C42" strokeWidth="3"
+                                                                    strokeLinecap="round"
+                                                                    strokeDasharray={`${2 * Math.PI * 12}`}
+                                                                    strokeDashoffset={`${2 * Math.PI * 12 * (1 - pct / 100)}`}
+                                                                    transform="rotate(-90 16 16)"
+                                                                    style={{ transition: 'stroke-dashoffset 0.3s ease' }} />
+                                                                <text x="16" y="20" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#FF8C42">{pct}%</text>
+                                                            </svg>
+                                                            <span className="text-[8px] font-bold" style={{ color: '#9CAABE' }}>
+                                                                {att.name?.split('.').pop()?.toUpperCase() || '...'}
+                                                            </span>
                                                         </div>
                                                     );
                                                 }
@@ -584,16 +572,14 @@ export const AddPlanModal = ({ context }) => {
                                                                     notify?.('最多上传 6 个附件', 'error');
                                                                     break;
                                                                 }
-                                                                // Insert placeholder so the UI shows a spinner immediately
-                                                                const tempId = `tmp_${Date.now()}_${Math.random()}`;
+                                                                const { tempId, promise } = enqueueUpload(file);
+                                                                // Insert placeholder immediately
                                                                 setPlanForm(prev => ({
                                                                     ...prev,
                                                                     attachments: [...(prev.attachments || []), { tempId, name: file.name, type: file.type, uploading: true }]
                                                                 }));
-                                                                setUploadingFiles(prev => ({ ...prev, [tempId]: true }));
-                                                                // Upload to server
-                                                                const result = await uploadFile(file);
-                                                                // Replace placeholder with result, or remove on failure
+                                                                // Await result and replace placeholder
+                                                                const result = await promise;
                                                                 setPlanForm(prev => ({
                                                                     ...prev,
                                                                     attachments: result
@@ -602,7 +588,7 @@ export const AddPlanModal = ({ context }) => {
                                                                             : a)
                                                                         : prev.attachments.filter(a => a.tempId !== tempId)
                                                                 }));
-                                                                setUploadingFiles(prev => { const n = { ...prev }; delete n[tempId]; return n; });
+                                                                if (!result) notify?.(`"${file.name}" 上传失败`, 'error');
                                                             }
                                                         }} />
                                                     <button type="button"
