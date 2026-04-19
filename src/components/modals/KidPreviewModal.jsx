@@ -89,16 +89,15 @@ const AttachmentThumb = ({ att, onClick }) => {
 
     if (isVideo) return (
         <div className="relative rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-all shrink-0"
-            style={{ border: '2px solid #BFDBFE', width: 90, height: 70, background: '#0F172A' }}
+            style={{ border: '2px solid #BFDBFE', width: 90, height: 70, background: 'linear-gradient(135deg, #1E3A5F, #0F172A)' }}
             onClick={onClick}>
-            <video src={src} className="w-full h-full object-cover" preload="metadata" muted playsInline
-                style={{ pointerEvents: 'none' }} />
-            <div className="absolute inset-0 flex items-center justify-center bg-black/30" onClick={onClick}>
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.92)' }}>
-                    <Icons.Play size={14} fill="#3B82F6" style={{ color: '#3B82F6', marginLeft: 1 }} />
+            {/* Static icon — do NOT use <video> here, large files cause lag */}
+            <div className="w-full h-full flex flex-col items-center justify-center gap-1">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: 'rgba(59,130,246,0.85)' }}>
+                    <Icons.Play size={16} fill="#fff" style={{ color: '#fff', marginLeft: 2 }} />
                 </div>
+                <span className="text-[9px] font-bold" style={{ color: '#93C5FD' }}>点击播放</span>
             </div>
-            <div className="absolute bottom-1 left-1 text-[8px] font-bold px-1.5 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.6)', color: '#93C5FD', pointerEvents: 'none' }}>视频</div>
         </div>
     );
 
@@ -386,18 +385,15 @@ export const KidPreviewModal = ({ context }) => {
                                                                             setCurrentPreviewIndex(Math.max(0, idx));
                                                                             setShowImagePreviewModal(true);
                                                                         }}
-                                                                        className="relative w-14 h-14 rounded-xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md hover:scale-105 transition-all ring-1 ring-slate-200"
-                                                                        style={{ background: isVid ? '#0F172A' : 'transparent' }}>
+                                                                        className="relative w-14 h-14 rounded-xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md hover:scale-105 transition-all ring-1 ring-slate-200">
                                                                         {isVid ? (
-                                                                            <>
-                                                                                <video src={src} className="w-full h-full object-cover" preload="metadata" muted playsInline
-                                                                                    style={{ pointerEvents: 'none' }} />
-                                                                                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                                                                                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.9)' }}>
-                                                                                        <Icons.Play size={10} fill="#3B82F6" style={{ color: '#3B82F6' }} />
-                                                                                    </div>
+                                                                            <div className="w-full h-full flex flex-col items-center justify-center"
+                                                                                style={{ background: 'linear-gradient(135deg, #1E3A5F, #0F172A)' }}>
+                                                                                <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: 'rgba(59,130,246,0.85)' }}>
+                                                                                    <Icons.Play size={11} fill="#fff" style={{ color: '#fff', marginLeft: 1 }} />
                                                                                 </div>
-                                                                            </>
+                                                                                <span className="text-[8px] font-bold mt-1" style={{ color: '#93C5FD' }}>视频</span>
+                                                                            </div>
                                                                         ) : (
                                                                             <img src={src} className="w-full h-full object-cover" alt="证据" />
                                                                         )}

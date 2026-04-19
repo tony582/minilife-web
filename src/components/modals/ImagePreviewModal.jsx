@@ -82,10 +82,10 @@ export const ImagePreviewModal = ({ context }) => {
                         key={mediaSrc}
                         src={mediaSrc}
                         controls
-                        autoPlay
                         playsInline
+                        preload="metadata"
                         className="max-w-full max-h-full rounded-lg shadow-2xl"
-                        style={{ maxHeight: 'calc(100vh - 120px)', outline: 'none' }}
+                        style={{ maxHeight: 'calc(100vh - 120px)', outline: 'none', background: '#000' }}
                     />
                 ) : (
                     <img

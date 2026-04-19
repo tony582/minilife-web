@@ -534,21 +534,34 @@ export const AddPlanModal = ({ context }) => {
                                                 const mime = (typeof att === 'object' && att.type) ? att.type : '';
                                                 const isAudio = mime.startsWith('audio/') || src.startsWith('data:audio') || /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(name);
                                                 const isVideo = mime.startsWith('video/') || src.startsWith('data:video') || /\.(mp4|mov|webm|avi|mkv)$/i.test(name);
-                                                return src ? (
+                                                                return src ? (
                                                     <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden flex flex-col items-center justify-center"
-                                                        style={{ border: '2px solid #FFE8D0', background: isAudio ? '#F0FDF4' : isVideo ? '#EFF6FF' : 'transparent' }}>
+                                                        style={{
+                                                            border: `2px solid ${isAudio ? '#A7F3D0' : isVideo ? '#BAE6FD' : '#FFE8D0'}`,
+                                                            background: isAudio
+                                                                ? 'linear-gradient(135deg, #ECFDF5, #D1FAE5)'
+                                                                : isVideo
+                                                                    ? 'linear-gradient(135deg, #EFF6FF, #DBEAFE)'
+                                                                    : 'transparent'
+                                                        }}>
                                                         {isAudio ? (
                                                             <>
-                                                                <Icons.Music size={22} style={{ color: '#10B981' }} />
-                                                                <span className="text-[8px] font-bold mt-1 px-1 text-center truncate w-full text-center" style={{ color: '#10B981' }}>{name.replace(/\.[^.]+$/, '').slice(0, 8)}</span>
+                                                                <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                    <Icons.Music size={16} style={{ color: '#fff' }} />
+                                                                </div>
+                                                                <span className="text-[8px] font-bold mt-1 px-1 text-center truncate w-full text-center" style={{ color: '#059669' }}>{name.split('.').pop()?.toUpperCase()} 音频</span>
                                                             </>
                                                         ) : isVideo ? (
                                                             <>
-                                                                <Icons.Video size={22} style={{ color: '#3B82F6' }} />
-                                                                <span className="text-[8px] font-bold mt-1 px-1 text-center truncate w-full text-center" style={{ color: '#3B82F6' }}>{name.replace(/\.[^.]+$/, '').slice(0, 8)}</span>
+                                                                <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                    <Icons.Play size={14} style={{ color: '#fff', marginLeft: 2 }} />
+                                                                </div>
+                                                                <span className="text-[8px] font-bold mt-1 px-1 text-center truncate w-full text-center" style={{ color: '#2563EB' }}>{name.split('.').pop()?.toUpperCase()} 视频</span>
                                                             </>
                                                         ) : (
-                                                            <img src={src} className="w-full h-full object-cover" />
+                                                            <img src={src} className="w-full h-full object-cover" alt={name}
+                                                                onError={e => { e.target.style.display = 'none'; e.target.nextSibling && (e.target.nextSibling.style.display = 'flex'); }}
+                                                            />
                                                         )}
                                                         <button onClick={() => {
                                                             const newAtts = [...(planForm.attachments || [])];
@@ -571,6 +584,14 @@ export const AddPlanModal = ({ context }) => {
                                                                 if ((planForm.attachments?.length || 0) >= 6) {
                                                                     notify?.('最多上传 6 个附件', 'error');
                                                                     break;
+                                                                }
+                                                                // ── 客户端大小预检 ──
+                                                                const isImg = file.type.startsWith('image/');
+                                                                const isAud = file.type.startsWith('audio/');
+                                                                const sizeLimit = isImg ? 10 : isAud ? 30 : 500; // MB
+                                                                if (file.size > sizeLimit * 1024 * 1024) {
+                                                                    notify?.(`「${file.name}」超过 ${sizeLimit}MB 限制，请压缩后再上传`, 'error');
+                                                                    continue;
                                                                 }
                                                                 const { tempId, promise } = enqueueUpload(file);
                                                                 // Insert placeholder immediately
