@@ -9,7 +9,7 @@ export const SplashScreen = () => {
     const [dots, setDots] = useState(0);
 
     useEffect(() => {
-        const id = setInterval(() => setDots(d => (d + 1) % 4), 500);
+        const id = setInterval(() => setDots(d => (d + 1) % 5), 500);
         return () => clearInterval(id);
     }, []);
 
