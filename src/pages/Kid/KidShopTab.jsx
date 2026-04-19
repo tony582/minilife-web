@@ -274,9 +274,17 @@ export const KidShopTab = () => {
                     {/* ═══ 小红书-style Waterfall Grid (CSS columns) ═══ */}
                     {filteredItems.length === 0 ? (
                         <div className="text-center rounded-2xl py-16 px-6" style={{ background: C.bgCard }}>
-                            <div className="text-4xl mb-2">{typeFilter === 'affordable' ? '🎯' : '🔍'}</div>
+                            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3"
+                                style={{ background: typeFilter === 'affordable' ? `${C.orange}18` : `${C.accent}18` }}>
+                                {typeFilter === 'affordable'
+                                    ? <Icons.Sparkles size={26} style={{ color: C.orange }} />
+                                    : <Icons.Search size={26} style={{ color: C.accent }} />}
+                            </div>
+                            <div className="text-sm font-black mb-1" style={{ color: C.textPrimary }}>
+                                {typeFilter === 'affordable' ? '还差一点点！' : searchKeyword ? '没找到' : '暂无商品'}
+                            </div>
                             <div className="text-xs font-bold" style={{ color: C.textMuted }}>
-                                {typeFilter === 'affordable' ? '攒攒金币，很快就能兑换啦' : searchKeyword ? '没有找到相关商品' : '暂无商品'}
+                                {typeFilter === 'affordable' ? '攒攒金币，很快就能兑换啦' : searchKeyword ? `"${searchKeyword}" 不在橱窗里` : '家长还没上架奖品哦'}
                             </div>
                         </div>
                     ) : (
@@ -292,8 +300,12 @@ export const KidShopTab = () => {
                 (() => {
                     if (myOrders.length === 0) return (
                         <div className="text-center rounded-2xl py-14" style={{ background: C.bgCard }}>
-                            <div className="text-3xl mb-1.5">📋</div>
-                            <div className="text-xs font-bold" style={{ color: C.textMuted }}>还没有兑换记录哦</div>
+                            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3"
+                                style={{ background: `${C.purple}18` }}>
+                                <Icons.Package size={26} style={{ color: C.purple }} />
+                            </div>
+                            <div className="text-sm font-black mb-1" style={{ color: C.textPrimary }}>还没有兑换记录</div>
+                            <div className="text-xs font-bold" style={{ color: C.textMuted }}>完成任务赚金币，去橱窗挑奖品吧</div>
                         </div>
                     );
 
@@ -358,7 +370,11 @@ export const KidShopTab = () => {
                                                 return (
                                                     <div key={o.id} className="rounded-xl p-3 flex gap-3 items-center" style={{ background: C.bgCard }}>
                                                         <div className="w-10 h-10 rounded-lg shrink-0 overflow-hidden flex items-center justify-center text-base" style={{ background: C.accentSoft }}>
-                                                            {matchItem?.image ? <img src={matchItem.image} alt="" className="w-full h-full object-cover" /> : <span>{matchItem?.iconEmoji || '🎁'}</span>}
+                                                        {matchItem?.image
+                                            ? <img src={matchItem.image} alt="" className="w-full h-full object-cover" />
+                                            : matchItem?.iconEmoji
+                                                ? <span className="text-base">{matchItem.iconEmoji}</span>
+                                                : <Icons.Gift size={18} style={{ color: C.accent }} />}
                                                         </div>
                                                         <div className="flex-1 min-w-0">
                                                             <div className="font-bold text-xs truncate" style={{ color: C.textPrimary }}>{o.itemName}</div>

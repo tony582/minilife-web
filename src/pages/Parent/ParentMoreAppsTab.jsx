@@ -13,7 +13,8 @@ import { SecurityApp } from './apps/SecurityApp';
 import { InterestClassApp } from './apps/InterestClassApp';
 import { TaskPrintApp } from './apps/TaskPrintApp';
 import { InterestSettingsApp } from './apps/InterestSettingsApp';
-import { TermSettingsApp } from './apps/TermSettingsApp';
+import { PetSettingsApp } from './apps/PetSettingsApp';
+// import { TermSettingsApp } from './apps/TermSettingsApp'; // 暂时隐藏
 
 export const ParentMoreAppsTab = () => {
     const { handleLogout } = useAuthContext();
@@ -31,7 +32,8 @@ export const ParentMoreAppsTab = () => {
         interest_classes: <InterestClassApp />,
         task_print: <TaskPrintApp />,
         interest_settings: <InterestSettingsApp />,
-        term_settings: <TermSettingsApp />,
+        pet_settings: <PetSettingsApp />,
+        // term_settings: <TermSettingsApp />, // 暂时隐藏
     };
 
     // --- 应用注册表 ---
@@ -101,13 +103,13 @@ export const ParentMoreAppsTab = () => {
             onClick: () => setCurrentApp('interest_settings'),
         },
         {
-            id: 'term_settings',
-            icon: <Icons.Calendar size={22} />,
-            label: '学期设置',
-            desc: '设置当前学期/假期时间',
-            color: 'text-pink-600',
-            bgColor: 'bg-pink-50',
-            onClick: () => setCurrentApp('term_settings'),
+            id: 'pet_settings',
+            icon: <Icons.Heart size={22} />,
+            label: '宠物设置',
+            desc: '宝贝宿舍设置、防沉迷、互动规则',
+            color: 'text-rose-500',
+            bgColor: 'bg-rose-50',
+            onClick: () => setCurrentApp('pet_settings'),
         },
         {
             id: 'logout',

@@ -85,7 +85,7 @@ export const KidProfileTab = () => {
             `}</style>
 
             {/* ── Modals ── */}
-            {showPetRoom && createPortal(
+            {showPetRoom && parentSettings.petEnabled !== false && createPortal(
                 <PetRoomModal
                     rooms={petRooms.rooms}
                     activeRoomIdx={petRooms.activeRoomIdx}
@@ -263,7 +263,8 @@ export const KidProfileTab = () => {
 
 
 
-                    {/* Row 3: Direct Link to Room */}
+                    {/* Row 3: Direct Link to Room — only if pet is enabled */}
+                    {parentSettings.petEnabled !== false && (
                     <button onClick={() => setShowPetRoom(true)} className="otter-card" style={{ padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             {/* Floating Pet Model on the left */}
@@ -281,6 +282,7 @@ export const KidProfileTab = () => {
                             </div>
                         </div>
                     </button>
+                    )}
                     
                     {/* ═════════════════════════════════════════════════════
                         SECTION 3: ACHIEVEMENTS SUMMARY CARD

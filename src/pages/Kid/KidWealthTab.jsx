@@ -335,14 +335,14 @@ export const KidWealthTab = () => {
                         {filteredTx.length === 0 ? (
                             <div className="text-center py-14">
                                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3"
-                                    style={{ background: C.bg }}>
-                                    <Icons.Wallet size={24} style={{ color: C.textMuted }} />
+                                    style={{ background: txFilter === 'income' ? `${C.green}18` : txFilter === 'expense' ? `${C.coral}18` : `${C.teal}18` }}>
+                                    <Icons.Wallet size={26} style={{ color: txFilter === 'income' ? C.green : txFilter === 'expense' ? C.coral : C.teal }} />
                                 </div>
-                                <div className="text-sm font-black" style={{ color: C.textSoft }}>
+                                <div className="text-sm font-black mb-1" style={{ color: C.textPrimary }}>
                                     {txFilter === 'all' ? '还没有交易记录' : txFilter === 'income' ? '暂无收入记录' : '暂无支出记录'}
                                 </div>
-                                <div className="text-[11px] font-bold mt-1" style={{ color: C.textMuted }}>
-                                    完成任务就能赚到家庭币啦！
+                                <div className="text-[11px] font-bold" style={{ color: C.textMuted }}>
+                                    {txFilter === 'expense' ? '还没有花过家庭币哦' : '完成任务就能赚到家庭币啦！'}
                                 </div>
                             </div>
                         ) : (

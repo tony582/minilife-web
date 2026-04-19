@@ -4,6 +4,114 @@ import { Icons } from '../../utils/Icons';
 import { renderHabitIcon } from '../../utils/habitIcons';
 import { getPeriodProgress } from '../../utils/taskUtils';
 
+// ── Mini Audio Player ──
+const AudioPlayer = ({ src, name }) => {
+    const audioRef = React.useRef(null);
+    const [playing, setPlaying] = React.useState(false);
+    const [progress, setProgress] = React.useState(0);
+    const [duration, setDuration] = React.useState(0);
+    const [current, setCurrent] = React.useState(0);
+
+    const fmt = (s) => {
+        const m = Math.floor(s / 60);
+        const sec = Math.floor(s % 60);
+        return `${m}:${sec.toString().padStart(2, '0')}`;
+    };
+
+    const toggle = () => {
+        const a = audioRef.current;
+        if (!a) return;
+        if (playing) { a.pause(); setPlaying(false); }
+        else { a.play(); setPlaying(true); }
+    };
+
+    const seek = (e) => {
+        const a = audioRef.current;
+        if (!a || !duration) return;
+        const rect = e.currentTarget.getBoundingClientRect();
+        const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        a.currentTime = pct * duration;
+        setProgress(pct * 100);
+    };
+
+    const displayName = name.replace(/\.[^.]+$/, '') || '音频';
+
+    return (
+        <div className="rounded-2xl overflow-hidden w-full"
+            style={{ background: 'linear-gradient(135deg, #FFF7ED, #FFEDD5)', border: '2px solid #FED7AA' }}>
+            <audio ref={audioRef} src={src} preload="metadata"
+                onLoadedMetadata={e => setDuration(e.target.duration)}
+                onTimeUpdate={e => { setCurrent(e.target.currentTime); setProgress(duration ? (e.target.currentTime / duration) * 100 : 0); }}
+                onEnded={() => { setPlaying(false); setProgress(0); setCurrent(0); if (audioRef.current) audioRef.current.currentTime = 0; }}
+            />
+            <div className="flex items-center gap-3 px-3 py-2.5">
+                {/* Play/Pause */}
+                <button onClick={toggle}
+                    className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all active:scale-90"
+                    style={{ background: playing ? '#FF8C42' : '#FFFFFF', boxShadow: '0 2px 10px rgba(255,140,66,0.3)' }}>
+                    {playing
+                        ? <Icons.Pause size={15} style={{ color: '#fff' }} fill="currentColor" />
+                        : <Icons.Play size={15} style={{ color: '#FF8C42', marginLeft: 2 }} fill="currentColor" />
+                    }
+                </button>
+                {/* Info + progress */}
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                        <Icons.Music size={10} style={{ color: '#FF8C42', flexShrink: 0 }} />
+                        <span className="text-[11px] font-black truncate" style={{ color: '#92400E' }}>{displayName}</span>
+                    </div>
+                    {/* Progress bar — clickable */}
+                    <div className="relative h-2 rounded-full cursor-pointer" style={{ background: '#FED7AA' }} onClick={seek}>
+                        <div className="absolute inset-y-0 left-0 rounded-full transition-all" style={{ width: `${progress}%`, background: 'linear-gradient(90deg, #FF8C42, #FF6B1A)' }} />
+                        <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full shadow-sm" style={{ left: `calc(${progress}% - 6px)`, background: '#fff', border: '2px solid #FF8C42' }} />
+                    </div>
+                    {/* Time */}
+                    <div className="flex justify-between mt-1 text-[9px] font-bold" style={{ color: '#FB923C' }}>
+                        <span>{fmt(current)}</span>
+                        <span>{duration ? fmt(duration) : '--:--'}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
+// ── Attachment thumbnail: image / audio / video ──
+const AttachmentThumb = ({ att, onClick }) => {
+    const src  = typeof att === 'string' ? att : (att.data || att.url || '');
+    const name = (typeof att === 'object' && att.name) ? att.name : '';
+    const type = (typeof att === 'object' && att.type) ? att.type : '';
+    const isAudio = type.startsWith('audio/') || src.startsWith('data:audio') || /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(name);
+    const isVideo = type.startsWith('video/') || src.startsWith('data:video') || /\.(mp4|mov|webm|avi|mkv)$/i.test(name);
+
+    if (isAudio) return <AudioPlayer src={src} name={name} />;
+
+    if (isVideo) return (
+        <div className="relative rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-all shrink-0"
+            style={{ border: '2px solid #BFDBFE', width: 90, height: 70, background: '#0F172A' }}
+            onClick={onClick}>
+            <video src={src} className="w-full h-full object-cover" preload="metadata" muted playsInline
+                style={{ pointerEvents: 'none' }} />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/30" onClick={onClick}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.92)' }}>
+                    <Icons.Play size={14} fill="#3B82F6" style={{ color: '#3B82F6', marginLeft: 1 }} />
+                </div>
+            </div>
+            <div className="absolute bottom-1 left-1 text-[8px] font-bold px-1.5 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.6)', color: '#93C5FD', pointerEvents: 'none' }}>视频</div>
+        </div>
+    );
+
+
+    // Image
+    return (
+        <img src={src} alt="附件" onClick={onClick}
+            className="w-16 h-16 shrink-0 rounded-xl object-cover cursor-pointer hover:scale-105 transition-all"
+            style={{ border: '2px solid #FFE8D0' }} />
+    );
+};
+
+
 export const KidPreviewModal = ({ context }) => {
     const {
         showPreviewModal, setShowPreviewModal,
@@ -261,11 +369,35 @@ export const KidPreviewModal = ({ context }) => {
                                                         <div className="flex flex-wrap gap-2 pt-1">
                                                             {hr.attachments.map((att, i) => {
                                                                 const src = typeof att === 'string' ? att : (att.data || att.url || '');
-                                                                const isVideo = (typeof att === 'string' && (att.endsWith('.mp4') || att.endsWith('.webm'))) || (att.type && att.type.startsWith('video/'));
+                                                                const type = (typeof att === 'object' && att.type) ? att.type : '';
+                                                                const name = (typeof att === 'object' && att.name) ? att.name : '';
+                                                                const isVid = type.startsWith('video/') || src.startsWith('data:video') || /\.(mp4|mov|webm|avi|mkv)$/i.test(name);
                                                                 return (
-                                                                    <div key={i} onClick={(e) => { e.stopPropagation(); setPreviewImages(hr.attachments.map(a => typeof a === 'string' ? a : (a.data || a.url || ''))); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} className="relative w-14 h-14 rounded-xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md hover:scale-105 transition-all ring-1 ring-slate-200">
-                                                                        {isVideo ? (
-                                                                            <video src={src} className="w-full h-full object-cover" />
+                                                                    <div key={i}
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            const mediaItems = hr.attachments.filter(a => {
+                                                                                const s = typeof a === 'string' ? a : (a.data || a.url || '');
+                                                                                const t = (typeof a === 'object' && a.type) ? a.type : '';
+                                                                                return !t.startsWith('audio/') && !s.startsWith('data:audio');
+                                                                            });
+                                                                            const idx = mediaItems.indexOf(att);
+                                                                            setPreviewImages(mediaItems);
+                                                                            setCurrentPreviewIndex(Math.max(0, idx));
+                                                                            setShowImagePreviewModal(true);
+                                                                        }}
+                                                                        className="relative w-14 h-14 rounded-xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md hover:scale-105 transition-all ring-1 ring-slate-200"
+                                                                        style={{ background: isVid ? '#0F172A' : 'transparent' }}>
+                                                                        {isVid ? (
+                                                                            <>
+                                                                                <video src={src} className="w-full h-full object-cover" preload="metadata" muted playsInline
+                                                                                    style={{ pointerEvents: 'none' }} />
+                                                                                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                                                                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.9)' }}>
+                                                                                        <Icons.Play size={10} fill="#3B82F6" style={{ color: '#3B82F6' }} />
+                                                                                    </div>
+                                                                                </div>
+                                                                            </>
                                                                         ) : (
                                                                             <img src={src} className="w-full h-full object-cover" alt="证据" />
                                                                         )}
@@ -389,16 +521,26 @@ export const KidPreviewModal = ({ context }) => {
                             {/* 任务附件 */}
                             {previewTask.attachments && previewTask.attachments.length > 0 && (
                                 <div className="rounded-2xl p-4" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
-                                    <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>📎 参考附件</label>
+                                    <label className="text-[11px] font-bold uppercase tracking-wider mb-3 block" style={{ color: '#9CAABE' }}>
+                                        <Icons.Paperclip size={11} className="inline mr-1" />参考附件
+                                    </label>
                                     <div className="flex gap-2 flex-wrap">
-                                        {previewTask.attachments.map((att, i) => {
-                                            const src = typeof att === 'string' ? att : (att.data || att.url || '');
-                                            return src ? (
-                                                <img key={i} src={src} className="w-16 h-16 rounded-xl object-cover cursor-pointer hover:scale-105 transition-all"
-                                                    style={{ border: '2px solid #FFE8D0' }}
-                                                    onClick={() => { setPreviewImages(previewTask.attachments.map(a => typeof a === 'string' ? a : (a.data || a.url || ''))); setPreviewImageIndex(i); setShowImagePreviewModal(true); }} />
-                                            ) : null;
-                                        })}
+                                        {previewTask.attachments.map((att, i) => (
+                                            <AttachmentThumb key={i} att={att}
+                                                onClick={() => {
+                                                    const mediaItems = previewTask.attachments
+                                                        .filter(a => {
+                                                            const s = typeof a === 'string' ? a : (a.data || a.url || '');
+                                                            const t = (typeof a === 'object' && a.type) ? a.type : '';
+                                                            return !t.startsWith('audio/') && !s.startsWith('data:audio');
+                                                        });
+                                                    const clickedMediaIdx = mediaItems.indexOf(att);
+                                                    setPreviewImages(mediaItems);
+                                                    setCurrentPreviewIndex(Math.max(0, clickedMediaIdx));
+                                                    setShowImagePreviewModal(true);
+                                                }}
+                                            />
+                                        ))}
                                     </div>
                                 </div>
                             )}
@@ -503,14 +645,23 @@ export const KidPreviewModal = ({ context }) => {
                                                 </p>
                                             )}
                                             {record.attachments && Array.isArray(record.attachments) && record.attachments.length > 0 ? (
-                                                <div className="mt-3 flex overflow-x-auto gap-2 pb-1 hide-scrollbar">
+                                                <div className="mt-3 flex flex-wrap gap-2">
                                                     {record.attachments.map((att, idx) => (
-                                                        <div key={idx}
-                                                            onClick={() => { setPreviewImages(record.attachments.map(a => typeof a === 'string' ? a : (a.data || a.url || ''))); setCurrentPreviewIndex(idx); setShowImagePreviewModal(true); }}
-                                                            className="w-16 h-16 shrink-0 rounded-lg overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-all"
-                                                            style={{ border: '1px solid #F0EBE1' }}>
-                                                            <img src={att.data || att.url} alt="Evidence" className="w-full h-full object-cover" />
-                                                        </div>
+                                                        <AttachmentThumb key={idx} att={att}
+                                                            onClick={() => {
+                                                                // Pass non-audio items as full objects
+                                                                const mediaItems = record.attachments
+                                                                    .filter(a => {
+                                                                        const s = typeof a === 'string' ? a : (a.data || a.url || '');
+                                                                        const t = (typeof a === 'object' && a.type) ? a.type : '';
+                                                                        return !t.startsWith('audio/') && !s.startsWith('data:audio');
+                                                                    });
+                                                                const clickedMediaIdx = mediaItems.indexOf(att);
+                                                                setPreviewImages(mediaItems);
+                                                                setCurrentPreviewIndex(Math.max(0, clickedMediaIdx));
+                                                                setShowImagePreviewModal(true);
+                                                            }}
+                                                        />
                                                     ))}
                                                 </div>
                                             ) : (

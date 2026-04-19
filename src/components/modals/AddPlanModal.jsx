@@ -353,8 +353,8 @@ export const AddPlanModal = ({ context }) => {
                         <div className="shrink-0 px-5 py-4 flex items-center justify-between"
                             style={{ background: '#FFFFFF', borderBottom: '1px solid #F0EBE1' }}>
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
-                                    style={{ background: '#FF8C4218', color: '#FF8C42' }}>📝</div>
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                                    style={{ background: '#FF8C4218', color: '#FF8C42' }}><Icons.FileEdit size={20} /></div>
                                 <div>
                                     <h2 className="font-black text-base" style={{ color: '#1B2E4B' }}>
                                         {editingTask ? '编辑任务' : '新建任务'}
@@ -440,7 +440,7 @@ export const AddPlanModal = ({ context }) => {
                                                             ? { background: '#FF8C42', color: '#fff', boxShadow: '0 2px 8px rgba(255,140,66,0.3)' }
                                                             : { background: '#FBF7F0', color: '#5A6E8A', border: '1px solid #F0EBE1' }}
                                                     >
-                                                        👥 全部
+                                                        <Icons.Users size={12} className="inline mr-1" /> 全部
                                                     </button>
                                                     {kids.map(k => {
                                                         const isSelected = (!planForm.targetKids || planForm.targetKids.includes('all')) || planForm.targetKids.includes(k.id);
@@ -500,25 +500,43 @@ export const AddPlanModal = ({ context }) => {
                                             onFocus={e => e.target.style.borderColor = '#FF8C42'}
                                             onBlur={e => e.target.style.borderColor = '#F0EBE1'}
                                         />
-                                        {/* 附件图片 — delete button always visible */}
+                                        {/* 附件 — 图片/音频/视频 */}
                                         <div className="flex flex-wrap gap-2">
                                             {(planForm.attachments || []).map((att, i) => {
                                                 const src = typeof att === 'string' ? att : (att.data || att.url || '');
+                                                const name = (typeof att === 'object' && att.name) ? att.name : '';
+                                                const isAudio = src.startsWith('data:audio') || /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(name);
+                                                const isVideo = src.startsWith('data:video') || /\.(mp4|mov|webm|avi|mkv)$/i.test(name);
                                                 return src ? (
-                                                    <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden" style={{ border: '2px solid #FFE8D0' }}>
-                                                        <img src={src} className="w-full h-full object-cover" />
+                                                    <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden flex flex-col items-center justify-center"
+                                                        style={{ border: '2px solid #FFE8D0', background: isAudio ? '#F0FDF4' : isVideo ? '#EFF6FF' : 'transparent' }}>
+                                                        {isAudio ? (
+                                                            <>
+                                                                <Icons.Music size={22} style={{ color: '#10B981' }} />
+                                                                <span className="text-[8px] font-bold mt-1 px-1 text-center truncate w-full text-center" style={{ color: '#10B981' }}>{name.replace(/\.[^.]+$/, '').slice(0, 8)}</span>
+                                                            </>
+                                                        ) : isVideo ? (
+                                                            <>
+                                                                <Icons.Video size={22} style={{ color: '#3B82F6' }} />
+                                                                <span className="text-[8px] font-bold mt-1 px-1 text-center truncate w-full text-center" style={{ color: '#3B82F6' }}>{name.replace(/\.[^.]+$/, '').slice(0, 8)}</span>
+                                                            </>
+                                                        ) : (
+                                                            <img src={src} className="w-full h-full object-cover" />
+                                                        )}
                                                         <button onClick={() => {
                                                             const newAtts = [...(planForm.attachments || [])];
                                                             newAtts.splice(i, 1);
                                                             setPlanForm({ ...planForm, attachments: newAtts });
-                                                        }} className="absolute -top-0 -right-0 w-5 h-5 bg-red-500 text-white rounded-bl-lg flex items-center justify-center" style={{ fontSize: 11 }}>✕</button>
+                                                        }} className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-bl-lg flex items-center justify-center"
+                                                            style={{ fontSize: 11 }}><Icons.X size={10} /></button>
                                                     </div>
                                                 ) : null;
                                             })}
                                             {(!planForm.attachments || planForm.attachments.length < 6) && (
                                                 <>
-                                                    <input ref={fileInputRef} type="file" accept="image/*,video/*" multiple
-                                                        style={{ display: 'none' }}
+                                                    <input ref={fileInputRef} type="file"
+                                                        accept="image/*,audio/*,video/*,.mp3,.wav,.m4a,.aac,.mp4,.mov,.webm"
+                                                        multiple style={{ display: 'none' }}
                                                         onChange={e => {
                                                             const files = Array.from(e.target.files);
                                                             files.forEach(file => {
@@ -526,7 +544,7 @@ export const AddPlanModal = ({ context }) => {
                                                                 reader.onload = ev => {
                                                                     setPlanForm(prev => ({
                                                                         ...prev,
-                                                                        attachments: [...(prev.attachments || []), { data: ev.target.result, name: file.name }]
+                                                                        attachments: [...(prev.attachments || []), { data: ev.target.result, name: file.name, type: file.type }]
                                                                     }));
                                                                 };
                                                                 reader.readAsDataURL(file);
@@ -537,11 +555,17 @@ export const AddPlanModal = ({ context }) => {
                                                         onClick={() => fileInputRef.current?.click()}
                                                         className="w-16 h-16 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95"
                                                         style={{ background: '#FBF7F0', border: '1.5px dashed #D0C9BD', color: '#9CAABE' }}>
-                                                        <Icons.Image size={16} />
-                                                        <span style={{ fontSize: 9, marginTop: 2 }}>添加图片</span>
+                                                        <Icons.Paperclip size={16} />
+                                                        <span style={{ fontSize: 9, marginTop: 2 }}>添加附件</span>
                                                     </button>
                                                 </>
                                             )}
+                                        </div>
+                                        <div className="flex items-center gap-3 text-[10px] font-bold" style={{ color: '#C0C8D4' }}>
+                                            <span className="flex items-center gap-1"><Icons.Image size={10} /> 图片</span>
+                                            <span className="flex items-center gap-1"><Icons.Music size={10} /> 音频</span>
+                                            <span className="flex items-center gap-1"><Icons.Video size={10} /> 视频</span>
+                                            <span className="ml-auto">最多 6 个</span>
                                         </div>
                                     </div>
 

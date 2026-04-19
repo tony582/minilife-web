@@ -5,6 +5,7 @@ import { useToast } from '../../../hooks/useToast';
 import { apiFetch } from '../../../api/client';
 import { Icons, AvatarDisplay } from '../../../utils/Icons';
 import { detectGender, DEFAULT_BOY_AVATAR } from '../../../utils/avatarPresets';
+import { getSpiritForm } from '../../../utils/spiritUtils';
 
 /**
  * KidSettingsApp - 孩子资料与管教
@@ -58,12 +59,18 @@ export const KidSettingsApp = () => {
             <div className="space-y-4">
                 {kids.map(k => (
                     <div key={k.id} className="p-4 bg-white border border-slate-200 rounded-2xl flex gap-4 items-center shadow-sm hover:shadow-md transition-shadow">
-                        <div className="w-14 h-14 bg-slate-50 rounded-xl flex items-center justify-center text-4xl shadow-sm border border-slate-200 shrink-0">
+                        <div className="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center shadow-sm border border-slate-200 shrink-0 overflow-hidden">
                             <AvatarDisplay avatar={k.avatar} />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="font-black text-slate-800 text-lg truncate">{k.name}</div>
-                            <div className="text-xs font-bold text-slate-400">Lv.{k.level} · 学力 {k.exp}</div>
+                            <div className="font-black text-slate-800 text-base truncate">{k.name}</div>
+                            {(() => { const sf = getSpiritForm(k.level); return (
+                                <span className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded-md" style={{ background: `${sf.color}15`, border: `1px solid ${sf.color}25` }}>
+                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-black shadow-sm" style={{ background: sf.color, color: '#FFF' }}>Lv.{k.level}</span>
+                                    <span className="text-[11px] font-black pr-0.5" style={{ color: sf.color }}>{sf.name}</span>
+                                    <span className="text-[10px] font-bold" style={{ color: `${sf.color}99` }}>· 星尘 {k.exp}</span>
+                                </span>
+                            ); })()}
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                             <button onClick={() => handleEditKid(k)} className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-500 hover:border-indigo-200 hover:bg-indigo-50 transition-colors">
@@ -81,21 +88,6 @@ export const KidSettingsApp = () => {
             <button onClick={handleAddKid} className="w-full bg-slate-50 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-100 border-2 border-dashed border-slate-300 transition-colors flex items-center justify-center gap-2">
                 <Icons.Plus size={18} className="text-slate-400" /> 添加家庭成员
             </button>
-
-            {/* 成长图鉴入口 */}
-            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl p-6 shadow-md text-white relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3"></div>
-                <div className="flex items-center gap-3 mb-4 relative z-10">
-                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white backdrop-blur-sm"><Icons.Star size={20} /></div>
-                    <h2 className="text-lg font-black text-white">儿童成长图鉴配置</h2>
-                </div>
-                <div className="space-y-4 relative z-10">
-                    <p className="text-indigo-100 text-xs leading-relaxed font-medium">配置儿童的等级称号、升级所需经验值以及专属头像框。等级系统能极大提升孩子的打卡动力。</p>
-                    <button onClick={() => setShowLevelModal(true)} className="w-full bg-white text-indigo-600 py-3 rounded-xl font-black hover:bg-slate-50 transition-colors shadow-lg active:scale-[0.98] flex items-center justify-center gap-2">
-                        进入图鉴配置中心 <Icons.ChevronRight size={16} />
-                    </button>
-                </div>
-            </div>
         </div>
     );
 };

@@ -304,7 +304,7 @@ export const KidStudyTab = () => {
                         <div className="text-sm font-black" style={{ color: C.textPrimary }}>今日进度</div>
                         <div className="text-xs mt-0.5" style={{ color: C.textSoft }}>已完成 {completedCount} / {totalCount} 个任务</div>
                     </div>
-                    {progressPct === 100 && <div className="text-2xl">🎉</div>}
+                    {progressPct === 100 && <div className="flex items-center justify-center w-8 h-8 rounded-full" style={{ background: '#D1FAE5' }}><Icons.CheckCircle size={18} style={{ color: '#16A34A' }} /></div>}
                 </div>
             )}
 
@@ -402,9 +402,12 @@ export const KidStudyTab = () => {
             <div className={`grid gap-3 px-4 ${layoutCols === '1' ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
                 {myTasks.filter(t => !searchKidTaskKeyword || t.title.toLowerCase().includes(searchKidTaskKeyword.toLowerCase())).length === 0 ? (
                     <div className="text-center py-16 rounded-[2rem] lg:col-span-2" style={{ background: C.bgCard }}>
-                        <div className="text-5xl mb-4">🌟</div>
-                        <div className="text-lg font-black" style={{ color: C.textPrimary }}>今天没有任务</div>
-                        <div className="text-sm mt-1" style={{ color: C.textMuted }}>享受自由时光吧~</div>
+                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                            style={{ background: `${C.orange}18` }}>
+                            <Icons.Calendar size={28} style={{ color: C.orange }} />
+                        </div>
+                        <div className="text-base font-black mb-1" style={{ color: C.textPrimary }}>今天没有任务</div>
+                        <div className="text-sm" style={{ color: C.textMuted }}>享受自由时光吧~</div>
                     </div>
                 ) : myTasks.filter(t => !searchKidTaskKeyword || t.title.toLowerCase().includes(searchKidTaskKeyword.toLowerCase())).map((t) => {
                     const status = getDailyStatus(t);
@@ -496,7 +499,7 @@ export const KidStudyTab = () => {
                                         const feedback = entry?.rejectFeedback;
                                         return feedback ? (
                                             <div className="mt-1 flex items-start gap-1 text-[11px] leading-tight" style={{ color: '#DC2626' }}>
-                                                <span className="shrink-0">💬</span>
+                                                <Icons.MessageCircle size={10} className="shrink-0 mt-0.5" />
                                                 <span className="line-clamp-2">{feedback}</span>
                                             </div>
                                         ) : null;
@@ -574,8 +577,8 @@ export const KidStudyTab = () => {
                     </div>
                     <div style={{ position: 'absolute', top: 57, left: 0, right: 0, bottom: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '1rem', paddingBottom: '10rem' }}>
                         <div className="max-w-2xl mx-auto">
-                            <div className="text-[13px] font-bold p-3 rounded-2xl mb-5 text-center" style={{ background: C.bgCard, color: C.textSoft, boxShadow: C.cardShadow }}>
-                                💡 长按拖动调整任务顺序
+                            <div className="text-[13px] font-bold p-3 rounded-2xl mb-5 text-center flex items-center justify-center gap-2" style={{ background: C.bgCard, color: C.textSoft, boxShadow: C.cardShadow }}>
+                                <Icons.GripVertical size={14} /> 长按拖动调整任务顺序
                             </div>
                             <ReorderableList items={myTasks} onReorder={handleReorderTask} keyExtractor={(t) => t.id}
                                 renderItem={(t) => (

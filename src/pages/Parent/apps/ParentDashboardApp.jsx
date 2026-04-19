@@ -85,7 +85,9 @@ export const ParentDashboardApp = () => {
     if (!activeKid) {
         return (
             <div className="text-center py-20 rounded-3xl" style={{ background: C.bgCard }}>
-                <div className="text-5xl mb-4">👶</div>
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: C.bgLight }}>
+                    <Icons.Users size={32} style={{ color: C.textMuted }} />
+                </div>
                 <h2 className="text-xl font-black" style={{ color: C.textPrimary }}>欢迎来到 MiniLife</h2>
                 <p className="text-sm font-bold mt-2" style={{ color: C.textSoft }}>请先添加宝贝资料</p>
             </div>
@@ -281,14 +283,14 @@ export const ParentDashboardApp = () => {
                 {/* ═══ Summary Cards ═══ */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
                     {[
-                        { emoji: '📚', label: '任务完成', value: `${taskStats.completed}/${taskStats.total}`, sub: `完成率 ${taskStats.rate}%`, color: C.orange },
-                        { emoji: '⏰', label: '习惯打卡', value: `${habitStats.totalCheckins} 次`, sub: `+${habitStats.totalPoints} 金币`, color: C.teal },
-                        { emoji: '🛒', label: '超市兑换', value: `${shopStats.count} 次`, sub: `-${shopStats.totalSpent} 金币`, color: C.purple },
-                        { emoji: '💰', label: '财务净值', value: financeStats.net >= 0 ? `+${financeStats.net}` : `${financeStats.net}`, sub: `余额 ${activeKid.money || activeKid.balances?.spend || 0}`, color: financeStats.net >= 0 ? C.green : C.coral },
+                        { icon: <Icons.BookOpen size={22} />, label: '任务完成', value: `${taskStats.completed}/${taskStats.total}`, sub: `完成率 ${taskStats.rate}%`, color: C.orange },
+                        { icon: <Icons.Clock size={22} />,    label: '习惯打卡', value: `${habitStats.totalCheckins} 次`, sub: `+${habitStats.totalPoints} 金币`, color: C.teal },
+                        { icon: <Icons.ShoppingBag size={22} />, label: '超市兑换', value: `${shopStats.count} 次`, sub: `-${shopStats.totalSpent} 金币`, color: C.purple },
+                        { icon: <Icons.Wallet size={22} />,   label: '财务净值', value: financeStats.net >= 0 ? `+${financeStats.net}` : `${financeStats.net}`, sub: `余额 ${activeKid.money || activeKid.balances?.spend || 0}`, color: financeStats.net >= 0 ? C.green : C.coral },
                     ].map((c, i) => (
                         <div key={i} className="rounded-2xl p-3 sm:p-4 relative overflow-hidden" style={{ background: C.bgCard, boxShadow: C.cardShadow }}>
                             <div className="absolute -right-3 -top-3 w-12 h-12 rounded-full opacity-10" style={{ background: c.color }}></div>
-                            <div className="text-xl sm:text-2xl mb-1 sm:mb-2">{c.emoji}</div>
+                            <div className="mb-1 sm:mb-2" style={{ color: c.color }}>{c.icon}</div>
                             <div className="text-[10px] font-bold mb-0.5" style={{ color: C.textMuted }}>{c.label}</div>
                             <div className="text-lg sm:text-xl font-black" style={{ color: c.color }}>{c.value}</div>
                             <div className="text-[10px] font-bold mt-0.5" style={{ color: C.textSoft }}>{c.sub}</div>

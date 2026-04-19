@@ -10,6 +10,7 @@
     "start": "node server/server.js",
     "dev": "vite",
     "dev:wifi": "vite --host",
+    "dev:full-wifi": "bash dev-wifi.sh",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
