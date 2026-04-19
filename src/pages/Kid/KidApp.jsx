@@ -62,19 +62,19 @@ export const KidApp = () => {
     };
 
     const handlePinClick = (num) => {
-        if (pinInput.length < 4) {
-            const newVal = pinInput + num;
-            setPinInput(newVal);
-            if (newVal.length === 4) {
-                if (newVal === parentSettings.pinCode) {
-                    setShowParentPinModal(false);
-                    setPinInput('');
-                    changeAppState('parent_app');
-                } else {
-                    notify("家长密码错误！", "error");
-                    setPinInput('');
-                }
+        const next = pinInput + String(num);
+        if (pinInput.length >= 4) return;
+        if (next.length === 4) {
+            if (next === parentSettings.pinCode) {
+                setShowParentPinModal(false);
+                setPinInput('');
+                changeAppState('parent_app');
+            } else {
+                notify('家长密码错误！', 'error');
+                setPinInput('');
             }
+        } else {
+            setPinInput(next);
         }
     };
 
@@ -271,9 +271,9 @@ export const KidApp = () => {
                         <div className="px-6 pb-2">
                             <div className="grid grid-cols-3 gap-3">
                                 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
-                                    <button key={n} onClick={() => handlePinClick(n)}
+                                 <button key={n} onClick={() => handlePinClick(n)}
                                         className="h-14 rounded-2xl text-white text-2xl font-bold transition-all active:scale-95 flex items-center justify-center"
-                                        style={{ background: 'rgba(255,255,255,0.08)', WebkitTapHighlightColor: 'transparent' }}
+                                        style={{ background: 'rgba(255,255,255,0.08)', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', userSelect: 'none' }}
                                         onPointerDown={e => e.currentTarget.style.background = 'rgba(99,102,241,0.3)'}
                                         onPointerUp={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
                                         onPointerLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}>
@@ -285,7 +285,7 @@ export const KidApp = () => {
                                 {/* 0 */}
                                 <button onClick={() => handlePinClick(0)}
                                     className="h-14 rounded-2xl text-white text-2xl font-bold transition-all active:scale-95 flex items-center justify-center"
-                                    style={{ background: 'rgba(255,255,255,0.08)', WebkitTapHighlightColor: 'transparent' }}
+                                    style={{ background: 'rgba(255,255,255,0.08)', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', userSelect: 'none' }}
                                     onPointerDown={e => e.currentTarget.style.background = 'rgba(99,102,241,0.3)'}
                                     onPointerUp={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
                                     onPointerLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}>
@@ -294,7 +294,7 @@ export const KidApp = () => {
                                 {/* Backspace */}
                                 <button onClick={() => setPinInput(pinInput.slice(0, -1))}
                                     className="h-14 rounded-2xl flex items-center justify-center transition-all active:scale-95"
-                                    style={{ background: 'transparent', color: '#64748B', WebkitTapHighlightColor: 'transparent' }}>
+                                    style={{ background: 'transparent', color: '#64748B', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
                                     <Icons.Delete size={24} />
                                 </button>
                             </div>
