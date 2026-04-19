@@ -1,6 +1,6 @@
 // MiniLife Service Worker — network-first with auto-update
 // Cache name includes a version hash that changes when sw.js is re-deployed
-const CACHE_NAME = 'minilife-v1776485333';
+const CACHE_NAME = 'minilife-v1776570192';
 
 const PRECACHE_URLS = [
     '/minilife_logo.png',
