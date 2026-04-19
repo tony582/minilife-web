@@ -56,7 +56,14 @@ export const useAppData = (token, setToken, user, setUser, setAuthLoading, notif
                 return;
             }
             try {
-                const userRes = await apiFetch('/api/me');
+                let userRes;
+                try {
+                    userRes = await apiFetch('/api/me');
+                } catch (netErr) {
+                    // Network error on first try (server may be restarting) — wait and retry once
+                    await new Promise(r => setTimeout(r, 3000));
+                    userRes = await apiFetch('/api/me');
+                }
                 if (!userRes.ok) throw new Error('Auth failed');
                 const ct = userRes.headers.get('content-type') || '';
                 if (!ct.includes('application/json')) throw new Error('Server returned non-JSON');

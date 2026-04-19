@@ -87,7 +87,12 @@ export function initErrorReporter() {
         } catch (err) {
             // Network errors (offline, CORS, etc.)
             const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
-            if (!url.includes('report-error')) {
+            // Don't report:
+            // - Errors from the error reporting endpoint itself
+            // - SSE sync endpoint errors (it uses EventSource, not fetch, but just in case)
+            // - Transient /api/me errors (happen during server restart/reconnect, not actionable)
+            const isNoise = url.includes('report-error') || url.includes('/api/sync') || url.includes('/api/me');
+            if (!isNoise) {
                 reportError(
                     `Fetch failed: ${err.message}`,
                     err.stack,
