@@ -32,3 +32,4 @@ android-apk/
 # Original game asset bundles (large, purchased)
 assets/
 scripts/
+public/uploads/
