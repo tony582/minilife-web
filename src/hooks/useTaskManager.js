@@ -746,6 +746,14 @@ const getTaskStatusOnDate = (t, date, kidId) => {
     return;
   }
   for (const file of files) {
+    // ── 客户端大小预检 ──
+    const isImg = file.type.startsWith('image/');
+    const isAud = file.type.startsWith('audio/');
+    const sizeLimit = isImg ? 10 : isAud ? 30 : 500; // MB
+    if (file.size > sizeLimit * 1024 * 1024) {
+      notify(`「${file.name}」超过 ${sizeLimit}MB 限制，请压缩后再上传`, 'error');
+      continue;
+    }
     const { tempId, promise } = qcEnqueueUpload(file);
     // Insert uploading placeholder immediately
     setQcAttachments(prev => [...prev, { tempId, name: file.name, type: file.type, uploading: true }]);

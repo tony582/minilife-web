@@ -86,6 +86,13 @@ module.exports = (db, { authenticateToken }) => {
 
         const ff = spawn('ffmpeg', args, { stdio: 'pipe' });
 
+        // Must handle 'error' event — if ffmpeg is not installed, Node.js will crash
+        // with an unhandled error event otherwise
+        ff.on('error', (err) => {
+            console.warn(`[Upload] FFmpeg 不可用 (${err.code}): 保留原始文件 ${path.basename(filePath)}`);
+            if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
+        });
+
         ff.on('close', (code) => {
             if (code === 0 && fs.existsSync(tmpPath)) {
                 const originalSize  = fs.statSync(filePath).size;
