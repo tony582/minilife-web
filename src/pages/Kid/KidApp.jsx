@@ -12,7 +12,7 @@ import { KidWealthTab } from './KidWealthTab';
 import { KidShopTab } from './KidShopTab';
 import { KidProfileTab } from './KidProfileTab';
 import PetCapsule from '../../components/VirtualPet/PetCapsule';
-import { PinNumpad } from '../../components/common/PinNumpad.jsx';
+
 
 export const KidApp = () => {
     const {
@@ -29,10 +29,6 @@ export const KidApp = () => {
         changeAppState,
         showKidSwitcher,
         setShowKidSwitcher,
-        showParentPinModal,
-        setShowParentPinModal,
-        pinInput,
-        setPinInput,
         showAvatarPickerModal,
         setShowAvatarPickerModal,
         pendingAvatar,
@@ -55,11 +51,9 @@ export const KidApp = () => {
     };
 
     const openParentFromKid = () => {
-        if (parentSettings.pinEnabled) {
-            setShowParentPinModal(true);
-        } else {
-            changeAppState('parent_app');
-        }
+        // 直接跳 /parent/pin 全屏页，或者直接进家长端
+        // 和从「谁在使用」点「家长管理」完全一样的流程
+        changeAppState(parentSettings.pinEnabled ? 'parent_pin' : 'parent_app');
     };
 
 
@@ -217,33 +211,7 @@ export const KidApp = () => {
                 </div>
             </div>
 
-            {showParentPinModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center animate-fade-in"
-                    style={{ background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(16px)' }}
-                    onClick={() => { setShowParentPinModal(false); setPinInput(''); }}>
-                    <div className="relative bg-slate-800 w-full max-w-xs rounded-[2rem] border border-white/10 shadow-2xl mx-4 px-6 py-8"
-                        onClick={e => e.stopPropagation()}>
-                        <button onClick={() => { setShowParentPinModal(false); setPinInput(''); }}
-                            className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center"
-                            style={{ background: 'rgba(255,255,255,0.08)', color: '#94A3B8', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
-                            <Icons.X size={18} />
-                        </button>
-                        <div className="flex flex-col items-center mb-5">
-                            <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3"
-                                style={{ background: 'rgba(99,102,241,0.15)', border: '2px solid rgba(99,102,241,0.3)' }}>
-                                <Icons.Lock size={24} style={{ color: '#818CF8' }} />
-                            </div>
-                            <h2 className="text-white text-lg font-black">输入家长 PIN 码</h2>
-                        </div>
-                        <PinNumpad
-                            pinCode={parentSettings?.pinCode}
-                            onSuccess={() => { setShowParentPinModal(false); setPinInput(''); changeAppState('parent_app'); }}
-                            onCancel={() => { setShowParentPinModal(false); setPinInput(''); }}
-                            dark={true}
-                        />
-                    </div>
-                </div>
-            )}
+
 
 
 

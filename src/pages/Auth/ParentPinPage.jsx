@@ -1,10 +1,15 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUIContext } from '../../context/UIContext.jsx';
 import { Icons } from '../../utils/Icons';
 import { PinNumpad } from '../../components/common/PinNumpad.jsx';
 
 export const ParentPinPage = () => {
-    const { changeAppState, setPinInput, parentSettings } = useUIContext();
+    const navigate = useNavigate();
+    const { changeAppState, parentSettings } = useUIContext();
+
+    // Cancel: go back to wherever the user came from (profiles OR kid_app)
+    const handleCancel = () => navigate(-1);
 
     return (
         <div className="min-h-[100dvh] bg-slate-900 flex flex-col items-center justify-center animate-fade-in"
@@ -18,8 +23,8 @@ export const ParentPinPage = () => {
 
             <PinNumpad
                 pinCode={parentSettings?.pinCode}
-                onSuccess={() => { setPinInput(''); changeAppState('parent_app'); }}
-                onCancel={() => { setPinInput(''); changeAppState('profiles'); }}
+                onSuccess={() => changeAppState('parent_app')}
+                onCancel={handleCancel}
                 dark={false}
             />
         </div>
