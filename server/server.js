@@ -59,8 +59,12 @@ const { sendAlert } = require('./emailService');
 const monitoringRoutes = require('./routes/monitoring')(db, { ...deps, sendAlert });
 app.use('/api/monitor', monitoringRoutes);
 
-// --- Serve uploaded assets (QR codes etc.) ---
+// --- File upload ---
+app.use('/api/upload', require('./routes/upload')(db, { authenticateToken }));
+
+// --- Serve uploaded assets (QR codes, task attachments, etc.) ---
 app.use('/assets', express.static(path.join(__dirname, '../public/assets')));
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // --- Serve Frontend in Production ---
 app.use(express.static(path.join(__dirname, '../dist')));

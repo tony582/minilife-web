@@ -79,7 +79,7 @@ const AudioPlayer = ({ src, name }) => {
 
 // ── Attachment thumbnail: image / audio / video ──
 const AttachmentThumb = ({ att, onClick }) => {
-    const src  = typeof att === 'string' ? att : (att.data || att.url || '');
+    const src  = typeof att === 'string' ? att : (att.url || att.data || '');
     const name = (typeof att === 'object' && att.name) ? att.name : '';
     const type = (typeof att === 'object' && att.type) ? att.type : '';
     const isAudio = type.startsWith('audio/') || src.startsWith('data:audio') || /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(name);
@@ -368,7 +368,7 @@ export const KidPreviewModal = ({ context }) => {
                                                         <div className="text-[10px] font-bold text-slate-400 mb-2 uppercase">📸 完成证据</div>
                                                         <div className="flex flex-wrap gap-2 pt-1">
                                                             {hr.attachments.map((att, i) => {
-                                                                const src = typeof att === 'string' ? att : (att.data || att.url || '');
+                                                                const src = typeof att === 'string' ? att : (att.url || att.data || '');
                                                                 const type = (typeof att === 'object' && att.type) ? att.type : '';
                                                                 const name = (typeof att === 'object' && att.name) ? att.name : '';
                                                                 const isVid = type.startsWith('video/') || src.startsWith('data:video') || /\.(mp4|mov|webm|avi|mkv)$/i.test(name);
@@ -377,7 +377,7 @@ export const KidPreviewModal = ({ context }) => {
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
                                                                             const mediaItems = hr.attachments.filter(a => {
-                                                                                const s = typeof a === 'string' ? a : (a.data || a.url || '');
+                                                                                const s = typeof a === 'string' ? a : (a.url || a.data || '');
                                                                                 const t = (typeof a === 'object' && a.type) ? a.type : '';
                                                                                 return !t.startsWith('audio/') && !s.startsWith('data:audio');
                                                                             });
@@ -530,7 +530,7 @@ export const KidPreviewModal = ({ context }) => {
                                                 onClick={() => {
                                                     const mediaItems = previewTask.attachments
                                                         .filter(a => {
-                                                            const s = typeof a === 'string' ? a : (a.data || a.url || '');
+                                                            const s = typeof a === 'string' ? a : (a.url || a.data || '');
                                                             const t = (typeof a === 'object' && a.type) ? a.type : '';
                                                             return !t.startsWith('audio/') && !s.startsWith('data:audio');
                                                         });
@@ -652,7 +652,7 @@ export const KidPreviewModal = ({ context }) => {
                                                                 // Pass non-audio items as full objects
                                                                 const mediaItems = record.attachments
                                                                     .filter(a => {
-                                                                        const s = typeof a === 'string' ? a : (a.data || a.url || '');
+                                                                        const s = typeof a === 'string' ? a : (a.url || a.data || '');
                                                                         const t = (typeof a === 'object' && a.type) ? a.type : '';
                                                                         return !t.startsWith('audio/') && !s.startsWith('data:audio');
                                                                     });

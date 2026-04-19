@@ -3,7 +3,7 @@ import { Icons } from '../../utils/Icons';
 
 // Detect if a media item is a video
 const isVideoItem = (item) => {
-    const src  = typeof item === 'string' ? item : (item?.data || item?.url || '');
+    const src  = typeof item === 'string' ? item : (item?.url || item?.data || '');
     const name = typeof item === 'object' ? (item?.name || '') : '';
     const type = typeof item === 'object' ? (item?.type || '') : '';
     return type.startsWith('video/') || src.startsWith('data:video') || /\.(mp4|mov|webm|avi|mkv)$/i.test(name);
@@ -19,7 +19,7 @@ export const ImagePreviewModal = ({ context }) => {
     if (!showImagePreviewModal || !previewImages || previewImages.length === 0) return null;
 
     const currentItem = previewImages[currentPreviewIndex];
-    const mediaSrc  = typeof currentItem === 'string' ? currentItem : (currentItem?.data || currentItem?.url || '');
+    const mediaSrc  = typeof currentItem === 'string' ? currentItem : (currentItem?.url || currentItem?.data || '');
     const mediaName = typeof currentItem === 'string' ? 'minilife-media' : (currentItem?.name || 'minilife-media');
     const isVideo   = isVideoItem(currentItem);
 

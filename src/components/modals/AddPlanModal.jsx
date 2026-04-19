@@ -25,8 +25,31 @@ export const AddPlanModal = ({ context }) => {
 
     const fileInputRef = useRef(null);
     const [showCategoryManager, setShowCategoryManager] = useState(false);
+    const [uploadingFiles, setUploadingFiles] = useState({}); // { tempId: true } while uploading
     const closeModal = useCallback(() => { setShowAddPlanModal(false); setEditingTask(null); }, [setShowAddPlanModal, setEditingTask]);
     const { swipeRef, swipeHandlers } = useSwipeBack(closeModal, { enabled: showAddPlanModal });
+
+    // Upload a single File via FormData, returns attachment object or null
+    const uploadFile = async (file) => {
+        const token = localStorage.getItem('minilife_token');
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                body: formData,
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || `上传失败 (${res.status})`);
+            }
+            return await res.json(); // { url, name, type, size }
+        } catch (e) {
+            notify?.(e.message || '上传失败', 'error');
+            return null;
+        }
+    };
 
     if (!showAddPlanModal) return null;
 
@@ -504,10 +527,25 @@ export const AddPlanModal = ({ context }) => {
                                         {/* 附件 — 图片/音频/视频 */}
                                         <div className="flex flex-wrap gap-2">
                                             {(planForm.attachments || []).map((att, i) => {
-                                                const src = typeof att === 'string' ? att : (att.data || att.url || '');
+                                                // Uploading placeholder — show spinner
+                                                if (att.uploading) {
+                                                    return (
+                                                        <div key={att.tempId || i} className="relative w-16 h-16 rounded-xl overflow-hidden flex flex-col items-center justify-center"
+                                                            style={{ border: '2px solid #FFE8D0', background: '#FBF7F0' }}>
+                                                            <div style={{
+                                                                width: 22, height: 22, borderRadius: '50%',
+                                                                border: '2.5px solid #FF8C42', borderTopColor: 'transparent',
+                                                                animation: 'spin 0.8s linear infinite'
+                                                            }} />
+                                                            <span className="text-[8px] font-bold mt-1" style={{ color: '#FF8C42' }}>上传中</span>
+                                                        </div>
+                                                    );
+                                                }
+                                                const src = typeof att === 'string' ? att : (att.url || att.data || '');
                                                 const name = (typeof att === 'object' && att.name) ? att.name : '';
-                                                const isAudio = src.startsWith('data:audio') || /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(name);
-                                                const isVideo = src.startsWith('data:video') || /\.(mp4|mov|webm|avi|mkv)$/i.test(name);
+                                                const mime = (typeof att === 'object' && att.type) ? att.type : '';
+                                                const isAudio = mime.startsWith('audio/') || src.startsWith('data:audio') || /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(name);
+                                                const isVideo = mime.startsWith('video/') || src.startsWith('data:video') || /\.(mp4|mov|webm|avi|mkv)$/i.test(name);
                                                 return src ? (
                                                     <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden flex flex-col items-center justify-center"
                                                         style={{ border: '2px solid #FFE8D0', background: isAudio ? '#F0FDF4' : isVideo ? '#EFF6FF' : 'transparent' }}>
@@ -538,30 +576,34 @@ export const AddPlanModal = ({ context }) => {
                                                     <input ref={fileInputRef} type="file"
                                                         accept="image/*,audio/*,video/*,.mp3,.wav,.m4a,.aac,.mp4,.mov,.webm"
                                                         multiple style={{ display: 'none' }}
-                                                        onChange={e => {
+                                                        onChange={async e => {
                                                             const files = Array.from(e.target.files);
-                                                            const MAX_VIDEO = 30 * 1024 * 1024;  // 30MB
-                                                            const MAX_AUDIO = 20 * 1024 * 1024;  // 20MB
-                                                            const MAX_IMAGE = 10 * 1024 * 1024;  // 10MB
-                                                            files.forEach(file => {
-                                                                const isVideo = file.type.startsWith('video/');
-                                                                const isAudio = file.type.startsWith('audio/');
-                                                                const limit = isVideo ? MAX_VIDEO : isAudio ? MAX_AUDIO : MAX_IMAGE;
-                                                                const limitLabel = isVideo ? '30MB' : isAudio ? '20MB' : '10MB';
-                                                                if (file.size > limit) {
-                                                                    notify?.(`文件 "${file.name}" 超过 ${limitLabel} 限制，请压缩后重试`, 'error');
-                                                                    return;
-                                                                }
-                                                                const reader = new FileReader();
-                                                                reader.onload = ev => {
-                                                                    setPlanForm(prev => ({
-                                                                        ...prev,
-                                                                        attachments: [...(prev.attachments || []), { data: ev.target.result, name: file.name, type: file.type }]
-                                                                    }));
-                                                                };
-                                                                reader.readAsDataURL(file);
-                                                            });
                                                             e.target.value = '';
+                                                            for (const file of files) {
+                                                                if ((planForm.attachments?.length || 0) >= 6) {
+                                                                    notify?.('最多上传 6 个附件', 'error');
+                                                                    break;
+                                                                }
+                                                                // Insert placeholder so the UI shows a spinner immediately
+                                                                const tempId = `tmp_${Date.now()}_${Math.random()}`;
+                                                                setPlanForm(prev => ({
+                                                                    ...prev,
+                                                                    attachments: [...(prev.attachments || []), { tempId, name: file.name, type: file.type, uploading: true }]
+                                                                }));
+                                                                setUploadingFiles(prev => ({ ...prev, [tempId]: true }));
+                                                                // Upload to server
+                                                                const result = await uploadFile(file);
+                                                                // Replace placeholder with result, or remove on failure
+                                                                setPlanForm(prev => ({
+                                                                    ...prev,
+                                                                    attachments: result
+                                                                        ? prev.attachments.map(a => a.tempId === tempId
+                                                                            ? { url: result.url, name: result.name, type: result.type, size: result.size }
+                                                                            : a)
+                                                                        : prev.attachments.filter(a => a.tempId !== tempId)
+                                                                }));
+                                                                setUploadingFiles(prev => { const n = { ...prev }; delete n[tempId]; return n; });
+                                                            }
                                                         }} />
                                                     <button type="button"
                                                         onClick={() => fileInputRef.current?.click()}

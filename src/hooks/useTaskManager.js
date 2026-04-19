@@ -735,25 +735,40 @@ const getTaskStatusOnDate = (t, date, kidId) => {
   setQcSeconds(0);
 };
 
-    const handleQcFileUpload = e => {
+    const handleQcFileUpload = async e => {
   const files = Array.from(e.target.files);
+  e.target.value = '';
   if (qcAttachments.length + files.length > 5) {
     notify('最多上传5个附件', 'error');
     return;
   }
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      setQcAttachments(prev => [...prev, {
-        name: file.name,
-        type: file.type,
-        data: ev.target.result,
-        size: file.size
-      }]);
-    };
-    reader.readAsDataURL(file);
-  });
-  e.target.value = '';
+  for (const file of files) {
+    // Insert uploading placeholder immediately
+    const tempId = `tmp_${Date.now()}_${Math.random()}`;
+    setQcAttachments(prev => [...prev, { tempId, name: file.name, type: file.type, uploading: true }]);
+    // Upload
+    const token = localStorage.getItem('minilife_token');
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `上传失败 (${res.status})`);
+      }
+      const result = await res.json();
+      setQcAttachments(prev => prev.map(a => a.tempId === tempId
+        ? { url: result.url, name: result.name, type: result.type, size: result.size }
+        : a));
+    } catch (err) {
+      notify(err.message || '上传失败', 'error');
+      setQcAttachments(prev => prev.filter(a => a.tempId !== tempId));
+    }
+  }
 };
 // 快速完成功能
 
@@ -1979,14 +1994,6 @@ const handleSavePlan = async () => {
     }));
   }
   try {
-    // Guard: Check total attachment payload size before sending
-    // base64 is ~133% of file size; iOS Safari crashes on very large JSON.stringify
-    const totalBase64 = (planForm.attachments || []).reduce((sum, a) => sum + (a.data?.length || 0), 0);
-    const PAYLOAD_LIMIT = 40 * 1024 * 1024; // 40MB base64 string limit
-    if (totalBase64 > PAYLOAD_LIMIT) {
-      notify('附件总大小超限，请减少或压缩后重试（视频建议30MB以内）', 'error');
-      return;
-    }
     await Promise.all(newTasks.map(task => apiFetch('/api/tasks', {
       method: 'POST',
       headers: {
