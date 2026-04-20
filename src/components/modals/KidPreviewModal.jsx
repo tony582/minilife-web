@@ -350,7 +350,7 @@ export const KidPreviewModal = ({ context }) => {
                                         {/* Content Comparison */}
                                         <div className="grid grid-cols-2 gap-6">
                                             <div>
-                                                <div className="text-[10px] font-bold text-slate-400 mb-2 uppercase">🎯 任务要求</div>
+                                                <div className="text-[10px] font-bold text-slate-400 mb-2 uppercase flex items-center gap-1"><Icons.Target size={12} /> 任务要求</div>
                                                 <div className="text-[13px] text-slate-600 leading-relaxed whitespace-pre-wrap">
                                                     {previewTask.desc || previewTask.standards || '无附加说明'}
                                                 </div>
