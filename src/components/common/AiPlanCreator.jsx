@@ -18,10 +18,6 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
     const [editingIdx, setEditingIdx] = useState(null);
     const [confirmDeleteIdx, setConfirmDeleteIdx] = useState(null);
 
-    const { swipeRef, swipeHandlers } = useSwipeBack(handleClose, { enabled: isOpen });
-
-    if (!isOpen) return null;
-
     const handleReset = () => {
         setMode('input');
         setTextInput('');
@@ -35,6 +31,10 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
         handleReset();
         onClose();
     };
+
+    const { swipeRef, swipeHandlers } = useSwipeBack(handleClose, { enabled: isOpen });
+
+    if (!isOpen) return null;
 
     const handleParse = async () => {
         if (window.__minilife_isExpired?.()) { window.__minilife_showPaywall?.(); return; }
