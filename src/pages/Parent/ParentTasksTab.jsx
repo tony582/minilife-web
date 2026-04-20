@@ -348,7 +348,7 @@ export const ParentTasksTab = () => {
                         <div className={`p-[3px] rounded-full transition-all duration-300`} style={{ background: parentKidFilter === 'all' ? C.orange : 'transparent' }}>
                             <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-xl ring-2 ring-white"
                                 style={{ background: C.bgLight }}>
-                                👥
+                                <Icons.Users size={18} style={{ color: parentKidFilter === 'all' ? C.orange : C.textMuted }} />
                             </div>
                         </div>
                         <span className="text-[10px] sm:text-xs font-black tracking-wide" style={{ color: parentKidFilter === 'all' ? C.orange : C.textMuted }}>全部</span>
@@ -605,7 +605,7 @@ export const ParentTasksTab = () => {
                     let displayKidId = t.kidId;
                     if (t.kidId === 'all') displayKidId = effectiveFilter === 'all' ? 'all' : effectiveFilter;
 
-                    const kidInfo = displayKidId === 'all' ? (kids.length === 1 ? kids[0] : { name: '全部孩子', avatar: '👥' }) : kids.find(k => k.id === displayKidId);
+                    const kidInfo = displayKidId === 'all' ? (kids.length === 1 ? kids[0] : { name: '全部孩子', avatar: null }) : kids.find(k => k.id === displayKidId);
                     const status = getDailyStatus(t);
                     const isCompleted = status === 'completed';
                     const isPending = status === 'pending_approval';
@@ -646,7 +646,9 @@ export const ParentTasksTab = () => {
                                             {t.title}
                                         </h3>
                                         <span className="bg-slate-100 text-slate-500 text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap flex items-center gap-1 shrink-0">
-                                            <div className="w-3 h-3 rounded-full overflow-hidden flex items-center justify-center shrink-0"><AvatarDisplay avatar={kidInfo?.avatar} /></div>
+                                            <div className="w-3 h-3 rounded-full overflow-hidden flex items-center justify-center shrink-0">
+                                            {kidInfo?.avatar ? <AvatarDisplay avatar={kidInfo.avatar} /> : <Icons.Users size={9} style={{ color: '#6B7280' }} />}
+                                        </div>
                                             {kidInfo?.name}
                                         </span>
                                     </div>
