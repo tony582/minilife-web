@@ -357,7 +357,7 @@ export const KidPreviewModal = ({ context }) => {
                                             </div>
                                             <div className="space-y-4">
                                                 <div>
-                                                    <div className="text-[10px] font-bold text-slate-400 mb-2 uppercase">✍️ 学习备注</div>
+                                                    <div className="text-[10px] font-bold text-slate-400 mb-2 uppercase flex items-center gap-1"><Icons.FileEdit size={12} /> 学习备注</div>
                                                     <div className="text-[13px] text-slate-700 leading-relaxed">
                                                         {hr.note || <span className="text-slate-300 italic">无留言</span>}
                                                     </div>
@@ -415,13 +415,13 @@ export const KidPreviewModal = ({ context }) => {
                                 const log = hr?.auditLog;
                                 if (!log || log.length === 0) return null;
                                 const actionMap = {
-                                    submitted: { label: '提交审核', color: '#3B82F6', icon: '📤' },
-                                    rejected: { label: '被打回', color: '#EF4444', icon: '↩️' },
-                                    approved: { label: '审核通过', color: '#22C55E', icon: '✅' },
+                                    submitted: { label: '提交审核', color: '#3B82F6', icon: <Icons.Upload size={10} /> },
+                                    rejected: { label: '被打回', color: '#EF4444', icon: <Icons.RotateCcw size={10} /> },
+                                    approved: { label: '审核通过', color: '#22C55E', icon: <Icons.Check size={10} /> },
                                 };
                                 return (
                                     <div className="rounded-2xl p-4" style={{ background: '#FAFAF8', border: '1px solid #F0EBE1' }}>
-                                        <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: '#9CAABE' }}>📜 审核记录</div>
+                                        <div className="text-[11px] font-bold uppercase tracking-wider mb-3 flex items-center gap-1" style={{ color: '#9CAABE' }}><Icons.Clock size={12} /> 审核记录</div>
                                         <div className="space-y-0">
                                             {log.map((entry, i) => {
                                                 const info = actionMap[entry.action] || { label: entry.action, color: '#9CAABE', icon: '•' };
@@ -480,13 +480,13 @@ export const KidPreviewModal = ({ context }) => {
                                         {/* Mini audit trail */}
                                         {auditLog && auditLog.length > 0 && (
                                             <div className="rounded-xl p-3" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
-                                                <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: '#9CAABE' }}>📜 审核记录</div>
+                                                <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: '#9CAABE' }}><Icons.History size={12} className="inline mr-1" /> 审核记录</div>
                                                 <div className="space-y-1.5">
                                                     {auditLog.map((log, i) => {
                                                         const actionMap = {
-                                                            submitted: { label: '提交审核', color: '#3B82F6', icon: '📤' },
-                                                            rejected: { label: '被打回', color: '#EF4444', icon: '↩️' },
-                                                            approved: { label: '审核通过', color: '#22C55E', icon: '✅' },
+                                                            submitted: { label: '提交审核', color: '#3B82F6', icon: <Icons.Upload size={10} /> },
+                                                            rejected: { label: '被打回', color: '#EF4444', icon: <Icons.RotateCcw size={10} /> },
+                                                            approved: { label: '审核通过', color: '#22C55E', icon: <Icons.Check size={10} /> },
                                                         };
                                                         const info = actionMap[log.action] || { label: log.action, color: '#9CAABE', icon: '•' };
                                                         const time = new Date(log.timestamp);
@@ -509,7 +509,7 @@ export const KidPreviewModal = ({ context }) => {
                             {/* 任务说明 */}
                             {(previewTask.desc || previewTask.standards) && (
                                 <div className="rounded-2xl p-4" style={{ background: '#FFFFFF', border: '1px solid #F0EBE1' }}>
-                                    <label className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: '#9CAABE' }}>📋 任务说明</label>
+                                    <label className="text-[11px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1" style={{ color: '#9CAABE' }}><Icons.FileText size={13} style={{ marginTop: '-1px' }} /> 任务说明</label>
                                     <div className="text-sm font-medium leading-relaxed whitespace-pre-wrap" style={{ color: '#5A6E8A' }}>{previewTask.desc || previewTask.standards}</div>
                                 </div>
                             )}
@@ -675,9 +675,9 @@ export const KidPreviewModal = ({ context }) => {
                                                     <div className="space-y-0 pl-1">
                                                         {record.auditLog.map((entry, i) => {
                                                             const actionMap = {
-                                                                submitted: { label: '提交审核', color: '#3B82F6', icon: '📤' },
-                                                                rejected: { label: '被打回', color: '#EF4444', icon: '↩️' },
-                                                                approved: { label: '审核通过', color: '#22C55E', icon: '✅' },
+                                                                submitted: { label: '提交审核', color: '#3B82F6', icon: <Icons.Upload size={10} /> },
+                                                                rejected: { label: '被打回', color: '#EF4444', icon: <Icons.RotateCcw size={10} /> },
+                                                                approved: { label: '审核通过', color: '#22C55E', icon: <Icons.Check size={10} /> },
                                                             };
                                                             const info = actionMap[entry.action] || { label: entry.action, color: '#9CAABE', icon: '•' };
                                                             const time = new Date(entry.timestamp);
