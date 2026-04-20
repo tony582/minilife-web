@@ -394,7 +394,7 @@ export const ParentTasksTab = () => {
                             <button onClick={() => setShowAiTaskCreator(true)}
                                 className="flex-1 rounded-xl py-2.5 text-xs font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
                                 style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', boxShadow: '0 4px 14px rgba(102,126,234,0.3)' }}>
-                                ✨ AI 智能生成
+                                <Icons.Sparkles size={14} /> AI 智能生成
                             </button>
                             <button onClick={() => {
                                 const defaultTimes = getDefaultTimeRange();
@@ -418,7 +418,7 @@ export const ParentTasksTab = () => {
                             <button onClick={() => setShowAiTaskCreator(true)}
                                 className="flex-1 rounded-xl py-2.5 text-xs font-black text-white transition-all active:scale-95 flex items-center justify-center gap-1.5"
                                 style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', boxShadow: '0 4px 14px rgba(102,126,234,0.3)' }}>
-                                ✨ AI 智能生成
+                                <Icons.Sparkles size={14} /> AI 智能生成
                             </button>
                             <button onClick={() => {
                                 const defaultTimes = getDefaultTimeRange();

@@ -16,6 +16,15 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
     const [isRefining, setIsRefining] = useState(false);
     const [editingIdx, setEditingIdx] = useState(null);
     const [confirmDeleteIdx, setConfirmDeleteIdx] = useState(null);
+    const [swipeStartX, setSwipeStartX] = useState(null);
+
+    const handleTouchStart = (e) => setSwipeStartX(e.touches[0].clientX);
+    const handleTouchEnd = (e) => {
+        if (swipeStartX === null) return;
+        const delta = e.changedTouches[0].clientX - swipeStartX;
+        if (delta > 70) handleClose();
+        setSwipeStartX(null);
+    };
 
     if (!isOpen) return null;
 
@@ -169,13 +178,17 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
             onClick={handleClose}>
             <div className="w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden animate-bounce-in"
                 style={{ background: '#FBF7F0' }}
-                onClick={e => e.stopPropagation()}>
+                onClick={e => e.stopPropagation()}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}>
 
                 {/* Header */}
                 <div className="shrink-0 px-5 py-4 flex items-center justify-between"
                     style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl backdrop-blur-sm">✨</div>
+                        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                            <Icons.Sparkles size={20} className="text-white" />
+                        </div>
                         <div>
                             <h2 className="font-black text-base text-white">AI 智能任务</h2>
                             <div className="text-[11px] font-bold mt-0.5 text-white/70">上传作业截图或输入文字，AI 自动创建任务</div>
@@ -255,9 +268,9 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                     {mode === 'loading' && (
                         <div className="flex flex-col items-center justify-center py-20 space-y-5 animate-fade-in">
                             <div className="relative">
-                                <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl animate-bounce"
+                                <div className="w-20 h-20 rounded-2xl flex items-center justify-center animate-bounce"
                                     style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', boxShadow: '0 8px 25px rgba(102,126,234,0.3)' }}>
-                                    🤖
+                                    <Icons.Bot size={38} className="text-white" strokeWidth={1.5} />
                                 </div>
                                 <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-green-400 flex items-center justify-center animate-pulse">
                                     <div className="w-2.5 h-2.5 rounded-full bg-white" />
@@ -472,7 +485,9 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
 
                             {parsedTasks.length === 0 && (
                                 <div className="text-center py-10">
-                                    <div className="text-4xl mb-3">🤔</div>
+                                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: '#EEF2FF' }}>
+                                        <Icons.HelpCircle size={24} style={{ color: '#667eea' }} />
+                                    </div>
                                     <div className="text-xs font-bold" style={{ color: '#9CAABE' }}>所有任务已删除，请重新解析</div>
                                 </div>
                             )}
@@ -481,7 +496,7 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                             {parsedTasks.length > 0 && (
                                 <div className="rounded-2xl p-3" style={{ background: '#FFFFFF', border: '1.5px solid #E8E0D4' }}>
                                     <div className="text-[10px] font-bold mb-2 flex items-center gap-1" style={{ color: '#9CAABE' }}>
-                                        💬 告诉 AI 如何调整
+                                        <Icons.MessageCircle size={11} /> 告诉 AI 如何调整
                                     </div>
                                     <div className="flex gap-2 mb-2 flex-wrap">
                                         {['合并成1个任务', '拆分更细', '减少奖励分数', '增加任务时长'].map(s => (
@@ -503,9 +518,11 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                                         />
                                         <button onClick={handleRefine}
                                             disabled={!refineInput.trim() || isRefining}
-                                            className="px-4 py-2.5 rounded-xl font-black text-xs text-white transition-all active:scale-95 disabled:opacity-40 shrink-0"
+                                            className="px-4 py-2.5 rounded-xl font-black text-xs text-white transition-all active:scale-95 disabled:opacity-40 shrink-0 flex items-center gap-1"
                                             style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-                                            {isRefining ? '⏳' : '✨ 调整'}
+                                            {isRefining
+                                                ? <svg className="animate-spin w-3 h-3" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity=".25"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>
+                                                : <><Icons.Sparkles size={11} /> 调整</>}
                                         </button>
                                     </div>
                                 </div>
@@ -526,9 +543,9 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                             </button>
                             <button onClick={handleParse}
                                 disabled={!textInput && !imageData}
-                                className="flex-[2] py-3 rounded-xl font-black text-sm text-white transition-all active:scale-95 disabled:opacity-40"
+                                className="flex-[2] py-3 rounded-xl font-black text-sm text-white transition-all active:scale-95 disabled:opacity-40 flex items-center justify-center gap-2"
                                 style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', boxShadow: '0 4px 15px rgba(102,126,234,0.3)' }}>
-                                🤖 开始 AI 解析
+                                <Icons.Bot size={16} /> 开始 AI 解析
                             </button>
                         </>
                     )}
@@ -540,9 +557,9 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
                                 返回
                             </button>
                             <button onClick={handleBatchCreate}
-                                className="flex-[2] py-3 rounded-xl font-black text-sm text-white transition-all active:scale-95"
+                                className="flex-[2] py-3 rounded-xl font-black text-sm text-white transition-all active:scale-95 flex items-center justify-center gap-2"
                                 style={{ background: 'linear-gradient(135deg, #FF8C42 0%, #FF6B35 100%)', boxShadow: '0 4px 15px rgba(255,140,66,0.3)' }}>
-                                ✅ 一键创建 {parsedTasks.length} 条计划
+                                <Icons.CheckCircle size={16} /> 一键创建 {parsedTasks.length} 条计划
                             </button>
                         </>
                     )}
