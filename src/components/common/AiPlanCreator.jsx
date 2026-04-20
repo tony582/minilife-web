@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Icons, renderIcon } from '../../utils/Icons';
 import { apiFetch } from '../../api/client';
 import { getIconForCategory, getCategoryGradient, getCatHexColor, allCategories } from '../../utils/categoryUtils';
+import { useSwipeBack } from '../../hooks/useSwipeBack';
 
 /**
  * AI Plan Creator — overlay modal for AI-powered homework-to-task conversion
@@ -16,15 +17,8 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
     const [isRefining, setIsRefining] = useState(false);
     const [editingIdx, setEditingIdx] = useState(null);
     const [confirmDeleteIdx, setConfirmDeleteIdx] = useState(null);
-    const [swipeStartX, setSwipeStartX] = useState(null);
 
-    const handleTouchStart = (e) => setSwipeStartX(e.touches[0].clientX);
-    const handleTouchEnd = (e) => {
-        if (swipeStartX === null) return;
-        const delta = e.changedTouches[0].clientX - swipeStartX;
-        if (delta > 70) handleClose();
-        setSwipeStartX(null);
-    };
+    const { swipeRef, swipeHandlers } = useSwipeBack(handleClose, { enabled: isOpen });
 
     if (!isOpen) return null;
 
@@ -176,11 +170,10 @@ const AiPlanCreator = ({ isOpen, onClose, kids, planForm, setPlanForm, setTasks,
         <div className="fixed inset-0 z-[10001] flex items-center justify-center p-0 md:p-6 animate-fade-in"
             style={{ background: 'rgba(27,46,75,0.45)', backdropFilter: 'blur(8px)' }}
             onClick={handleClose}>
-            <div className="w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden animate-bounce-in"
+            <div ref={swipeRef} {...swipeHandlers}
+                className="w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg flex flex-col md:rounded-3xl overflow-hidden animate-bounce-in"
                 style={{ background: '#FBF7F0' }}
-                onClick={e => e.stopPropagation()}
-                onTouchStart={handleTouchStart}
-                onTouchEnd={handleTouchEnd}>
+                onClick={e => e.stopPropagation()}>
 
                 {/* Header */}
                 <div className="shrink-0 px-5 py-4 flex items-center justify-between"
