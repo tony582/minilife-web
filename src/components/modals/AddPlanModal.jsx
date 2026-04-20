@@ -63,8 +63,8 @@ export const AddPlanModal = ({ context }) => {
                         <div className="shrink-0 px-5 py-4 flex items-center justify-between"
                             style={{ background: '#FFFFFF', borderBottom: '1px solid #F0EBE1' }}>
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
-                                    style={{ background: '#4ECDC418', color: '#4ECDC4' }}>🌱</div>
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                                    style={{ background: '#4ECDC418', color: '#4ECDC4' }}><Icons.Leaf size={20} /></div>
                                 <div>
                                     <h2 className="font-black text-base" style={{ color: '#1B2E4B' }}>
                                         {editingTask ? '编辑习惯' : '新建习惯'}
@@ -149,7 +149,7 @@ export const AddPlanModal = ({ context }) => {
                                         style={(!planForm.targetKids || planForm.targetKids.includes('all'))
                                             ? { background: '#4ECDC4', color: '#fff', boxShadow: '0 2px 8px rgba(78,205,196,0.3)' }
                                             : { background: '#F0EBE1', color: '#5A6E8A' }}>
-                                        👥 全部
+                                        <Icons.Users size={13} /> 全部
                                     </button>
                                     {kids.map(k => {
                                         const isSelected = (!planForm.targetKids || planForm.targetKids.includes('all')) || planForm.targetKids.includes(k.id);
@@ -263,7 +263,7 @@ export const AddPlanModal = ({ context }) => {
                                 {/* 金币奖惩 — full width stepper */}
                                 <div className="flex items-center justify-between rounded-xl px-4 py-3" style={{ background: '#fff', border: '1px solid #F0EBE1' }}>
                                     <span className="text-sm font-bold" style={{ color: '#1B2E4B' }}>
-                                        每次{planForm.habitRewardType === 'penalty' ? '扣' : '奖'} ⭐ 家庭币
+                                        每次{planForm.habitRewardType === 'penalty' ? '扣' : '奖'} <Icons.Star size={12} fill="#F59E0B" style={{color:'#F59E0B', display:'inline', verticalAlign:'middle'}} /> 家庭币
                                     </span>
                                     <div className="flex items-center gap-0">
                                         <button onClick={() => setPlanForm({ ...planForm, reward: Math.max(0, (parseInt(planForm.reward) || 5) - 1).toString() })}
@@ -295,7 +295,7 @@ export const AddPlanModal = ({ context }) => {
                                         });
                                     });
                                     if (allEntries.length === 0) return null;
-                                    const statusMap = { completed: { label: '✅' }, pending: { label: '⏳' }, pending_approval: { label: '⏳' }, failed: { label: '❌' }, todo: { label: '⬜' } };
+                                    const statusMap = { completed: { label: '✓' }, pending: { label: '…' }, pending_approval: { label: '…' }, failed: { label: '✗' }, todo: { label: '○' } };
                                     return (
                                         <div>
                                             <label className="text-[11px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color: '#9CAABE' }}>
@@ -729,17 +729,17 @@ export const AddPlanModal = ({ context }) => {
                                         </select>
                                         {/* P3: 安排说明小字 */}
                                         <div className="text-[11px] font-medium mb-1 px-1" style={{ color: '#9CAABE' }}>
-                                            {planForm.repeatType === 'today' && '📌 任务仅在今天出现，完成后不再重复'}
-                                            {planForm.repeatType === 'daily' && '🔁 任务会每天出现，直到设定的结束日期'}
-                                            {planForm.repeatType === 'weekly_custom' && '📅 选择每周的固定日期来执行此任务'}
-                                            {planForm.repeatType === 'biweekly_custom' && '📅 每隔一周执行，适合交替安排的任务'}
-                                            {planForm.repeatType === 'ebbinghaus' && '🧠 按遗忘曲线安排复习，适合记忆类任务'}
-                                            {planForm.repeatType?.includes('weekly_1') && '🎯 在本周的任意时间完成指定次数'}
-                                            {planForm.repeatType?.includes('biweekly_1') && '🎯 在本双周内的任意时间完成指定次数'}
-                                            {planForm.repeatType?.includes('monthly_1') && '🎯 在本月内的任意时间完成指定次数'}
-                                            {planForm.repeatType?.includes('every_week_1') && '🔄 每周循环，在每周内完成指定次数'}
-                                            {planForm.repeatType?.includes('every_biweek_1') && '🔄 每双周循环，在每个双周内完成指定次数'}
-                                            {planForm.repeatType?.includes('every_month_1') && '🔄 每月循环，在每月内完成指定次数'}
+                                            {planForm.repeatType === 'today' && '任务仅在今天出现，完成后不再重复'}
+                                            {planForm.repeatType === 'daily' && '任务会每天出现，直到设定的结束日期'}
+                                            {planForm.repeatType === 'weekly_custom' && '选择每周的固定日期来执行此任务'}
+                                            {planForm.repeatType === 'biweekly_custom' && '每隔一周执行，适合交替安排的任务'}
+                                            {planForm.repeatType === 'ebbinghaus' && '按遗忘曲线安排复习，适合记忆类任务'}
+                                            {planForm.repeatType?.includes('weekly_1') && '在本周的任意时间完成指定次数'}
+                                            {planForm.repeatType?.includes('biweekly_1') && '在本双周内的任意时间完成指定次数'}
+                                            {planForm.repeatType?.includes('monthly_1') && '在本月内的任意时间完成指定次数'}
+                                            {planForm.repeatType?.includes('every_week_1') && '每周循环，在每周内完成指定次数'}
+                                            {planForm.repeatType?.includes('every_biweek_1') && '每双周循环，在每个双周内完成指定次数'}
+                                            {planForm.repeatType?.includes('every_month_1') && '每月循环，在每月内完成指定次数'}
                                         </div>
                                         {/* Weekday picker for biweekly — shown below the dropdown */}
                                         {planForm.repeatType === 'biweekly_custom' && (() => {
@@ -831,14 +831,14 @@ export const AddPlanModal = ({ context }) => {
                                                         const target = Number(planForm.periodTargetCount) || 1;
                                                         const maxDay = Number(planForm.periodMaxPerDay) || 1;
                                                         if (maxDay > target) return (
-                                                            <p className="text-[11px] mt-1 px-1" style={{ color: '#E67E22' }}>⚠️ 每天限额({maxDay}次) 大于周期目标({target}次)，一天就能完成了，建议调整</p>
+                                                            <p className="text-[11px] mt-1 px-1 flex items-center gap-1" style={{ color: '#E67E22' }}><Icons.AlertTriangle size={11} /> 每天限额({maxDay}次) 大于周期目标({target}次)，一天就能完成了，建议调整</p>
                                                         );
                                                         const rt = planForm.repeatType || '';
                                                         let periodDays = 7;
                                                         if (rt.includes('biweek')) periodDays = 14;
                                                         else if (rt.includes('month')) periodDays = 30;
                                                         if (maxDay * periodDays < target) return (
-                                                            <p className="text-[11px] mt-1 px-1" style={{ color: '#E67E22' }}>⚠️ 按每天{maxDay}次算，{periodDays}天最多{maxDay * periodDays}次，不够完成{target}次目标哦</p>
+                                                            <p className="text-[11px] mt-1 px-1 flex items-center gap-1" style={{ color: '#E67E22' }}><Icons.AlertTriangle size={11} /> 按每天{maxDay}次算，{periodDays}天最多{maxDay * periodDays}次，不够完成{target}次目标哦</p>
                                                         );
                                                         return null;
                                                     })()}
@@ -962,7 +962,7 @@ export const AddPlanModal = ({ context }) => {
 
                                             {planForm.timeSetting === 'range' && (
                                                 <div className="animate-fade-in rounded-xl p-3" style={{ background: '#FBF7F0', border: '1px solid #F0EBE1' }} data-field-error={planFormErrors?.time ? 'time' : undefined}>
-                                                    {planFormErrors?.time && <div className="text-xs font-bold text-red-500 mb-2 flex items-center gap-1">⚠️ {planFormErrors.time}</div>}
+                                                    {planFormErrors?.time && <div className="text-xs font-bold text-red-500 mb-2 flex items-center gap-1"><Icons.AlertTriangle size={12} /> {planFormErrors.time}</div>}
                                                     <div className="grid grid-cols-2 gap-3">
                                                         <div className="w-full min-w-0">
                                                             <label className="text-[10px] font-bold mb-1.5 block" style={{ color: planFormErrors?.time ? '#EF4444' : '#5A6E8A' }}>开始时间</label>
@@ -1143,9 +1143,9 @@ export const AddPlanModal = ({ context }) => {
                             if (parts.length === 0) return null;
                             return (
                                 <div className="mx-5 mt-4 mb-2 pt-3 px-4 py-2.5 rounded-xl" style={{ background: '#F5F0E8', borderTop: '1px solid #EDE7DD' }}>
-                                    <p className="text-[12px] leading-relaxed" style={{ color: '#8A7A6A' }}>
-                                        📋 <span className="font-bold" style={{ color: '#5A4A3A' }}>「{planForm.title}」</span>{parts.join('，')}。
-                                    </p>
+                                        <p className="text-[12px] leading-relaxed flex items-start gap-1" style={{ color: '#8A7A6A' }}>
+                                            <Icons.ClipboardList size={13} style={{marginTop: '1px', flexShrink: 0}} /><span><span className="font-bold" style={{ color: '#5A4A3A' }}>「{planForm.title}」</span>{parts.join('，')}。</span>
+                                        </p>
                                 </div>
                             );
                         })()}
@@ -1173,7 +1173,7 @@ export const AddPlanModal = ({ context }) => {
             return (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
                     <div className="bg-white p-8 rounded-2xl text-center shadow-xl relative z-[110] max-w-md w-full">
-                        <div className="text-red-500 text-6xl mb-4">⚠️</div>
+                        <div className="text-red-500 mb-4 flex justify-center"><Icons.AlertTriangle size={56} /></div>
                         <h2 className="text-xl font-bold text-slate-800 mb-2">哎呀，页面出错了！</h2>
                         <p className="text-red-600 mb-4 text-xs font-mono text-left bg-red-50 p-3 rounded-lg overflow-x-auto" id="crash-error-message">{error.message}</p>
                         <p className="text-slate-500 mb-4 text-[10px] font-mono text-left bg-slate-100 p-3 rounded-lg overflow-y-auto max-h-32" id="crash-error-stack">{error.stack}</p>
