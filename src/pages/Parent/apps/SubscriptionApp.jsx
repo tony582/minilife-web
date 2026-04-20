@@ -150,33 +150,6 @@ export const SubscriptionApp = () => {
             </div>
 
             {/* ─── 激活码输入（到期时置顶突出显示）────────────────── */}
-            {isExpired && (
-                <div className="bg-orange-50 border-2 border-orange-200 p-4 rounded-2xl">
-                    <div className="flex items-center gap-2 mb-3">
-                        <div className="w-7 h-7 bg-orange-500 rounded-lg flex items-center justify-center">
-                            <Icons.Key size={14} className="text-white" />
-                        </div>
-                        <span className="font-black text-orange-700 text-sm">已有激活码？立即续费</span>
-                    </div>
-                    <input
-                        type="text"
-                        value={code}
-                        onChange={e => setCode(e.target.value.toUpperCase())}
-                        onKeyDown={e => e.key === 'Enter' && handleRedeem()}
-                        className="w-full bg-white border-2 border-orange-200 px-4 py-3 rounded-xl font-black text-slate-800 tracking-widest outline-none focus:border-orange-400 uppercase placeholder:text-slate-300 placeholder:font-bold placeholder:tracking-normal text-sm mb-2"
-                        placeholder="A-XXXXX 或 Q-XXXXX"
-                        maxLength={20}
-                    />
-                    <button
-                        onClick={handleRedeem}
-                        disabled={submitting || !code.trim()}
-                        className="w-full py-3 rounded-xl font-black text-white text-sm disabled:opacity-50 transition-all active:scale-[0.98]"
-                        style={{ background: 'linear-gradient(135deg, #FF8C42, #FFB347)', boxShadow: '0 4px 16px rgba(255,140,66,0.35)' }}>
-                        {submitting ? '激活中...' : '🎉 立即激活'}
-                    </button>
-                </div>
-            )}
-
             {/* ─── 主体布局 ───────────────────────────────────────── */}
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5 items-start">
 
@@ -228,9 +201,8 @@ export const SubscriptionApp = () => {
                         </p>
                     </div>
 
-                    {/* 激活码输入（正常状态） */}
-                    {!isExpired && (
-                        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                    {/* 激活码输入 */}
+                    <div className={`bg-white p-4 rounded-2xl border-2 shadow-sm ${isExpired ? 'border-amber-200' : 'border-slate-100'}`}>
                             <label className="flex items-center gap-2 text-sm font-black text-slate-700 mb-3">
                                 <div className="w-7 h-7 bg-amber-100 rounded-lg flex items-center justify-center">
                                     <Icons.Key size={14} className="text-amber-500" />
@@ -263,8 +235,7 @@ export const SubscriptionApp = () => {
                             <p className="text-[11px] text-slate-400 font-bold mt-2">
                                 年度码：A-XXXXXXX &nbsp;·&nbsp; 季度码：Q-XXXXXXX
                             </p>
-                        </div>
-                    )}
+                    </div>
 
                     {/* 兑换历史 */}
                     <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
