@@ -1034,7 +1034,7 @@ export const AddPlanModal = ({ context }) => {
                                         <div className="flex items-center justify-between rounded-xl px-4 py-3 animate-fade-in"
                                             style={{ background: '#FBF7F0', border: '1px solid #F0EBE1' }}>
                                             <span className="text-sm font-bold" style={{ color: '#1B2E4B' }}>
-                                                完成奖励 ⭐ 家庭币
+                                                完成奖励 <Icons.Star size={12} fill="#F59E0B" style={{color:'#F59E0B', display:'inline', verticalAlign:'middle'}} /> 家庭币
                                             </span>
                                             <div className="flex items-center gap-0">
                                                 <button onClick={() => setPlanForm({ ...planForm, reward: Math.max(0, (parseInt(planForm.reward) || 5) - 1).toString() })}
@@ -1134,7 +1134,7 @@ export const AddPlanModal = ({ context }) => {
                             }
                             // 5. Reward
                             const reward = Number(planForm.reward) || 0;
-                            if (reward > 0) parts.push(`完成奖励 ${reward} 家庭币 🪙`);
+                            if (reward > 0) parts.push(`完成奖励 ${reward} 家庭币`);
                             else if (reward < 0) parts.push(`未完成扣 ${Math.abs(reward)} 家庭币`);
                             // 6. Approval
                             if (planForm.requireApproval) parts.push('需家长审核');
