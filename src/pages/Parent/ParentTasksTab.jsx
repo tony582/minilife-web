@@ -593,7 +593,9 @@ export const ParentTasksTab = () => {
             <div className="flex flex-col gap-2 px-4 pb-10">
                 {parentTasks.length === 0 && (
                     <div className="text-center py-16 rounded-2xl" style={{ background: C.bgCard }}>
-                        <div className="text-5xl mb-4">☀️</div>
+                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 mx-auto" style={{ background: `${C.orange}18` }}>
+                            <Icons.Sun size={36} style={{ color: C.orange }} strokeWidth={1.5} />
+                        </div>
                         <div className="text-sm font-black" style={{ color: C.textPrimary }}>这里还空空的，去布置些任务吧～</div>
                     </div>
                 )}
