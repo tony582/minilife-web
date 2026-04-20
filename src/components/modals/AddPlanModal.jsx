@@ -1144,7 +1144,7 @@ export const AddPlanModal = ({ context }) => {
                             return (
                                 <div className="mx-5 mt-4 mb-2 pt-3 px-4 py-2.5 rounded-xl" style={{ background: '#F5F0E8', borderTop: '1px solid #EDE7DD' }}>
                                         <p className="text-[12px] leading-relaxed flex items-start gap-1" style={{ color: '#8A7A6A' }}>
-                                            <Icons.ClipboardList size={13} style={{marginTop: '1px', flexShrink: 0}} /><span><span className="font-bold" style={{ color: '#5A4A3A' }}>「{planForm.title}」</span>{parts.join('，')}。</span>
+                                        <Icons.FileText size={13} style={{marginTop: '1px', flexShrink: 0}} /><span><span className="font-bold" style={{ color: '#5A4A3A' }}>「{planForm.title}」</span>{parts.join('，')}。</span>
                                         </p>
                                 </div>
                             );
