@@ -11,6 +11,7 @@ import { getWeekNumber, getDisplayDateArray, formatDate } from '../../utils/date
 import useOnClickOutside from '../../hooks/useOnClickOutside';
 import { ReorderableList } from '../../components/common/ReorderableList';
 import { MigrateTasksModal } from '../../components/modals/MigrateTasksModal';
+import { apiFetch } from '../../api/client';
 
 export const ParentTasksTab = () => {
     const authC = useAuthContext();
@@ -24,7 +25,7 @@ export const ParentTasksTab = () => {
         setEditingTask, setPlanType, setPlanForm,
         setPreviewTask, setShowPreviewModal, showPreviewModal,
         setDeleteConfirmTask, setShowCalendarModal,
-        lastSavedEndTime, apiFetch,
+        lastSavedEndTime,
         parentKidFilter, setParentKidFilter,
         currentViewDate, setCurrentViewDate,
         quickCompleteTask
