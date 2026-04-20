@@ -761,16 +761,24 @@ export const ParentTasksTab = () => {
 
 
             {showReorderModal && createPortal(
-                <div className="z-[200]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: C.bg }}>
-                    <div className="flex items-center justify-between p-4" style={{ borderBottom: `1px solid ${C.bgLight}` }}>
-                        <button onClick={() => setShowReorderModal(false)} className="p-2 rounded-full" style={{ color: C.textSoft }}><Icons.X size={24} /></button>
-                        <h2 className="text-lg font-black" style={{ color: C.textPrimary }}>调整任务顺序</h2>
-                        <button onClick={() => setShowReorderModal(false)} className="font-black px-4 py-2 rounded-full" style={{ color: C.orange }}>完成</button>
+                <div className="z-[200] flex flex-col" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FBF7F0' }}>
+                    <div className="shrink-0 px-5 py-4 flex items-center justify-between" style={{ background: '#FFFFFF', borderBottom: '1px solid #F0EBE1' }}>
+                        <button onClick={() => setShowReorderModal(false)}
+                            className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90"
+                            style={{ background: '#F0EBE1', color: '#9CAABE' }}>
+                            <Icons.X size={18} />
+                        </button>
+                        <h2 className="text-base font-black" style={{ color: '#1B2E4B' }}>调整任务顺序</h2>
+                        <button onClick={() => setShowReorderModal(false)}
+                            className="px-4 py-2 rounded-xl text-xs font-black transition-all active:scale-95"
+                            style={{ background: '#FF8C42', color: '#fff', boxShadow: '0 2px 8px rgba(255,140,66,0.3)' }}>
+                            完成
+                        </button>
                     </div>
-                    <div style={{ position: 'absolute', top: 57, left: 0, right: 0, bottom: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '1rem', paddingBottom: '10rem' }}>
+                    <div className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', padding: '1.5rem 1.25rem', paddingBottom: 'max(10rem, env(safe-area-inset-bottom) + 5rem)' }}>
                         <div className="max-w-2xl mx-auto">
-                            <div className="text-[13px] font-bold p-3 rounded-2xl mb-5 text-center" style={{ background: C.bgCard, color: C.textSoft, boxShadow: C.cardShadow }}>
-                                <span className="flex items-center justify-center gap-1.5"><Icons.GripVertical size={14} /> 长按拖动调整任务顺序</span>
+                            <div className="text-[13px] font-bold p-3.5 rounded-2xl mb-6 text-center" style={{ background: '#FFFFFF', color: '#9CAABE', border: '1px solid #F0EBE1' }}>
+                                <span className="flex items-center justify-center gap-1.5"><Icons.GripVertical size={14} /> 长按并拖拽任务即可调整顺序</span>
                             </div>
                             <ReorderableList
                                 items={parentTasks}
