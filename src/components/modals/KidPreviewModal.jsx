@@ -259,7 +259,7 @@ export const KidPreviewModal = ({ context }) => {
                     {/* Multi-kid status bar (parent side, all-kids tasks only) */}
                     {isMultiKidParent && (
                         <div className="rounded-2xl p-3" style={{ background: '#fff', border: '1px solid #E8E0D4' }}>
-                            <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: '#9CAABE' }}>👨‍👩‍👧‍👦 各孩子状态 · 点击切换</div>
+                            <div className="text-[10px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color: '#9CAABE' }}><Icons.Users size={12} /> 各孩子状态 · 点击切换</div>
                             <div className="flex flex-wrap gap-2">
                                 {kidStatuses.map(k => {
                                     const isActive = k.id === resolvedKidId;
