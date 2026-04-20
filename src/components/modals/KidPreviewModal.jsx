@@ -328,7 +328,7 @@ export const KidPreviewModal = ({ context }) => {
                                         <div className="grid grid-cols-2 gap-6">
                                             <div>
                                                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 mb-1.5 uppercase">
-                                                    <Icons.Target size={12} /> 计划时间
+                                                    <Icons.Clock size={12} /> 计划时间
                                                 </div>
                                                 <div className="text-base font-black text-slate-700">{previewTask.timeStr || '--:--'}</div>
                                             </div>
