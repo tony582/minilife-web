@@ -770,7 +770,7 @@ export const ParentTasksTab = () => {
                     <div style={{ position: 'absolute', top: 57, left: 0, right: 0, bottom: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '1rem', paddingBottom: '10rem' }}>
                         <div className="max-w-2xl mx-auto">
                             <div className="text-[13px] font-bold p-3 rounded-2xl mb-5 text-center" style={{ background: C.bgCard, color: C.textSoft, boxShadow: C.cardShadow }}>
-                                💡 长按拖动调整任务顺序
+                                <span className="flex items-center justify-center gap-1.5"><Icons.GripVertical size={14} /> 长按拖动调整任务顺序</span>
                             </div>
                             <ReorderableList
                                 items={parentTasks}
